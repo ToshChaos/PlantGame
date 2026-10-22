@@ -22,40 +22,51 @@ the run fails (retry/back to menu). **Best times** (time spent to finish) are sa
   The Unity project is **`Game/`**. Repo root holds docs, tasks and Blender sources.
 - **Blender 5.2.2 LTS** (confirmed via MCP, Python 3.13) on the user's Mac (metric, scale 1, FBX + glTF exporters on), Geometry Nodes. Sources live
   **outside Unity** in `Source/Blender/`. Never put `.blend` into `Game/Assets/`.
-- Blender is driven through `mcp__remote-devices__Blender__*` (`execute_blender_code`, `render_viewport_to_path`,
-  `get_screenshot_of_window_as_image`, ...). Unity is driven through `mcp__remote-devices__unity__*` (scene, GameObject,
-  script, asset, package, build, test, console, screenshot, `eval`, `editor_focus`, `wait_for`). These are deferred
-  tools: load them with ToolSearch. They need the Unity Editor **open on `Game`** and the Unity MCP server enabled
+- **Two session setups — check which tools you have (ToolSearch) before starting:**
+  - **Desktop app on the Mac (Code tab):** Bash, Read/Write/Edit and git run directly on the Mac in the repo. Blender:
+    `mcp__Blender__*` (`execute_blender_code`, `render_viewport_to_path`, ...). Unity: `mcp__unity-mcp__Unity_RunCommand`
+    (compile + run a C# `CommandScript` in the editor: menus/builders, play mode, input, captures), `Unity_GetConsoleLogs`,
+    `Unity_Camera_Capture`. No `editor_focus`/`wait_for`; see the play-mode recipe below.
+  - **Cloud session with remote devices:** Blender via `mcp__remote-devices__Blender__*`, Unity via
+    `mcp__remote-devices__unity__*` (scene, GameObject, script, asset, package, build, test, console, screenshot, `eval`,
+    `editor_focus`, `wait_for`), shell via `device_bash` (see the next bullets).
+  All of these are deferred tools: load them with ToolSearch. They need the Unity Editor **open on `Game`** and the Unity MCP server enabled
   (Claude desktop app: Settings, Developer, "unity" on) plus the `com.unity.pipeline` package (keep it).
   **If no unity tools appear:** check the editor is open, run `RefreshMcpTools`; compile errors put the editor in Safe
   Mode and block the connection — fix the C# and restart Unity. Prefer the tools over hand-editing `.unity`/`.prefab`/`.asset`.
-- The sandbox shell (`device_bash`) runs in a Linux VM: it **cannot run Unity, Blender or other Mac programs** and cannot
+- (Cloud setup only) The sandbox shell (`device_bash`) runs in a Linux VM: it **cannot run Unity, Blender or other Mac programs** and cannot
   reach the Mac's `localhost`. The repo is mounted at `$HOME/mnt/PlantGame`; edit files there with `device_bash`
   (Read/Write/Edit act on the cloud, not the Mac). Plain python3 there is fine for helper scripts (e.g. SFX synthesis).
-- Git works from the sandbox. Deleting files (git lock files) needs `device_request_delete_permission` once per session.
+- Git works from the sandbox (cloud) or directly (desktop). Cloud only: deleting files (git lock files) needs `device_request_delete_permission` once per session.
   Set a repo-local git identity in T00. Never commit `Library/ Temp/ Logs/ UserSettings/ *.csproj *.slnx`; commit `.meta`.
-- Blender -> Unity: FBX straight into `Game/Assets/Art/Models/...` with `axis_forward='Z'` (measured; '-Z' rotates 180°), `axis_up='Y'`,
-  `apply_scale_options='FBX_SCALE_UNITS'`, `bake_space_transform=True`. **X is mirrored on FBX import** — test with an
-  asymmetric object in T02 and fix once, in the export script. Naming `Type_Name_Variant`.
+- Blender -> Unity: export to `Source/Blender/exports/` with `export_fbx.py`, copy with `sync_to_unity.py` into
+  `Game/Assets/Art/Models/<Category>/`. Pinned settings (T02, `docs/pipeline.md`): `axis_forward='Z'`, `axis_up='Y'`,
+  `FBX_SCALE_UNITS`, `bake_space_transform=True` — verified 1:1, no X mirror, for single objects. **Parented hierarchies**
+  (empties with child meshes) break with `bake_space_transform`: export them with `overrides=CHAR_FBX_OVERRIDES` and let
+  Unity bake the axis conversion (T31). Naming `Type_Name_Variant`.
 - Generate scenes/prefabs with **editor builder scripts** (menu `PlantGame > Build ...`, in `Game/Assets/Editor/`) so
   they can be rebuilt. Same for Blender: every asset has a reproducible script in `Source/Blender/scripts/`
   (`exec(open(path).read()); build_all()`).
 
 ### Play-mode testing recipe (learned the hard way in ClockWork)
-- The editor only ticks frames while focused: call `editor_focus` right before every `wait_for` / capture, then
-  `wait_for` a higher `UnityEngine.Time.frameCount`. The focus click counts as a left click and can fire Use.
+- The editor only ticks frames while focused. Remote-devices tools: call `editor_focus` right before every `wait_for` /
+  capture, then `wait_for` a higher `UnityEngine.Time.frameCount` (the focus click counts as a left click and can fire Use).
+  Desktop `Unity_RunCommand`: after entering play mode set `Application.runInBackground = true` — frames then tick while
+  unfocused (each RunCommand call is roughly one or more frames apart; check `Time.frameCount`).
+- Fake input with `InputSystem.QueueStateEvent(Keyboard.current, new KeyboardState(Key.W, Key.LeftShift))`; queue an empty
+  `KeyboardState()` to release. Capture the game camera by rendering it into a RenderTexture and writing a PNG to `docs/shots/`.
 - Drive state with `eval` (teleport the player, call `Interact`/`UseItem`/`Plant` directly), then `wait_for` a state
   (`PlantInstance.IsGrown`, `RunSession` state). Use `Time.timeScale` 3–12 to skip waits.
 - Do **not** edit scripts in play mode (domain reload wipes non-serialized state). After script or package changes the
   domain reloads: calls fail with "Network error" for a few seconds — wait ~10 s and retry. `Game/Logs/Editor.log` is the
-  fallback when the console tool lags. A teleported player leaves the follow camera behind for a few seconds.
+  fallback when the console tool lags. The third-person camera is a child of the player, so teleports move it too.
 - Docs habit: long per-task notes go in `docs/task-log.md`; keep `TASKS.md` and the task files short.
 
 ## 3. Repository layout (contract — do not invent new top-level folders)
 ```
 PlantGame/                         (git root)
   AGENTS.md  CLAUDE.md  TASKS.md  README.md
-  tasks/                           one file per task (T00..T26)
+  tasks/                           one file per task (T00..T31)
   docs/                            art-bible, pipeline, controls, test-seeds, qa-checklist, task-log, shots/
   Source/Blender/
     plants.blend  kit.blend        Geometry Nodes live here
@@ -107,7 +118,7 @@ Roles, not necessarily separate sessions — one session may wear several hats, 
 ## 5. Contracts
 
 ### 5.1 Scale, axes, units
-1 Unity unit = 1 m. Blender: Z-up, apply scale, export forward -Z / up Y (T02 pins the exact FBX settings).
+1 Unity unit = 1 m. Blender: Z-up, apply scale; FBX settings are pinned in T02 (`docs/pipeline.md`).
 Kit grid = **4 m**. Player: height 1.8 m, radius 0.35 m, walk 4 m/s, run 6 m/s, jump height **1.6 m**,
 max horizontal jump about **5 m**. So any gap >= **7 m** needs a plant (world gen uses 7–14 m).
 
@@ -261,6 +272,7 @@ no textures required — vertex colours + gradients. Music: calm, airy, harp/pad
 | Key | Resolution |
 |-----|-----------|
 | W A S D | Move relative to the camera. In the Climbing state **W** goes up and **S** goes down; A / D are ignored. |
+| Left Shift | Hold to run (6 m/s; walk 4 m/s). |
 | Space | Jump. While Climbing it **jumps off the vine**: normal jump velocity plus a small push (about 2 m/s) away from the climb surface, air control kept, 0.3 s re-grab cooldown, `PlayerJumped` raised. |
 | Q | Focused `IInteractable` with `Action == Pickup` and a free slot -> pick up. Otherwise drop the selected item (if any). |
 | Tab / Shift+Tab | Cycle the selected slot forward / backward with wraparound (empty slots can be selected). |
@@ -284,7 +296,7 @@ how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `D
 Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`).
 
 ## 8. Scope & cut line
-**MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
+**MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->
 Platform plant kind (keep Bridge + Ladder) -> ruin variety -> PlantGallery showcase scene (replace with a video).
 **Never cut:** watering can with 2 charges + refill at a lake or waterfall, seeded generation with copyable seed codes, both modes (Exploration + Challenge timer), best-time saving, at least 2 plant kinds with real Blender variants, pickup/drop/use/limited
@@ -294,7 +306,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 ## 9. Change log of contracts
 - v1 (day 0): initial contracts.
 - v1.1 (day 0): added game modes, LevelDefinition, RunConfig, SeedCode, RunSession, SaveService; tasks T25, T26.
+- v1.2 (day 1): water — `WateringCan`, `IWaterable`, `WaterSource`, `WaterCollector`, `PlantKind.Collector`, `needsWater`, sprout state, `Socket_Water`, layer `Water`, seed code `kindsMask` 4 bits; tasks T27–T30.
 - v1.3 (day 1): final controls — Q pickup/drop, Tab cycle, E use, F water, W/S climb; `InteractAction` added to `IInteractable`; section 5.8.
 - v1.4 (day 1): third-person orbit camera + one player model `Char_Player_01` (T31); `PlayerController.EyeTransform` is now the camera.
   Parented hierarchies export with `CHAR_FBX_OVERRIDES` (no `bake_space_transform`), Unity bakes the axis conversion for `Art/Models/Characters`.
-- v1.2 (day 1): water — `WateringCan`, `IWaterable`, `WaterSource`, `WaterCollector`, `PlantKind.Collector`, `needsWater`, sprout state, `Socket_Water`, layer `Water`, seed code `kindsMask` 4 bits; tasks T27–T30.

@@ -16,7 +16,7 @@ Estimates are focused hours for one agent (they include verification).
 | [T06](tasks/T06-gn-vine-bridge.md) | Geometry Nodes: Vine bridge plant | A3 | T00 | 4h | 1 | TODO |
 | [T07](tasks/T07-gn-beanstalk-ladder.md) | Geometry Nodes: Beanstalk ladder plant | A3 | T06 | 3h | 1–2 | TODO |
 | [T08](tasks/T08-gn-platform-plant.md) | Geometry Nodes: Shelf-fungus platform plant | A3 | T06 | 3h | 2 | TODO |
-| [T09](tasks/T09-bake-and-export-variants.md) | Bake 6 variants per plant + proxies + export | A3 | T02, T06, T28 | 3h | 2 | TODO |
+| [T09](tasks/T09-bake-and-export-variants.md) | Bake 6 variants per plant + proxies + export | A3 | T02, T06 (T07, T08, T28 as they land) | 3h | 2 | TODO |
 | [T10](tasks/T10-island-kit.md) | Modular island kit (terrain, ruins, vegetation) | A4 | T02 | 6h | 1–2 | TODO |
 | [T11](tasks/T11-growth-system.md) | Growth system: SoilPatch, growth, colliders, climb | A2 | T01, T06 (placeholder), T09 | 5h | 2 | TODO |
 | [T12](tasks/T12-world-items-and-goal.md) | Seed pickups, soil patch prefab, Heart Tree goal | A1 | T05, T11 | 2h | 2 | TODO |
@@ -33,11 +33,11 @@ Estimates are focused hours for one agent (they include verification).
 | [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | 2h | 3 | TODO |
 | [T24](tasks/T24-demo-prep.md) | PlantGallery showcase, README, credits, demo capture | A0 | all | 2h | 3 | TODO |
 | [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | 3h | 2–3 | TODO |
+| [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | 3h | 3 | TODO |
 | [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | 3h | 2 | TODO |
 | [T28](tasks/T28-gn-water-collector.md) | Geometry Nodes: Water Collector plant | A3 | T06 | 3h | 2 | TODO |
 | [T29](tasks/T29-water-features-kit.md) | Water features kit: waterfall + lake | A4 | T10 | 3h | 2 | TODO |
 | [T30](tasks/T30-water-shaders-and-vfx.md) | Water shaders + splash/drip VFX | A6 | T01, T29 | 2h | 2–3 | TODO |
-| [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | 3h | 3 | TODO |
 | [T31](tasks/T31-player-model-third-person.md) | Player model (blocky, white/black/gold) + third-person camera | A1+A3 | T02, T03 | 2h | 1 | REVIEW |
 
 ## Parallel lanes (who can work at the same time)
@@ -54,7 +54,7 @@ mechanic is proven before final Blender art arrives.
 ## Schedule
 | Slot | Goal | Tasks |
 |------|------|-------|
-| **Day 1 AM** | Project alive, pipeline proven, player moves | T00, T01 (start), T02, T03, T06 (start), T10 (start) |
+| **Day 1 AM** | Project alive, pipeline proven, player moves | T00, T01 (start), T02, T03, T31, T06 (start), T10 (start) |
 | **Day 1 PM** | Interact + inventory, first procedural plant in Unity | T04, T05, T06, T07, T10, T11 spike with placeholder |
 | **Day 1 end — checkpoint** | Walk, pick up a seed, plant it, a placeholder bridge grows and can be crossed | |
 | **Day 2 AM** | Real plants + kit land in Unity; growth system done | T08, T09, T11, T12, T10, T16, T27, T28, T29, T30 |

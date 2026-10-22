@@ -5,7 +5,7 @@ Mirrors `AGENTS.md` section 5.8 (that file wins on conflict). Bindings live in
 
 | Key | Action |
 |-----|--------|
-| W A S D | Move relative to where you look. While **climbing**, **W** goes up and **S** goes down; A / D are ignored |
+| W A S D | Move relative to the camera (third person, T31); the character turns to face where it moves. While **climbing**, **W** goes up and **S** goes down; A / D are ignored |
 | Mouse | Look (cursor locks on Play; **Esc** releases it, a click grabs it back) |
 | Left Shift | Run (6 m/s; walk is 4 m/s) |
 | Space | Jump (1.6 m). While climbing: **jump off the vine** — normal jump plus ~2 m/s away from the surface, 0.3 s re-grab cooldown |
