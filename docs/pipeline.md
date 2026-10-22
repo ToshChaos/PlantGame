@@ -34,6 +34,13 @@ Settings the running Blender does not know are dropped with a printed note, so u
 ## Validation (`validate_export.py`)
 Checks: collection/mesh names, `growth_t` colour attribute (0..1 range), tri budget (<= 4000 per variant), `Anchor`/`Tip`, pivot on Anchor, `COL_*`, `CLIMB_*` for ladders, collector extras. `export_collections` stops on errors; call `print_report(name, 'plant')` to see them. Profile `'generic'` (kit pieces, tests) only checks scale.
 
+### Parented hierarchies (characters, T31)
+`bake_space_transform=True` breaks child objects (meshes under empties land rotated and offset in Unity). Character
+collections export with `pipeline_common.CHAR_FBX_OVERRIDES` (`bake_space_transform=False`, `axis_forward='-Z'`) and
+`ModelImportSettings` turns on `bakeAxisConversion` under `Art/Models/Characters/`. Measured with `Char_Player_01`: geometry
+faces Unity +Z, left at -X, 1:1 scale; the FBX root empty keeps a ~90° X rotation, so code that rotates joints should work
+in model space (see `PlayerAnimator`). Plants/kit pieces with nested parts should use the same overrides.
+
 ## Unity import (`Assets/Editor/ModelImportSettings.cs`)
 Applied automatically on first import of any FBX under `Assets/Art/Models`: scale 1 with `useFileScale`, no material import, mesh compression off, Read/Write on for `Plants/` and `Test/`, hierarchy preserved (empties kept), no animation/cameras/lights. Menu `PlantGame > Tools > Reapply Model Import Settings` re-applies after a preset change. `growth_t` is read with `mesh.colors[i].r`.
 

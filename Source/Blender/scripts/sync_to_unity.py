@@ -5,7 +5,7 @@
     python3 Source/Blender/scripts/sync_to_unity.py --dry    # show what would happen
 
 Source/Blender/exports/<Prefix>_*.fbx  ->  Game/Assets/Art/Models/<Category>/
-    Plant_*  -> Plants     Kit_* -> Kit     Test_* -> Test     anything else -> Misc
+    Plant_*  -> Plants     Kit_* -> Kit     Test_* -> Test     Char_* -> Characters     anything else -> Misc
 Only files whose content changed are rewritten, so Unity does not reimport needlessly. Never deletes anything.
 """
 import filecmp
@@ -16,7 +16,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
 SRC = os.path.join(ROOT, 'Source', 'Blender', 'exports')
 DST = os.path.join(ROOT, 'Game', 'Assets', 'Art', 'Models')
-CATEGORY = {'Plant': 'Plants', 'Kit': 'Kit', 'Test': 'Test'}
+CATEGORY = {'Plant': 'Plants', 'Kit': 'Kit', 'Test': 'Test', 'Char': 'Characters'}
 
 
 def main(dry=False):

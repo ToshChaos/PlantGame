@@ -41,6 +41,14 @@ namespace PlantGame.Editor
                 SetLit(m, Palette.GlowCyan, 0.8f);
                 SetEmission(m, Palette.GlowCyan * 1.0f);   // 1.0 keeps the hex readable without tonemapping; T16 raises it once bloom/tonemapping exist
             });
+            Make("M_PlayerWhite", lit, m => SetLit(m, Palette.PlayerWhite, 0.35f));
+            Make("M_PlayerBlack", lit, m => SetLit(m, Palette.PlayerBlack, 0.45f));
+            Make("M_PlayerGold", lit, m =>
+            {
+                SetLit(m, Palette.Gold, 0.7f);
+                m.SetFloat("_Metallic", 0.75f);
+                SetEmission(m, Palette.Gold * 0.15f);   // keeps the trim gold in shadow; no reflection probes yet
+            });
             Make("M_UI", unlit, m => { m.SetColor("_BaseColor", Palette.CloudWhite); });
             if (grow != null)
                 Make("M_PlantGrow", grow, m =>

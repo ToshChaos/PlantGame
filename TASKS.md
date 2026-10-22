@@ -7,9 +7,9 @@ Estimates are focused hours for one agent (they include verification).
 ## Board
 | ID | Task | Owner | Depends on | Est | Day | Status |
 |----|------|-------|-----------|-----|-----|--------|
-| [T00](tasks/T00-project-bootstrap.md) | Project bootstrap, packages, folders, git | A0 | — | 1.5h | 1 | REVIEW |
-| [T01](tasks/T01-art-bible-and-materials.md) | Art bible, palette, shared materials, grow shader | A6 | T00 | 3h | 1 | REVIEW |
-| [T02](tasks/T02-blender-unity-pipeline.md) | Blender → Unity export pipeline & import presets | A0+A3 | T00 | 2h | 1 | REVIEW |
+| [T00](tasks/T00-project-bootstrap.md) | Project bootstrap, packages, folders, git | A0 | — | 1.5h | 1 | DONE |
+| [T01](tasks/T01-art-bible-and-materials.md) | Art bible, palette, shared materials, grow shader | A6 | T00 | 3h | 1 | DONE |
+| [T02](tasks/T02-blender-unity-pipeline.md) | Blender → Unity export pipeline & import presets | A0+A3 | T00 | 2h | 1 | DONE |
 | [T03](tasks/T03-player-controller.md) | Player controller: WASD, look, jump, climb, camera | A1 | T00 | 3h | 1 | REVIEW |
 | [T04](tasks/T04-interaction-system.md) | Interaction: focus, prompt, pick up / drop / use | A1 | T03 | 2h | 1 | TODO |
 | [T05](tasks/T05-inventory.md) | Limited inventory (4 slots) + item definitions | A1 | T04 | 2h | 1 | TODO |
@@ -38,9 +38,10 @@ Estimates are focused hours for one agent (they include verification).
 | [T29](tasks/T29-water-features-kit.md) | Water features kit: waterfall + lake | A4 | T10 | 3h | 2 | TODO |
 | [T30](tasks/T30-water-shaders-and-vfx.md) | Water shaders + splash/drip VFX | A6 | T01, T29 | 2h | 2–3 | TODO |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | 3h | 3 | TODO |
+| [T31](tasks/T31-player-model-third-person.md) | Player model (blocky, white/black/gold) + third-person camera | A1+A3 | T02, T03 | 2h | 1 | REVIEW |
 
 ## Parallel lanes (who can work at the same time)
-- **Lane A – Player (Unity):** T03 → T04 → T05 → T12 → T25
+- **Lane A – Player (Unity):** T03 → T31 → T04 → T05 → T12 → T25
 - **Lane B – Plants (Blender):** T06 → T07 / T08 / T28 → T09 → (hands off to T11)
 - **Lane C – Kit (Blender):** T10 → T29 → (hands off to T13)
 - **Lane D – Systems (Unity):** T11 (placeholder plants first) → T27 → T13 → T14 → T15

@@ -3,7 +3,7 @@
 Read this file fully before touching anything. Then read `TASKS.md` and your task file in `tasks/`.
 
 ## 1. Game in one paragraph
-First/third-person 3D exploration of **floating islands**. You cannot cross the gaps — you **grow plants** that become
+Third-person 3D exploration of **floating islands** (one blocky white/black/gold player model, orbit camera). You cannot cross the gaps — you **grow plants** that become
 **bridges, ladders and platforms**. Seeds are found on islands, carried in a **limited inventory**, and planted in soil patches. Seeds only sprout; a **watering can** (2 charges, refilled at waterfalls, lakes or Water Collector plants) makes them grow. Each run is built from a **seed number**: islands are assembled from modular kit pieces and plants are
 picked from **procedural Blender (Geometry Nodes) variations**. Goal: reach the Heart Tree on the last island.
 Style: fantasy, **white / green / blue**, soft, glowing, stylized.
@@ -59,6 +59,7 @@ PlantGame/                         (git root)
   docs/                            art-bible, pipeline, controls, test-seeds, qa-checklist, task-log, shots/
   Source/Blender/
     plants.blend  kit.blend        Geometry Nodes live here
+    characters.blend               the player model (T31, script char_player.py)
     scripts/                       python run through the Blender tools — commit these
     exports/                       raw exports before they are copied into the Unity project
   Game/                            Unity project root
@@ -80,9 +81,9 @@ Roles, not necessarily separate sessions — one session may wear several hats, 
 | ID | Role | Owns (may edit freely) | Tools | Tasks |
 |----|------|------------------------|-------|-------|
 | A0 | **Director** (integrator/producer) | `Main.unity`, `TASKS.md`, `AGENTS.md`, project settings, git merges | Unity, git | T00 T15 T21 T24 |
-| A1 | **Gameplay** | `Scripts/Player`, `Scripts/Inventory`, `Scripts/Core` (interaction), Player/Items prefabs, `Scripts/Core/Modes`, `Scripts/Core/Save` | Unity | T03 T04 T05 T12 T25 |
+| A1 | **Gameplay** | `Scripts/Player`, `Scripts/Inventory`, `Scripts/Core` (interaction), Player/Items prefabs, `Scripts/Core/Modes`, `Scripts/Core/Save` | Unity | T03 T04 T05 T12 T25 T31 |
 | A2 | **Botanist** | `Scripts/Plants`, plant ScriptableObjects, Plants prefabs, grow shader hookup, watering can | Unity | T11 T27 |
-| A3 | **Plant Smith** | `Source/Blender/plants.blend`, `Source/Blender/scripts/plants_*`, `Art/Models/Plants` | Blender | T06 T07 T08 T28 T09 |
+| A3 | **Plant Smith** | `Source/Blender/plants.blend`, `characters.blend`, `Source/Blender/scripts/plants_*`, `char_*`, `Art/Models/Plants`, `Art/Models/Characters` | Blender | T06 T07 T08 T28 T09 T31 |
 | A4 | **Stonemason** | `Source/Blender/kit.blend`, `Source/Blender/scripts/kit_*`, `Art/Models/Kit` | Blender | T10 T29 |
 | A5 | **Cartographer** | `Scripts/World`, `ScriptableObjects/World`, Island prefabs | Unity | T13 T14 |
 | A6 | **Tech Artist** | `Art/Shaders`, `Art/Materials`, `Art/VFX`, skybox, post-processing, water shaders | Unity (+Blender for cloud cards) | T01 T16 T20 T30 |
@@ -294,4 +295,6 @@ inventory, music + SFX + sky, a win condition, a working build.
 - v1 (day 0): initial contracts.
 - v1.1 (day 0): added game modes, LevelDefinition, RunConfig, SeedCode, RunSession, SaveService; tasks T25, T26.
 - v1.3 (day 1): final controls — Q pickup/drop, Tab cycle, E use, F water, W/S climb; `InteractAction` added to `IInteractable`; section 5.8.
+- v1.4 (day 1): third-person orbit camera + one player model `Char_Player_01` (T31); `PlayerController.EyeTransform` is now the camera.
+  Parented hierarchies export with `CHAR_FBX_OVERRIDES` (no `bake_space_transform`), Unity bakes the axis conversion for `Art/Models/Characters`.
 - v1.2 (day 1): water — `WateringCan`, `IWaterable`, `WaterSource`, `WaterCollector`, `PlantKind.Collector`, `needsWater`, sprout state, `Socket_Water`, layer `Water`, seed code `kindsMask` 4 bits; tasks T27–T30.

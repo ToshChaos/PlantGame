@@ -6,7 +6,9 @@ using PlantGame.Core;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T03: first-person CharacterController with a tight state machine: Grounded, Airborne, Climbing.
+    /// T03: CharacterController with a tight state machine: Grounded, Airborne, Climbing.
+    /// T31: third-person orbit camera. The mouse orbits cameraPivot (yaw/pitch, independent of the body), WASD moves relative
+    /// to the camera yaw and the visual `model` turns toward the move direction. The root transform itself is not rotated by look.
     /// Numbers from AGENTS.md 5.1: walk 4 m/s, run 6 m/s, jump height 1.6 m, coyote 0.12 s, jump buffer 0.12 s.
     /// With gravity 20 m/s^2 the jump is 8 m/s up, 0.8 s in the air: ~4.8 m flat gap at run speed (+ coyote), so 5 m clears and 7 m does not.
     /// Controls (5.8): W/S climb, Space jumps off the vine (+~2 m/s away, 0.3 s re-grab cooldown).
@@ -40,9 +42,21 @@ namespace PlantGame.Player
         public float topZone = 1.0f;
 
         [Header("Look / camera")]
+        [Tooltip("Orbit centre (child of the player at head height). Its world rotation is set from yaw/pitch every tick.")]
         public Transform cameraPivot;
+        [Tooltip("Camera transform, child of cameraPivot; pulled toward the pivot when geometry is in the way.")]
+        public Transform cameraTransform;
         public float lookSensitivity = 0.1f;   // degrees per mouse count
-        public float pitchLimit = 85f;
+        public float pitchMin = -35f;           // looking up
+        public float pitchMax = 70f;            // looking down
+        public float cameraDistance = 4.5f;
+        public float cameraRadius = 0.2f;
+        public float cameraMinDistance = 0.6f;
+
+        [Header("Model")]
+        [Tooltip("Visual model root; turned toward the move direction (faces the ladder while climbing).")]
+        public Transform model;
+        public float turnSpeed = 720f;          // degrees per second
 
         [Header("Falling")]
         [Tooltip("Respawn when y drops below this. T15 sets it per world: island bottom - 30 m.")]
@@ -55,7 +69,12 @@ namespace PlantGame.Player
 
         public State CurrentState { get; private set; } = State.Airborne;
         public bool IsClimbing => CurrentState == State.Climbing;
-        public Transform EyeTransform => cameraPivot != null ? cameraPivot : transform;
+        /// <summary>The view the player aims with (camera, else pivot). T04 casts its focus ray from here.</summary>
+        public Transform EyeTransform => cameraTransform != null ? cameraTransform : cameraPivot != null ? cameraPivot : transform;
+        /// <summary>Camera yaw in degrees; movement is relative to it.</summary>
+        public float Yaw => _yaw;
+        /// <summary>Current velocity in m/s (horizontal + vertical). PlayerAnimator reads this.</summary>
+        public Vector3 Velocity => CurrentState == State.Climbing ? Vector3.up * _climbVel : _hVel + Vector3.up * _vVel;
         public PlayerInputReader Input { get; private set; }
         public bool CursorLocked { get; private set; }
         /// <summary>Raised when R was held for restartHoldSeconds. T15 wires this to RunSession.Restart.</summary>
@@ -66,7 +85,7 @@ namespace PlantGame.Player
         CharacterController _cc;
         Vector3 _hVel;
         float _vVel;
-        float _coyote, _jumpBuffer, _regrab, _airTime, _pitch, _restartTimer;
+        float _coyote, _jumpBuffer, _regrab, _airTime, _pitch = 15f, _yaw, _climbVel, _restartTimer;
         bool _restartFired;
         ClimbableVolume _touching, _climb;
         Vector3 _startPos;
@@ -80,6 +99,7 @@ namespace PlantGame.Player
             _cc.stepOffset = 0.35f; _cc.slopeLimit = 45f; _cc.skinWidth = 0.03f; _cc.minMoveDistance = 0f;
             _startPos = transform.position;
             _startYaw = transform.eulerAngles.y;
+            _yaw = _startYaw;
         }
 
         void Start() { SetCursorLocked(true); }
@@ -102,6 +122,9 @@ namespace PlantGame.Player
             else UpdateMove(dt);
 
             if (transform.position.y < killPlaneY) Respawn();
+
+            UpdateModelFacing(dt);
+            UpdateCamera();
         }
 
         // ---------------------------------------------------------------- ground + air
@@ -122,7 +145,7 @@ namespace PlantGame.Player
                 }
             }
 
-            Vector3 wish = transform.right * mi.x + transform.forward * mi.y;
+            Vector3 wish = Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
             Vector3 target = wish * (Input.RunHeld ? runSpeed : walkSpeed);
             _hVel = Vector3.MoveTowards(_hVel, target, (grounded ? groundAccel : airAccel) * dt);
@@ -193,6 +216,7 @@ namespace PlantGame.Player
             float vert = snapped ? input * climbSpeed * dt : 0f;   // no vertical motion until on the line (avoids scraping the lip)
 
             _cc.Move(horiz + Vector3.up * vert);
+            _climbVel = dt > 0f ? vert / dt : 0f;
 
             // Top: step onto Land.
             if (input > 0.1f && snapped && transform.position.y >= _climb.TopY - 0.05f)
@@ -247,6 +271,8 @@ namespace PlantGame.Player
         {
             Teleport(position);
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            _yaw = yaw; _pitch = 15f;
+            if (model != null) model.rotation = Quaternion.Euler(0f, yaw, 0f);
             _hVel = Vector3.zero; _vVel = 0f; _airTime = 0f; _climb = null; _touching = null;
             CurrentState = State.Airborne;
             GameEvents.RaisePlayerRespawned();
@@ -269,9 +295,36 @@ namespace PlantGame.Player
 
             if (!CursorLocked) return;
             Vector2 look = Input.Look * lookSensitivity;
-            transform.Rotate(0f, look.x, 0f, Space.Self);
-            _pitch = Mathf.Clamp(_pitch - look.y, -pitchLimit, pitchLimit);
-            if (cameraPivot != null) cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+            _yaw = Mathf.Repeat(_yaw + look.x, 360f);
+            _pitch = Mathf.Clamp(_pitch - look.y, pitchMin, pitchMax);
+        }
+
+        // ---------------------------------------------------------------- third-person model + camera (T31)
+
+        void UpdateModelFacing(float dt)
+        {
+            if (model == null) return;
+            Vector3 face;
+            if (CurrentState == State.Climbing && _climb != null) face = -_climb.SurfaceNormal;
+            else face = new Vector3(_hVel.x, 0f, _hVel.z);
+            face.y = 0f;
+            if (face.sqrMagnitude < 0.04f) return;   // standing still: keep the last facing
+            var target = Quaternion.LookRotation(face.normalized, Vector3.up);
+            model.rotation = Quaternion.RotateTowards(model.rotation, target, turnSpeed * dt);
+        }
+
+        void UpdateCamera()
+        {
+            if (cameraPivot == null) return;
+            cameraPivot.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+            if (cameraTransform == null) return;
+            // Spring arm: pull the camera in when something walkable is between it and the pivot (the player is on its own layer).
+            float dist = cameraDistance;
+            Vector3 back = -cameraPivot.forward;
+            if (Physics.SphereCast(cameraPivot.position, cameraRadius, back, out var hit, cameraDistance, Layers.WalkableMask, QueryTriggerInteraction.Ignore))
+                dist = Mathf.Max(cameraMinDistance, hit.distance);
+            cameraTransform.localPosition = new Vector3(0f, 0f, -dist);
+            cameraTransform.localRotation = Quaternion.identity;
         }
 
         void HandleRestartHold(float dt)

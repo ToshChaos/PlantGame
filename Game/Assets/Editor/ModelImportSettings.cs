@@ -24,7 +24,7 @@ namespace PlantGame.Editor
         {
             m.globalScale = 1f;
             m.useFileScale = true;                       // FBX_SCALE_UNITS export: file unit -> metres
-            m.bakeAxisConversion = false;
+            m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/");   // hierarchies exported without bake_space_transform (T31)
             m.materialImportMode = ModelImporterMaterialImportMode.None;
             m.meshCompression = ModelImporterMeshCompression.Off;
             m.isReadable = m.assetPath.StartsWith(Root + "Plants/") || m.assetPath.StartsWith(Root + "Test/");

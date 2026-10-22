@@ -47,6 +47,11 @@ FBX_SETTINGS = dict(
     path_mode='AUTO',
 )
 
+# Parented hierarchies (characters, T31): bake_space_transform is broken for child objects (meshes land rotated and
+# offset in Unity). Export without it, with the exporter's default forward, and let Unity bake the axis conversion
+# (ModelImportSettings turns bakeAxisConversion on under Art/Models/Characters). Measured: faces Unity +Z, left at -X.
+CHAR_FBX_OVERRIDES = dict(bake_space_transform=False, axis_forward='-Z')
+
 # Empties/children whose Blender name carries a unique "_NN" suffix; the exporter strips it so Unity sees the
 # contract names (Anchor, Tip, Land, Reservoir, WaterMin, WaterMax, CLIMB_<idx>).
 STRIP_NN_PREFIXES = ('Anchor', 'Tip', 'Land', 'Reservoir', 'WaterMin', 'WaterMax', 'CLIMB')

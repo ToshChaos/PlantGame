@@ -9,7 +9,9 @@
 The player can target things with a forward ray/sphere, see a prompt, pick up / drop (Q), use the selected item or a water source (E), and water sprouts (F), resolved as in `AGENTS.md` 5.8.
 
 ## Deliverables
-- `Scripts/Core/InteractionSensor.cs` (camera-forward SphereCast, range 3 m, layer `Interactable`)
+- `Scripts/Core/InteractionSensor.cs` (camera-forward SphereCast, layer `Interactable`). **Third person (T31):** the camera sits
+  ~4.5 m behind the player, so cast from `PlayerController.EyeTransform` but measure the 3 m range from the player (e.g. start the
+  cast at the point on the camera ray nearest the player's chest, or filter hits by distance to the player).
 - `IInteractable` / `IUsableTarget` implementation plumbing, `Prompt` string exposed via an event for the HUD (T19)
 - `Scripts/Inventory/WorldItem.cs` (IInteractable with `Action = Pickup`: add to inventory on Q; destroys itself)
 - Drop: spawn `ItemDefinition.worldPrefab` 1.2 m in front with small forward impulse, on ground layer; reject drops inside geometry

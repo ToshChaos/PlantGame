@@ -33,7 +33,8 @@ def _strip_name(name, nn):
     return None
 
 
-def export_collection(coll_name, out_dir=None, validate_profile=None, strict=True):
+def export_collection(coll_name, out_dir=None, validate_profile=None, strict=True, overrides=None):
+    """overrides: FBX settings replacing FBX_SETTINGS entries for this export (e.g. CHAR_FBX_OVERRIDES)."""
     coll = bpy.data.collections.get(coll_name)
     if coll is None:
         raise ValueError('collection not found: ' + coll_name)
@@ -75,7 +76,7 @@ def export_collection(coll_name, out_dir=None, validate_profile=None, strict=Tru
             o.select_set(True)
         if objs:
             bpy.context.view_layer.objects.active = objs[0]
-        settings, dropped = _supported(FBX_SETTINGS)
+        settings, dropped = _supported(dict(FBX_SETTINGS, **(overrides or {})))
         if dropped:
             print('[export] settings not supported by this Blender (dropped): ' + ', '.join(dropped))
         bpy.ops.export_scene.fbx(filepath=path, **settings)
