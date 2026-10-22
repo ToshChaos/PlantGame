@@ -20,13 +20,13 @@ Estimates are focused hours for one agent (they include verification).
 | [T10](tasks/T10-island-kit.md) | Modular island kit (terrain, ruins, vegetation) | A4 | T02 | 6h | 1–2 | TODO |
 | [T11](tasks/T11-growth-system.md) | Growth system: SoilPatch, growth, colliders, climb | A2 | T01, T06 (placeholder), T09 | 5h | 2 | TODO |
 | [T12](tasks/T12-world-items-and-goal.md) | Seed pickups, soil patch prefab, Heart Tree goal | A1 | T05, T11 | 2h | 2 | TODO |
-| [T13](tasks/T13-island-assembler.md) | Island assembler from kit, seeded | A5 | T10, T12, T29 | 4h | 2 | TODO |
+| [T13](tasks/T13-island-assembler.md) | Island assembler from kit, seeded | A5 | — (placeholders; T10, T12, T29 swapped in) | 4h | 1–2 | TODO |
 | [T14](tasks/T14-world-generator.md) | World generator: island graph, gaps, solvability | A5 | T13, T11, T27 | 4h | 2–3 | TODO |
 | [T15](tasks/T15-game-loop.md) | Game flow: scene wiring, run start/restart, respawn, win/fail screens | A0 | T14, T25 | 2h | 3 | TODO |
 | [T16](tasks/T16-sky-and-atmosphere.md) | Background: skybox, clouds, fog, post-processing | A6 | T01 | 3h | 2 | TODO |
 | [T17](tasks/T17-music-and-ambience.md) | Music + ambience + AudioManager/mixer | A7 | T00 | 2h | 2 | TODO |
 | [T18](tasks/T18-sound-effects.md) | Sound effects set + event hookup | A7 | T00, T04, T11 | 3h | 2–3 | TODO |
-| [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 | 3h | 2 | TODO |
+| [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | 3h | 2 | TODO |
 | [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | 2h | 3 | TODO |
 | [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | 2h | 3 | TODO |
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | 3h | 3 | TODO |
@@ -43,11 +43,11 @@ Estimates are focused hours for one agent (they include verification).
 ## Parallel lanes (who can work at the same time)
 - **Lane A – Player (Unity):** T03 → T31 → T04 → T05 → T12 → T25
 - **Lane B – Plants (Blender):** T06 → T07 / T08 / T28 → T09 → (hands off to T11)
-- **Lane C – Kit (Blender):** T10 → T29 → (hands off to T13)
-- **Lane D – Systems (Unity):** T11 (placeholder plants first) → T27 → T13 → T14 → T15
+- **Lane C – Kit (Blender):** T10 → T29 → (real pieces replace T13's placeholders)
+- **Lane D – Systems (Unity):** T11 (placeholder plants first) → T27 → T14 → T15; **T13 (A5) runs in parallel from Day 1 PM on placeholder kit**
 - **Lane E – Look & sound (Unity):** T01 → T16 → T20 · T30 · T17 · T18 · T19 → T26
 
-Critical path: T00 → T02 → T06 → T09 → T11 → T13 → T14 → T15 → T21/T22 → T23 → T24.
+Critical path: T00 → T02 → T06 → T09 → T11 → T27 → T14 → T15 → T21/T22 → T23 → T24.
 De-risk early: **T11 must run with a placeholder plant (a stretched cube with the grow shader) on Day 1 evening**, so the
 mechanic is proven before final Blender art arrives.
 
@@ -55,10 +55,10 @@ mechanic is proven before final Blender art arrives.
 | Slot | Goal | Tasks |
 |------|------|-------|
 | **Day 1 AM** | Project alive, pipeline proven, player moves | T00, T01 (start), T02, T03, T31, T06 (start), T10 (start) |
-| **Day 1 PM** | Interact + inventory, first procedural plant in Unity | T04, T05, T06, T07, T10, T11 spike with placeholder |
+| **Day 1 PM** | Interact + inventory, first procedural plant in Unity | T04, T05, T06, T07, T10, T11 spike with placeholder, T13 (start, placeholder kit) |
 | **Day 1 end — checkpoint** | Walk, pick up a seed, plant it, a placeholder bridge grows and can be crossed | |
-| **Day 2 AM** | Real plants + kit land in Unity; growth system done | T08, T09, T11, T12, T10, T16, T27, T28, T29, T30 |
-| **Day 2 PM** | Islands assemble from seed; world generates solvable layout; modes + timer begin | T13, T14, T17, T18, T19, T25 |
+| **Day 2 AM** | Real plants + kit land in Unity; growth system done | T08, T09, T11, T12, T10, T13, T16, T27, T28, T29, T30 |
+| **Day 2 PM** | Islands assemble from seed; world generates solvable layout; modes + timer begin | T13 (swap in real kit), T14, T17, T18, T19, T25 |
 | **Day 2 end — checkpoint** | Press play: seeded world, crossable with all plant kinds, music + HUD in | |
 | **Day 3 AM** | Game flow, level select + seed codes, tuning, QA | T15, T26, T21, T22, T20, T18 |
 | **Day 3 PM** | Build, showcase, demo | T23, T24, polish, freeze 2h before demo |
