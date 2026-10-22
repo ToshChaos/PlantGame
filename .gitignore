@@ -1,0 +1,10 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+# Blender backups
+*.blend1
+*.blend2
+# Raw Blender exports are regenerated; the copies in Game/Assets/Art/Models are what Unity uses
+# (keep Source/Blender/exports/.gitkeep)
