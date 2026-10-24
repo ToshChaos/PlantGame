@@ -6,7 +6,7 @@ namespace PlantGame.UI
     public static class UiSprites
     {
         const int N = 64;
-        static Sprite _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _puffball, _succulent, _heart, _melon;
+        static Sprite _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _puffball, _roundMushroom, _succulent, _heart, _melon;
 
         public static Sprite Disc => _disc != null ? _disc : _disc = Make((x, y) => Mathf.Clamp01(N * 0.5f - 1f - Dist(x, y)));
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
@@ -96,6 +96,19 @@ namespace PlantGame.UI
             foreach (var s in new[] { new Vector2(-0.18f, 0.32f), new Vector2(0.14f, 0.4f), new Vector2(0.2f, 0.12f), new Vector2(-0.12f, 0.08f) })
                 if (Vector2.Distance(new Vector2(u, v), s) < 0.055f) shade *= 0.72f;
             if (cap < 0.5f) shade = 0.85f;   // stalk a touch darker than the cap
+            return new Vector2(al, shade);
+        });
+
+        /// <summary>Slider handle: a fat round mushroom (near-circular cap, short stalk, a few dimples).</summary>
+        public static Sprite RoundMushroom => _roundMushroom != null ? _roundMushroom : _roundMushroom = MakeShaded((x, y) =>
+        {
+            float u = (x - (N - 1) * 0.5f) / (N * 0.5f), v = (y - (N - 1) * 0.5f) / (N * 0.5f);
+            float cap = Mathf.Clamp01((0.7f - Mathf.Sqrt(u * u + (v - 0.18f) * (v - 0.18f))) * 14f);
+            float stalk = (v < -0.3f && v > -0.85f) ? Mathf.Clamp01((0.2f - Mathf.Abs(u)) * 14f) * Mathf.Clamp01((v + 0.85f) * 14f) : 0f;
+            float al = Mathf.Max(cap, stalk);
+            float shade = cap > 0.5f ? 1f - 0.22f * Mathf.Clamp01((0.0f - v) * 1.2f) : 0.82f;
+            foreach (var d in new[] { new Vector2(-0.25f, 0.42f), new Vector2(0.18f, 0.5f), new Vector2(0.3f, 0.12f), new Vector2(-0.1f, 0.15f) })
+                if (Vector2.Distance(new Vector2(u, v), d) < 0.07f) shade *= 0.74f;
             return new Vector2(al, shade);
         });
 

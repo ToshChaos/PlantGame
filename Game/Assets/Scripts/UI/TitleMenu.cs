@@ -21,7 +21,7 @@ namespace PlantGame.UI
         Font _font;
         WorldGenerator _showcase;
         GameObject _home, _levels, _options, _generate, _seed;
-        Text _musicToggle, _soundToggle, _hintsToggle;
+        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle;
         readonly System.Collections.Generic.List<Text> _modeLabels = new System.Collections.Generic.List<Text>();
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
@@ -58,6 +58,9 @@ namespace PlantGame.UI
             _musicToggle.text = "Music: " + (GameSettings.Music ? "On" : "Off");
             _soundToggle.text = "Sound: " + (GameSettings.Sound ? "On" : "Off");
             _hintsToggle.text = "Key hints: " + (GameSettings.Hints ? "On" : "Off");
+            _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
+            _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
+            _glowToggle.text = "Glow: " + (GameSettings.Bloom ? "On" : "Off");
         }
 
         void Update()
@@ -187,7 +190,7 @@ namespace PlantGame.UI
 
             var levels = Kit.Asset != null ? Kit.Asset.levels : new LevelDefinition[0];
             _home = Screen("Home", root, 0.15f);
-            Label(_home.transform, "Overgrown", 130, new Vector2(0, 340), 1400, Palette.TextOrange);
+            Title(_home.transform, new Vector2(0, 340));
             Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
             ModeButton(_home.transform, new Vector2(0, 130));
             Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); });
@@ -199,14 +202,19 @@ namespace PlantGame.UI
 
             _options = Screen("Options", root, 0.85f);
             Label(_options.transform, "Options", 80, new Vector2(0, 380), 1000, Palette.TextOrange);
-            _musicToggle = Button(_options.transform, "Music", new Vector2(-330, 200), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
-            UiKit.Slider(_options.transform, _font, "Music volume", new Vector2(330, 200), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            _soundToggle = Button(_options.transform, "Sound", new Vector2(-330, 60), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
-            UiKit.Slider(_options.transform, _font, "Sound volume", new Vector2(330, 60), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            _hintsToggle = Button(_options.transform, "Hints", new Vector2(0, -90), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
-            Button(_options.transform, "Reset all best times", new Vector2(0, -190), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
-            _resetNote = Label(_options.transform, "", 26, new Vector2(0, -255), 800, Palette.TextOrange);
-            Button(_options.transform, "Back", new Vector2(0, -340), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
+            // two columns: toggles on the left, sliders on the right; camera follow and glow sit below the sliders
+            var o = _options.transform;
+            _musicToggle = Button(o, "Music", new Vector2(-330, 260), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
+            UiKit.Slider(o, _font, "Music volume", new Vector2(330, 260), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            _soundToggle = Button(o, "Sound", new Vector2(-330, 140), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
+            UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 140), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            _fpsToggle = Button(o, "FPS", new Vector2(-330, 20), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
+            _followToggle = Button(o, "Camera", new Vector2(330, 20), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
+            _hintsToggle = Button(o, "Hints", new Vector2(-330, -100), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
+            _glowToggle = Button(o, "Glow", new Vector2(330, -100), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
+            Button(o, "Reset all best times", new Vector2(0, -215), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
+            _resetNote = Label(o, "", 26, new Vector2(0, -280), 800, Palette.TextOrange);
+            Button(o, "Back", new Vector2(0, -360), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
             RefreshOptions();
 
             // select level: the curated levels with best times, plus the test scenes
@@ -266,6 +274,78 @@ namespace PlantGame.UI
             _codeField.onValueChanged.AddListener(OnCodeChanged);
             OnCodeChanged("");
             Button(_seed.transform, "Back", new Vector2(0, -250), () => Show(_home), 300, 34);
+        }
+
+        /// <summary>"Overgrown" in leaf green; the O is a ring wrapped in a vine with leaves and a curling tendril.</summary>
+        void Title(Transform parent, Vector2 pos)
+        {
+            const int font = 170; const float oSize = 185f;
+            var holder = Rect("Title", parent, new Vector2(1400, 220), pos);
+            var rest = Label(holder, "vergrown", font, Vector2.zero, 1000, Palette.LeafGreen);
+            rest.alignment = TextAnchor.MiddleLeft;
+            float pw = rest.preferredWidth + 10f, total = oSize * 0.8f + pw;
+            var rrt = (RectTransform)rest.transform; rrt.pivot = new Vector2(0f, 0.5f); rrt.sizeDelta = new Vector2(pw, font * 1.4f);
+            float left = -total / 2f;
+            rrt.anchoredPosition = new Vector2(left + oSize * 0.8f, 0f);
+            var ort = Rect("VineO", holder, new Vector2(oSize, oSize), new Vector2(left + oSize * 0.5f, font * 0.05f));
+            var im = ort.gameObject.AddComponent<Image>(); im.sprite = VineO(); im.raycastTarget = false;
+            var sh = ort.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.5f); sh.effectDistance = new Vector2(3, -3);
+        }
+
+        static Sprite _vineO;
+        static Sprite VineO()
+        {
+            if (_vineO != null) return _vineO;
+            const int S = 384; const float aa = 1.5f / S, ow = 0.009f;
+            var dark = new Color(0.07f, 0.24f, 0.14f);
+            var px = new Color[S * S];
+            for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
+            {
+                float u = (x + 0.5f) / S - 0.5f, v = (y + 0.5f) / S - 0.5f;
+                float r = Mathf.Sqrt(u * u + v * v), th = Mathf.Atan2(v, u);
+                var c = new Color(0, 0, 0, 0);   // straight alpha, composited shape by shape
+                void Shape(float dist, Color fill)
+                {
+                    c = Over(c, dark, Mathf.Clamp01(0.5f - (dist - ow) / aa));
+                    c = Over(c, fill, Mathf.Clamp01(0.5f - dist / aa));
+                }
+                Shape(Mathf.Abs(r - 0.30f) - 0.075f, Color.Lerp(new Color(0.18f, 0.49f, 0.31f), new Color(0.36f, 0.71f, 0.42f), 0.5f + 0.5f * Mathf.Sin(th + 1f)));
+                Shape(Mathf.Abs(r - (0.30f + 0.07f * Mathf.Sin(7f * th))) - 0.016f, new Color(0.66f, 0.93f, 0.48f));
+                for (int k = 0; k < 6; k++)
+                {
+                    float a = (k * 60f + 25f) * Mathf.Deg2Rad; int side = k % 2 == 0 ? 1 : -1;
+                    var lc = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (0.30f + side * 0.10f);
+                    float la = a + side * 0.9f; var dir = new Vector2(Mathf.Cos(la), Mathf.Sin(la)); var perp = new Vector2(-dir.y, dir.x);
+                    var q = new Vector2(u, v) - lc; float along = Vector2.Dot(q, dir), across = Vector2.Dot(q, perp);
+                    float e = Mathf.Sqrt(along * along / (0.078f * 0.078f) + across * across / (0.034f * 0.034f));
+                    Shape((e - 1f) * 0.034f, new Color(0.42f, 0.86f, 0.46f));
+                }
+                if (u > 0.1f && v > 0.1f)   // tendril: a thin spiral curling out of the top right
+                {
+                    float best = 9f;
+                    for (int i = 0; i <= 40; i++)
+                    {
+                        float t = i / 40f, phi = 2f * Mathf.PI * 1.25f * t + 0.6f, rho = 0.085f * (1f - t * 0.85f);
+                        var pt = new Vector2(0.34f, 0.36f) + rho * new Vector2(Mathf.Cos(phi), Mathf.Sin(phi));
+                        best = Mathf.Min(best, Vector2.Distance(new Vector2(u, v), pt));
+                    }
+                    Shape(best - 0.011f, new Color(0.66f, 0.93f, 0.48f));
+                }
+                px[y * S + x] = c;
+            }
+            var tex = new Texture2D(S, S, TextureFormat.RGBA32, true) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+            tex.SetPixels(px); tex.Apply();
+            _vineO = Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), 100);
+            _vineO.hideFlags = HideFlags.HideAndDontSave;
+            return _vineO;
+        }
+
+        static Color Over(Color dst, Color src, float a)
+        {
+            float oa = a + dst.a * (1f - a);
+            if (oa <= 0f) return new Color(0, 0, 0, 0);
+            var rgb = (new Vector3(src.r, src.g, src.b) * a + new Vector3(dst.r, dst.g, dst.b) * dst.a * (1f - a)) / oa;
+            return new Color(rgb.x, rgb.y, rgb.z, oa);
         }
 
         void ModeButton(Transform parent, Vector2 pos) { _modeLabels.Add(Button(parent, "Mode", pos, ToggleMode, 620, 32)); }

@@ -8,7 +8,7 @@ namespace PlantGame.UI
     /// <summary>Small uGUI builders shared by the title screen and the in-game menus (no prefabs).</summary>
     public static class UiKit
     {
-        /// <summary>A labelled 0..1 slider: track, green vine fill, puffball handle, and a caption above it.</summary>
+        /// <summary>A labelled 0..1 slider: track, green vine fill, mushroom handle, and a caption above it.</summary>
         public static Slider Slider(Transform parent, Font font, string caption, Vector2 pos, float width, float value, UnityAction<float> onChange)
         {
             var root = Rect("Slider_" + caption, parent, new Vector2(width, 40), pos);
@@ -24,8 +24,8 @@ namespace PlantGame.UI
             var fillImg = fill.gameObject.AddComponent<Image>(); fillImg.color = Palette.LeafGreen;   // a vine growing along the track
 
             var handleArea = Rect("HandleArea", root, new Vector2(width - 20, 30), new Vector2(0, -16));
-            var handle = Rect("Handle", handleArea, new Vector2(30, 30), Vector2.zero);
-            var handleImg = handle.gameObject.AddComponent<Image>(); handleImg.color = Palette.CloudWhite; handleImg.sprite = UiSprites.Puffball;   // a puffball riding the vine
+            var handle = Rect("Handle", handleArea, new Vector2(38, 38), Vector2.zero);
+            var handleImg = handle.gameObject.AddComponent<Image>(); handleImg.color = Palette.CloudWhite; handleImg.sprite = UiSprites.RoundMushroom;   // a round mushroom riding the vine
 
             var s = root.gameObject.AddComponent<Slider>();
             s.fillRect = fill; s.handleRect = handle; s.targetGraphic = handleImg; s.direction = UnityEngine.UI.Slider.Direction.LeftToRight;
