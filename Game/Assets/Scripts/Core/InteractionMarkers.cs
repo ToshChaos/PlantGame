@@ -101,13 +101,14 @@ namespace PlantGame.Core
                     else if (pickup && tint != null && close)   // a close pickup wears its own colour; the focused one turns purple
                     {
                         var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
+                        rdy = Color.Lerp(near, Color.white, 0.3f);   // aimed at: the same seed colour, brighter (and bigger)
                     }
                     else if (seedColoured)
                     {
                         var ic = PlayerHud.ItemColor(item); ic.a = 1f;
                         near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
                     }
-                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : (thick ? UiSprites.RingThick : UiSprites.Ring);
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : (thick ? UiSprites.RingThick : water && !close && !focused ? UiSprites.RingThin : UiSprites.Ring);
                     r.color = focused ? rdy : near;
                 }
             }
