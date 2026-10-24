@@ -39,7 +39,7 @@ namespace PlantGame.UI
         Image[] _drops;
         static readonly Color WarnOrange = new Color(1f, 0.72f, 0.3f);   // lighter than the EMPTY label's orange
         GameObject _pausePanel;
-        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP;
+        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _pauseTitle;
         GoalFlag _goal;
         GameObject _copyCode;
         static bool _skipMenu;   // set by Restart (and by the title screen) so the run starts without bouncing back to the title screen
@@ -341,7 +341,7 @@ namespace PlantGame.UI
             var pr = (RectTransform)_pausePanel.transform; pr.SetParent(root, false);
             pr.anchorMin = Vector2.zero; pr.anchorMax = Vector2.one; pr.offsetMin = pr.offsetMax = Vector2.zero;
             var dim = _pausePanel.AddComponent<Image>(); dim.color = new Color(0.04f, 0.09f, 0.14f, 0.72f);
-            Label("Title", pr, "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
+            _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
             _hintsButtonLabel = Button("Hints", pr, new Vector2(0, 260), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
             _musicLabelP = Button("Music", pr, new Vector2(-330, 160), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
             _soundLabelP = Button("Sound", pr, new Vector2(0, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
@@ -420,6 +420,7 @@ namespace PlantGame.UI
         void RefreshOptionLabels()
         {
             foreach (var t in new[] { _hintsButtonLabel }) if (t != null) t.text = OnOff("Hints", GameSettings.Hints);
+            if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Glow", GameSettings.Bloom);
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
