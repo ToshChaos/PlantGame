@@ -28,8 +28,8 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | DONE |
 | [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | DONE |
 | [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | REVIEW |
-| [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | REVIEW |
-| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | REVIEW |
+| [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | DONE |
+| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | DONE |
 | [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE (reduced) |
 | [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
@@ -53,7 +53,7 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T44](tasks/T44-taller-beanstalk-no-top-platform.md) | Taller beanstalk, no platform at the top | A3+A2+A5 | T07, T09, T11, T14 | CUT (merged into T51) |
 | [T45](tasks/T45-snow-and-heat-seed.md) | Snow ground, frozen soil and water, Heat Seed that melts snow | A5+A2+A6+A1 | T14, T27, T33, T35 | DONE |
 | [T46](tasks/T46-windy-summit-level.md) | Windy summit level: spiral ascent, altitude wind gusts, snowy top, wind ambience, wind on some random levels | A5+A1+A7 | T14, T45, T43 | DONE |
-| [T47](tasks/T47-footsteps-and-bridge-sounds.md) | Footsteps per island surface, vine-bridge creak and rustle sounds | A7+A1 | T18, T35 | REVIEW |
+| [T47](tasks/T47-footsteps-and-bridge-sounds.md) | Footsteps per island surface, vine-bridge creak and rustle sounds | A7+A1 | T18, T35 | DONE |
 | [T48](tasks/T48-concave-mushroom-platforms.md) | Mushroom platform pads concave (dish-shaped) instead of flat | A3+A2 | T08, T09, T11 | DONE |
 | [T49](tasks/T49-realistic-textured-plants.md) | All grown plants more realistic and textured (bark, veins, mushroom detail, grow shader texture slot) | A3+A6 | T06-T09, T28, T32, T40, T48 | DONE |
 | [T50](tasks/T50-ten-levels-snow-wind-fog.md) | Ten curated levels: add Snow, Windy summit and Dense Fog levels; snow / wind / fog options in world generation | A5+A6+A1 | T45, T46 | DONE |
