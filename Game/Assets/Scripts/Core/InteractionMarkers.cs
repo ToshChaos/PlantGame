@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PlantGame.Plants;
 using PlantGame.UI;
+using PlantGame.World;
 
 namespace PlantGame.Core
 {
@@ -50,16 +51,24 @@ namespace PlantGame.Core
                     var c = _hits[i];
                     if (!InteractionSensor.TryResolve(c, out var t) || !_seen.Add(t.component)) continue;
 
-                    bool pickup = false, ready, seedColoured = false;
+                    bool pickup = false, ready, seedColoured = false, soilRing = false;
+                    Inventory.ItemDefinition tint = null;
                     if (t.interactable != null && t.interactable.Action == InteractAction.Pickup)
                     {
                         pickup = true;
                         ready = t.interactable.CanInteract(gameObject);
+                        tint = (t.interactable as Inventory.WorldItem)?.item;
                     }
                     else if (t.interactable != null && t.interactable.Action == InteractAction.Use)
                     {
                         ready = t.interactable.CanInteract(gameObject);
                         if (!ready && t.interactable is WaterCollector) continue;   // an empty collector (or a full can) offers nothing on F: no marker
+                    }
+                    else if (t.usable is SandboxTarget soil && !soil.planted && !soil.frozen && (Kit.Item(soil.acceptedItemId) ?? item) != null)
+                    {
+                        // soil always shows the seed it wants: faded and thin until that seed is selected, then bright and thick
+                        soilRing = true; tint = Kit.Item(soil.acceptedItemId) ?? item;
+                        ready = item != null && soil.CanUseItem(item, gameObject);
                     }
                     else if (t.usable != null && item != null && t.usable.CanUseItem(item, gameObject))
                     {
@@ -71,21 +80,31 @@ namespace PlantGame.Core
 
                     var r = Get(used++);
                     var b = c.bounds;
-                    bool focused = ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
+                    bool focused = soilRing ? ready : ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
                     // floating: a slow bob (out of step per target) so the markers catch the eye
                     float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);
                     Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob);
                     r.transform.position = pos;
                     r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
                     r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
-                    r.sprite = pickup ? UiSprites.Diamond : UiSprites.Ring;
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
-                    if (seedColoured)   // rings over soil take the selected seed's hotbar colour
+                    bool thick = pickup || ready || water;
+                    if (soilRing)
+                    {
+                        var ic = PlayerHud.ItemColor(tint);
+                        near = new Color(ic.r, ic.g, ic.b, 0.4f); rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
+                    }
+                    else if (pickup && tint != null)   // a pickup in range wears its own colour; the focused one turns purple
+                    {
+                        var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
+                    }
+                    else if (seedColoured)
                     {
                         var ic = PlayerHud.ItemColor(item); ic.a = 1f;
                         near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
                     }
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.Diamond) : (thick ? UiSprites.RingThick : UiSprites.Ring);
                     r.color = focused ? rdy : near;
                 }
             }

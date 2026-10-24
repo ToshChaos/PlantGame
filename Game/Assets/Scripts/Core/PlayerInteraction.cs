@@ -129,7 +129,11 @@ namespace PlantGame.Core
             }
             if (TryThaw()) return;   // E next to frozen water: a Heat Seed melts it
             if ((item != null && item.kind == ItemKind.Seed) || usable is SandboxTarget { frozen: true })
-                GameEvents.RaiseHint(usable is SandboxTarget { frozen: true } ? "The soil is frozen: melt it with a Heat Seed first" : usable != null ? "This soil can't take that seed right now" : "Seeds need a patch of soil: walk up to one and look at it, then press E");
+                {
+                if (usable is SandboxTarget { frozen: true }) GameEvents.RaiseHint("The soil is frozen: melt it with a Heat Seed first");
+                else if (usable == null) GameEvents.RaiseHint("Seeds need a patch of soil: walk up to one and look at it, then press E");
+                // wrong seed for this soil: no text, the soil's ring already shows which seed it wants
+            }
             GameEvents.RaiseUseRejected();
         }
 
