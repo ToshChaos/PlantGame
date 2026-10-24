@@ -342,12 +342,12 @@ namespace PlantGame.UI
             pr.anchorMin = Vector2.zero; pr.anchorMax = Vector2.one; pr.offsetMin = pr.offsetMax = Vector2.zero;
             var dim = _pausePanel.AddComponent<Image>(); dim.color = new Color(0.04f, 0.09f, 0.14f, 0.72f);
             Label("Title", pr, "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
-            _hintsButtonLabel = Button("Hints", pr, new Vector2(-330, 160), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
-            _musicLabelP = Button("Music", pr, new Vector2(0, 160), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
-            _soundLabelP = Button("Sound", pr, new Vector2(330, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
-            _followLabelP = Button("Camera", pr, new Vector2(-165, 260), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
-            _glowLabelP = Button("Glow", pr, new Vector2(165, 260), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
-            _fpsLabelP = Button("Fps", pr, new Vector2(-640, 260), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
+            _hintsButtonLabel = Button("Hints", pr, new Vector2(0, 260), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
+            _musicLabelP = Button("Music", pr, new Vector2(-330, 160), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
+            _soundLabelP = Button("Sound", pr, new Vector2(0, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
+            _followLabelP = Button("Camera", pr, new Vector2(330, 260), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
+            _glowLabelP = Button("Glow", pr, new Vector2(330, 160), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
+            _fpsLabelP = Button("Fps", pr, new Vector2(-330, 260), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
             UiKit.Slider(pr, _font, "Music volume", new Vector2(-640, 60), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", new Vector2(640, 60), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             Button("Resume", pr, new Vector2(0, 60), () => SetPaused(false));
