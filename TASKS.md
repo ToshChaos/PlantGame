@@ -63,8 +63,17 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T54](tasks/T54-island-dressing.md) | Island dressing: more grass, decals, shrubs, sticks, marble chips, gems, shiny debris, vine-heavy ruins, pond plants, murky ponds | A5+A6 | T39, T35, T36 | DONE |
 | [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
 | [T56](tasks/T56-palms-and-parachute.md) | Palm trees (Kenney CC0 models, generated bark / frond textures, one coconut pickup each), all trees vary in size, rare purple grass; glide visual is now a real parachute (green/yellow dome + cords) | A5+A1 | T36, T32 | DONE |
+| [T57](tasks/T57-mobile-input-layer.md) | Mobile: touch input layer (stick, look drag, buttons) behind PlayerInputReader | A1 | — | TODO |
+| [T58](tasks/T58-touch-auto-focus-context-button.md) | Mobile: auto-focus interaction and context button | A1 | T57 | TODO |
+| [T59](tasks/T59-mobile-touch-hud-layout.md) | Mobile: touch HUD layout, safe area, scaling, left-handed mode | A7 | T57 | TODO |
+| [T60](tasks/T60-touch-hotbar-and-pause.md) | Mobile: tappable hotbar, pause / Back, touch-friendly menus + soft keyboard seed entry | A7 | T59 | TODO |
+| [T61](tasks/T61-touch-gameplay-tuning.md) | Mobile: camera, climbing, jump and glide tuning for touch | A1 | T57, T58 | TODO |
+| [T62](tasks/T62-mobile-pause-focus-lifecycle.md) | Mobile: app lifecycle, orientation, auto-pause, frame rate | A0 | — | TODO |
+| [T63](tasks/T63-mobile-performance-quality-tier.md) | Mobile: quality tier, decoration thinning, texture compression, profiling | A6 | T23 | TODO |
+| [T64](tasks/T64-android-build-and-beta.md) | Android build, signing, beta track, test matrix | A8 | T62, T63 | TODO |
 
 ## Status notes (latest)
+- Mobile (post-weekend, T57-T64): Android beta target. Design and control mapping in `docs/mobile-controls.md`; desktop controls stay the contract until T57 adds a touch column.
 - Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 2; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
 - Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island, on unfrozen grass; the source regrows them. Not balance-tested.
 - Challenge mode: Time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode (Exploration and Challenge each have their own record, both shown on the level card).
