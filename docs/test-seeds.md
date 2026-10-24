@@ -31,3 +31,6 @@ Enter the code under **Enter Seed Code** (island count and kinds are inside the 
 | C | 4299 | `amber-gentle-swallow-badger-snowy` | 7 |
 
 Not yet looked at in play: pick the best two on the day of the demo.
+
+## Golden worlds (regression)
+`WorldGenerationTests.GoldenSeedsKeepTheirWorld` pins a fingerprint (island count, link count, FNV hash of the plan and island positions) for six seeds, including the three showcase seeds. If it fails, a generator change altered existing worlds: bump `SeedCode.GeneratorVersion` if intended, then re-record the values in the test.

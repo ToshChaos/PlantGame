@@ -1,7 +1,7 @@
 # T22 — QA pass, regression seeds, bug list
 
 **Owner:** A8 Tester/Release · **Depends on:** T15
-**Status:** TODO
+**Status:** REVIEW
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -28,7 +28,7 @@ Break the game on purpose; keep a regression list so the seed-code promise holds
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+Tests (`Game/Assets/Tests/EditMode`): InventoryTests, SeedCodeTests (round trip, bad input, checksum, version, ranges), SaveServiceTests (best-time logic, corrupt file), WorldGenerationTests (determinism, 100 validated seeds, collector-only seeds, six golden fingerprints): 37 of 37 pass (Test Runner > EditMode). `PlantGame > Smoke Test Levels` (`Editor/LevelSmokeTest.cs`) plays the ten curated levels and level 1 in Challenge, report in `Game/Logs/smoke.txt`: all OK. Docs: `docs/qa-checklist.md`, `docs/bugs.md`, `docs/test-seeds.md`. Known gaps: the manual checklist and the 10-random-seed playthrough have not been done by a person; no PlayMode tests; the smoke test only checks that a level loads and runs 4 s.
 
 ## Added test cases (day 3)
 - Collector-only level (`Sandbox_PlantTest`): no water anywhere, empty can at start, plant the Dew Seed, wait 20 s, E hands over exactly 1 charge; E again before the next charge does nothing; a full can leaves the charge in the plant; it keeps producing while the player is on another island.
