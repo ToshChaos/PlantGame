@@ -111,7 +111,7 @@ namespace PlantGame.Core
                     if (waterRing) { near = WaterNear; rdy = WaterReady; focused = close; }
                     // use circles stay slim: hairline when faded / far, medium when it is the right thing
                     bool slim = waterRing || (soilRing ? !ready : water && !close && !focused);
-                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : UiSprites.Ring;
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : soilRing ? UiSprites.RingSlim : UiSprites.Ring;
                     r.color = focused ? rdy : near;
                 }
             }

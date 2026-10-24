@@ -274,7 +274,7 @@ namespace PlantGame.World
         /// <summary>A soil patch for the gap `k` at `pos`, growing towards `dir`; keeps scenery clear of it.</summary>
         static void MakeSoil(Isle I, LinkPlan L, int k, Vector3 pos, Vector3 dir, string name, Material terrain, float reach, float rise)
         {
-            var soil = Box(name, pos + Vector3.up * 0.07f, new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.2 m shows
+            var soil = Box(name, pos - Vector3.up * 0.03f, new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows
             soil.transform.rotation = Quaternion.LookRotation(dir);
             SoilPatchMesh.Apply(soil, L.kind);
             soil.transform.SetParent(I.go.transform, true);
@@ -407,7 +407,7 @@ namespace PlantGame.World
         {
             var terrain = Scenery.Mat("M_Terrain");
             var pos = Spot(I, rnd, 0.3f, 0.75f, 4.5f, heads, spawnPos, SeedFromSpawn);
-            var soil = Box("Soil_Collector", pos + Vector3.up * 0.15f, new Vector3(1.2f, 0.3f, 1.2f), terrain);
+            var soil = Box("Soil_Collector", pos + Vector3.up * 0.05f, new Vector3(1.2f, 0.3f, 1.2f), terrain);
             soil.transform.rotation = Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0);
             SoilPatchMesh.Apply(soil, PlantKind.Collector);
             soil.transform.SetParent(I.go.transform, true);

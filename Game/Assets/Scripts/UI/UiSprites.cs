@@ -6,7 +6,7 @@ namespace PlantGame.UI
     public static class UiSprites
     {
         const int N = 64;
-        static Sprite _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _ringThick, _diamondThick, _diamondThin, _ringThin, _puffball, _roundMushroom, _succulent, _heart, _melon;
+        static Sprite _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _ringThick, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
 
         public static Sprite Disc => _disc != null ? _disc : _disc = Make((x, y) => Mathf.Clamp01(N * 0.5f - 1f - Dist(x, y)));
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
@@ -30,6 +30,12 @@ namespace PlantGame.UI
         {
             float d = (Mathf.Abs(x - (N - 1) * 0.5f) + Mathf.Abs(y - (N - 1) * 0.5f));
             return Mathf.Clamp01(1.5f - Mathf.Abs(d - 27f));
+        });
+        /// <summary>Slim ring (about half the medium one) for the soil ring of the right seed.</summary>
+        public static Sprite RingSlim => _ringSlim != null ? _ringSlim : _ringSlim = Make((x, y) =>
+        {
+            float d = Dist(x, y);
+            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 24f) - 1.2f) / 1.5f), d < 24f ? 0.12f : 0f);
         });
         public static Sprite RingThin => _ringThin != null ? _ringThin : _ringThin = Make((x, y) => Mathf.Clamp01(1.5f - Mathf.Abs(Dist(x, y) - 25f)));
         public static Sprite Diamond => _diamond != null ? _diamond : _diamond = Make((x, y) =>
