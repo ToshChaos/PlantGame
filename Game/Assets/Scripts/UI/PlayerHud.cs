@@ -39,7 +39,7 @@ namespace PlantGame.UI
         Image[] _drops;
         static readonly Color WarnOrange = new Color(1f, 0.72f, 0.3f);   // lighter than the EMPTY label's orange
         GameObject _pausePanel;
-        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP;
+        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP;
         GoalFlag _goal;
         GameObject _copyCode;
         static bool _skipMenu;   // set by Restart (and by the title screen) so the run starts without bouncing back to the title screen
@@ -124,6 +124,7 @@ namespace PlantGame.UI
 
         void Update()
         {
+            if (_fps.enabled != GameSettings.Fps) _fps.enabled = GameSettings.Fps;
             UpdateFps();
             if (_endAt >= 0f && Time.unscaledTime >= _endAt && !_ended) ShowEnd();
             if (_ended) return;
@@ -346,6 +347,7 @@ namespace PlantGame.UI
             _soundLabelP = Button("Sound", pr, new Vector2(330, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
             _followLabelP = Button("Camera", pr, new Vector2(-165, 260), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
             _glowLabelP = Button("Glow", pr, new Vector2(165, 260), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
+            _fpsLabelP = Button("Fps", pr, new Vector2(-640, 260), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
             UiKit.Slider(pr, _font, "Music volume", new Vector2(-640, 60), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", new Vector2(640, 60), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             Button("Resume", pr, new Vector2(0, 60), () => SetPaused(false));
@@ -418,6 +420,7 @@ namespace PlantGame.UI
         void RefreshOptionLabels()
         {
             foreach (var t in new[] { _hintsButtonLabel }) if (t != null) t.text = OnOff("Hints", GameSettings.Hints);
+            if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Glow", GameSettings.Bloom);
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             foreach (var t in new[] { _musicLabelP }) if (t != null) t.text = OnOff("Music", GameSettings.Music);
