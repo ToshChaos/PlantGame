@@ -30,7 +30,7 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | TODO |
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | TODO |
 | [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | TODO |
-| [T24](tasks/T24-demo-prep.md) | PlantGallery showcase, README, credits, demo capture | A0 | all | TODO |
+| [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE (reduced) |
 | [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
 | [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | DONE |

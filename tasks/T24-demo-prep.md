@@ -1,7 +1,7 @@
 # T24 — PlantGallery showcase, README, credits, demo capture
 
 **Owner:** A0 Director · **Depends on:** all MVP tasks
-**Status:** TODO
+**Status:** DONE (reduced scope: README rewrite only; PlantGallery scene, demo recording and demo script CUT, the demo is showcased manually)
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
