@@ -272,7 +272,7 @@ namespace PlantGame.UI
                 }
         }
 
-        static Color ItemColor(ItemDefinition it)
+        public static Color ItemColor(ItemDefinition it)
         {
             if (it.id == "parachute_leaf") return Palette.LeafYellow;   // the glide leaf is yellow in the hotbar as well as in the world
             if (it.id == "heat_seed") return new Color(1f, 0.66f, 0.14f);   // golden melon

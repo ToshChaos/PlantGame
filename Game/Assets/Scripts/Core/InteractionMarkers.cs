@@ -14,9 +14,9 @@ namespace PlantGame.Core
     public class InteractionMarkers : MonoBehaviour
     {
         public float showRadius = 9f;
-        public float size = 0.7f;
+        public float size = 0.85f;
         public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
-        [System.NonSerialized] public Color readyColor = new Color(0.66f, 0.38f, 0.98f, 1f);   // purple: the focused, actionable pickup / usable
+        [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
 
         static readonly Color WaterNear = new Color(0.45f, 0.72f, 1f, 0.9f), WaterReady = new Color(0.15f, 0.5f, 1f, 1f);
 
@@ -50,7 +50,7 @@ namespace PlantGame.Core
                     var c = _hits[i];
                     if (!InteractionSensor.TryResolve(c, out var t) || !_seen.Add(t.component)) continue;
 
-                    bool pickup = false, ready;
+                    bool pickup = false, ready, seedColoured = false;
                     if (t.interactable != null && t.interactable.Action == InteractAction.Pickup)
                     {
                         pickup = true;
@@ -62,21 +62,31 @@ namespace PlantGame.Core
                         if (!ready && t.interactable is WaterCollector) continue;   // an empty collector (or a full can) offers nothing on F: no marker
                     }
                     else if (t.usable != null && item != null && t.usable.CanUseItem(item, gameObject))
-                        ready = true;
+                    {
+                        ready = true; seedColoured = true;
+                    }
                     else if (t.waterable != null && t.waterable.NeedsWater)
                         continue;   // watering is automatic: no marker
                     else continue;
 
                     var r = Get(used++);
                     var b = c.bounds;
-                    Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.55f);
+                    bool focused = ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
+                    // floating: a slow bob (out of step per target) so the markers catch the eye
+                    float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);
+                    Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob);
                     r.transform.position = pos;
                     r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
-                    r.transform.localScale = Vector3.one * (size * (1f + 0.06f * Mathf.Sin(Time.unscaledTime * 4f)));
+                    r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
                     r.sprite = pickup ? UiSprites.Diamond : UiSprites.Ring;
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
-                    r.color = (ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil) ? rdy : near;
+                    if (seedColoured)   // rings over soil take the selected seed's hotbar colour
+                    {
+                        var ic = PlayerHud.ItemColor(item); ic.a = 1f;
+                        near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
+                    }
+                    r.color = focused ? rdy : near;
                 }
             }
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);

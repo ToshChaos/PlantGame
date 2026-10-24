@@ -12,12 +12,12 @@ namespace PlantGame.UI
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
         {
             float d = Dist(x, y);
-            return Mathf.Clamp01(1f - Mathf.Abs(d - 25f) / 3.5f * 1f);
+            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 24f) - 2.5f) / 2f), d < 24f ? 0.16f : 0f);   // bold outline + faint fill
         });
         public static Sprite Diamond => _diamond != null ? _diamond : _diamond = Make((x, y) =>
         {
             float d = (Mathf.Abs(x - (N - 1) * 0.5f) + Mathf.Abs(y - (N - 1) * 0.5f));   // L1 distance: diamond
-            return Mathf.Clamp01(1f - Mathf.Abs(d - 27f) / 3.5f);
+            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 26f) - 2.5f) / 2f), d < 26f ? 0.16f : 0f);   // bold outline + faint fill
         });
 
         /// <summary>Teardrop: pointed top, round belly (HUD water charges).</summary>
