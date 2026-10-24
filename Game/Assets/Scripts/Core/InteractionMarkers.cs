@@ -85,7 +85,7 @@ namespace PlantGame.Core
                     bool focused = soilRing ? ready : ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
                     // floating: a slow bob (out of step per target) so the markers catch the eye
                     float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);
-                    Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob);
+                    Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob + (waterRing ? 0.9f : 0f));   // the sprout ring floats higher: sprouts are tiny
                     r.transform.position = pos;
                     r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
                     r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
