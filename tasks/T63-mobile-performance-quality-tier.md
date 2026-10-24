@@ -1,6 +1,6 @@
 # T63 — Mobile quality tier and performance budget
 
-**Owner:** A6 Tech Artist · **Status:** TODO · **Depends on:** T23 (build baseline)
+**Owner:** A6 Tech Artist · **Status:** POST-MVP · **Depends on:** T23 (build baseline)
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

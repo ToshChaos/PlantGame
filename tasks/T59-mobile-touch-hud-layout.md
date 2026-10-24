@@ -1,6 +1,6 @@
 # T59 — Touch HUD: layout, safe area, scaling, left-handed mode
 
-**Owner:** A7 Sound & UI · **Status:** TODO · **Depends on:** T57
+**Owner:** A7 Sound & UI · **Status:** POST-MVP · **Depends on:** T57
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

@@ -1,6 +1,6 @@
 # T64 — Android build, signing and beta distribution
 
-**Owner:** A8 Tester/Release · **Status:** TODO · **Depends on:** T62, T63
+**Owner:** A8 Tester/Release · **Status:** POST-MVP · **Depends on:** T62, T63
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

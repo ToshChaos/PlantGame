@@ -1,6 +1,6 @@
 # T60 — Touch hotbar, pause and menus
 
-**Owner:** A7 Sound & UI · **Status:** TODO · **Depends on:** T59
+**Owner:** A7 Sound & UI · **Status:** POST-MVP · **Depends on:** T59
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
