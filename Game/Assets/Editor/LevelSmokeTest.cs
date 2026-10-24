@@ -17,7 +17,7 @@ namespace PlantGame.Editor
     public static class LevelSmokeTest
     {
         const string K = "PlantGame.Smoke.Index", ReportPath = "Logs/smoke.txt";
-        static int _frames, _errors, _idle; static string _firstError = "";
+        static int _errors, _idle, _f0; static bool _reported; static float _t0 = -1; static string _firstError = "";
 
         static LevelSmokeTest()
         {
@@ -46,7 +46,7 @@ namespace PlantGame.Editor
             var d = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"Assets/ScriptableObjects/World/level_{(i == 10 ? 1 : i + 1)}.asset");
             GameBootstrap.PendingRun = d.ToConfig(ModeOf(i));
             PlantGame.UI.PlayerHud.SkipMenuOnce();   // otherwise Main bounces to the title screen
-            _frames = 0; _errors = 0; _firstError = "";
+            _errors = 0; _reported = false; _t0 = -1; _firstError = "";
         }
 
         static void OnLog(string msg, string stack, LogType t) { if (t == LogType.Error || t == LogType.Exception || t == LogType.Assert) { _errors++; if (_firstError == "") _firstError = msg; } }
@@ -63,14 +63,18 @@ namespace PlantGame.Editor
             if (!EditorApplication.isPlaying || EditorPrefs.GetInt(K, -1) < 0) return;
             _idle = 0;
             Application.runInBackground = true;
-            if (!Application.isPlaying || Time.timeSinceLevelLoad < 4f) return;   // isPlaying flips before the reload: wait for the real scene
+            if (_reported || !Application.isPlaying || Time.timeSinceLevelLoad < 4f) return;
+            if (_t0 < 0) { _t0 = Time.realtimeSinceStartup; _f0 = Time.frameCount; }
+            if (Time.realtimeSinceStartup - _t0 < 4f) return;   // measure 4 s of frames after the load settles   // isPlaying flips before the reload: wait for the real scene
             int i = EditorPrefs.GetInt(K, -1);
             var player = Object.FindAnyObjectByType<PlayerController>();
             var run = Object.FindAnyObjectByType<RunSession>();
             string lvl = $"level {(i == 10 ? 1 : i + 1)} {ModeOf(i)}";
+            float ms = (Time.realtimeSinceStartup - _t0) * 1000f / Mathf.Max(1, Time.frameCount - _f0);
+            string perf = $" avg {ms:0.0} ms/frame, {UnityStats.drawCalls} draw calls, {UnityStats.setPassCalls} setpass, {UnityStats.triangles / 1000} k tris, {UnityStats.shadowCasters} shadow casters";
+            _reported = true;
             bool ok = player != null && run != null && _errors == 0;
-            File.AppendAllText(ReportPath, $"{(ok ? "OK  " : "FAIL")} {lvl}: player={(player != null)} run={(run != null)} state={(run != null ? run.Config.levelId : "-")} errors={_errors} {_firstError}\n");
-            _frames = int.MinValue / 2;
+            File.AppendAllText(ReportPath, $"{(ok ? "OK  " : "FAIL")} {lvl}: player={(player != null)} run={(run != null)} state={(run != null ? run.Config.levelId : "-")} errors={_errors} {_firstError}{perf}\n");
             EditorApplication.isPlaying = false;
         }
 

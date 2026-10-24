@@ -29,7 +29,7 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | DONE |
 | [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | REVIEW |
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | REVIEW |
-| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | TODO |
+| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | REVIEW |
 | [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE (reduced) |
 | [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
@@ -63,6 +63,8 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T54](tasks/T54-island-dressing.md) | Island dressing: more grass, decals, shrubs, sticks, marble chips, gems, shiny debris, vine-heavy ruins, pond plants, murky ponds | A5+A6 | T39, T35, T36 | DONE |
 | [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
 | [T56](tasks/T56-palms-and-parachute.md) | Palm trees (Kenney CC0 models, generated bark / frond textures, one coconut pickup each), all trees vary in size, rare purple grass; glide visual is now a real parachute (green/yellow dome + cords) | A5+A1 | T36, T32 | DONE |
+| [T65](tasks/T65-leafless-trees.md) | Bare trees: snow-level leaf trees leafless except two yellow leaves, rare leafless variation on other levels | A5+A6 | T36, T39, T45, T56 | TODO |
+| [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | TODO |
 | [T57](tasks/T57-mobile-input-layer.md) | Mobile: touch input layer (stick, look drag, buttons) behind PlayerInputReader | A1 | — | POST-MVP |
 | [T58](tasks/T58-touch-auto-focus-context-button.md) | Mobile: auto-focus interaction and context button | A1 | T57 | POST-MVP |
 | [T59](tasks/T59-mobile-touch-hud-layout.md) | Mobile: touch HUD layout, safe area, scaling, left-handed mode | A7 | T57 | POST-MVP |

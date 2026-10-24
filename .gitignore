@@ -13,3 +13,6 @@ Source/ThirdParty-raw/
 
 # Screenshots are local working notes (docs/shots/ stays on disk, out of git)
 docs/shots/
+
+# Standalone builds (T23)
+Builds/
