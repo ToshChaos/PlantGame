@@ -53,7 +53,7 @@ namespace PlantGame.Core
                     var c = _hits[i];
                     if (!InteractionSensor.TryResolve(c, out var t) || !_seen.Add(t.component)) continue;
 
-                    bool pickup = false, ready, seedColoured = false, soilRing = false;
+                    bool pickup = false, ready, seedColoured = false, soilRing = false, waterRing = false;
                     Inventory.ItemDefinition tint = null;
                     if (t.interactable != null && t.interactable.Action == InteractAction.Pickup)
                     {
@@ -77,7 +77,7 @@ namespace PlantGame.Core
                         ready = true; seedColoured = true;
                     }
                     else if (t.waterable != null && t.waterable.NeedsWater)
-                        continue;   // watering is automatic: no marker
+                        { ready = false; waterRing = true; }   // a sprout waiting for F: thin blue ring
                     else continue;
 
                     var r = Get(used++);
@@ -92,7 +92,7 @@ namespace PlantGame.Core
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
                     bool close = Vector3.Distance(transform.position, b.center) <= closeRadius;
-                    bool thick = pickup ? (close || focused) : (ready && !water);
+                    bool thick = pickup && (close || focused);
                     if (soilRing)
                     {
                         var ic = PlayerHud.ItemColor(tint);
@@ -108,7 +108,10 @@ namespace PlantGame.Core
                         var ic = PlayerHud.ItemColor(item); ic.a = 1f;
                         near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
                     }
-                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : (thick ? UiSprites.RingThick : water && !close && !focused ? UiSprites.RingThin : UiSprites.Ring);
+                    if (waterRing) { near = WaterNear; rdy = WaterReady; focused = close; }
+                    // use circles stay slim: hairline when faded / far, medium when it is the right thing
+                    bool slim = waterRing || (soilRing ? !ready : water && !close && !focused);
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : UiSprites.Ring;
                     r.color = focused ? rdy : near;
                 }
             }
