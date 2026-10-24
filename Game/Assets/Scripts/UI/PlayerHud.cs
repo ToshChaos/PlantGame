@@ -106,7 +106,7 @@ namespace PlantGame.UI
             else { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
         }
 
-        static string Fmt(float t) { int m = (int)(t / 60f); return m.ToString("00") + ":" + (t - m * 60f).ToString("00.0", System.Globalization.CultureInfo.InvariantCulture); }
+        static string Fmt(float t) { int s = (int)t; return (s / 60).ToString("00") + ":" + (s % 60).ToString("00"); }
         string _hint; float _hintUntil;
         void OnHint(string t) { _hint = t; _hintUntil = Time.unscaledTime + 3.5f; }
         void OnCanEmptyTried() { _flashUntil = Time.unscaledTime + 1.5f; }
@@ -235,7 +235,7 @@ namespace PlantGame.UI
             if (rs == null || rs.State == RunState.Idle) _timer.text = "";
             else if (rs.Config.mode == GameMode.Challenge)
             {
-                _timer.text = Fmt(rs.Remaining);
+                _timer.text = Fmt(Mathf.Ceil(rs.Remaining));
                 _timer.color = rs.Remaining < 10f && rs.State == RunState.Running ? new Color(1f, 0.3f, 0.2f) : Palette.TextOrange;
                 if (_timeFlash > 0f) { _timeFlash -= Time.unscaledDeltaTime; _timer.color = Color.Lerp(Palette.TextOrange, new Color(0.5f, 1f, 0.6f), Mathf.Clamp01(_timeFlash)); }   // T52: green flash after a time fruit
             }

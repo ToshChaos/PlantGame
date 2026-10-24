@@ -172,7 +172,7 @@ namespace PlantGame.UI
 
         static string GoalName(GoalKind g) => g == GoalKind.Fruit ? "golden fruit" : g == GoalKind.Gate ? "gate" : g == GoalKind.Fire ? "campfire" : "flag";
 
-        static string Fmt(float t) { int m = (int)(t / 60f); return m.ToString("00") + ":" + (t - m * 60f).ToString("00.0", System.Globalization.CultureInfo.InvariantCulture); }
+        static string Fmt(float t) { int s = (int)t; return (s / 60).ToString("00") + ":" + (s % 60).ToString("00"); }
 
         // ------------------------------------------------------------------ build
         void Build()
