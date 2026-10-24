@@ -27,7 +27,7 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T18](tasks/T18-sound-effects.md) | Sound effects set + event hookup | A7 | T00, T04, T11 | DONE |
 | [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | DONE |
 | [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | DONE |
-| [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | TODO |
+| [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | REVIEW |
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | TODO |
 | [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | TODO |
 | [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE (reduced) |

@@ -1,7 +1,7 @@
 # T21 — Seed & difficulty tuning, pick curated levels
 
 **Owner:** A0 Director · **Depends on:** T14, T15
-**Status:** TODO
+**Status:** REVIEW
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -28,7 +28,7 @@ Turn the generator into good levels: tune gaps, seed supply, timers and choose t
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+Curated levels are the ten `level_*.asset` files (not the original three). Audit, frozen list and showcase picks are in `docs/test-seeds.md`. Only change: level 1 Challenge limit 150 s -> 240 s, par 90 -> 120 s (limit was barely above the 112 s lower bound for a new player). Known issues: nothing was played by a person; level 5 fails the generated-chain validator by design; showcase seeds are scan picks, not eyeballed.
 
 ## Notes (day 3)
 - Collector is now +1 charge per 20 s, capacity 1 (was 15 s / 2): tune `WaterCollector.secondsPerCharge`, how often collector-only levels appear, and Challenge time limits for them (6 plants x 20 s of waiting alone is 2 min).

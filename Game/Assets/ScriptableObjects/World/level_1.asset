@@ -26,5 +26,5 @@ MonoBehaviour:
   spiral: 0
   sequence: 0000000000000000i
   sideIslands: 0
-  challengeTimeLimitSeconds: 150
-  parTimeSeconds: 90
+  challengeTimeLimitSeconds: 240
+  parTimeSeconds: 120
