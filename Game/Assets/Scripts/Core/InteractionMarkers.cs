@@ -16,6 +16,8 @@ namespace PlantGame.Core
     {
         public float showRadius = 9f;
         public float size = 0.85f;
+        [Tooltip("Pickups closer than this wear their seed colour and a thick outline; further ones are thin and orange.")]
+        public float closeRadius = 4.5f;
         public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
         [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
 
@@ -89,13 +91,14 @@ namespace PlantGame.Core
                     r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
-                    bool thick = pickup || ready || water;
+                    bool close = Vector3.Distance(transform.position, b.center) <= closeRadius;
+                    bool thick = pickup ? (close || focused) : (ready && !water);
                     if (soilRing)
                     {
                         var ic = PlayerHud.ItemColor(tint);
                         near = new Color(ic.r, ic.g, ic.b, 0.4f); rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
                     }
-                    else if (pickup && tint != null)   // a pickup in range wears its own colour; the focused one turns purple
+                    else if (pickup && tint != null && close)   // a close pickup wears its own colour; the focused one turns purple
                     {
                         var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
                     }
@@ -104,7 +107,7 @@ namespace PlantGame.Core
                         var ic = PlayerHud.ItemColor(item); ic.a = 1f;
                         near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
                     }
-                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.Diamond) : (thick ? UiSprites.RingThick : UiSprites.Ring);
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : (thick ? UiSprites.RingThick : UiSprites.Ring);
                     r.color = focused ? rdy : near;
                 }
             }
