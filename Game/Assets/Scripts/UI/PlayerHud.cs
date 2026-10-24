@@ -111,8 +111,20 @@ namespace PlantGame.UI
         void OnHint(string t) { _hint = t; _hintUntil = Time.unscaledTime + 3.5f; }
         void OnCanEmptyTried() { _flashUntil = Time.unscaledTime + 1.5f; }
 
+        Text _fps;
+        float _fpsAcc; int _fpsFrames;
+
+        void UpdateFps()
+        {
+            _fpsAcc += Time.unscaledDeltaTime; _fpsFrames++;
+            if (_fpsAcc < 0.5f) return;
+            _fps.text = Mathf.RoundToInt(_fpsFrames / _fpsAcc) + " FPS";
+            _fpsAcc = 0f; _fpsFrames = 0;
+        }
+
         void Update()
         {
+            UpdateFps();
             if (_endAt >= 0f && Time.unscaledTime >= _endAt && !_ended) ShowEnd();
             if (_ended) return;
             if (_input != null && _input.PausePressed) SetPaused(!Paused);
@@ -308,6 +320,9 @@ namespace PlantGame.UI
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = Palette.TextOrange;
+            _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-24, -18), new Vector2(240, 40), new Vector2(1f, 1f));
+            _fps.color = new Color(0.06f, 0.14f, 0.3f);   // deep navy: readable on the light sky
+            _fps.GetComponent<Shadow>().effectColor = new Color(1f, 1f, 1f, 0.55f);
 
             // water charges, bottom left
             var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 70), new Vector2(0f, 0.5f));
