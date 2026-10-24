@@ -1,7 +1,7 @@
 # T11 — Growth system: SoilPatch, growth, colliders, climb
 
-**Owner:** A2 Botanist · **Depends on:** T01, T09 (start with a placeholder) · **Estimate:** 5h · **Day:** 1 spike → 2
-**Status:** TODO
+**Owner:** A2 Botanist · **Depends on:** T01, T09 (start with a placeholder) spike → 2
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

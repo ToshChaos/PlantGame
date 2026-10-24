@@ -1,4 +1,4 @@
-# Art bible — Overgrowth
+# Art bible — Overgrown
 
 Soft, glowing, stylized fantasy in **white / green / blue**. Calm and airy: you are a gardener among clouds, not a survivor.
 Read time: ~2 minutes. Owner: A6 (T01). Palette source of truth in code: `Scripts/Core/Palette.cs`.
@@ -10,7 +10,8 @@ Read time: ~2 minutes. Owner: A6 (T01). Palette source of truth in code: `Script
 | Mist blue | `#BFD9EE` | stone, fog, sky horizon, ambient sky |
 | Sky blue | `#6FA8DC` | water, sky, UI accents |
 | Deep blue | `#2C5E8F` | deep water, shadows in cold areas, UI panels |
-| Leaf green | `#5DB46B` | grass, plant bodies, terrain tops |
+| Leaf green | `#5DB46B` | plant bodies; island tops use a deeper mix of moss and leaf green (`M_Terrain`) |
+| Seed lime | `#B8E35F` | the basic (vine) seed: must read against the grass |
 | Moss | `#2F7D4F` | shaded foliage, undersides, ambient ground bounce |
 | Glow cyan | `#7CF2E6` | **magic and accent only**: growth front, rim light, water edge, crystals. Never a base colour. |
 
@@ -67,3 +68,11 @@ Surface normals must be clean (the taper moves vertices along them).
 A floating garden at sunrise: pale mist-blue sky, cloud banks lit from below, islands crowned with soft green meadow,
 white-stone ruins wrapped in vines, a thin waterfall dissolving into spray, small glowing cyan motes drifting up where a plant grows.
 Think: gentle animated-film landscapes; harp and pad music.
+
+## Textures (procedural, no sourced assets)
+`PlantGame > 11 Build Textures` writes tileable PNGs to `Art/Textures`: `T_Terrain` (grass mottling), `T_Rock` (cracked rock), `T_Seed` (ridged seed coat), each with a `_N` normal map from the same height field. They multiply the palette colour of `M_Terrain`, `M_Stone` and the `M_Seed*` materials. Island slabs use `TexturedBox` (world-scale UVs, 1 tile per 3 m; grass top, rock sides).
+
+## Reference mood (user screenshot, T16 art pass)
+Lush and bright: dense round trees and bushes with flowers on the island rims, **white carved-stone ruins** (pillars, broken slabs, a portal arch with a glowing disc and gold runes), floating rocks and small tree-topped islets in a deep blue sky with fluffy clouds, warm sun and saturated colour, **glowing golden butterflies** drifting around the player. Waterfalls spilling off islands are planned for T29/T30.
+Implemented by `Editor/Scenery.cs` (islands + sky debris), `Scripts/World/GoldenButterflies.cs`, `FloatBob.cs`, the Atmosphere prefab (more cloud cards, warmer sun, stronger bloom and saturation). Shots: `docs/shots/art_pass_*.png`.
+Not yet: real modelled trees / ruins (T10 kit), volumetric god rays, waterfall, wind-moved foliage.

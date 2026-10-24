@@ -1,7 +1,7 @@
 # T29 — Water features kit: waterfall + lake
 
-**Owner:** A4 Stonemason · **Depends on:** T10 · **Estimate:** 3h · **Day:** 2
-**Status:** TODO
+**Owner:** A4 Stonemason · **Depends on:** T10
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -31,3 +31,10 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Note (day 3)
+Level 1 uses procedural stand-ins built by `SandboxPlantTestBuilder.WaterFeature`: ponds (2-4 blobs) and winding streams, one interact point each, textured by the T30 shader. Kit lake / waterfall pieces should keep the "one interact point per feature" rule.
+
+## Handoff (day 3)
+- Done procedurally (no Blender kit piece yet): lakes / ponds / streams (`WorldGenerator.WaterFeature`, one WaterSource trigger each) and waterfalls over an island rim (`World/Waterfall.cs`: channel strip, lip, falling particle sheet). About 45% of islands get a waterfall (own seeded random, deterministic). Decorative only; drinking is at ponds / streams.
+- Open: a modelled `Kit_Water_Waterfall` / `Kit_Water_Lake` pair with the T10 kit, and an interactable waterfall refill if wanted.

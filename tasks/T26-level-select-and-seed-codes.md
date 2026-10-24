@@ -1,7 +1,7 @@
 # T26 — Title + level select, Random Level, seed codes (copy/enter)
 
-**Owner:** A7 Sound & UI · **Depends on:** T14, T25 · **Estimate:** 3h · **Day:** 3
-**Status:** TODO
+**Owner:** A7 Sound & UI · **Depends on:** T14, T25
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -39,3 +39,7 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Handoff (day 3)
+- `Title.unity` (menu 16) + `UI/TitleMenu`: Home (mode, Play, Select level, Generate level, Input seed, Options, Quit); level cards with per-level best times and test-scene buttons; generate screen shows the seed (five dash-joined words) with copy; input screen normalises spaces to dashes and validates live. Behind it a generated showcase world whose plants grow.
+- Known: Play on the home screen starts level 1.

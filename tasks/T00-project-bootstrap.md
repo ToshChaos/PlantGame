@@ -1,7 +1,7 @@
 # T00 — Project bootstrap, packages, folders, git
 
-**Owner:** A0 Director · **Depends on:** — · **Estimate:** 1.5h · **Day:** 1
-**Status:** TODO
+**Owner:** A0 Director · **Depends on:** —
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

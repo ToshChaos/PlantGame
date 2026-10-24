@@ -17,6 +17,8 @@ namespace PlantGame.Player
         public Transform land;
         [Tooltip("Distance of the climb line from the box centre along forward (metres).")]
         public float standOff = 0f;
+        [Tooltip("Beanstalks: the player climbs on the side of the stalk that faces away from the plant's forward (the start-island side), so the camera has open air behind the player instead of the target island's cliff. Flips SurfaceNormal.")]
+        public bool playerBehind;
 
         static readonly List<ClimbableVolume> _all = new List<ClimbableVolume>();
         /// <summary>All active volumes. The player tests containment itself each frame (trigger callbacks race with teleports).</summary>
@@ -27,11 +29,13 @@ namespace PlantGame.Player
 
         public Vector3 SurfaceNormal
         {
-            get { var f = transform.forward; f.y = 0f; return f.sqrMagnitude < 1e-4f ? Vector3.forward : f.normalized; }
+            get { var f = playerBehind ? -transform.forward : transform.forward; f.y = 0f; return f.sqrMagnitude < 1e-4f ? Vector3.forward : f.normalized; }
         }
 
         /// <summary>Horizontal position (x, z) the player is pulled to while climbing; y is ignored.</summary>
         public Vector3 ClimbLinePoint => Box.bounds.center + SurfaceNormal * standOff;
+        /// <summary>True when the point is on the player's side of the climb line (not yet past it towards the stalk): grabbing from the far side would drag the player through the plant.</summary>
+        public bool IsOnClimbSide(Vector3 worldPoint) => Vector3.Dot(worldPoint - ClimbLinePoint, SurfaceNormal) > -0.25f;
         public float TopY => land != null ? land.position.y : Box.bounds.max.y;
         public float BottomY => Box.bounds.min.y;
 

@@ -1,6 +1,6 @@
 # T24 — PlantGallery showcase, README, credits, demo capture
 
-**Owner:** A0 Director · **Depends on:** all MVP tasks · **Estimate:** 2h · **Day:** 3
+**Owner:** A0 Director · **Depends on:** all MVP tasks
 **Status:** TODO
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
@@ -29,3 +29,6 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Note (art pass)
+Third-party packs now in the project: Kenney Nature + Fantasy Town (CC0), Quaternius Stylized Nature MegaKit (CC0), FreeStylized Ruins Kit 01 (royalty free). README has a short credits block; the in-game credits screen (if built) should list the same three. See `docs/asset-sources.md`.

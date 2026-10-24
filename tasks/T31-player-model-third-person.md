@@ -1,7 +1,7 @@
 # T31 — Player model (blocky, white/black/gold) + third-person camera
 
-**Owner:** A1 Gameplay (controller, prefab) + A3 (Blender model) · **Depends on:** T02, T03 · **Estimate:** 2h · **Day:** 1
-**Status:** REVIEW
+**Owner:** A1 Gameplay (controller, prefab) + A3 (Blender model) · **Depends on:** T02, T03
+**Status:** DONE
 
 > Read `AGENTS.md` first. MVP has exactly **one** player model.
 

@@ -2,7 +2,9 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using PlantGame.Core;
+using PlantGame.Inventory;
 using PlantGame.Player;
+using PlantGame.World;
 
 namespace PlantGame.Editor
 {
@@ -20,7 +22,7 @@ namespace PlantGame.Editor
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabBuilder.PrefabPath) ?? PlayerPrefabBuilder.Build();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            SandboxPlantsBuilder.ApplyLightingPreset();
+            ProjectSetup.ApplyLightingPreset();
             ProjectSetup.AddSun();
 
             var terrain = MaterialBuilder.Load("M_Terrain");
@@ -29,9 +31,9 @@ namespace PlantGame.Editor
             var crystal = MaterialBuilder.Load("M_Crystal");
 
             // Floors (top surface at y = 0)
-            Box("Floor_Start", new Vector3(-7.5f, -0.5f, -3f), new Vector3(25f, 1f, 16f), terrain);      // x -20..5, z -11..5
-            Box("Floor_Gap5_Far", new Vector3(0f, -0.5f, 15f), new Vector3(10f, 1f, 10f), terrain);       // z 10..20  (5 m gap from z=5)
-            Box("Floor_Gap7_Far", new Vector3(17f, -0.5f, 0f), new Vector3(10f, 1f, 10f), terrain);       // x 12..22  (7 m gap from x=5)
+            TexturedBox.Create("Floor_Start", new Vector3(-7.5f, -0.5f, -3f), new Vector3(25f, 1f, 16f), terrain, stone);      // x -20..5, z -11..5
+            TexturedBox.Create("Floor_Gap5_Far", new Vector3(0f, -0.5f, 15f), new Vector3(10f, 1f, 10f), terrain, stone);       // z 10..20  (5 m gap from z=5)
+            TexturedBox.Create("Floor_Gap7_Far", new Vector3(17f, -0.5f, 0f), new Vector3(10f, 1f, 10f), terrain, stone);       // x 12..22  (7 m gap from x=5)
             Marker("Marker_Gap5m", new Vector3(0f, 0.5f, 4.6f), crystal);
             Marker("Marker_Gap7m", new Vector3(4.6f, 0.5f, 0f), crystal);
 
@@ -67,6 +69,62 @@ namespace PlantGame.Editor
             if (layer >= 0) volGo.layer = layer;
             var vol = volGo.AddComponent<ClimbableVolume>();
             vol.land = land.transform;
+
+            // test props: one of every item on the start floor (more than the 4 slots hold: the extra pickups are refused), a plant target and a water sign
+            var seedAssets = new[] { "Item_VineSeed", "Item_BeanstalkSeed", "Item_ShelfSeed", "Item_DewSeed", "Item_HeartSeed", "Item_HeatSeed", "Item_ParachuteLeaf" };
+            if (ItemBuilder.Load(seedAssets[0]) == null) ItemBuilder.Build();
+            for (int i = 0; i < seedAssets.Length; i++)
+            {
+                var it = ItemBuilder.Load(seedAssets[i]);
+                if (it == null || it.worldPrefab == null) continue;
+                var seed = (GameObject)PrefabUtility.InstantiatePrefab(it.worldPrefab);
+                seed.transform.position = new Vector3(-5f + i * 1.2f, 0.4f, -4f);
+            }
+            // Two seed trees that drop a seed each when the level starts (user request)
+            for (int i = 0; i < 2; i++)
+            {
+                var trunk = Box("SeedTree_" + i, new Vector3(-6f + i * 3f, 1.5f, 2f), new Vector3(0.6f, 3f, 0.6f), foliage);
+                var crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                crown.name = "Crown"; Object.DestroyImmediate(crown.GetComponent<Collider>());
+                crown.transform.SetParent(trunk.transform, false); crown.transform.localPosition = new Vector3(0f, 0.7f, 0f);
+                crown.transform.localScale = new Vector3(4f / 0.6f, 2f / 3f * 1f, 4f / 0.6f);
+                crown.GetComponent<Renderer>().sharedMaterial = terrain;
+                var tree = trunk.AddComponent<SeedTree>();
+                tree.possibleSeeds = new[] { ItemBuilder.Load("Item_VineSeed"), ItemBuilder.Load("Item_BeanstalkSeed") };
+                tree.seedsToDrop = 1; tree.sandboxSeed = 7;
+                tree.transform.position = new Vector3(-6f + i * 3f, 1.5f, 2f);
+            }
+            // Soil patch on the edge of the first island, facing the 7 m gap (+X): E plants, the bridge grows across to the far floor
+            var target = Box("Sandbox_PlantTarget", new Vector3(3.9f, 0.15f, -2.2f), new Vector3(1.2f, 0.3f, 1.2f), terrain);
+            SoilPatchMesh.Apply(target);
+            var st = target.AddComponent<SandboxTarget>();
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(BridgePrefabBuilder.PrefabPath(1)) == null) BridgePrefabBuilder.Build();
+            var bridges = new System.Collections.Generic.List<GameObject>();
+            for (int b = 1; b <= 6; b++) { var bp = AssetDatabase.LoadAssetAtPath<GameObject>(BridgePrefabBuilder.PrefabPath(b)); if (bp != null) bridges.Add(bp); }
+            st.plantPrefabs = bridges.ToArray();
+            st.growDirection = Vector3.right;
+            int interactable = LayerMask.NameToLayer(Layers.InteractableName);
+            if (interactable >= 0) target.layer = interactable;
+
+            // Water puddle for testing the refill (F): flat disc on the start floor, layer Water, trigger
+            var puddle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            puddle.name = "Water_Puddle";
+            puddle.transform.position = new Vector3(-4f, 0.03f, -9f);
+            puddle.transform.localScale = new Vector3(3f, 0.03f, 3f);
+            var wmat = MaterialBuilder.Load("M_Water");
+            if (wmat == null)
+            {
+                wmat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "M_Water" };
+                wmat.SetColor("_BaseColor", Palette.SkyBlue); wmat.SetFloat("_Smoothness", 0.95f);
+                wmat.EnableKeyword("_EMISSION"); wmat.SetColor("_EmissionColor", Palette.SkyBlue * 0.35f);
+                AssetDatabase.CreateAsset(wmat, MaterialBuilder.Dir + "/M_Water.mat");
+            }
+            puddle.GetComponent<Renderer>().sharedMaterial = wmat;
+            Object.DestroyImmediate(puddle.GetComponent<Collider>());
+            var pc = puddle.AddComponent<CapsuleCollider>(); pc.isTrigger = true; pc.radius = 0.5f; pc.height = 40f;   // tall trigger: reachable standing next to it
+            int water = LayerMask.NameToLayer(Layers.WaterName);
+            if (water >= 0) puddle.layer = water;
+            puddle.AddComponent<PlantGame.Plants.WaterSource>().kind = PlantGame.Plants.WaterKind.Lake;
 
             // Respawn + player
             var respawn = new GameObject("Respawn") { tag = Layers.RespawnTag };

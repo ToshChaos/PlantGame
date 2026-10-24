@@ -1,7 +1,7 @@
 # T16 — Background: skybox, clouds, fog, post-processing
 
-**Owner:** A6 Tech Artist · **Depends on:** T01 · **Estimate:** 3h · **Day:** 2
-**Status:** TODO
+**Owner:** A6 Tech Artist · **Depends on:** T01
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -30,4 +30,8 @@ The floating-island vibe: a luminous white/blue sky, drifting clouds below and a
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+- **Files:** `Art/Shaders/OvergrowthSky.shader` (gradient + sun), `CloudLayer.shader` (scrolling noise, radial fade, fog-tinted), `Scripts/World/Atmosphere.cs`, `CloudDrift.cs`, `Editor/MainSceneBuilder.cs` (`PlantGame > 11 Build Atmosphere`), materials `M_Sky M_CloudSea M_CloudSeaHigh M_CloudCard`, `T_Cloud.png`, `Art/VFX/PostFX_Overgrowth.asset`, **`Prefabs/Environment/Atmosphere.prefab`**.
+- Prefab = skybox, ambient trilight, linear fog, sun angle, two camera-following cloud-sea layers (no edge), 22 drifting cloud cards, 9 far backdrop islands (no colliders), global Volume (bloom, ACES, colour adjust, cool shadows / warm highlights, light vignette). `GameSettings.Bloom` + pause-menu "Glow" toggle disable bloom.
+- Player camera now uses the skybox and has post-processing on. Screenshot `docs/shots/main_start.png`.
+- **Known:** frame cost not profiled (T23); far islands are plain round islands until the T10 kit exists; one sky preset (no dusk).
+- Art pass from the user's reference image: trees, bushes, flowers, white ruins and a portal arch on every island, floating rocks / islets, golden butterflies, 40 cloud cards, warmer light. See `docs/art-bible.md` (Reference mood).

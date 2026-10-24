@@ -23,7 +23,7 @@ namespace PlantGame.Editor
         };
 
         public const string ScenesDir = "Assets/Scenes";
-        public static readonly string[] SceneNames = { "Main", "Sandbox_Gameplay", "Sandbox_Plants", "Sandbox_World" };
+        public static readonly string[] SceneNames = { "Title", "Main", "Sandbox_Gameplay" };
 
         [MenuItem("PlantGame/1 Setup Project")]
         public static void Run()
@@ -34,10 +34,23 @@ namespace PlantGame.Editor
             EnsureUrp();
             EnsurePhysicsMatrix();
             EnsureEmptyScene("Main", addLight: true);
-            EnsureEmptyScene("Sandbox_World", addLight: true);
             RegisterScenes();
             AssetDatabase.SaveAssets();
             Debug.Log("[PlantGame] Project setup done: Linear colour space, layers, tags, physics matrix, base scenes.");
+        }
+
+        /// <summary>Soft fantasy ambient + fog from the palette (the title, gameplay course and game scenes start from it).</summary>
+        public static void ApplyLightingPreset()
+        {
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = PlantGame.Core.Palette.MistBlue;
+            RenderSettings.ambientEquatorColor = PlantGame.Core.Palette.CloudWhite;
+            RenderSettings.ambientGroundColor = PlantGame.Core.Palette.Moss;
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = PlantGame.Core.Palette.MistBlue;
+            RenderSettings.fogStartDistance = 40f;
+            RenderSettings.fogEndDistance = 220f;
         }
 
         static void EnsureLayers()

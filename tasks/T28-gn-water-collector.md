@@ -1,7 +1,7 @@
 # T28 — Geometry Nodes: Water Collector plant
 
-**Owner:** A3 Plant Smith · **Depends on:** T06 · **Estimate:** 3h · **Day:** 2
-**Status:** TODO
+**Owner:** A3 Plant Smith · **Depends on:** T06
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -30,7 +30,14 @@ A pitcher-bloom that catches dew from the air: a procedural water-collecting pla
 If short on time: single bowl + 4 petals + 2 leaves, vary only size and curl by seed.
 
 ## Requests (to/from other roles)
-_none yet_
+- Once `Plant_Collector_NN` prefabs exist, `Sandbox_PlantTest` picks them up automatically (rebuild via `PlantGame > 9 Build Sandbox_PlantTest`); add a layout branch there if needed.
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Handoff (T28)
+- **Files:** `Source/Blender/scripts/plants_collector.py` (`build_all()`), `exports/Plant_Collector_01..06.fbx`, `Game/Assets/Art/Models/Plants/Plant_Collector_NN.fbx`, `Editor/CollectorPrefabBuilder.cs` (menu 14), `Scripts/Plants/WaterCollector.cs`, `Prefabs/Plants/Plant_Collector_NN.prefab`, material `M_CollectorGrow`.
+- **Deviation:** variants are baked with bmesh from per-seed parameters (height 1.8-2.6 m, bowl 0.7-0.9 m, 5-8 petals, 4-6 leaves), not a Geometry Nodes group; the Blender validator passes for all six, about 750-790 tris each. Port `_build` to nodes later if the GN requirement matters.
+- **Behaviour (user request, v1.8):** produces **1 charge after 20 s** once grown, capacity 1; E transfers it to the can. Values are fields on `WaterCollector` (T21 tunes, later `WaterSettings`).
+- **30-second test:** `PlantGame > 9 Build Sandbox_PlantTest`, play, plant the Dew Seed on the first island's soil, wait ~24 s, E on the plant.
+- **Known:** pale palette; `docs/shots/collector_variants.png` (all six) not rendered yet; no drip VFX / ready sparkle (T30); only variant 1 is used in the sandbox.

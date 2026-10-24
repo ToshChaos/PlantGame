@@ -1,7 +1,7 @@
 # T01 — Art bible, palette, shared materials, grow shader
 
-**Owner:** A6 Tech Artist · **Depends on:** T00 · **Estimate:** 3h · **Day:** 1
-**Status:** TODO
+**Owner:** A6 Tech Artist · **Depends on:** T00
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

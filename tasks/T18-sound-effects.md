@@ -1,7 +1,7 @@
 # T18 — Sound effects set + event hookup
 
-**Owner:** A7 Sound & UI · **Depends on:** T00, T04, T11 · **Estimate:** 3h · **Day:** 2–3
-**Status:** TODO
+**Owner:** A7 Sound & UI · **Depends on:** T00, T04, T11
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -31,4 +31,6 @@ Cut: surface-specific footsteps, timer tick.
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+- **Files:** `Scripts/Audio/SfxBinder.cs`, SFX in `Audio/SFX/` (24 names incl. 3 variants each of grass/stone/plant footsteps) from `docs/audio/make_audio.py`. `PlantInstance` gained static events `Sprouted / GrowthStarted / Grown` (+ `kind`) used by audio and VFX.
+- Hooks: pickup, drop, inventory full, UI hover/click (HUD buttons), slot select, jump, land, plant sprout, growth rustle, grown chime, water pour, refill, dry click, collector ready, climb rustle (by height gained), footsteps by distance (surface from island material), respawn, win, fail, timer tick in the last 10 s of Challenge.
+- **Not heard by a human:** levels are untested by ear; `collector_drip` is generated but unused until T28 collectors are in the game.

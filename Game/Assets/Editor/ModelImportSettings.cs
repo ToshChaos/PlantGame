@@ -16,6 +16,7 @@ namespace PlantGame.Editor
         void OnPreprocessModel()
         {
             if (!assetPath.StartsWith(Root) || !assetPath.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)) return;
+            if (assetPath.StartsWith(Root + "Kenney/") || assetPath.StartsWith(Root + "Quaternius/") || assetPath.StartsWith(Root + "Ruins/")) return;  // third-party props: KenneyPropBuilder / QuaterniusPropBuilder (keep embedded materials)
             if (!assetImporter.importSettingsMissing) return;   // already configured once
             Apply((ModelImporter)assetImporter);
         }
@@ -24,7 +25,7 @@ namespace PlantGame.Editor
         {
             m.globalScale = 1f;
             m.useFileScale = true;                       // FBX_SCALE_UNITS export: file unit -> metres
-            m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/");   // hierarchies exported without bake_space_transform (T31)
+            m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/") || m.assetPath.StartsWith(Root + "Plants/");   // hierarchies exported without bake_space_transform (T31)
             m.materialImportMode = ModelImporterMaterialImportMode.None;
             m.meshCompression = ModelImporterMeshCompression.Off;
             m.isReadable = m.assetPath.StartsWith(Root + "Plants/") || m.assetPath.StartsWith(Root + "Test/");

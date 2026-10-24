@@ -1,7 +1,7 @@
 # T10 — Modular island kit (terrain, ruins, vegetation)
 
-**Owner:** A4 Stonemason · **Depends on:** T02 · **Estimate:** 6h · **Day:** 1–2
-**Status:** TODO
+**Owner:** A4 Stonemason · **Depends on:** T02
+**Status:** CUT
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

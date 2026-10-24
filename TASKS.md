@@ -1,83 +1,75 @@
-# TASKS.md — MVP board (3-day hackathon)
+# TASKS.md — board (every task, including the former stretch ones, is in scope)
 
-Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `CUT` · `BLOCKED(reason)`. Owners update their own row.
+Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `FIXED` · `CUT`. Owners update their own row.
 Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles: see `AGENTS.md` section 4.
-Estimates are focused hours for one agent (they include verification).
 
 ## Board
-| ID | Task | Owner | Depends on | Est | Day | Status |
-|----|------|-------|-----------|-----|-----|--------|
-| [T00](tasks/T00-project-bootstrap.md) | Project bootstrap, packages, folders, git | A0 | — | 1.5h | 1 | DONE |
-| [T01](tasks/T01-art-bible-and-materials.md) | Art bible, palette, shared materials, grow shader | A6 | T00 | 3h | 1 | DONE |
-| [T02](tasks/T02-blender-unity-pipeline.md) | Blender → Unity export pipeline & import presets | A0+A3 | T00 | 2h | 1 | DONE |
-| [T03](tasks/T03-player-controller.md) | Player controller: WASD, look, jump, climb, camera | A1 | T00 | 3h | 1 | REVIEW |
-| [T04](tasks/T04-interaction-system.md) | Interaction: focus, prompt, pick up / drop / use | A1 | T03 | 2h | 1 | TODO |
-| [T05](tasks/T05-inventory.md) | Limited inventory (4 slots) + item definitions | A1 | T04 | 2h | 1 | TODO |
-| [T06](tasks/T06-gn-vine-bridge.md) | Geometry Nodes: Vine bridge plant | A3 | T00 | 4h | 1 | TODO |
-| [T07](tasks/T07-gn-beanstalk-ladder.md) | Geometry Nodes: Beanstalk ladder plant | A3 | T06 | 3h | 1–2 | TODO |
-| [T08](tasks/T08-gn-platform-plant.md) | Geometry Nodes: Shelf-fungus platform plant | A3 | T06 | 3h | 2 | TODO |
-| [T09](tasks/T09-bake-and-export-variants.md) | Bake 6 variants per plant + proxies + export | A3 | T02, T06 (T07, T08, T28 as they land) | 3h | 2 | TODO |
-| [T10](tasks/T10-island-kit.md) | Modular island kit (terrain, ruins, vegetation) | A4 | T02 | 6h | 1–2 | TODO |
-| [T11](tasks/T11-growth-system.md) | Growth system: SoilPatch, growth, colliders, climb | A2 | T01, T06 (placeholder), T09 | 5h | 2 | TODO |
-| [T12](tasks/T12-world-items-and-goal.md) | Seed pickups, soil patch prefab, Heart Tree goal | A1 | T05, T11 | 2h | 2 | TODO |
-| [T13](tasks/T13-island-assembler.md) | Island assembler from kit, seeded | A5 | — (placeholders; T10, T12, T29 swapped in) | 4h | 1–2 | TODO |
-| [T14](tasks/T14-world-generator.md) | World generator: island graph, gaps, solvability | A5 | T13, T11, T27 | 4h | 2–3 | TODO |
-| [T15](tasks/T15-game-loop.md) | Game flow: scene wiring, run start/restart, respawn, win/fail screens | A0 | T14, T25 | 2h | 3 | TODO |
-| [T16](tasks/T16-sky-and-atmosphere.md) | Background: skybox, clouds, fog, post-processing | A6 | T01 | 3h | 2 | TODO |
-| [T17](tasks/T17-music-and-ambience.md) | Music + ambience + AudioManager/mixer | A7 | T00 | 2h | 2 | TODO |
-| [T18](tasks/T18-sound-effects.md) | Sound effects set + event hookup | A7 | T00, T04, T11 | 3h | 2–3 | TODO |
-| [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | 3h | 2 | TODO |
-| [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | 2h | 3 | TODO |
-| [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | 2h | 3 | TODO |
-| [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | 3h | 3 | TODO |
-| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | 2h | 3 | TODO |
-| [T24](tasks/T24-demo-prep.md) | PlantGallery showcase, README, credits, demo capture | A0 | all | 2h | 3 | TODO |
-| [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | 3h | 2–3 | TODO |
-| [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | 3h | 3 | TODO |
-| [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | 3h | 2 | TODO |
-| [T28](tasks/T28-gn-water-collector.md) | Geometry Nodes: Water Collector plant | A3 | T06 | 3h | 2 | TODO |
-| [T29](tasks/T29-water-features-kit.md) | Water features kit: waterfall + lake | A4 | T10 | 3h | 2 | TODO |
-| [T30](tasks/T30-water-shaders-and-vfx.md) | Water shaders + splash/drip VFX | A6 | T01, T29 | 2h | 2–3 | TODO |
-| [T31](tasks/T31-player-model-third-person.md) | Player model (blocky, white/black/gold) + third-person camera | A1+A3 | T02, T03 | 2h | 1 | REVIEW |
+| ID | Task | Owner | Depends on | Status |
+|----|------|-------|-----------|--------|
+| [T00](tasks/T00-project-bootstrap.md) | Project bootstrap, packages, folders, git | A0 | — | DONE |
+| [T01](tasks/T01-art-bible-and-materials.md) | Art bible, palette, shared materials, grow shader | A6 | T00 | DONE |
+| [T02](tasks/T02-blender-unity-pipeline.md) | Blender → Unity export pipeline & import presets | A0+A3 | T00 | DONE |
+| [T03](tasks/T03-player-controller.md) | Player controller: WASD, look, jump, climb, camera | A1 | T00 | DONE |
+| [T04](tasks/T04-interaction-system.md) | Interaction: focus, prompt, pick up / drop / use | A1 | T03 | DONE |
+| [T05](tasks/T05-inventory.md) | Limited inventory (4 slots) + item definitions | A1 | T04 | DONE |
+| [T06](tasks/T06-gn-vine-bridge.md) | Geometry Nodes: Vine bridge plant | A3 | T00 | DONE |
+| [T07](tasks/T07-gn-beanstalk-ladder.md) | Geometry Nodes: Beanstalk ladder plant | A3 | T06 | DONE |
+| [T08](tasks/T08-gn-platform-plant.md) | Geometry Nodes: Shelf-fungus platform plant | A3 | T06 | DONE |
+| [T09](tasks/T09-bake-and-export-variants.md) | Bake 6 variants per plant + proxies + export | A3 | T02, T06 (T07, T08, T28 as they land) | DONE |
+| [T10](tasks/T10-island-kit.md) | Modular island kit (terrain, ruins, vegetation) | A4 | T02 | CUT |
+| [T11](tasks/T11-growth-system.md) | Growth system: SoilPatch, growth, colliders, climb | A2 | T01, T06 (placeholder), T09 | DONE |
+| [T12](tasks/T12-world-items-and-goal.md) | Seed pickups, soil patch prefab, Heart Tree goal | A1 | T05, T11 | DONE |
+| [T13](tasks/T13-island-assembler.md) | Island assembler from kit, seeded | A5 | — (placeholders; T10, T12, T29 swapped in) | DONE |
+| [T14](tasks/T14-world-generator.md) | World generator: island graph, gaps, solvability | A5 | T13, T11, T27 | DONE |
+| [T15](tasks/T15-game-loop.md) | Game flow: scene wiring, run start/restart, respawn, win/fail screens | A0 | T14, T25 | DONE |
+| [T16](tasks/T16-sky-and-atmosphere.md) | Background: skybox, clouds, fog, post-processing | A6 | T01 | DONE |
+| [T17](tasks/T17-music-and-ambience.md) | Music + ambience + AudioManager/mixer | A7 | T00 | DONE |
+| [T18](tasks/T18-sound-effects.md) | Sound effects set + event hookup | A7 | T00, T04, T11 | DONE |
+| [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | DONE |
+| [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | DONE |
+| [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | TODO |
+| [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | TODO |
+| [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | TODO |
+| [T24](tasks/T24-demo-prep.md) | PlantGallery showcase, README, credits, demo capture | A0 | all | TODO |
+| [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
+| [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
+| [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | DONE |
+| [T28](tasks/T28-gn-water-collector.md) | Geometry Nodes: Water Collector plant | A3 | T06 | DONE |
+| [T29](tasks/T29-water-features-kit.md) | Water features kit: waterfall + lake | A4 | T10 | DONE |
+| [T30](tasks/T30-water-shaders-and-vfx.md) | Water shaders + splash/drip VFX | A6 | T01, T29 | DONE |
+| [T31](tasks/T31-player-model-third-person.md) | Player model (blocky, white/black/gold) + third-person camera | A1+A3 | T02, T03 | DONE |
+| [T32](tasks/T32-parachute-leaf.md) | Parachute leaf: plant grows leaves, one-time glide mid-jump | A1+A2+A3 | T05, T11, T27 | DONE |
+| [T33](tasks/T33-seed-visuals.md) | Seed visuals: bamboo / bean / puffball / succulent in world, hotbar and seed trees | A1+A5 | T05, T12, T14 | DONE |
+| [T34](tasks/T34-level-variety.md) | Level variety: alternative soil spots per gap, optional side islands, islands that never overlap | A5 | T14 | DONE |
+| [T35](tasks/T35-island-ground-types.md) | Island ground types (grass / mud / rock) and a better grass texture | A6+A5 | T01, T13 | DONE |
+| [T36](tasks/T36-world-look-and-spacing.md) | Coloured textured trees, bigger trees on wet islands, parachute canopy leaves, waterfall look, tall island rims, tilted islands, wider gaps + stretched bridges, seed-tree ambience, silent title | A5+A6+A7 | T14, T35 | DONE |
+| [T37](tasks/T37-win-music.md) | Win-condition music (and optional fail sting) | A7 | T17, T19 | DONE |
+| [T38](tasks/T38-scale-density-big-island.md) | Imported trees 2x bigger, more rocks and trees, one even bigger island | A5 | T13, T14, T36 | DONE |
+| [T39](tasks/T39-overgrown-feel.md) | Overgrown feel: leaf litter, moss, vines, ferns, reclaimed ruins | A5+A6 | T35, T36, T38 | DONE |
+| [T40](tasks/T40-plant-and-flower-textures.md) | Better vine-bridge flowers and flower texture, bamboo stems of different heights | A3+A6 | T06, T09, T33 | DONE |
+| [T41](tasks/T41-island-texture-gaps.md) | Bug: gaps in island textures (e.g. Beanstalk Hill) | A6+A5 | T35, T36 | FIXED |
+| [T42](tasks/T42-vague-goal-hints-and-goal-cue.md) | Vague goal hints, goal-island visual cue, remove goal distance indicator | A7+A1 | T15, T19 | DONE |
+| [T43](tasks/T43-thematic-ambience-and-ruin-sounds.md) | Ambience matching its source, mysterious sounds near ruins | A7 | T17, T18, T36 | DONE |
+| [T44](tasks/T44-taller-beanstalk-no-top-platform.md) | Taller beanstalk, no platform at the top | A3+A2+A5 | T07, T09, T11, T14 | CUT (merged into T51) |
+| [T45](tasks/T45-snow-and-heat-seed.md) | Snow ground, frozen soil and water, Heat Seed that melts snow | A5+A2+A6+A1 | T14, T27, T33, T35 | DONE |
+| [T46](tasks/T46-windy-summit-level.md) | Windy summit level: spiral ascent, altitude wind gusts, snowy top, wind ambience, wind on some random levels | A5+A1+A7 | T14, T45, T43 | DONE |
+| [T47](tasks/T47-footsteps-and-bridge-sounds.md) | Footsteps per island surface, vine-bridge creak and rustle sounds | A7+A1 | T18, T35 | REVIEW |
+| [T48](tasks/T48-concave-mushroom-platforms.md) | Mushroom platform pads concave (dish-shaped) instead of flat | A3+A2 | T08, T09, T11 | DONE |
+| [T49](tasks/T49-realistic-textured-plants.md) | All grown plants more realistic and textured (bark, veins, mushroom detail, grow shader texture slot) | A3+A6 | T06-T09, T28, T32, T40, T48 | DONE |
+| [T50](tasks/T50-ten-levels-snow-wind-fog.md) | Ten curated levels: add Snow, Windy summit and Dense Fog levels; snow / wind / fog options in world generation | A5+A6+A1 | T45, T46 | DONE |
+| [T51](tasks/T51-beanstalk-top-platform-fix.md) | Bug: beanstalk still has a top platform (T44 was only specified, never built) | A3+A2 | T44 | DONE |
+| [T52](tasks/T52-time-extension-fruit.md) | Time-extension fruit (Challenge mode): collectible that adds seconds to the countdown | A1+A5+A7 | T25, T14 | DONE |
+| [T53](tasks/T53-more-8bit-music.md) | More 8-bit music: menu tune, one shared tune for level 1 + generated levels, a different themed tune for each other curated level | A7 | T17, T37, T43 | DONE |
+| [T54](tasks/T54-island-dressing.md) | Island dressing: more grass, decals, shrubs, sticks, marble chips, gems, shiny debris, vine-heavy ruins, pond plants, murky ponds | A5+A6 | T39, T35, T36 | DONE |
+| [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
+| [T56](tasks/T56-palms-and-parachute.md) | Palm trees (Kenney CC0 models, generated bark / frond textures, one coconut pickup each), all trees vary in size, rare purple grass; glide visual is now a real parachute (green/yellow dome + cords) | A5+A1 | T36, T32 | DONE |
 
-## Parallel lanes (who can work at the same time)
-- **Lane A – Player (Unity):** T03 → T31 → T04 → T05 → T12 → T25
-- **Lane B – Plants (Blender):** T06 → T07 / T08 / T28 → T09 → (hands off to T11)
-- **Lane C – Kit (Blender):** T10 → T29 → (real pieces replace T13's placeholders)
-- **Lane D – Systems (Unity):** T11 (placeholder plants first) → T27 → T14 → T15; **T13 (A5) runs in parallel from Day 1 PM on placeholder kit**
-- **Lane E – Look & sound (Unity):** T01 → T16 → T20 · T30 · T17 · T18 · T19 → T26
-
-Critical path: T00 → T02 → T06 → T09 → T11 → T27 → T14 → T15 → T21/T22 → T23 → T24.
-De-risk early: **T11 must run with a placeholder plant (a stretched cube with the grow shader) on Day 1 evening**, so the
-mechanic is proven before final Blender art arrives.
-
-## Schedule
-| Slot | Goal | Tasks |
-|------|------|-------|
-| **Day 1 AM** | Project alive, pipeline proven, player moves | T00, T01 (start), T02, T03, T31, T06 (start), T10 (start) |
-| **Day 1 PM** | Interact + inventory, first procedural plant in Unity | T04, T05, T06, T07, T10, T11 spike with placeholder, T13 (start, placeholder kit) |
-| **Day 1 end — checkpoint** | Walk, pick up a seed, plant it, a placeholder bridge grows and can be crossed | |
-| **Day 2 AM** | Real plants + kit land in Unity; growth system done | T08, T09, T11, T12, T10, T13, T16, T27, T28, T29, T30 |
-| **Day 2 PM** | Islands assemble from seed; world generates solvable layout; modes + timer begin | T13 (swap in real kit), T14, T17, T18, T19, T25 |
-| **Day 2 end — checkpoint** | Press play: seeded world, crossable with all plant kinds, music + HUD in | |
-| **Day 3 AM** | Game flow, level select + seed codes, tuning, QA | T15, T26, T21, T22, T20, T18 |
-| **Day 3 PM** | Build, showcase, demo | T23, T24, polish, freeze 2h before demo |
-
-## Checkpoint gates (A0 runs these)
-- **G1 (Day 1 end):** player moves/jumps, picks up and drops, plants placeholder, crosses it. If not: drop T07/T10 scope.
-- **G2 (Day 2 end):** same seed gives same world twice; 3 different seeds are all beatable; audio and HUD present; the watering can works (sprouts need water, lake/waterfall refill); a timer runs and a win records a best time.
-  If not: cut per `AGENTS.md` section 8.
-- **G2.5 (Day 3 AM):** from the title screen: play curated Level 1 in both modes, start a Random Level, copy its seed code and re-enter it to get the identical world.
-- **G3 (Day 3, T-2h):** feature freeze; only bug fixes, build, demo.
-
-## Risks & mitigations
-| Risk | Mitigation |
-|------|-----------|
-| Geometry Nodes don't run in Unity | Bake variants per seed in Blender (T09); Unity picks a variant by seed. Keep `plants.blend` open in the demo to show the node graph. |
-| Growth of baked meshes looks cheap | Vertex-colour `growth_t` + shader reveal and tip scale-in (T01/T11); VFX in T20 hides seams. |
-| Unsolvable generated worlds | T14 places the required seed before each gap and validates by simulated reachability; T22 regression-tests 20 seeds. |
-| Scene merge conflicts | Only A0 edits `Main.unity`; everything else is prefabs + sandbox scenes. |
-| Audio assets unavailable offline | T18 includes a python synth fallback for SFX; T17 lists CC0 sources + procedural pad fallback. |
-| Seed codes break when generator changes | `SeedCode.GeneratorVersion` in the code; T22 keeps golden codes in `docs/test-seeds.md` and re-checks them after every world-gen change. |
-| Water adds scope (~11h) and a second resource to balance | Day-1 spike skips water (`needsWater` off). T28 is cuttable: the generator then puts a lake/waterfall on every island. Water values are data in `WaterSettings`, tuned in T21. |
-| Time | Cut line in `AGENTS.md` section 8; gates above. |
+## Status notes (latest)
+- Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 2; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
+- Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island, on unfrozen grass; the source regrows them. Not balance-tested.
+- Challenge mode: Time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode (Exploration and Challenge each have their own record, both shown on the level card).
+- Audio: surface footsteps (grass, mud, rock, snow, bridge) with bridge creaks (T47); ten gameplay tunes (T53: level 1 and generated levels share the sunny tune, 2 autumn, 3 rain, 4-10 their own), a menu tune, win music; a level-start jingle pauses the music until it ends; wind ambience scales with altitude on windy levels. None of it has had a listening pass.
+- Plants: platform pads are dishes (T48); `PlantGrow` has procedural surface detail (T49 done); the Water Collector spawns at 0.75 scale; the beanstalk has no top platform (T51).
+- Title screen: Play, Select level, Generate level, Input seed, Options (volume sliders, reset all best times, hints) over a generated showcase world; the only test scene left under Select level is the Movement course (one of every item). Pause menu: Esc to resume, option buttons show On/Off.
+- World look: imported CC0 / royalty-free packs dress the islands (Kenney, Quaternius, FreeStylized Ruins; see `docs/asset-sources.md` and `Game/Assets/ThirdParty/LICENSES.md`). T10 (Blender island kit) is CUT. Islands are grass, mud or rock; trees, bushes, rocks and ruin slabs have colliders; grass tufts (blade sprites), leaf litter, moss and vines overgrow grass islands.
+- Still open: T21-T24 (tuning, a real playthrough of every level, standalone build, demo), a real Parachute Bloom plant (T32 shipped as a leaf plant), listening and play passes for everything added on 2026-10-24.

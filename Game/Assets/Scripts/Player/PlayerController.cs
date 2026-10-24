@@ -9,8 +9,8 @@ namespace PlantGame.Player
     /// T03: CharacterController with a tight state machine: Grounded, Airborne, Climbing.
     /// T31: third-person orbit camera. The mouse orbits cameraPivot (yaw/pitch, independent of the body), WASD moves relative
     /// to the camera yaw and the visual `model` turns toward the move direction. The root transform itself is not rotated by look.
-    /// Numbers from AGENTS.md 5.1: walk 4 m/s, run 6 m/s, jump height 1.6 m, coyote 0.12 s, jump buffer 0.12 s.
-    /// With gravity 20 m/s^2 the jump is 8 m/s up, 0.8 s in the air: ~4.8 m flat gap at run speed (+ coyote), so 5 m clears and 7 m does not.
+    /// Numbers from AGENTS.md 5.1: walk 4 m/s, run 6 m/s, jump height 4.8 m (3x the original 1.6 m, user request day 1), coyote 0.12 s, jump buffer 0.12 s.
+    /// With gravity 20 m/s^2 the jump is ~13.9 m/s up, ~1.39 s in the air: ~8.3 m flat gap at run speed (+ coyote).
     /// Controls (5.8): W/S climb, Space jumps off the vine (+~2 m/s away, 0.3 s re-grab cooldown).
     /// Self-contained: needs CharacterController + PlayerInputReader on the same object and a camera pivot child.
     /// </summary>
@@ -25,13 +25,18 @@ namespace PlantGame.Player
         public float runSpeed = 6f;
         public float groundAccel = 60f;
         public float airAccel = 14f;
-        public float jumpHeight = 1.6f;
+        public float jumpHeight = 3.6f;
         public float gravity = 20f;
         public float maxFallSpeed = 40f;
         public float coyoteTime = 0.12f;
         public float jumpBufferTime = 0.12f;
         [Tooltip("Airborne shorter than this does not count as a landing (stairs, small steps).")]
         public float minAirTimeForLanding = 0.15f;
+
+        [Header("Gliding (parachute leaf, one use)")]
+        public float glideFallSpeed = 2.5f;
+        public float glideAirSpeed = 6f;
+        public float glideMaxSeconds = 8f;
 
         [Header("Climbing")]
         public float climbSpeed = 3f;
@@ -46,9 +51,11 @@ namespace PlantGame.Player
         public Transform cameraPivot;
         [Tooltip("Camera transform, child of cameraPivot; pulled toward the pivot when geometry is in the way.")]
         public Transform cameraTransform;
-        public float lookSensitivity = 0.1f;   // degrees per mouse count
+        public float lookSensitivity = 0.2f;   // degrees per mouse count (2x the T03 default)
         public float pitchMin = -35f;           // looking up
         public float pitchMax = 70f;            // looking down
+        [Tooltip("Degrees per second the camera turns with A / D while walking forward (GameSettings.CameraFollow).")]
+        public float cameraFollowSpeed = 100f;
         public float cameraDistance = 4.5f;
         public float cameraRadius = 0.2f;
         public float cameraMinDistance = 0.6f;
@@ -56,7 +63,7 @@ namespace PlantGame.Player
         [Header("Model")]
         [Tooltip("Visual model root; turned toward the move direction (faces the ladder while climbing).")]
         public Transform model;
-        public float turnSpeed = 720f;          // degrees per second
+        public float turnSpeed = 300f;          // degrees per second (slower turning, was 720)
 
         [Header("Falling")]
         [Tooltip("Respawn when y drops below this. T15 sets it per world: island bottom - 30 m.")]
@@ -69,6 +76,65 @@ namespace PlantGame.Player
 
         public State CurrentState { get; private set; } = State.Airborne;
         public bool IsClimbing => CurrentState == State.Climbing;
+        public bool IsGliding { get; private set; }
+        /// <summary>T50: extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
+        public Vector3 WindVelocity;
+        public bool IsAirborne => CurrentState == State.Airborne;
+        float _glideTime;
+        GameObject _leafVisual;
+
+        /// <summary>Starts a glide when airborne (not climbing, not already gliding). The caller consumes the leaf.</summary>
+        public bool TryStartGlide()
+        {
+            if (CurrentState != State.Airborne || IsGliding) return false;
+            IsGliding = true; _glideTime = 0f;
+            // a real parachute: a green dome of alternating panels above the head, joined to the shoulders by thin cords
+            _leafVisual = new GameObject("GlideLeaf");
+            var parent = model != null ? model : transform;
+            _leafVisual.transform.SetParent(parent, false);
+            _leafVisual.transform.localPosition = Vector3.up * 3.1f;
+            _leafVisual.transform.localRotation = Quaternion.Euler(-8f, 0f, 0f);   // leading edge up a little so the chase camera sees the top
+            _leafVisual.AddComponent<MeshFilter>().sharedMesh = World.Scenery.CanopyMesh(1.7f, 1.0f);
+            var mr = _leafVisual.AddComponent<MeshRenderer>();
+            mr.sharedMaterials = new[] { World.Kit.Mat("M_FoliageLight") ?? World.Kit.Mat("M_GlideLeaf"), World.Kit.Mat("M_GlideLeaf") ?? World.Kit.Mat("M_FoliageLight") };
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i * Mathf.PI / 3f;
+                var rim = new Vector3(Mathf.Cos(a) * 1.7f, 0f, Mathf.Sin(a) * 1.7f);
+                var low = new Vector3(Mathf.Cos(a) * 0.25f, -1.6f, Mathf.Sin(a) * 0.25f);   // shoulders, 1.6 m below the rim
+                var cord = GameObject.CreatePrimitive(PrimitiveType.Cylinder); Destroy(cord.GetComponent<Collider>());
+                cord.name = "Cord" + i; cord.transform.SetParent(_leafVisual.transform, false);
+                cord.transform.localPosition = (rim + low) * 0.5f; cord.transform.localScale = new Vector3(0.025f, (rim - low).magnitude * 0.5f, 0.025f);
+                cord.transform.localRotation = Quaternion.FromToRotation(Vector3.up, rim - low);
+                var cr = cord.GetComponent<MeshRenderer>(); cr.sharedMaterial = World.Kit.Mat("M_FoliageLight"); cr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            _vVel = Mathf.Max(_vVel, -glideFallSpeed);
+            GameEvents.RaiseGlideStarted();
+            return true;
+        }
+
+        public void EndGlide()
+        {
+            if (!IsGliding) return;
+            IsGliding = false;
+            if (_leafVisual != null) Destroy(_leafVisual);
+            GameEvents.RaiseGlideEnded();
+        }
+
+        public enum ClimbHint { None, Climb, Descend, Climbing }
+        /// <summary>What the HUD should tell the player about ladders right now (inside a grown ladder's volume, or already climbing).</summary>
+        public ClimbHint CurrentClimbHint
+        {
+            get
+            {
+                if (CurrentState == State.Climbing) return ClimbHint.Climbing;
+                if (_touching == null || _regrab > 0f || !_touching.IsOnClimbSide(transform.position)) return ClimbHint.None;
+                bool nearTop = transform.position.y >= _touching.TopY - topZone;
+                if (nearTop) return CurrentState == State.Grounded ? ClimbHint.Descend : ClimbHint.None;
+                return ClimbHint.Climb;
+            }
+        }
         /// <summary>The view the player aims with (camera, else pivot). T04 casts its focus ray from here.</summary>
         public Transform EyeTransform => cameraTransform != null ? cameraTransform : cameraPivot != null ? cameraPivot : transform;
         /// <summary>Camera yaw in degrees; movement is relative to it.</summary>
@@ -91,6 +157,10 @@ namespace PlantGame.Player
         Vector3 _startPos;
         float _startYaw;
 
+        static PlayerController _instance;
+        /// <summary>The active player. Registered in OnEnable during play; edit-mode callers (tests, builders) fall back to a scene search.</summary>
+        public static PlayerController Instance => _instance != null || Application.isPlaying ? _instance : FindAnyObjectByType<PlayerController>();
+
         void Awake()
         {
             _cc = GetComponent<CharacterController>();
@@ -102,9 +172,15 @@ namespace PlantGame.Player
             _yaw = _startYaw;
         }
 
-        void Start() { SetCursorLocked(true); }
+        void Start()
+        {
+            SetCursorLocked(true);
+            if (cameraTransform != null && cameraTransform.GetComponent<CameraOcclusionFade>() == null)
+                cameraTransform.gameObject.AddComponent<CameraOcclusionFade>().target = cameraPivot != null ? cameraPivot : transform;   // scenery between the camera and the player turns see-through
+        }
 
-        void OnDisable() { SetCursorLocked(false); }
+        void OnEnable() { _instance = this; }
+        void OnDisable() { SetCursorLocked(false); if (_instance == this) _instance = null; }
 
         void Update() { Tick(Time.deltaTime); }
 
@@ -112,7 +188,7 @@ namespace PlantGame.Player
         public void Tick(float dt)
         {
             UpdateTouching();
-            HandleCursorAndLook();
+            HandleCursorAndLook(dt);
             HandleRestartHold(dt);
 
             _regrab = Mathf.Max(0f, _regrab - dt);
@@ -135,10 +211,11 @@ namespace PlantGame.Player
             bool grounded = CurrentState == State.Grounded;
 
             // Climb entry: W grabs below the top zone, S at the top edge (standing) starts a descent.
-            if (_touching != null && _regrab <= 0f)
+            if (_touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position))
             {
                 bool nearTop = transform.position.y >= _touching.TopY - topZone;
-                if ((mi.y > 0.5f && !nearTop) || (mi.y < -0.5f && nearTop && grounded))
+                float ci = Input.ClimbAxis;   // W / S or the up / down arrows
+                if ((ci > 0.5f && !nearTop) || (ci < -0.5f && nearTop && grounded))
                 {
                     StartClimb(_touching);
                     return;
@@ -147,8 +224,13 @@ namespace PlantGame.Player
 
             Vector3 wish = Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
-            Vector3 target = wish * (Input.RunHeld ? runSpeed : walkSpeed);
-            _hVel = Vector3.MoveTowards(_hVel, target, (grounded ? groundAccel : airAccel) * dt);
+            if (IsGliding)
+            {
+                _glideTime += dt;
+                if (grounded || _glideTime > glideMaxSeconds || Input.JumpPressed) EndGlide();
+            }
+            Vector3 target = wish * (IsGliding ? glideAirSpeed : Input.RunHeld ? runSpeed : walkSpeed);
+            _hVel = Vector3.MoveTowards(_hVel, target, (IsGliding ? 30f : grounded ? groundAccel : airAccel) * dt);
 
             if (grounded) _coyote = coyoteTime; else _coyote = Mathf.Max(0f, _coyote - dt);
 
@@ -160,9 +242,9 @@ namespace PlantGame.Player
                 GameEvents.RaisePlayerJumped();
             }
             else if (grounded) _vVel = -2f;                       // keep isGrounded true on flat ground and slopes
-            else _vVel = Mathf.Max(_vVel - gravity * dt, -maxFallSpeed);
+            else _vVel = Mathf.Max(_vVel - gravity * dt, IsGliding ? -glideFallSpeed : -maxFallSpeed);
 
-            var flags = _cc.Move((_hVel + Vector3.up * _vVel) * dt);
+            var flags = _cc.Move((_hVel + WindVelocity + Vector3.up * _vVel) * dt);
             if ((flags & CollisionFlags.Above) != 0 && _vVel > 0f) _vVel = 0f;
 
             bool nowGrounded = _cc.isGrounded && _vVel <= 0f;
@@ -170,6 +252,7 @@ namespace PlantGame.Player
             {
                 if (CurrentState == State.Airborne && _airTime >= minAirTimeForLanding) GameEvents.RaisePlayerLanded();
                 CurrentState = State.Grounded; _airTime = 0f; _vVel = -2f;
+                EndGlide();
             }
             else
             {
@@ -182,6 +265,7 @@ namespace PlantGame.Player
 
         void StartClimb(ClimbableVolume vol)
         {
+            EndGlide();
             _climb = vol;
             CurrentState = State.Climbing;
             _hVel = Vector3.zero; _vVel = 0f; _airTime = 0f; _jumpBuffer = 0f;
@@ -208,7 +292,7 @@ namespace PlantGame.Player
                 return;
             }
 
-            float input = Input.Move.y;   // W up, S down; A / D ignored
+            float input = Input.ClimbAxis;   // W / Up climbs, S / Down descends; A / D ignored
             Vector3 toLine = _climb.ClimbLinePoint - transform.position;
             toLine.y = 0f;
             bool snapped = toLine.magnitude < 0.05f;
@@ -269,6 +353,7 @@ namespace PlantGame.Player
 
         public void Respawn(Vector3 position, float yaw)
         {
+            EndGlide();
             Teleport(position);
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             _yaw = yaw; _pitch = 15f;
@@ -287,8 +372,24 @@ namespace PlantGame.Player
             Cursor.visible = !locked;
         }
 
-        void HandleCursorAndLook()
+        /// <summary>While true (pause menu, start menu, end panel) the camera slowly circles the player; the old view is restored afterwards.</summary>
+        public bool PauseOrbit
         {
+            get => _orbiting;
+            set
+            {
+                if (value == _orbiting) return;
+                _orbiting = value;
+                if (value) { _yawSaved = _yaw; _pitchSaved = _pitch; _pitch = Mathf.Clamp(18f, pitchMin, pitchMax); }
+                else { _yaw = _yawSaved; _pitch = _pitchSaved; }
+            }
+        }
+        public float orbitDegreesPerSecond = 9f;
+        bool _orbiting, _followFacing; float _yawSaved, _pitchSaved;
+
+        void HandleCursorAndLook(float dt)
+        {
+            if (_orbiting) { _yaw = Mathf.Repeat(_yaw + orbitDegreesPerSecond * Time.unscaledDeltaTime, 360f); return; }
             if (Input.PausePressed && CursorLocked) SetCursorLocked(false);                  // Esc releases the cursor
             else if (!CursorLocked && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Input.Enabled)
                 SetCursorLocked(true);                                                         // click to grab it back
@@ -297,6 +398,21 @@ namespace PlantGame.Player
             Vector2 look = Input.Look * lookSensitivity;
             _yaw = Mathf.Repeat(_yaw + look.x, 360f);
             _pitch = Mathf.Clamp(_pitch - look.y, pitchMin, pitchMax);
+
+            // camera follows the player's turns: A / D while moving forward steer the camera (and so the heading); the mouse overrides
+            if (GameSettings.CameraFollow && CurrentState != State.Climbing && look.sqrMagnitude < 0.01f && model != null)
+            {
+                // turning the player more than 15 degrees away from the camera makes the camera swing round to follow the facing
+                Vector2 mi = Input.Move;
+                float diff = Mathf.DeltaAngle(_yaw, model.eulerAngles.y);
+                if (mi.y > 0.1f && Mathf.Abs(diff) > 15f) _followFacing = true;
+                if (_followFacing)
+                {
+                    if (mi.y <= 0.1f || Mathf.Abs(diff) < 1f) _followFacing = false;
+                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, model.eulerAngles.y, cameraFollowSpeed * dt), 360f);
+                }
+            }
+            else if (look.sqrMagnitude >= 0.01f) _followFacing = false;
         }
 
         // ---------------------------------------------------------------- third-person model + camera (T31)
@@ -313,6 +429,9 @@ namespace PlantGame.Player
             model.rotation = Quaternion.RotateTowards(model.rotation, target, turnSpeed * dt);
         }
 
+        readonly RaycastHit[] _camHits = new RaycastHit[16];
+        static bool IsFadeScenery(Transform t) { for (; t != null; t = t.parent) if (t.name == "Scenery") return true; return false; }
+
         void UpdateCamera()
         {
             if (cameraPivot == null) return;
@@ -321,8 +440,12 @@ namespace PlantGame.Player
             // Spring arm: pull the camera in when something walkable is between it and the pivot (the player is on its own layer).
             float dist = cameraDistance;
             Vector3 back = -cameraPivot.forward;
-            if (Physics.SphereCast(cameraPivot.position, cameraRadius, back, out var hit, cameraDistance, Layers.WalkableMask, QueryTriggerInteraction.Ignore))
-                dist = Mathf.Max(cameraMinDistance, hit.distance);
+            int hits = Physics.SphereCastNonAlloc(cameraPivot.position, cameraRadius, back, _camHits, cameraDistance, Layers.WalkableMask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits; i++)
+            {
+                if (IsFadeScenery(_camHits[i].collider.transform)) continue;   // trees, rocks and ruins fade instead of pulling the camera in
+                dist = Mathf.Min(dist, Mathf.Max(cameraMinDistance, _camHits[i].distance));
+            }
             cameraTransform.localPosition = new Vector3(0f, 0f, -dist);
             cameraTransform.localRotation = Quaternion.identity;
         }

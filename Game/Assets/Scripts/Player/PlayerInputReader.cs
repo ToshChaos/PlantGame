@@ -41,6 +41,24 @@ namespace PlantGame.Player
         void OnEnable() { _map?.Enable(); }
         void OnDisable() { _map?.Disable(); }
 
+        /// <summary>Display string of the binding for an action ("Pickup", "Use", "Water", "Pause"), e.g. "Q".</summary>
+        public string KeyLabel(string action)
+        {
+            var a = _map?.FindAction(action == "Pickup" ? "PickupDrop" : action);
+            return a != null ? a.GetBindingDisplayString(InputBinding.DisplayStringOptions.DontIncludeInteractions) : "?";
+        }
+
+        /// <summary>Climbing axis: W / S and the up / down arrow keys (plus the stick), -1..1.</summary>
+        public float ClimbAxis
+        {
+            get
+            {
+                if (!Enabled) return 0f;
+                float v = Move.y; var k = Keyboard.current;
+                if (k != null) v += (k.upArrowKey.isPressed ? 1f : 0f) - (k.downArrowKey.isPressed ? 1f : 0f);
+                return Mathf.Clamp(v, -1f, 1f);
+            }
+        }
         public Vector2 Move => Enabled && _move != null ? Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f) : Vector2.zero;
         public Vector2 Look => Enabled && _look != null ? _look.ReadValue<Vector2>() : Vector2.zero;
         public bool JumpPressed => Enabled && _jump != null && _jump.WasPressedThisFrame();
@@ -55,7 +73,7 @@ namespace PlantGame.Player
         public bool PausePressed => _pause != null && _pause.WasPressedThisFrame();   // not gated by Enabled: Esc must always work
         public bool RestartHeld => Enabled && _restart != null && _restart.IsPressed();
 
-        /// <summary>+1 / -1 when the player pressed Tab / Shift+Tab or scrolled this frame, else 0.</summary>
+        /// <summary>+1 / -1 when the player pressed Tab / Shift+Tab this frame, else 0.</summary>
         public int CycleDelta
         {
             get
@@ -66,10 +84,7 @@ namespace PlantGame.Player
                     var kb = Keyboard.current;
                     return kb != null && kb.shiftKey.isPressed ? -1 : 1;
                 }
-                float s = _scroll.ReadValue<Vector2>().y;
-                if (s > 0.01f) return -1;      // wheel up = previous slot
-                if (s < -0.01f) return 1;
-                return 0;
+                return 0;   // the mouse wheel / trackpad scroll no longer cycles slots (accidental switching on laptops)
             }
         }
 

@@ -12,20 +12,30 @@ namespace PlantGame.Core
     {
         // Inventory / items
         public static event Action<ItemDefinition> ItemPickedUp, ItemDropped, ItemUsed;
+        // Interaction (T04/T05 additions, contract v1.5)
+        public static event Action<ItemDefinition> InventoryFull;             // pickup refused
+        public static event Action<string> FocusChanged;                      // HUD prompt, "" = nothing focused
+        public static event Action<string> HintRequested;                     // short transient HUD hint (a few seconds)
+        public static event Action UseRejected;                               // E / Q with nothing to act on
         // Plants
         public static event Action<PlantDefinition> PlantStarted, PlantGrown;
         // World / game flow
         public static event Action<int> WorldGenerated;                       // seed
-        public static event Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded;
+        public static event Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded, GlideStarted, GlideEnded;
         public static event Action<GameMode> RunStarted;
         public static event Action<float, bool> RunFinished;                  // seconds, newBest
         // Water
         public static event Action<int> CanChanged;                           // charges left
+        public static event Action<float> TimeAdded;                          // T52: seconds a time fruit added to the Challenge countdown
         public static event Action Watered, CanRefilled, CanEmptyTried, CollectorReady;
 
         public static void RaiseItemPickedUp(ItemDefinition i) => ItemPickedUp?.Invoke(i);
         public static void RaiseItemDropped(ItemDefinition i) => ItemDropped?.Invoke(i);
         public static void RaiseItemUsed(ItemDefinition i) => ItemUsed?.Invoke(i);
+        public static void RaiseInventoryFull(ItemDefinition i) => InventoryFull?.Invoke(i);
+        public static void RaiseFocusChanged(string prompt) => FocusChanged?.Invoke(prompt);
+        public static void RaiseHint(string text) => HintRequested?.Invoke(text);
+        public static void RaiseUseRejected() => UseRejected?.Invoke();
         public static void RaisePlantStarted(PlantDefinition p) => PlantStarted?.Invoke(p);
         public static void RaisePlantGrown(PlantDefinition p) => PlantGrown?.Invoke(p);
         public static void RaiseWorldGenerated(int seed) => WorldGenerated?.Invoke(seed);
@@ -34,9 +44,12 @@ namespace PlantGame.Core
         public static void RaisePlayerRespawned() => PlayerRespawned?.Invoke();
         public static void RaisePlayerJumped() => PlayerJumped?.Invoke();
         public static void RaisePlayerLanded() => PlayerLanded?.Invoke();
+        public static void RaiseGlideStarted() => GlideStarted?.Invoke();
+        public static void RaiseGlideEnded() => GlideEnded?.Invoke();
         public static void RaiseRunStarted(GameMode m) => RunStarted?.Invoke(m);
         public static void RaiseRunFinished(float seconds, bool newBest) => RunFinished?.Invoke(seconds, newBest);
         public static void RaiseCanChanged(int charges) => CanChanged?.Invoke(charges);
+        public static void RaiseTimeAdded(float seconds) => TimeAdded?.Invoke(seconds);
         public static void RaiseWatered() => Watered?.Invoke();
         public static void RaiseCanRefilled() => CanRefilled?.Invoke();
         public static void RaiseCanEmptyTried() => CanEmptyTried?.Invoke();

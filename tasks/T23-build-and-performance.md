@@ -1,6 +1,6 @@
 # T23 — Performance pass + standalone build
 
-**Owner:** A8 Tester/Release · **Depends on:** T22 · **Estimate:** 2h · **Day:** 3
+**Owner:** A8 Tester/Release · **Depends on:** T22
 **Status:** TODO
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.

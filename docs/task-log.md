@@ -1,3 +1,154 @@
 # Task log
 
 Long per-task notes live here (keep `TASKS.md` and task files short). Newest first.
+
+## Island shapes, start away from seeds, pause orbit (last pass, partly verified)
+- `IslandShape` (in `RoundIsland.cs`): ellipse + lobes + optional bay + wobble; layout, soils, bridges, spawn, water and `Scenery.Decorate` use `Edge(angle)` instead of a circle. The start spawn sits at 0.68 of the rim and the start island's seed sources (and the collector soil) lie at least 10 m from it (`SeedFromSpawn`): measured 10.5 / 16.4 m to the shelf patch / vine tree. Layout shot `docs/shots/level1_layout.png` shows varied outlines.
+- Pause / start menu / end panel: `PlayerController.PauseOrbit` slowly circles the camera (9 deg/s) and restores the view on resume.
+- **Not verified:** the builder logs 3 conservative overlap warnings (max-edge sums; islands 1-2, 3-4, 4-5), the overview shows no actual overlap but bridges / ladders were not re-checked after the shape change; pause orbit not seen in play mode; usage limit hit before the task files were re-checked.
+
+## Water polish, Water Collector plant, collector-only levels
+- `Art/Shaders/OvergrowthWater.shader` (world-space scrolling ripples, depth gradient, sparse glints, cyan rim, fog) + `T_WaterRipple.png`; `WaterMaterialBuilder` (menu 13) makes `M_Water` (light), `M_WaterMid`, `M_WaterDeep`; every pond / stream picks one at random so some are darker. Shots `docs/shots/water_look_*.png`.
+- T28 done: `Source/Blender/scripts/plants_collector.py` bakes `Plant_Collector_01..06` procedurally with bmesh (not Geometry Nodes; deviation noted in the file): stem, double-walled bowl, 5-8 curled petals, base leaves, cyan dew dots, `Reservoir`, `WaterMin/Max`, `INTERACT_NN`, `COL_NN_0`. `CollectorPrefabBuilder` (menu 14) -> `Prefabs/Plants/Plant_Collector_NN.prefab` with `M_CollectorGrow`, `PlantInstance` (4 s) and `WaterCollector` (1 charge per 20 s, capacity 1, reservoir scales with the fill).
+- `SandboxPlantTestBuilder.Create(..., collectorOnly)`: collector-only level = no water sources, a Soil_Collector + Dew Seed patch on island A. `Sandbox_PlantTest` is built that way, Main keeps the water islands. `SandboxTarget` plants collectors upright and grows them without water.
+- Verified in play mode (collector-only sandbox): 0 WaterSources, dew seed planted -> grown -> 1 stored charge -> E hands it to the empty can (0 -> 1). Shot `docs/shots/collector_plant.png`.
+
+## Water pass: droplets, empty start, can in hand, ponds and streams
+- HUD charges are teardrop sprites (`UiSprites.Drop`). `WateringCan` starts with 0 charges, so the first thing to do is E at the start island's water. `WateringCanVisual` (on the Player prefab) shows a small blue can in the right hand while charges > 0, a cyan water disc when full, and tips it when a sprout is watered; it is parented to `Joint_ArmR` at the glove mesh position (the glove's pivot is at the shoulder).
+- Level 1 water islands: A, S, C, E (`WaterIslands`); B, D and the goal island have none. Never more than 2 water-needing links between water islands. Each water feature is a random pond (2-4 overlapping blobs) or a winding stream (8 stretched blobs along a sine path), placed clear of lanes, seeds, soils and the spawn; each blob carries its own `WaterSource` trigger (layer Water). Shots: `docs/shots/water_island*.png`, `can_in_hand.png`.
+- Each water feature has ONE `WaterSource` (middle segment of a stream, first blob of a pond) so only one interact marker shows; the other blobs are visuals only. Main has 4 sources, one per water island.
+- Not tested: pouring animation by eye.
+
+## Diverse trees and seed patches
+- `Scenery.Tree` has 7 species (oak, pine, birch, blossom, willow, cypress, autumn); each island rolls its own weights so islands feel different. Bushes come as round, berry (red / blue) or rock clusters. New materials: M_BirchBark, M_Blossom, M_Autumn, M_FoliageDark, M_BerryRed/Blue, M_BeanPod.
+- Seed patches are distinct: beanstalk = four bean poles with leaves and pods in the seed colour, shelf = mossy log + stump with bracket fungi. The vine seed stays a fruit tree. Shots: `docs/shots/trees_island3.png`, `patch_shelf.png`.
+
+## Level 1 puzzle, bigger random islands, lower jump
+- Level 1 (`SandboxPlantTestBuilder`, seed `LayoutSeed`) is now 7 islands (A start, B, S side island, C, D, E, F goal), radii 9-13 m (was 8), outlines wobble 0.55 m, headings jittered +/-10 deg. Gaps: A>B bridge, B>S bridge, B>C ladder, C>D platform, D>E bridge, E>F ladder.
+- Seeds are not next to their gap: A has a vine tree (3 seeds) and a shelf patch (2); only S has beanstalks (3). Six plants, bag of 4: plan the carrying order or walk back (plants stay grown). Water on every island.
+- Island contents (spawn, soils, water, seeds) are placed first; `Scenery.Decorate` then keeps trees / ruins out of the plant lanes and at least 7-8 m from seed sources (fixes the ruin blocking the start seeds).
+- Verified in play mode: seed counts per island, all three bridges land on the next island, ladders / platform grow and connect. Not walked end to end by hand. Layout shot `docs/shots/level1_layout.png`.
+- Jump height 4.8 -> 3.6 m (user request): running reach ~7.2 m, `PlayerController.jumpHeight`, AGENTS v1.6, docs/controls.md.
+
+## T15-T20 pass: Main scene, sky, audio, VFX
+- `PlantGame > 12 Build Main` builds Main.unity (Level 1 = the Sandbox_PlantTest chain) with `Systems` (GameBootstrap, GrowthVfx, SfxBinder, AudioManager) and the Atmosphere prefab (`11 Build Atmosphere`). `PlantGame.Runtime.asmdef` now references URP.
+- Gotcha: a MonoBehaviour must live in a file named after it, otherwise scene/prefab references show "script is missing" (hit with `IslandSpawn`, `CloudDrift`).
+- Gotcha: reflection (`BindingFlags`) is rejected in `Unity_RunCommand`; expose a public method instead.
+- Audio is synthesised by `docs/audio/make_audio.py` (6 s run). Music defaults to off in `GameSettings`.
+- Restart with `_skipMenu` must start the RunSession itself (Main's bootstrap disables `startOnAwake`).
+
+- Mushroom platform: one pad fewer per variant (now 2-3 pads, rise 1.1-1.2 m per step, `MAX_HOP` raised 2.5 -> 3.2 m because two pads must span the reach; jump reach is 8.3 m). Re-exported, prefabs and Main / Sandbox_PlantTest rebuilt.
+
+## Thin beanstalk with beans + climb hints
+- Beanstalk thinner (R 0.10-0.16) with yellow-bean pods on the back; HUD shows "Press [W] to climb" inside a grown ladder's volume, "[S] to climb down" on the pad, and the climbing keys while on the vine. Verified in play mode with the bent island chain.
+
+## Mushroom platform, arched bridge, winding island chain
+- Platform = red-capped mushrooms with white spots and white sloped stalks (`_CapColor`); bridge = arched, braided, slatted, with white and yellow flowers (`_FlowerColor`); the island chain winds (headings 0 / 38 / -32 / 20). The platform island's next island used to overlap it (soil moved to the island middle so the centres are 17 m apart). Verified in play mode: bridge crossed, ladder climbed on the bent heading, platform caps grown with colliders.
+- Gotcha: when an Editor script has a compile error, `Unity_RunCommand` still runs against the OLD editor assembly (builder calls silently do old behaviour). After editing Editor scripts read `Unity_GetConsoleLogs` for errors before trusting results.
+- Tools: `File.Delete` from `Unity_RunCommand` is refused ("user interaction"); use Bash.
+
+## Goal flag, run timer, nicer tree
+- `RunSession` + `SaveService` + `GoalFlag` + HUD timer / end panel (see T25, T12, T19 notes). Verified in play mode: prompt "Raise the flag" with E, state Won at 33.8 s, end panel text "Goal reached! / Time 00:33.8 / New best!", `save.json` written (test file removed afterwards). Note: calling `File.Delete` from `Unity_RunCommand` is rejected by the tool ("user interaction"); delete such files with Bash.
+- Seed tree: tapered brown trunk with root flare and bark texture (`TreeParts.Trunk`, `M_Bark` from `T_Bark`, `Palette.Bark` #7B5638), three branches, six-puff two-tone crown (`M_Foliage`, new `M_FoliageLight`), fruit in the seed colour. Screenshot: docs/shots/seed_tree.png.
+
+## Round islands, seed sources, HUD pass, options
+- `RoundIsland` replaces the box islands in `Sandbox_PlantTest` (top disc + tapered rock underside, wobbled outline). `SeedTree` regrows seeds; each island has a seed tree (vine) or patch (beanstalk, shelf) built from primitives with fruit in the seed colour. Verified: a picked seed regrows after ~11 s; bridge, ladder and platform still work on the round islands (bridge crossed, ladder climbed, next island reached).
+- HUD: orange / purple text, empty-water indicator, "Press [F] to water" sign, key hints panel with a pause-menu toggle (`GameSettings.Hints`, default on). Mouse scroll no longer changes the inventory slot.
+- Fixed: seeds on the platform island used to sit outside the island.
+
+## Textures + seed colour
+- Added `TextureBuilder` (procedural tileable grass / rock / seed textures + normal maps), `TexturedBox` (box mesh with world-scale UVs, top vs side submeshes). `M_Terrain` is now a deeper green with the grass texture, `M_Stone` has the rock texture, seeds get a ridged coat. Vine seed colour is `Palette.SeedLime` (`#B8E35F`) so it stands out from the island. Island slabs in `Sandbox_PlantTest` and the floors in `Sandbox_Gameplay` use `TexturedBox`. Screenshot: docs/shots/seed_and_island_textures.png.
+- Not textured yet: plants (shader palette), soil patch boxes, player.
+
+## T08 platform plant + Blender name tags
+- Platform FBXs synced, `PlatformPrefabBuilder` (menu 10), `SandboxTarget` supports `PlantKind.Platform` (yaw so the last pad faces `growDirection`). `Sandbox_PlantTest` now has a platform island (variant 3, island 2) and a 4th island 3.6 m higher; each island carries the two seeds for its own plant next to the soil patch.
+- Blender helper objects are tagged per kind (`@B`, `@L`, `@P`, `@C`, see `pipeline_common.KIND_TAG`) because names are unique per file and every kind used `Anchor_01`/`COL_01_0`; `export_fbx.py` strips the tag. Bridge/ladder scripts now clear by collection membership. FBX re-exports of bridge/ladder were not committed (only timestamps changed).
+
+## Sandbox_PlantTest (all plants at once)
+- `PlantGame > 9 Build Sandbox_PlantTest` (`Editor/SandboxPlantTestBuilder.cs`) builds a chain of 16 m islands along +X: start (spawn, 2 vine + 2 beanstalk seeds, bridge soil) -> 7.5 m gap -> ladder island (beanstalk soil, stalk 2 m from the edge) -> end island 6.5 m higher with a goal marker. One plant per island, every island has a water puddle.
+- Data-driven: the `Stations` list holds one entry per plant kind; kinds with no `Prefabs/Plants/Plant_<Kind>_NN.prefab` are skipped (build log says which), so Platform and Collector islands appear automatically once their prefabs exist. Add a layout branch in `Build()` (next island offset/height) for them if the default bridge-style gap is wrong.
+- `SandboxTarget` generalised: `kind`, `acceptedItemId` (seed must match), `plantPrefabs` (was `bridgePrefabs`, kept via FormerlySerializedAs), `variantIndex`; ladders yaw so the climber side faces `growDirection`.
+- Verified in play mode (frame-driven script): planted both, bridge crossed to island 1, ladder climbed to the pad and the player walked onto island 2.
+- Known: falling respawns at the start island only (single Respawn); no Platform/Collector yet.
+
+## HUD / markers / pause / puddle (interaction pass)
+- `UI/PlayerHud` builds the HUD at runtime (hotbar, selected name, prompt with key, water charges, Esc pause: Resume / Restart / Quit, timeScale 0, cursor freed). `Core/InteractionMarkers`: diamond outline = pickup, ring = usable; yellow = nearby (9 m), blue = focused and actionable. Both are added by `PlayerPrefabBuilder`.
+- `InteractionSensor` got a proximity fallback (1.6 m) so items at your feet can be picked up whichever way you look; drop impulse reduced (0.6) so drops stay close.
+- E on a target with a seed plants it, consumes the seed (done in `PlayerInteraction`, targets must not remove it) and auto-waters (one charge). F still works manually. E on a dry sprout also waters.
+- `Plants/WaterSource` (minimal) + `Water_Puddle` in Sandbox_Gameplay at (-4, 0, -9): E refills the can.
+- Verified in play mode with queued key events: Q drop/pick, E plant (+auto-water, seed consumed), Esc pause/resume, E refill (0 -> 2). Screens: docs/shots/hud_*.png.
+
+## Bridge on island one (sandbox)
+- Exported `Plant_Bridge_01..06` with `CHAR_FBX_OVERRIDES` (hierarchy-safe), synced to `Art/Models/Plants/`; `ModelImportSettings` now bakes the axis conversion for Plants too.
+- `PlantGrow.shader`: new `_PartColors` toggle uses vertex colour G (part id) for deck / vine / leaf / blossom colours. Material `M_BridgeGrow` (created by the builder) has it on.
+- `PlantGame > 7 Build Bridge Prefabs` makes `Prefabs/Plants/Plant_Bridge_NN.prefab`: COL_* become BoxColliders on layer Plant (disabled until the growth passes them), `PlantInstance` runs the sprout (_Growth 0.08) and the 6 s grow.
+- `SandboxTarget` (soil patch at (3.9, 0.15, -2.2), facing the 7 m gap +X) spawns a bridge on E, yaws it to +X from the Anchor/Tip empties, tilts it level and starts growth when watered (auto on E). Verified: grows, deck colliders continuous (0.1 - 0.45 m above the floor), player walks across to the far island. Screenshot: docs/shots/bridge_in_game.png.
+- Known: the same variant is used per target for the Nth plant (`useCount`); T11's SoilPatch will pick by seed. Bridge leaves are a single flat colour per part, blossoms are tiny.
+
+- Start menu (controls, best time, Start), goal distance hint in the HUD (T19 sandbox HUD). T26 still needs the title / level select; T15 should hand RunConfig to the menu instead of `startOnAwake`.
+- Mushroom platform: 3–4 pads per variant instead of 4–7 (steps 0.8–1.0 m, same total rise/reach; jump check passes, worst hop 2.15 m). Re-exported with CHAR_FBX_OVERRIDES, synced, prefabs rebuilt (menu 10).
+- Options: Hints / Music (default off) / Sound (default on) toggles on start + pause menus, Reset best times (start menu), `GameSettings.Music/Sound/CameraFollow`; Music/Sound only store the setting until T17/T18 audio exists. Camera follow: A/D while holding W steer the camera (100 deg/s, mouse overrides, pause-menu toggle). Verified yaw 0 -> 20 deg in play mode.
+- Soil patches: brown furrowed squircle bed (`Editor/SoilPatchMesh.cs`, T_Soil, M_Soil, Palette.Soil), BoxCollider unchanged; planted/watered tint darkens the soil instead of green/cyan. Screenshot docs/shots/soil_patch.png.
+
+## Runtime world generator, seed codes, title screen, glide leaf
+- `Scripts/World`: `LevelPlanner` (Level 1 hand plan, `Generate(config, attempt)` chain with seed supply windows and water budget), `LevelLayout` (positions, rim-sampled overlap check), `WorldValidator`, `WorldGenerator` (builds islands/soils/seeds/water/goal/player from `Kit` = `Resources/WorldKit`, filled by menu `14 Build World Kit`). `RoundIsland`, `Scenery`, `TreeParts`, `SoilPatchMesh` moved from Editor to runtime. Same RunConfig -> same world.
+- `Core/SeedCode`: `LEAF-XXXX-XXXX-XX` (44 bit payload + checksum symbol); `LevelDefinition` assets in `ScriptableObjects/World` (menu 14 also writes them). `RunSession.SaveKey` = levelId or the seed code.
+- Menu `15 Validate Seeds`: 10k round trips, 200 generated levels, 0 invalid (about a third need a layout re-roll for overlaps).
+- `Title.unity` (menu 16, `UI/TitleMenu`): level cards with best times, random level (difficulty, code shown, copy), enter code with live validation, mode toggle. Main skips its in-game start menu when coming from the title; Menu buttons return to Title. Seed code on pause/end panels + copy button.
+- T32 (reduced): `parachute_leaf` item, `PlayerController.TryStartGlide` (fall cap 2.5 m/s, 8 s max, ends on landing/Space/climb), E in mid-air spends the leaf; leaf bushes on one mid island of levels with 5+ islands. Verified in play mode (leaf consumed, glide on, vy -0.4 at start).
+- Gotchas: `Unity_RunCommand` logs with `{n:0.0}` format specifiers print literally, concatenate strings instead. After script edits wait ~60 s for the domain reload ("Unity not detected").
+
+## Grow-zone shapes, themes, six levels, goals, round trip
+- Soil patches vanish (sink, renderer off) when a seed is planted; the collider stays until the sprout is watered. Shape per kind: squircle bridge, circle beanstalk, hexagon platform, six-lobed flower collector (`SoilPatchMesh.ShapeFor`).
+- `LevelTheme` Sunny / Rain / Autumn (`WorldTheme.Resolve`: curated levels carry it, random ones derive it from the seed). `WeatherController` re-colours a runtime copy of the sky, fog, ambient, sun, clouds; rain streaks or wind-blown leaves follow the player; no butterflies outside Sunny. Autumn swaps foliage / island tops through `Scenery.Mat` (materials M_AutumnGold, M_AutumnRed, M_TerrainAutumn made by menu 14). Per-theme music + rain ambience (`docs/audio/make_audio.py`, wired in `AudioManager`).
+- Six curated levels (`WorldKitBuilder`, fixed `sequence` of gaps): 1 First Steps (B,B), 2 Beanstalk Hill (autumn, B,L,B, fruit), 3 Water from the Sky (rain, collector only, B,P,L, campfire), 4 Skyfall (B,L,Glider,B, gate: ladder up, then a 19 m gap down 9 m that needs the leaf), 5 Stepping Stones (hand plan, id level_5), 6 There and Back (round trip: Heart Seed on the far island, goal on the start island).
+- `PlantKind.Glider` = a leaf gap (not in seed codes). Goals: `GoalKind` Flag / Fruit / Gate / Fire built by `GoalBuilder`; random levels derive theirs from the seed.
+- Title screen: six cards, test-scene buttons (plant test chain, plant gallery, movement course, world sandbox).
+- Verified: all six levels plan and validate, level 2/3/4 played in the editor (autumn, rain, glide layout), SeedCode round trips. Not yet played through: level 6 end to end, fruit / fire goals, glide crossing with a real jump.
+
+## Menus: options, volume sliders, 8-bit music, purple markers
+- Title: Home (mode toggle, Play = level 1, Select level, Generate level, Input seed, Options, Quit); each has its own screen. Options: Music / Sound toggles + volume sliders (`GameSettings.MusicVolume / SoundVolume`, `UI/UiKit.Slider`), key hints. Pause menu and the in-game start menu have the same sliders. Music is now on by default; Title.unity has an AudioManager for the menu track.
+- Music: `docs/audio/make_audio.py` `chip()` synthesises 8-bit tracks (pulse lead, quiet pulse arpeggio, triangle bass, noise drums): gameplay C major, menu G major, rain A minor without drums, autumn D dorian. 16 bars each; rain and wind ambience unchanged.
+- Focused pickup / usable marker and the focus highlight are purple (`Palette.TextPurple`); the Water HUD text sits further right.
+- Gotcha: if `PlantGame > 12 Build Main` throws in `Kit.Mat`, run `14 Build World Kit` first (12 now does it itself).
+
+- Best times are per level and mode only: the in-game start menu no longer shows a generic best time (only the Challenge limit); the title cards and the end panel show the level's own. "Reset all best times" in Title > Options (and the in-game start menu's Reset button) clears every saved time. Pause menu: Copy seed code moved off the Sound slider, the pickup prompt is hidden while paused.
+
+## Word seed codes, title showcase, varied backdrop, island heights, waterfalls
+- Seed codes are five dash-joined lowercase words (`Core/SeedCode.cs`, 256-word list, 24-bit seed + islands + kinds + version + checksum nibble). Spaces / underscores / capitals are accepted and the input box rewrites them to dashes. Legacy `LEAF-XXXX-XXXX-XX` still decodes (only tried when the text is not five words, since `leaf` is also a word). Random seeds are masked to 24 bits.
+- Title: `TitleWorld` (a `WorldGenerator` with `spawnPlayer = false`, config levelId `title`, Sunny) behind the menu; `TitleMenu` orbits the camera round the first two islands and plants + waters every soil one by one so the plants grow. Verified: 4 islands, 3 soils, bridges grown, waterfall, ruins.
+- Sky backdrop (`DebrisMeshes`, `Scenery.SkyDebris`): jagged faceted rocks, glowing crystal clusters, broken pillar drums, slabs, logs, rock-with-bush, plus the tree islets; rebuilt through menu 11 / 12.
+- Layout: bridge targets sit 1 m lower to 0.5 m higher; ~45% of islands get a waterfall over the rim (`World/Waterfall.cs`, own random so the rest of the layout is unchanged). This fills T29.
+- HUD: water text and its refill warning are blue (left), key hints stay orange (right).
+- Gotcha: `Kit.Mat` threw on the first call after a domain reload (the `Asset` getter reset the caches mid-call); fixed by reading `Asset` first.
+
+## Imported art pass (Kenney, Quaternius, FreeStylized ruins) and regression
+- New third-party models under `Game/Assets/Art/Models/{Kenney,Quaternius,Ruins}`, materials under `Art/Materials/{Kenney,Quaternius,Ruins}`; raw downloads stay in `Source/ThirdParty-raw/` (git-ignored). Every pack has a row in `Game/Assets/ThirdParty/LICENSES.md`; sources, filenames, builder menus and shots in `docs/asset-sources.md`.
+- Builders (menus): `17 Build Kenney Props`, `18 Build Quaternius Props`, `19 Build Ruins Props`, then `14 Build World Kit` (fills `WorldKit.props`, looked up with `Kit.Prop(name)`). `ModelImportSettings` skips these three folders (they keep their embedded materials until the builder remaps them).
+- `Scenery.cs`: `Model()` places an imported prop standing on a point, scaled to a target height; trees, bushes, flowers, rocks, ruin pillars/rubble and the portal arch use imported models and fall back to the old primitives when a model is missing (so an old WorldKit still works). Autumn levels use Kenney `_fall` trees.
+- Sky debris no longer floats next to islands (`KeepDebrisClear`) and the space below the islands is darker and deeper (see asset-sources.md).
+- Regression run in the editor (2026-10-24): `15 Validate Seeds` 0 invalid of 200, seed code round trip 0 failures of 10000; Title loads (showcase world, 7 buttons); levels 1 (Challenge), 2, 3, 4, 5, 6 load with player, scenery, items and goal; level 4: the glide leaf is focused ("Pick up Parachute Leaf"), Q picks it up (slot 0), E in the air starts the glide and spends it; planting + watering a vine seed on level 1 grows a bridge with colliders. Console: no errors or warnings from the project. Not run: a full manual playthrough of each level.
+- Gotcha: after editing editor scripts the domain reloads and RunCommand calls fail with "Unity not detected" for about a minute; wait and retry. Tint of Kenney materials is applied in a separate pass because remapped models no longer expose their embedded materials.
+
+## Parachute leaf look, seed spin, F refill, task board
+- Parachute leaf: `World/LeafMesh.cs` builds a pointed (lanceolate) two-sided blade. Pickup = 0.95 x 0.36 m yellow leaf (`M_GlideLeaf`, `Palette.LeafYellow`), tilted 24 degrees and hovering 0.25 m over the ground, mesh asset `Art/Models/Items/Leaf_Pickup.asset`, built by `PlantGame > 6 Build Items`. Open glide leaf = 3.6 x 1.5 m blade across the shoulders, leading edge up. Shots `docs/shots/leaf_pickup_angles.png`, `leaf_glide_chase.png`.
+- Gotcha: a V-fold in the blade collapses its near half when seen at 12-15 degrees (looks like a half moon), so the leaf has no fold (`fold = 0`). `Mathf.Pow(sin(pi), 0.75)` returned NaN at the tip until the sine was clamped to >= 0.
+- `Inventory/ItemBob`: each item picks a random spin direction and a speed between 0.2 deg/s and `degreesPerSecond` (60) in Awake (was one fixed clockwise speed).
+- Water: F at a lake, waterfall or Water Collector refills the can (`PlayerInteraction.Water`); E no longer refills (`Use` skips refill targets). The prompt there shows the Water key (F); the HUD hint, the dry-can warning and the pause-menu controls list advertise F. Checked: empty can -> F at the lake -> 2 charges. AGENTS.md (controls, 5.2b, 5.8, change log v1.9) and `docs/controls.md` updated.
+- Task files: estimates removed from `TASKS.md` (Est column) and from the task file headers; AGENTS.md rule 6 no longer mentions estimates. Every task file's `Status:` line now matches the board (they had lagged); see the status notes at the end of `TASKS.md`.
+- Hotbar: the parachute leaf shows as a yellow, leaf-shaped icon (`UiSprites.Leaf`, `Palette.LeafYellow`) instead of a round disc; the colour is pinned in `PlayerHud.ItemColor` (other items still take it from their pickup prefab material).
+- Refill is F only now: `PlayerInteraction.Use` skips refill targets, so E at water does nothing and E on the goal gate / glide still work. With the parachute leaf selected, E on the ground does nothing (`UseRejected`, leaf kept) except at the goal, where it still completes the level (`PlayerInteraction.Use`); E in the air glides as before. Checked on level 4.
+
+- Day 3: planting no longer waters automatically; F waters a sprout (E no longer does). Collector markers only show when there is water to collect; water markers are blue; seed sources regrow every 60 s (was 12 s).
+
+## Island dressing pass (2026-10-24)
+- `Overgrowth.Clutter`: ~2x grass (a few tufts on mud / rock), mud and stone decals, moss on all ground, low shrub blobs, sticks, pebbles. About half of the ruins are heavily vine-covered (26 extra strands, leafy clumps).
+- `Scenery.ShinyBits`: marble chips and brick chunks round ruins, glinting gems (`GemSparkle`), floating shiny chips / gems outside the rim. Ground spheres (rocks, stones, rock-bush caps) are now `DebrisMeshes` rocks.
+- Water: `WaterPlants` (lily pads, reeds, cattails) on ponds; swamp ponds (`Isle.murky`, green `M_WaterMurky`, no `WaterSource`, no trigger) on ~30% of islands without real water. Own random, but the carved hollow changes `keep` zones, so item positions on those islands can shift for existing seeds (`GeneratorVersion` not bumped).
+- 11 unused Quaternius textures (22 MB) deleted. Checked: compile clean, `15 Validate Seeds` 0 invalid, shots `docs/shots/t54_*.png`. Not checked: frame time (T23), a real-water pond close-up, ruin close-up.
+
+## Review pass: build safety, leaks, repo size (2026-10-24)
+- `Core.RuntimeMats` replaces 15 scattered `Shader.Find` calls. URP Particles/Unlit was referenced by no material asset, so a player build would strip it and `new Material(null)` would throw (weather, waterfall, goal flame). `MaterialBuilder` now makes six `M_Keep_*` materials (transparent Lit +/- emission +/- normal map, Particles/Unlit alpha and premultiply) that WorldKit carries into the build. Not yet checked in an actual build (T23).
+- `CameraOcclusionFade` destroyed nothing: every fade made a new HideAndDontSave material (161 had piled up in the editor). Per-renderer copies are now destroyed when the renderer turns solid or the component is disabled (checked in edit mode: 163 -> 162, the shared template stays).
+- `PlayerController.Instance` (set in OnEnable) replaces seven lazy `FindAnyObjectByType<PlayerController>` lookups; `WorldGenerator.SpawnPlayer` keeps the scene search because it can run before a scene player's OnEnable.
+- Repo size: ruin normal maps re-saved 16-bit -> 8-bit (42 MB -> 8 MB, max difference half an 8-bit step); `docs/shots/` (139 PNGs, 119 MB) is gitignored and kept on disk only.

@@ -1,7 +1,7 @@
 # T12 — Seed pickups, soil patch prefab, Heart Tree goal
 
-**Owner:** A1 Gameplay · **Depends on:** T05, T11 · **Estimate:** 2h · **Day:** 2
-**Status:** TODO
+**Owner:** A1 Gameplay · **Depends on:** T05, T11
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -9,6 +9,7 @@
 The playable world objects: seed pickups, planting spots and the goal.
 
 ## Deliverables
+- **Seed trees (user request):** `Scripts/Inventory/SeedTree.cs` exists (T04/T05 pass): a tree that drops its seeds at level start. T12 makes the prefab (`Prefabs/Items/SeedTree`, Blender tree from the kit when T10 lands) and T15 calls `Drop(worldSeed)` on `RunStarted` (set `dropOnStart = false`).
 - `Prefabs/Items/Pickup_<Seed>.prefab` (Vine, Beanstalk, Shelf, Dew) (use `WorldItem`; glowing, bobbing, palette-coloured per plant kind)
 - `Prefabs/Island/SoilPatch.prefab` (from `Prop_SoilPatch` + `SoilPatch` component + prompt 'Plant seed')
 - `Prefabs/Island/HeartTree.prefab`: trigger zone; on enter raises `GameWon` via `RunSession.Win()` (T25 provides; use `GameEvents` until then)
@@ -27,6 +28,12 @@ The playable world objects: seed pickups, planting spots and the goal.
 
 ## Requests (to/from other roles)
 _none yet_
+
+## Already in place (sandbox)
+- `SeedTree` (Inventory) now also regrows: `regrowSeconds` / `maxAlive` drop a new seed every N s while fewer than `maxAlive` of its seeds lie around (0 = drop once, as before). `Sandbox_PlantTest` has a seed tree (vine) and seed patches (beanstalk, shelf) per island, built by `SandboxPlantTestBuilder.SeedSource` (placeholder primitives). World gen (T14) should place these instead of static seeds; decide whether regrow stays on in the real game (infinite seeds) or is limited per level.
+
+## Goal flag (sandbox, done)
+- `Core/GoalFlag` (IInteractable, E, prompt "Raise the flag"): only usable while the run is Running; raises the cloth and calls `RunSession.Win()`. `SandboxPlantTestBuilder.BuildGoal` places it (stone base, gold pole, cyan cloth) on the last island. T12 still owes the real Heart Tree + Heart Seed flow; reuse `GoalFlag`'s `Interact` -> `RunSession.Win()` contract.
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_

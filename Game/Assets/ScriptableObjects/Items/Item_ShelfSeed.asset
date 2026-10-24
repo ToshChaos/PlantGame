@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60730d772106242ab9d8e24d2143e221, type: 3}
+  m_Name: Item_ShelfSeed
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Inventory.ItemDefinition
+  id: shelf_seed
+  displayName: Shelf Seed
+  icon: {fileID: 0}
+  worldPrefab: {fileID: 4561994874654040429, guid: f3c1fe5514994456fb31892e87910874, type: 3}
+  kind: 0
+  plant: {fileID: 0}

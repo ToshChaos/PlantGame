@@ -1,7 +1,7 @@
 # T25 — Game modes (Exploration/Challenge), run timer, best-time save
 
-**Owner:** A1 Gameplay · **Depends on:** T12 · **Estimate:** 3h · **Day:** 2–3
-**Status:** TODO
+**Owner:** A1 Gameplay · **Depends on:** T12
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -33,5 +33,12 @@ Two ways to play and a persistent record of how fast you were.
 ## Requests (to/from other roles)
 _none yet_
 
+## Already in place (sandbox, `Scripts/Core`)
+- `RunSession` (Idle / Running / Won / Failed, `Elapsed`, `Remaining`, `StartRun`, `Win`, `Fail`, `Restart`; unscaled clock that stops while `timeScale` is 0; Challenge fails at 0), `SaveService` (JSON `save.json` in persistentDataPath, atomic write, tolerant to a bad file, `TrySubmitTime` / `BestTime` / `SetLastSeedCode`), `GameEvents.GameWon / RunFinished / GameFailed / RunStarted` raised. `Sandbox_PlantTest` has a `RunSession` (Exploration, levelId `sandbox_plants`) that starts itself.
+- Verified in play mode: timer runs, E on the flag wins, best time saved (`New best!`). Still to do here: EditMode tests for SaveService / RunSession, audio settings in the save, Challenge UI polish, wiring `RunConfig` from the menu (T26), `GameFailed` retry flow.
+
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Handoff (day 3)
+- Per level and mode best times (`SaveService`, key = levelId or seed code), reset-all in Options and the in-game start menu. Still open: EditMode tests for SaveService / RunSession, audio settings in the save file.

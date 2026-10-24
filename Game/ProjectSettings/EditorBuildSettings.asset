@@ -6,16 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Title.unity
+    guid: d4cc8a395213a4f3691c1264cd0f79a8
+  - enabled: 1
     path: Assets/Scenes/Main.unity
     guid: 31f0e8c1e1fdc47bc9f0cf53b9b626d1
   - enabled: 1
     path: Assets/Scenes/Sandbox_Gameplay.unity
     guid: 10af3476bd0d143e4806c3be1a8e4b17
-  - enabled: 1
-    path: Assets/Scenes/Sandbox_Plants.unity
-    guid: b4c6be1fe43454aa6858317a9827ad3e
-  - enabled: 1
-    path: Assets/Scenes/Sandbox_World.unity
-    guid: 069e164d5612e4bc7b51214e5bd638dc
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}

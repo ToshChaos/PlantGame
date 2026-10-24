@@ -1,7 +1,7 @@
 # T20 — Growth VFX polish (cuttable)
 
-**Owner:** A6 Tech Artist · **Depends on:** T11 · **Estimate:** 2h · **Day:** 3
-**Status:** TODO
+**Owner:** A6 Tech Artist · **Depends on:** T11
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -27,4 +27,6 @@ First feature to cut.
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+- **Files:** `Scripts/Plants/GrowthVfx.cs` (in the Main `Systems` object). Runtime-built particle systems with one generated soft-dot material (no prefabs, so `VFX_*` are names of the spawned objects, not assets).
+- Effects: seed sprout burst, watering droplets, growth-front emitter following the plant path (anchor -> tip, arched for bridges), grown burst at the tip + base, pickup sparkle, win petals. Palette cyan / white / green.
+- **Verified:** compiles, runs through win/fail with a clean console; visuals not yet inspected by screenshot. Cost not profiled.

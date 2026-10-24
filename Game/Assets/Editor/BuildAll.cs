@@ -11,8 +11,8 @@ namespace PlantGame.Editor
         {
             ProjectSetup.Run();
             MaterialBuilder.Build();
+            ItemBuilder.Build();
             PlayerPrefabBuilder.Build();
-            SandboxPlantsBuilder.Build();
             SandboxGameplayBuilder.Build();
             ProjectSetup.RegisterScenes();
             AssetDatabase.SaveAssets();

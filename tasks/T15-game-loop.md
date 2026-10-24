@@ -1,7 +1,7 @@
 # T15 — Game flow: scene wiring, run start/restart, respawn, win/fail screens
 
-**Owner:** A0 Director · **Depends on:** T14, T25 · **Estimate:** 2h · **Day:** 3
-**Status:** TODO
+**Owner:** A0 Director · **Depends on:** T14, T25
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -30,4 +30,8 @@ Glue everything in `Main.unity` so a RunConfig produces a playable, finishable r
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+- **Files:** `Scripts/Core/GameBootstrap.cs` (+ static `PendingRun`, `SetMode`, kill plane, last-island respawn, held R restart), `Core/IslandSpawn.cs`, `Editor/MainSceneBuilder.cs`, `SandboxPlantTestBuilder.BuildMain()`; `PlayerHud` got Menu / Retry buttons and a mode toggle.
+- **Main.unity** = Level 1 (`level_1`): the 4-island chain (bridge, ladder, platform) + `Atmosphere` prefab + `Systems` (bootstrap, AudioManager, SfxBinder, GrowthVfx). Rebuild: menu `PlantGame > 12 Build Main`.
+- **Flow:** start menu (mode toggle Exploration / Challenge, 5:00 limit) -> Start -> run. Win/fail panel: Play again (Retry on fail) / Menu / Quit. Esc pause: Resume / Restart / Menu / Quit. Restart reloads the scene (identical world, goes straight into the run). Fall below lowest island - 30 m -> respawn at the last island stood on (`IslandSpawn`).
+- **Verified (play mode):** respawn on island 2 after a drop, win (goal flag, best time saved), Challenge fail at the limit, restart, 4 spawns registered. Screenshot `docs/shots/main_start.png`.
+- **Not done / known:** no `Title.unity` or async fade (T26 owns the menu; the start menu in the HUD stands in), no `WorldGenerator` yet (T14), so no `RunConfig.seed` effect; "Next level" button needs a second level. `Next` omitted on purpose.

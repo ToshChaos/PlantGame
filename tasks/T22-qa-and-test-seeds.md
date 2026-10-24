@@ -1,6 +1,6 @@
 # T22 — QA pass, regression seeds, bug list
 
-**Owner:** A8 Tester/Release · **Depends on:** T15 · **Estimate:** 3h · **Day:** 3
+**Owner:** A8 Tester/Release · **Depends on:** T15
 **Status:** TODO
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
@@ -29,3 +29,7 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Added test cases (day 3)
+- Collector-only level (`Sandbox_PlantTest`): no water anywhere, empty can at start, plant the Dew Seed, wait 20 s, E hands over exactly 1 charge; E again before the next charge does nothing; a full can leaves the charge in the plant; it keeps producing while the player is on another island.
+- Water look: ponds and streams light / mid / dark, one interact marker per feature, drinking from the middle of a stream.

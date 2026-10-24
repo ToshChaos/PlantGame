@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8c8385fd8c034794beb2f2c7cb05374, type: 3}
+  m_Name: level_1
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.LevelDefinition
+  id: level_1
+  title: '1: First Steps'
+  description: 'Plant, water, cross. A bridge and a bridge: that is all you need.'
+  seed: 1101
+  islandCount: 3
+  allowedKinds: 000000000100000002000000i
+  waterMode: 0
+  theme: 0
+  wind: 0
+  goal: 0
+  roundTrip: 0
+  spiral: 0
+  sequence: 0000000000000000i
+  sideIslands: 0
+  challengeTimeLimitSeconds: 150
+  parTimeSeconds: 90

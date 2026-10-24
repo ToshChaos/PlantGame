@@ -60,7 +60,8 @@ def export_collection(coll_name, out_dir=None, validate_profile=None, strict=Tru
         if nn:
             # two passes through temp names so renames cannot collide
             for o in objs:
-                new = _strip_name(o.name, nn)
+                base = strip_tag(o.name)
+                new = _strip_name(base, nn) or (base if base != o.name else None)
                 if new:
                     renamed.append((o, o.name, new))
             for o, old, new in renamed:

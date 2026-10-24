@@ -1,4 +1,4 @@
-# Overgrowth (PlantGame) — notes for Claude sessions
+# Overgrown (PlantGame) — notes for Claude sessions
 
 @AGENTS.md
 

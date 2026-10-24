@@ -1,7 +1,7 @@
 # T09 — Bake 6 variants per plant + proxies + export
 
-**Owner:** A3 Plant Smith · **Depends on:** T02, T06 (T07, T08, T28 incrementally) · **Estimate:** 3h · **Day:** 2
-**Status:** TODO
+**Owner:** A3 Plant Smith · **Depends on:** T02, T06 (T07, T08, T28 incrementally)
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

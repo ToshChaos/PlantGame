@@ -1,4 +1,4 @@
-# AGENTS.md — "Overgrowth" (working title) · 3-day hackathon MVP
+# AGENTS.md — "Overgrown" · 3-day hackathon MVP
 
 Read this file fully before touching anything. Then read `TASKS.md` and your task file in `tasks/`.
 
@@ -15,7 +15,7 @@ the run fails (retry/back to menu). **Best times** (time spent to finish) are sa
 (1 required, 3 nice), **Random Level**, and **Enter Seed Code**. Any generated level can be re-created from its
 **seed code** (copy/paste shareable).
 
-**Controls:** WASD move (**W / S also climb up / down** on ladders) · Mouse look · Space jump (while climbing it jumps off the vine) · **Q** pick up the item you look at, or drop the selected item · **Tab** cycle inventory slot · **E** use (plant the selected seed on a soil patch; refill the can at a lake, waterfall or collector) · **F** water a sprout · Esc pause · R restart run (hold). Optional aliases: 1–4 / wheel select a slot. Inventory: **4 slots**, no stacking. The **watering can** is separate from the 4 slots: **2 charges**, never dropped, refilled with E at a lake, waterfall or Water Collector.
+**Controls:** WASD or the arrow keys move (**W / S and Up / Down also climb up / down** on ladders) · Mouse look · Space jump (while climbing it jumps off the vine) · **Q** pick up the item you look at, or drop the selected item · **Tab** cycle inventory slot · **E** use (plant the selected seed on a soil patch) · **F** water a sprout, or refill the can at a lake, waterfall or collector · Esc pause · R restart run (hold). Optional alias: 1–4 select a slot (no mouse-wheel selection). Key hints (Q / E / F / Tab) are shown on screen by default; the pause menu toggles them (`GameSettings.Hints`). Inventory: **4 slots**, no stacking. The **watering can** is separate from the 4 slots: **2 charges**, never dropped, refilled with F at a lake, waterfall or Water Collector.
 
 ## 2. Tech stack and environment (modelled on the sibling project *ClockWork*; T00 confirms versions)
 - **Unity 6000.6.5f1**, Universal 3D / URP, new Input System, Cinemachine (built-in in 6.6, pin is redundant), TextMeshPro. C#.
@@ -60,7 +60,8 @@ the run fails (retry/back to menu). **Best times** (time spent to finish) are sa
 - Do **not** edit scripts in play mode (domain reload wipes non-serialized state). After script or package changes the
   domain reloads: calls fail with "Network error" for a few seconds — wait ~10 s and retry. `Game/Logs/Editor.log` is the
   fallback when the console tool lags. The third-person camera is a child of the player, so teleports move it too.
-- Docs habit: long per-task notes go in `docs/task-log.md`; keep `TASKS.md` and the task files short.
+- Docs habit: long per-task notes go in `docs/task-log.md`; keep `TASKS.md` and the task files short. `docs/shots/` is gitignored (local screenshots only; describe what you saw in the task log).
+- Runtime materials: create them through `PlantGame.Core.RuntimeMats` (never a bare `Shader.Find`). A player build only carries shaders and keyword combos used by a material asset; the `M_Keep_*` materials (`MaterialBuilder`, listed in `Resources/WorldKit`) cover transparent Lit and Particles/Unlit. Add a keeper when code turns on a new keyword combo.
 
 ## 3. Repository layout (contract — do not invent new top-level folders)
 ```
@@ -111,35 +112,37 @@ Roles, not necessarily separate sessions — one session may wear several hats, 
 4. **Vertical slice over breadth.** Ugly-but-playable beats pretty-but-broken. Hold the cut line (section 8).
 5. **Verify with your eyes.** Blender agents: screenshot/render the result. Unity agents: enter Play mode, check
    Console is clean, test the acceptance criteria. Don't tick a box you didn't observe.
-6. **Time-box.** Each task has an estimate. At 1.5x, stop, post status in the task file, and ask A0 whether to cut.
-7. **Small commits**, message `T<nn>: what changed`. Branch `task/T<nn>-slug` if using branches; merge by A0.
+6. **Keep tasks small.** If a task drags, stop, post status in the task file, and ask A0 whether to cut.
+7. **Small commits**, message `T<nn>: what changed`. **Always commit when a task (or a self-contained chunk of it) is done** — don't wait to be asked. While one person works on the project, commit **everything** Unity changed too (ProjectSettings, scenes, regenerated materials/prefabs); only the ignored `Library/ Temp/ Logs/ UserSettings/` stay out. Branch `task/T<nn>-slug` if using branches; merge by A0.
 8. **No unlicensed assets.** Every third-party file gets a line in `Game/Assets/ThirdParty/LICENSES.md` (name, author, license, URL).
 
 ## 5. Contracts
 
 ### 5.1 Scale, axes, units
 1 Unity unit = 1 m. Blender: Z-up, apply scale; FBX settings are pinned in T02 (`docs/pipeline.md`).
-Kit grid = **4 m**. Player: height 1.8 m, radius 0.35 m, walk 4 m/s, run 6 m/s, jump height **1.6 m**,
-max horizontal jump about **5 m**. So any gap >= **7 m** needs a plant (world gen uses 7–14 m).
+Kit grid = **4 m**. Player: height 1.8 m, radius 0.35 m, walk 4 m/s, run 6 m/s, jump height **3.6 m**
+(v1.6, was 4.8 in v1.5), max horizontal jump about **7.2 m** (run). **Open:** the 7 m gap rule below predates the higher jump;
+T14 must keep plant-required gaps above the jump reach (or the jump is retuned). So any gap >= **7 m** needs a plant (world gen uses 7–14 m).
 
 ### 5.2 Plant kinds and reach envelopes (A3, A2, A5 all rely on this)
 | Kind | Seed item | Behaviour | Reach (from anchor) | Grow time |
 |------|-----------|-----------|---------------------|-----------|
-| Bridge | Vine Seed | arcs outward, walkable top, width >= 1.2 m | 8–14 m horizontal, +/-1.5 m vertical | 6 s |
-| Ladder | Beanstalk Seed | climbs up, climbable (trigger volume) | 0–2 m horizontal, 4–9 m vertical | 5 s |
+| Bridge | Vine Seed | arcs outward, walkable top, width >= 1.2 m; tilts up or down to meet the next island | 8–14 m horizontal, up to +/-3.4 m vertical (v2.7; was +/-1.5) | 6 s |
+| Ladder | Beanstalk Seed | climbs up, climbable (trigger volume), **no top platform**: the climber steps off at `Land` straight onto the target island, whose rim lies about 1.2 m in front of the stalk top | 0–2 m horizontal, 8.5–12.3 m vertical (generator uses variant 3: 11 m) | 5 s |
 | Platform | Shelf Fungus / Leaf-pad Seed | spiral of pads, each >= 1.5 m wide, step rise <= 1.2 m | 3–6 m horizontal, 2–4 m vertical | 4 s |
-| Collector | Dew Seed | **Water Collector** (pitcher bloom): needs **no water to grow**, then collects water from the air | none (stays on its soil patch) | 4 s |
+| Collector | Dew Seed | **Water Collector** (pitcher bloom, 1.8-2.7 m): needs **no water to grow**, then collects dew and makes **1 charge every 20 s** | none (stays on its soil patch) | 4 s |
 
 ### 5.2b Water rules (all numbers live in `ScriptableObjects/World/WaterSettings`)
-- **Watering can:** separate from the 4 slots, never dropped. `MaxCharges = 2`, starts full, charges persist through respawn.
+- **Watering can:** separate from the 4 slots, never dropped. `MaxCharges = 2`, **starts empty** (v1.7: fill it at the start island's water), charges persist through respawn. A can with water is shown in the player's hand.
 - **Sprout -> grow:** planting a Bridge / Ladder / Platform seed (E) only creates a **sprout** (`_Growth` ~0.08, no colliders).
   **F** on a sprout within 3 m uses **1 charge** and starts growth. F on anything else costs nothing; F with 0 charges
   gives a "dry" feedback event. Collectors skip the sprout state (`needsWater = false`).
-- **Refill (E):** `WaterSource` (Lake, Waterfall) is unlimited and fills the can instantly; `WaterCollector` hands over its stored
+- **Refill (F):** `WaterSource` (Lake, Waterfall) is unlimited and fills the can instantly; `WaterCollector` hands over its stored
   charges, up to what the can can hold.
-- **Water Collector:** once grown, +1 stored charge every **15 s**, capacity **2**, fill level visible on the plant.
+- **Water Collector:** once grown, +1 stored charge every **20 s**, capacity **1** (`WaterCollector.secondsPerCharge` / `capacity`, v1.8; was 15 s / 2), fill level visible in its bowl (`Reservoir`).
   It occupies a soil patch and a Dew Seed (inventory slot while carried).
-- **World gen water rule (T14):** the Start island always has a water source; along the main path there are never more than
+- **Collector-only levels (v1.8):** `WaterMode.CollectorOnly` levels have **no WaterSource at all**; the first island has a soil patch plus a Dew Seed, and the Water Collector grown there is the only water. Plan for waiting 20 s per charge (and the walk back to the first island). `Sandbox_PlantTest` is built this way; Level 1 uses `WaterMode.Sources`.
+- **World gen water rule (T14):** the Start island always has a water source (the can starts empty); other islands may have none (Level 1: water on 4 of 7 islands); along the main path there are never more than
   2 water-needing links between two water access points (source, or a ready collector); islands without a source may
   carry a Dew Seed supply. The validator simulates charges, so every level is beatable with at most one backtrack.
 
@@ -271,13 +274,13 @@ no textures required — vertex colours + gradients. Music: calm, airy, harp/pad
 ### 5.8 Input resolution (T03 / T04 implement exactly this; `docs/controls.md` mirrors it)
 | Key | Resolution |
 |-----|-----------|
-| W A S D | Move relative to the camera. In the Climbing state **W** goes up and **S** goes down; A / D are ignored. |
+| W A S D / arrow keys | Move relative to the camera. In the Climbing state **W** goes up and **S** goes down; A / D are ignored. |
 | Left Shift | Hold to run (6 m/s; walk 4 m/s). |
 | Space | Jump. While Climbing it **jumps off the vine**: normal jump velocity plus a small push (about 2 m/s) away from the climb surface, air control kept, 0.3 s re-grab cooldown, `PlayerJumped` raised. |
 | Q | Focused `IInteractable` with `Action == Pickup` and a free slot -> pick up. Otherwise drop the selected item (if any). |
 | Tab / Shift+Tab | Cycle the selected slot forward / backward with wraparound (empty slots can be selected). |
-| E | With a selected item and a focused `IUsableTarget` -> `UseItem` (plant a seed). Otherwise a focused `IInteractable` with `Action == Use` (WaterSource, WaterCollector -> refill). |
-| F | Water: focused `IWaterable` within 3 m costs one charge (5.2b). |
+| E | With a selected item and a focused `IUsableTarget` -> `UseItem` (plant a seed). Otherwise a focused `IInteractable` with `Action == Use` (the goal flag; water sources are F only). A selected Heat Seed next to frozen water melts it (v2.5; was F). |
+| F | Water: focused `IWaterable` within 3 m costs one charge (5.2b). At a focused `WaterSource` / `WaterCollector` it refills the can instead (v1.9; E no longer refills). |
 | Esc / hold R | Pause / restart the run. |
 Climbing starts when the player is inside a `Climbable` volume and presses **W** (or **S** at the top edge to go down); reaching
 the top steps the player onto the ladder's `Land`. Prompts print the key from the bound action, never a hard-coded letter.
@@ -296,17 +299,32 @@ how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `D
 Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`).
 
 ## 8. Scope & cut line
+_Day 3 update: there is time, so the stretch items (T32 parachute leaf, ...) are in scope; the cut order below only applies if time runs out again._
+
 **MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->
 Platform plant kind (keep Bridge + Ladder) -> ruin variety -> PlantGallery showcase scene (replace with a video).
 **Never cut:** watering can with 2 charges + refill at a lake or waterfall, seeded generation with copyable seed codes, both modes (Exploration + Challenge timer), best-time saving, at least 2 plant kinds with real Blender variants, pickup/drop/use/limited
 inventory, music + SFX + sky, a win condition, a working build.
-**Stretch:** retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
+**Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v2.7 (day 3): vine bridges tilt up or down by the height difference to the next island (`LevelLayout.MaxBridgeRise` 3.4 m, was 1.5); the plant is stretched along its slope so the horizontal reach stays the same.
+- v2.6 (day 3): beanstalk climbing: Up / Down arrows climb like W / S; the player climbs on the start-island side of the stalk (`ClimbableVolume.playerBehind`, volume spans both sides, grab only from the player's side), so the camera has open air behind the player; frozen water shows a cold glow and the prompt "Frozen water: it needs a Heat Seed" (F says so too); after a use (plant, thaw, glide) the selection moves to the next filled slot (`Inventory.SelectNextFilled`).
+- v2.5 (day 3): game renamed **Overgrown** ("Grow plants to cross the floating islands."); `SeedCode.GeneratorVersion` 3: two vine bridges from one island leave at least 50 degrees apart and bridges elsewhere keep 7 m between them, one or two decoy soil patches (`Soil_*_decoy`, no route needs them) on levels with more than 3 islands; swamp ponds (`Isle.murky`, not a `WaterSource`); the Heat Seed melts ice with E; scenery between the camera and the player fades (`CameraOcclusionFade`); shrubs have no colliders; Sandbox_PlantTest, Sandbox_Plants and Sandbox_World are gone, Sandbox_Gameplay holds one of every item.
+- v2.4 (day 3): `RunConfig.spiral` (islands curl round, +50 degrees per link; Windy Summit), snow-capped goal island and altitude-scaled wind ambience on windy spirals; Challenge-only time fruits (`RunSession.AddTime`, `GameEvents.TimeAdded`): ceil(islands / 3) per level, 30 s per island in total; best times are kept per level and per mode.
+- v2.3 (day 3): arrow keys move like WASD; the player turns slower (300 deg/s); turning the player more than 15 degrees away from the camera while moving forward swings the camera round to follow the facing (the mouse still looks around freely and overrides it). Themes `Snow` and `Fog` plus a per-level `wind` flag (`RunConfig.wind`, `WorldTheme.ResolveWind`); ten curated levels (T50).
+- v2.2 (day 3): the beanstalk ladder has no platform at the top and is taller (8.5-12.3 m, generator 11 m); `LevelLayout.LadderPadReach` 1.2 m, `LadderEdgeInset` 1.6 m; `Land` sits 1.9 m in front of the stalk top (T51).
+- v2.1 (day 3): islands keep 8.5 m from every island but their parent; bridge gaps 8.6-11.6 m (plant stretched to fit, `SandboxTarget.bridgeReach`), platform gaps 4.5 m; up to 15 degrees of island tilt; same `GeneratorVersion` 2 (not yet released).
+- v2.0 (day 3): `SeedCode.GeneratorVersion` 2: optional side islands (`LevelPlan.mainLinks`, `goalIsland`, `RunConfig.sideIslands`), alternative soil patches per gap, overlap-free island placement, per-island ground (`GroundKind`). The game scene spawns more than one `Soil_*` per gap now.
+- v1.9 (day 3): Refilling the watering can at a lake, waterfall or Water Collector moved from E to F (E no longer refills); the HUD advertises F. Seeds spin in a random direction at a random speed (0.2 to 60 deg/s). Parachute leaf: pointed yellow blade (`LeafMesh`), open leaf is a long sideways yellow blade.
 - v1 (day 0): initial contracts.
 - v1.1 (day 0): added game modes, LevelDefinition, RunConfig, SeedCode, RunSession, SaveService; tasks T25, T26.
 - v1.2 (day 1): water — `WateringCan`, `IWaterable`, `WaterSource`, `WaterCollector`, `PlantKind.Collector`, `needsWater`, sprout state, `Socket_Water`, layer `Water`, seed code `kindsMask` 4 bits; tasks T27–T30.
 - v1.3 (day 1): final controls — Q pickup/drop, Tab cycle, E use, F water, W/S climb; `InteractAction` added to `IInteractable`; section 5.8.
+- v1.5 (day 1): jump height 1.6 -> 4.8 m, mouse look 2x (user request); `GameEvents.InventoryFull`, `FocusChanged`, `UseRejected` (T04/T05).
+- v1.8 (day 3): Water Collector delivered (T28): 1 charge per 20 s, capacity 1; `WaterMode { Sources, CollectorOnly }` per level (builder flag now, `LevelDefinition.waterMode` with T14); water materials/shader `PlantGame/OvergrowthWater` (ponds/streams, light/mid/dark).
+- v1.7 (day 3): the watering can starts empty; water only on some islands (start island always); water comes as ponds or streams; HUD charges are droplets; the can is visible in hand while it holds water.
+- v1.6 (day 3): jump height 4.8 -> 3.6 m (user request); running reach ~7.2 m, so 7 m gaps still need a plant (level 1 gaps are ~8+ m).
 - v1.4 (day 1): third-person orbit camera + one player model `Char_Player_01` (T31); `PlayerController.EyeTransform` is now the camera.
   Parented hierarchies export with `CHAR_FBX_OVERRIDES` (no `bake_space_transform`), Unity bakes the axis conversion for `Art/Models/Characters`.

@@ -1,6 +1,6 @@
 # T21 — Seed & difficulty tuning, pick curated levels
 
-**Owner:** A0 Director · **Depends on:** T14, T15 · **Estimate:** 2h · **Day:** 3
+**Owner:** A0 Director · **Depends on:** T14, T15
 **Status:** TODO
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
@@ -29,3 +29,6 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Notes (day 3)
+- Collector is now +1 charge per 20 s, capacity 1 (was 15 s / 2): tune `WaterCollector.secondsPerCharge`, how often collector-only levels appear, and Challenge time limits for them (6 plants x 20 s of waiting alone is 2 min).

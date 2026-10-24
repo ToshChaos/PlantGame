@@ -18,7 +18,7 @@ if 'PLANT_NAME_RE' not in globals():
 
 def _find(coll, base, nn):
     for o in coll.all_objects:
-        if o.name in (base, '%s_%s' % (base, nn)):
+        if strip_tag(o.name) in (base, '%s_%s' % (base, nn)):
             return o
     return None
 

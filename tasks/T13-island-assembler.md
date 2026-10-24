@@ -1,7 +1,7 @@
 # T13 — Island assembler from kit, seeded
 
-**Owner:** A5 Cartographer · **Depends on:** none to start (placeholders); swaps in T10 kit, T12 soil/pedestal/Heart Tree and T29 water pieces as they land · **Estimate:** 4h · **Day:** 2
-**Status:** TODO
+**Owner:** A5 Cartographer · **Depends on:** none to start (placeholders); swaps in T10 kit, T12 soil/pedestal/Heart Tree and T29 water pieces as they land
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -37,6 +37,12 @@ Given a seed and a size, build one good-looking island from kit pieces with all 
 
 ## Requests (to/from other roles)
 _none yet_
+
+## Already in place (sandbox)
+- `Editor/RoundIsland.cs` builds a rounded floating island (flat top disc, wobbled outline, tapered rocky underside, world-scale UVs, MeshCollider, layer Ground) used by `Sandbox_PlantTest`. Use it as the placeholder island shape (user request: islands should be round, not boxes); radius 8 m, soil / water / seed sockets must stay inside radius - 0.5 m.
+
+## Layout (sandbox)
+- `Sandbox_PlantTest` islands no longer sit in a line: each station has a heading (`Headings` = 0, 38, -32, 20 degrees) and the plant, soil patch and next island follow it (local forward / side offsets). T13/T14 should do the same (island graph with turns, never overlapping: centre distance >= 2 x radius + 1 m, also in plan view when heights differ).
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_

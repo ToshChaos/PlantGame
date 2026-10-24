@@ -1,7 +1,7 @@
 # T04 — Interaction: focus, prompt, pick up / drop / use
 
-**Owner:** A1 Gameplay · **Depends on:** T03 · **Estimate:** 2h · **Day:** 1
-**Status:** TODO
+**Owner:** A1 Gameplay · **Depends on:** T03
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -26,13 +26,16 @@ The player can target things with a forward ray/sphere, see a prompt, pick up / 
 4. Test in `Sandbox_Gameplay` with 3 dummy items and a dummy `IUsableTarget`.
 
 ## Acceptance criteria
-- [ ] Prompt appears when looking at an item within 3 m and disappears when not
-- [ ] Q picks up the focused item; with nothing to pick up (or a full inventory) Q drops the selected item in a sensible spot (never inside terrain)
-- [ ] E on a valid target triggers `UseItem` exactly once per press; E at a water source refills; F waters
-- [ ] Nothing throws when inventory is empty or full
+- [x] Prompt appears when looking at an item within 3 m and disappears when not
+- [x] Q picks up the focused item; with nothing to pick up (or a full inventory) Q drops the selected item in a sensible spot (never inside terrain)
+- [x] E on a valid target triggers `UseItem` exactly once per press; E at a water source refills; F waters
+- [x] Nothing throws when inventory is empty or full
 
 ## Requests (to/from other roles)
 _none yet_
 
 ## Handoff
-_Files created · prefab/scene names · public API · 30-second test · known issues_
+Files: `Scripts/Core/{InteractionSensor,FocusHighlight,PlayerInteraction,SandboxTarget}.cs`, `Scripts/Inventory/WorldItem.cs`, `Scripts/Plants/{IWaterable,WateringCan(stub for T27)}.cs`. Player prefab now carries Inventory, WateringCan, InteractionSensor, PlayerInteraction.
+API: `GameEvents.FocusChanged(string)`, `UseRejected`, `InventoryFull`; `PlayerInteraction.{PickupOrDrop,Drop,Use,Water}` are public for tests. Sensor: SphereCast along the camera ray + 14 deg aim assist, range 3 m from the chest, walkable geometry blocks.
+Test (30 s): `PlantGame > 5 Build Sandbox_Gameplay`, play: 5 seeds on the floor (z=-4), a grey plant target at (4,-5), two seed trees at (-6/-3, 2). Q picks up, E on the target plants, F waters, Q with 4 full + looking at a 5th raises InventoryFull and drops the selected item.
+Verified in play mode via direct calls (focus, pickup, 5th refused, use once per press, F costs 1 charge / 0 -> CanEmptyTried, refill). Real key presses not driven. Known: with a full inventory Q both reports InventoryFull and drops (5.8 reading). Highlight uses a property block (cyan tint + emission pulse), not yet eyeballed in a screenshot.

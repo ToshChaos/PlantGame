@@ -1,7 +1,7 @@
 # T30 — Water shaders + splash/drip VFX
 
-**Owner:** A6 Tech Artist · **Depends on:** T01, T29 · **Estimate:** 2h · **Day:** 2–3
-**Status:** TODO
+**Owner:** A6 Tech Artist · **Depends on:** T01, T29
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 
@@ -32,3 +32,7 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
+
+## Progress (water pass, day 3)
+- Done: `PlantGame/OvergrowthWater` shader (ripples, depth, glints, cyan rim) with light / mid / dark materials on every pond, stream and the collector reservoir; droplet HUD.
+- Open: waterfall shader (`M_Waterfall`), foam at edges, splash / drip / pour VFX, refill burst, collector ready sparkle, thirsty-sprout pulse.

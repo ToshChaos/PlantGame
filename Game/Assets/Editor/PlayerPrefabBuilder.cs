@@ -47,8 +47,9 @@ namespace PlantGame.Editor
             camGo.transform.localPosition = new Vector3(0f, 0f, -4.5f);
             var cam = camGo.AddComponent<Camera>();
             cam.nearClipPlane = 0.1f; cam.farClipPlane = 600f; cam.fieldOfView = 60f;
-            cam.clearFlags = CameraClearFlags.SolidColor;   // T16 replaces this with the skybox
+            cam.clearFlags = CameraClearFlags.Skybox;       // T16: the Atmosphere assigns the skybox
             cam.backgroundColor = Palette.MistBlue;
+            camGo.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>().renderPostProcessing = true;
             camGo.AddComponent<AudioListener>();
 
             var pc = root.AddComponent<PlayerController>();
@@ -56,9 +57,22 @@ namespace PlantGame.Editor
             pc.cameraTransform = camGo.transform;
 
             var model = BuildModel(root.transform, layer);
+
+            // T04/T05: interaction, inventory, watering can (stub until T27)
+            root.AddComponent<PlantGame.Inventory.Inventory>();
+            root.AddComponent<PlantGame.Plants.WateringCan>();
+            var sensor = root.AddComponent<InteractionSensor>();
+            sensor.eye = camGo.transform;
+            var interaction = root.AddComponent<PlayerInteraction>();
+            interaction.input = reader;
+            interaction.model = model;
+            root.AddComponent<PlantGame.Core.InteractionMarkers>();   // diamond / circle world markers
+            root.AddComponent<PlantGame.UI.PlayerHud>();              // hotbar, prompt, water, pause menu
+
             if (model != null)
             {
                 pc.model = model;
+                root.AddComponent<PlantGame.Plants.WateringCanVisual>();
                 var anim = root.AddComponent<PlayerAnimator>();
                 anim.controller = pc; anim.model = model;
             }

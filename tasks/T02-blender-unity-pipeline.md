@@ -1,7 +1,7 @@
 # T02 — Blender → Unity export pipeline & import presets
 
-**Owner:** A0 + A3 · **Depends on:** T00 · **Estimate:** 2h · **Day:** 1
-**Status:** TODO
+**Owner:** A0 + A3 · **Depends on:** T00
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

@@ -14,17 +14,17 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_Fog: 1
+  m_FogColor: {r: 0.7490196, g: 0.8509804, b: 0.93333334, a: 1}
+  m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 0
-  m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
-  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
-  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_LinearFogStart: 40
+  m_LinearFogEnd: 220
+  m_AmbientSkyColor: {r: 0.7490196, g: 0.8509804, b: 0.93333334, a: 1}
+  m_AmbientEquatorColor: {r: 0.95686275, g: 0.972549, b: 0.9647059, a: 1}
+  m_AmbientGroundColor: {r: 0.18431373, g: 0.49019608, b: 0.30980393, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 1642978858}
+  m_Sun: {fileID: 692384838}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1642978857
+--- !u!1 &7658140
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,8 +127,298 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1642978859}
-  - component: {fileID: 1642978858}
+  - component: {fileID: 7658142}
+  - component: {fileID: 7658141}
+  m_Layer: 0
+  m_Name: World
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &7658141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7658140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 455bad1e0c2b84758a40614592a4b82c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.World.WorldGenerator
+  useBootstrapConfig: 1
+  showcaseWater: 0
+  spawnPlayer: 1
+  sandboxConfig:
+    mode: 0
+    seed: 0
+    islandCount: 0
+    allowedKinds: 
+    timeLimit: 0
+    levelId: 
+    waterMode: 0
+    theme: 0
+    wind: 0
+    goal: 0
+    roundTrip: 0
+    spiral: 0
+    sideIslands: 0
+    sequence: 
+--- !u!4 &7658142
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7658140}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &76472613
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 76472618}
+  - component: {fileID: 76472617}
+  - component: {fileID: 76472616}
+  - component: {fileID: 76472615}
+  - component: {fileID: 76472614}
+  m_Layer: 0
+  m_Name: Systems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &76472614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76472613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea5a946c954fd4dfd8ad3f999b4b162b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Audio.AudioManager
+  menuMusic: {fileID: 8300000, guid: 6cae06506f4544b87b841b7d3889e8f4, type: 3}
+  gameplayMusic: {fileID: 8300000, guid: f4f0353a11b8d4c91a9b1152d4c5fd94, type: 3}
+  windAmbience: {fileID: 8300000, guid: 5595120aa8cd947d5a797655206e21f6, type: 3}
+  rainMusic: {fileID: 8300000, guid: b8c4e3b734a1f4199b9dd893b2433ba3, type: 3}
+  autumnMusic: {fileID: 8300000, guid: 0ed7ae21a81154f248f851c74edba957, type: 3}
+  rainAmbience: {fileID: 8300000, guid: a768f5ffd430f4e36892fb59a5cc864e, type: 3}
+  winMusic: {fileID: 8300000, guid: 9bd9457a87ac743cfb4dd59d75379ebc, type: 3}
+  levelMusic:
+  - name: level_2
+    clips:
+    - {fileID: 8300000, guid: 0ed7ae21a81154f248f851c74edba957, type: 3}
+  - name: level_3
+    clips:
+    - {fileID: 8300000, guid: b8c4e3b734a1f4199b9dd893b2433ba3, type: 3}
+  - name: level_4
+    clips:
+    - {fileID: 8300000, guid: 13d34765352db4a6f98ebe22843dcd5f, type: 3}
+  - name: level_5
+    clips:
+    - {fileID: 8300000, guid: 09e11ed1a87994403bfdb2166b3e3bbc, type: 3}
+  - name: level_6
+    clips:
+    - {fileID: 8300000, guid: 3c27facf1b48d43b3bd2092b7aac5821, type: 3}
+  - name: level_7
+    clips:
+    - {fileID: 8300000, guid: 15511d93c556a499bb52056f71d10824, type: 3}
+  - name: level_8
+    clips:
+    - {fileID: 8300000, guid: dcd10b9d1cccf40a7a5dde1e62626c63, type: 3}
+  - name: level_9
+    clips:
+    - {fileID: 8300000, guid: 342aad2c2decf408ab3845af9a6ca298, type: 3}
+  - name: level_10
+    clips:
+    - {fileID: 8300000, guid: a1498d934a19c40f181eba6f363aa7df, type: 3}
+  sfx:
+  - name: bridge_creak
+    clips:
+    - {fileID: 8300000, guid: f4a26a5e2886a467a8097f02a2f565a6, type: 3}
+    - {fileID: 8300000, guid: 3d2eb2566ef204ecaaaeda0ad2e0aab3, type: 3}
+  - name: climb_rustle
+    clips:
+    - {fileID: 8300000, guid: ffc5db259aec44aa8a7652f2322e6d39, type: 3}
+  - name: collector_drip
+    clips:
+    - {fileID: 8300000, guid: c29a9046d6eaf4602a006aa07a790515, type: 3}
+  - name: drop
+    clips:
+    - {fileID: 8300000, guid: 66e20a0b4c671462eb75c10e0ce443de, type: 3}
+  - name: dry_click
+    clips:
+    - {fileID: 8300000, guid: 8e66b447fac5941e1a8220dcb4ec4c6c, type: 3}
+  - name: fail_sting
+    clips:
+    - {fileID: 8300000, guid: e15c762090d0e415a9e1a1deb40ef8af, type: 3}
+  - name: footstep_bridge
+    clips:
+    - {fileID: 8300000, guid: 39bd8c30563ef4890898eef4bbf49674, type: 3}
+    - {fileID: 8300000, guid: 23cd8e8e6d1a84ad797b0cb96afc7bdb, type: 3}
+    - {fileID: 8300000, guid: dc141d46e10254898ab878b76a324423, type: 3}
+  - name: footstep_grass
+    clips:
+    - {fileID: 8300000, guid: 39b2981eed9c84c4190fc46d29fc0899, type: 3}
+    - {fileID: 8300000, guid: 323f47df215414ab1aac37863386f96d, type: 3}
+    - {fileID: 8300000, guid: 854ead1771298418dafe63bf82f9d38c, type: 3}
+  - name: footstep_mud
+    clips:
+    - {fileID: 8300000, guid: b534983e9e8464f5d95fd44197237af2, type: 3}
+    - {fileID: 8300000, guid: 1e8baff6235fa418d93071ba5ede1d6f, type: 3}
+    - {fileID: 8300000, guid: a1ef63034cfe5476fa9fee2efb817b59, type: 3}
+  - name: footstep_plant
+    clips:
+    - {fileID: 8300000, guid: 80fe6aeb85e4a40728f14be2ef06bc01, type: 3}
+    - {fileID: 8300000, guid: b845eaecf96f840f8adde3e24eb9589a, type: 3}
+    - {fileID: 8300000, guid: 722b4141bb5cb48cc8d32c905c0e4943, type: 3}
+  - name: footstep_snow
+    clips:
+    - {fileID: 8300000, guid: 2127b66b63e814973b21f44d52089217, type: 3}
+    - {fileID: 8300000, guid: abb2779f21fba4c0b96ba3a82c72a46f, type: 3}
+    - {fileID: 8300000, guid: 6f45824043d644271a2453eda1ce1a4c, type: 3}
+  - name: footstep_stone
+    clips:
+    - {fileID: 8300000, guid: 17b7b7b1e1041470aa8db286ea6fd748, type: 3}
+    - {fileID: 8300000, guid: 1ef2b58d7a43f4dd492d0baef3846a27, type: 3}
+    - {fileID: 8300000, guid: 2284355d55fd94906acc30f9667e7060, type: 3}
+  - name: grow_loop
+    clips:
+    - {fileID: 8300000, guid: 2cf3a1cf4f72f4be28b4eebb094e4e03, type: 3}
+  - name: grown_chime
+    clips:
+    - {fileID: 8300000, guid: ccb1d2121fbf54af4b06d24c6e5bc06c, type: 3}
+  - name: inventory_full
+    clips:
+    - {fileID: 8300000, guid: 2a5a7acae8acb476db4213a2ce4ce396, type: 3}
+  - name: jump
+    clips:
+    - {fileID: 8300000, guid: 4739946e41e7d4aa89752534da029ee8, type: 3}
+  - name: land
+    clips:
+    - {fileID: 8300000, guid: d983c65d1281b44e38d49ff238d4a407, type: 3}
+  - name: level_start
+    clips:
+    - {fileID: 8300000, guid: 46c12147f59834770a5d60043493d36b, type: 3}
+  - name: pickup
+    clips:
+    - {fileID: 8300000, guid: 649036a0fd40e439eaf65e353b9b4ba2, type: 3}
+  - name: plant_seed
+    clips:
+    - {fileID: 8300000, guid: f9b3bc750f790430d9c51ff282bff571, type: 3}
+  - name: refill_splash
+    clips:
+    - {fileID: 8300000, guid: b0b36c79f7dc84c9282889773f733f08, type: 3}
+  - name: respawn
+    clips:
+    - {fileID: 8300000, guid: b13dc0a7c8c6f479584d6f7d5486d322, type: 3}
+  - name: select_slot
+    clips:
+    - {fileID: 8300000, guid: 580d3437d1354490ea682c87d0a5e6c7, type: 3}
+  - name: timer_tick
+    clips:
+    - {fileID: 8300000, guid: d0d6d37e4cf624e4791f463b2f185ca7, type: 3}
+  - name: ui_click
+    clips:
+    - {fileID: 8300000, guid: 34d4690e94b4a42fbb657f75a63560bd, type: 3}
+  - name: ui_hover
+    clips:
+    - {fileID: 8300000, guid: fafce34cc0cb745bb9f25c0f0f7d7b86, type: 3}
+  - name: water_pour
+    clips:
+    - {fileID: 8300000, guid: aead0c9bb94d94477832b39f1a12c166, type: 3}
+  - name: water_ready_bell
+    clips:
+    - {fileID: 8300000, guid: 80cf2f00481b14f2fad8c1dd2f1e175b, type: 3}
+  - name: win_fanfare
+    clips:
+    - {fileID: 8300000, guid: c3d86d0bc47c9473596b64df3735db78, type: 3}
+  masterVolume: 1
+  musicVolume: 0.55
+  sfxVolume: 0.8
+  ambienceVolume: 0.35
+  crossfadeSeconds: 2.5
+  voices: 12
+  AmbienceBoost: 1
+  AmbiencePitch: 1
+--- !u!114 &76472615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76472613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99cdcf9094f61418f84af5e92e105de4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Audio.SfxBinder
+--- !u!114 &76472616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76472613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3893300528843cdaec619b43483120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Plants.GrowthVfx
+--- !u!114 &76472617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76472613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b42e02d6fb5644c21b1bdb7cd72941b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.GameBootstrap
+  killDepth: 30
+--- !u!4 &76472618
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76472613}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &692384837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 692384839}
+  - component: {fileID: 692384838}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -136,13 +426,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!108 &1642978858
+--- !u!108 &692384838
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1642978857}
+  m_GameObject: {fileID: 692384837}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
@@ -201,15 +491,135 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &1642978859
+--- !u!4 &692384839
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1642978857}
+  m_GameObject: {fileID: 692384837}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821794, y: -0.23456973, z: 0.10938166, w: 0.8754261}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1454481593
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7301561837358706871, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_Name
+      value: Atmosphere
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+--- !u!1 &1923823297
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1923823299}
+  - component: {fileID: 1923823298}
+  m_Layer: 0
+  m_Name: RunSession
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1923823298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923823297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27c7f9ec6474461a9f79f5c5d633d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.RunSession
+  startOnAwake: 1
+  mode: 0
+  timeLimit: 0
+  levelId: level_1
+  Config:
+    mode: 0
+    seed: 0
+    islandCount: 0
+    allowedKinds: 
+    timeLimit: 0
+    levelId: 
+    waterMode: 0
+    theme: 0
+    wind: 0
+    goal: 0
+    roundTrip: 0
+    spiral: 0
+    sideIslands: 0
+    sequence: 
+--- !u!4 &1923823299
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923823297}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -220,4 +630,8 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1642978859}
+  - {fileID: 692384839}
+  - {fileID: 1923823299}
+  - {fileID: 7658142}
+  - {fileID: 1454481593}
+  - {fileID: 76472618}
