@@ -57,7 +57,7 @@ namespace PlantGame.UI
         {
             _musicToggle.text = "Music: " + (GameSettings.Music ? "On" : "Off");
             _soundToggle.text = "Sound: " + (GameSettings.Sound ? "On" : "Off");
-            _hintsToggle.text = "Key hints: " + (GameSettings.Hints ? "On" : "Off");
+            _hintsToggle.text = "Hints: " + (GameSettings.Hints ? "On" : "Off");
             _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             _glowToggle.text = "Glow: " + (GameSettings.Bloom ? "On" : "Off");

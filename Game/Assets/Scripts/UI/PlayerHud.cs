@@ -235,7 +235,7 @@ namespace PlantGame.UI
             }
             else
             {
-                _waterWarn.enabled = empty;
+                _waterWarn.enabled = empty && GameSettings.Hints;
                 _waterWarn.text = "Refill at water or a Water Collector";
                 _waterWarn.color = flashing ? Color.Lerp(WarnOrange, Color.white, pulse) : WarnOrange;
             }
@@ -255,6 +255,7 @@ namespace PlantGame.UI
             else { _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
+            if (!GameSettings.Hints && (key == "Water" || key == "Frozen")) p = "";   // hints off: no refill / water / frozen-water prompts (attempting still gives feedback)
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
             else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;

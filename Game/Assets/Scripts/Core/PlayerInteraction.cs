@@ -217,7 +217,7 @@ namespace PlantGame.Core
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             { p = "Use " + Inventory.SelectedItem.displayName; k = "Use"; }
             else if (NearbyWaterable() != null) { p = "Water sprout"; k = "Water"; }
-            else if (FindFrozenSource() != null)   // frozen pond: say so, and what melts it
+            else if (GameSettings.Hints && FindFrozenSource() != null)   // frozen pond (hints off: silent until the player tries): say so, and what melts it
             {
                 var held = Inventory.SelectedItem;
                 if (held != null && held.id == "heat_seed") { p = "Melt the ice with the Heat Seed"; k = "Use"; }
