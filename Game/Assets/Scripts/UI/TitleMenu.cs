@@ -35,8 +35,9 @@ namespace PlantGame.UI
 
         static readonly (string label, string scene)[] TestScenes =
         {
-            ("Movement course", "Sandbox_Gameplay"),
+            ("Interaction test", "Sandbox_Gameplay"),
         };
+        static readonly Color ExploreGreen = new Color(0.18f, 0.52f, 0.32f, 0.97f);
         static readonly string[] DifficultyNames = { "Easy", "Normal", "Hard" };
         static readonly int[] DifficultyIslands = { 4, 6, 8 };
 
@@ -162,7 +163,7 @@ namespace PlantGame.UI
                 bool ch = _mode == GameMode.Challenge;
                 m.text = ch ? "Mode: Time challenge" : "Mode: Exploration";
                 m.color = ch ? Palette.DeepBlue : Palette.TextOrange;                                              // orange on green / deep blue on orange
-                m.transform.parent.GetComponent<Image>().color = ch ? Palette.TextOrange : new Color(0.18f, 0.52f, 0.32f, 0.97f);
+                m.transform.parent.GetComponent<Image>().color = ch ? Palette.TextOrange : ExploreGreen;
             }
             var levels = Kit.Asset != null ? Kit.Asset.levels : null;
             if (levels == null) return;
@@ -264,12 +265,12 @@ namespace PlantGame.UI
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
             float testY = two ? -385f : -170f;
-            Label(_levels.transform, "Test scenes", 30, new Vector2(0, testY), 400, Palette.TextOrange);
             for (int i = 0; i < TestScenes.Length; i++)
             {
                 string scene = TestScenes[i].scene;
                 if (!Application.CanStreamedLevelBeLoaded(scene)) continue;
-                Button(_levels.transform, TestScenes[i].label, new Vector2(i * 360, testY - 75f), () => { Time.timeScale = 1f; SceneManager.LoadScene(scene); }, 340, 26);
+                var tb = Button(_levels.transform, TestScenes[i].label, new Vector2(i * 360, testY - 20f), () => { Time.timeScale = 1f; SceneManager.LoadScene(scene); }, 340, 26);
+                tb.transform.parent.GetComponent<Image>().color = ExploreGreen;   // same green as the Exploration mode button
             }
             Button(_levels.transform, "Back", new Vector2(two ? 760 : 0, two ? 440 : -420), () => Show(_home), 300, 34);
 

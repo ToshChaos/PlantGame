@@ -71,7 +71,7 @@ palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria
 - Challenge mode: time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode.
 - Audio: surface footsteps with bridge creaks (T47); ten gameplay tunes (T53), a menu tune, win music; a level-start jingle; altitude-scaled wind on windy levels.
 - Plants: vine bridge, beanstalk ladder (no top platform), mushroom-patch platform, Water Collector; textured grow shader (T49, T67); parachute is a big leaf pickup.
-- Title screen: Play, Select level, Generate level, Input seed, Options (volume, reset best times, hints) over a generated showcase world; Select level also lists the Movement course (one of every item).
+- Title screen: Play, Select level, Generate level, Input seed, Options (volume, reset best times, hints) over a generated showcase world; Select level also lists the Interaction test (one of every item; formerly the Movement course).
 - World look: imported CC0 / royalty-free models (Kenney, Quaternius, FreeStylized Ruins; `Game/Assets/ThirdParty/LICENSES.md`), only the ones the game places. T10 (Blender island kit) is CUT; islands are procedural (grass, mud or rock ground; snow on snow levels).
 - Cleanup (2026-10-26): unused models, materials, dead code and the T02 test fixture removed; raw Blender exports and the built `.app` are git-ignored (see `docs/task-log.md`).
 - Not covered by the MVP (by-hand playthrough, built-player smoke test, listening pass, balance): see `TODO.md`.
