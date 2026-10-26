@@ -16,6 +16,8 @@ namespace PlantGame.Core
         public float raiseSeconds = 1.6f;
         [Tooltip("Gate: the two door panels slide apart.")]
         public Transform doorLeft, doorRight;
+        [Tooltip("Gate: doors swing open about their parent y axis (degrees, left door +, right door -) instead of sliding apart.")]
+        public float doorSwingDegrees;
         [Tooltip("Gate: portal glow; Fire: flames and light. Switched on at use.")]
         public GameObject enableOnUse;
         [Tooltip("Round trip levels: the item (heart_seed) the player must carry here; it is handed over on use.")]
@@ -96,8 +98,16 @@ namespace PlantGame.Core
                     cloth.localPosition = Vector3.Lerp(a, b, e);
                     if (kind == GoalKind.Fruit) cloth.localScale = Vector3.one * (0.5f + 0.25f * Mathf.Sin(e * Mathf.PI * 3f) + 0.35f * e);
                 }
-                if (doorLeft != null) doorLeft.localPosition = la + Vector3.left * 1.05f * e;
-                if (doorRight != null) doorRight.localPosition = ra + Vector3.right * 1.05f * e;
+                if (doorSwingDegrees > 0f)
+                {
+                    if (doorLeft != null) doorLeft.localRotation = Quaternion.Euler(0f, doorSwingDegrees * e, 0f);
+                    if (doorRight != null) doorRight.localRotation = Quaternion.Euler(0f, -doorSwingDegrees * e, 0f);
+                }
+                else
+                {
+                    if (doorLeft != null) doorLeft.localPosition = la + Vector3.left * 1.05f * e;
+                    if (doorRight != null) doorRight.localPosition = ra + Vector3.right * 1.05f * e;
+                }
                 yield return null;
             }
             if (cloth != null) cloth.localPosition = b;

@@ -385,6 +385,7 @@ namespace PlantGame.World
             else if (item.id == "shelf_seed") { Scenery.ShelfPatch(root.transform, pos, fruitMat, fruitMesh, rnd); }
             else if (item.id == "dew_seed") { Scenery.SucculentPatch(root.transform, pos, fruitMat, fruitMesh, rnd); }
             else if (item.id == "parachute_leaf") { Scenery.LeafPlant(root.transform, pos, fruitMat, rnd); }
+            else if (item.id == "heat_seed" && fruitMat != null) { Scenery.MelonPatch(root.transform, pos, fruitMat, rnd); }
             else
             {
                 for (int m = 0; m < 4; m++)

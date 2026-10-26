@@ -292,7 +292,9 @@ def add_stalks(me, pads, rise):
         cx, cy = pd['centre']
         end = mathutils.Vector((cx, cy, pd['top'] - 0.6))
         p0 = mathutils.Vector((0.0, 0.0, 0.0))
-        p1 = mathutils.Vector((cx * 0.9, cy * 0.9, 0.08))
+        # the stalks bunch up: they rise together from the planting spot (control point high over the foot) and only lean out near their caps,
+        # so neighbouring stalks touch over most of their length
+        p1 = mathutils.Vector((cx * 0.22, cy * 0.22, max(0.3, (pd['top'] - 0.6) * 0.85)))
         rings = []
         for i in range(SEG + 1):
             t = i / SEG

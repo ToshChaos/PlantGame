@@ -18,6 +18,8 @@ namespace PlantGame.World
                 case "shelf_seed": return Puffball();
                 case "dew_seed": return Succulent();
                 case "coconut": return Coconut();
+                case "heart_seed": return ShapeMeshes.Heart();
+                case "heat_seed": return ShapeMeshes.MelonSeed();
                 default: return null;
             }
         }
@@ -25,7 +27,7 @@ namespace PlantGame.World
         /// <summary>Radius of the solid collider that lets the pickup rest on the ground.</summary>
         public static float RestRadius(string itemId)
         {
-            switch (itemId) { case "vine_seed": return 0.1f; case "beanstalk_seed": return 0.1f; case "shelf_seed": return 0.22f; case "coconut": return 0.19f; default: return 0.15f; }
+            switch (itemId) { case "vine_seed": return 0.1f; case "beanstalk_seed": return 0.1f; case "shelf_seed": return 0.22f; case "coconut": return 0.19f; case "heart_seed": return 0.17f; case "heat_seed": return 0.17f; default: return 0.15f; }
         }
 
         // ---------------------------------------------------------------- shapes

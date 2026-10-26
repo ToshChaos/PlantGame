@@ -24,7 +24,7 @@ namespace PlantGame.Editor
             ("shelf_seed", "Shelf Seed", "Item_ShelfSeed", Palette.CloudWhite, ItemKind.Seed),
             ("dew_seed", "Dew Seed", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
             ("parachute_leaf", "Parachute Leaf", "Item_ParachuteLeaf", Palette.LeafYellow, ItemKind.Misc),
-            ("heart_seed", "Heart Seed", "Item_HeartSeed", Palette.Gold, ItemKind.Key),
+            ("heart_seed", "Heart Seed", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),
             ("heat_seed", "Heat Seed", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
             ("coconut", "Coconut", "Item_Coconut", new Color(0.55f, 0.37f, 0.21f), ItemKind.Misc),   // only palms drop one; nothing can plant it
         };
@@ -51,7 +51,7 @@ namespace PlantGame.Editor
 
         static string SeedTexture(string id)
         {
-            switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; default: return null; }
+            switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; case "heart_seed": return "T_SeedHeart"; case "heat_seed": return "T_SeedMelon"; default: return null; }
         }
 
         static Material SeedMaterial(string matName, Color color, bool shaped = false, string itemId = null)

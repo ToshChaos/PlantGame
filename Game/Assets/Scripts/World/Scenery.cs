@@ -94,6 +94,7 @@ namespace PlantGame.World
             Vector3 World(Vector2 p) => new Vector3(p.x, centre.y, p.y);
 
             var ruinSpots = new List<Vector3>();
+            ArchSpots.Clear();
             _leafTrees = new List<Vector4>();
             // one ruin per island (an arch on the first and the goal island): try angles until one is clear
             float a0 = (float)rnd.NextDouble() * 360f;
@@ -667,6 +668,64 @@ namespace PlantGame.World
             return g;
         }
 
+        /// <summary>Heat-seed source: a melon patch. Creeping vines with big lobed leaves, curly tendrils and small yellow flowers, and ribbed warm melons lying in the middle.</summary>
+        public static void MelonPatch(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
+        {
+            EnsureMaterials();
+            var foliage = Kit.Mat("M_Foliage"); var light = Kit.Mat("M_FoliageLight");   // the Heat Seed patch stays green on every theme: it sits on warm ground
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(3.0f, 0.05f, 3.0f), foliage, false);
+            GameObject At(string n, Mesh m, Material mat, Vector3 off, Vector3 euler, Vector3 sc)
+            {
+                var g = ShapeMeshes.Obj(n, m, mat, parent, Vector3.zero, euler, sc); g.transform.position = pos + off; return g;
+            }
+            const int vines = 6;
+            for (int v = 0; v < vines; v++)
+            {
+                float a0 = v * 6.283f / vines + (float)rnd.NextDouble() * 0.4f, len = 1.7f + (float)rnd.NextDouble() * 0.5f, wig = 0.3f + (float)rnd.NextDouble() * 0.3f, ph = (float)rnd.NextDouble() * 6f;
+                var pts = new List<Vector3>();
+                for (int i = 0; i <= 10; i++)
+                {
+                    float q = i / 10f, d = 0.25f + len * q, a = a0 + wig * Mathf.Sin(q * 5f + ph);
+                    pts.Add(new Vector3(Mathf.Cos(a) * d, 0.06f + 0.03f * Mathf.Sin(q * 9f + ph), Mathf.Sin(a) * d));
+                }
+                At("Vine" + v, ShapeMeshes.Tube(pts, q => 0.032f - 0.016f * q, 6), foliage, Vector3.zero, Vector3.zero, Vector3.one);
+                for (int i = 2; i <= 8; i += 2)   // big leaves on alternate sides
+                {
+                    int side = (i / 2 + v) % 2 == 0 ? 1 : -1;
+                    var tan = (pts[i + 1] - pts[i - 1]).normalized; var outv = Vector3.Cross(Vector3.up, tan) * side;
+                    float ll = 0.75f - 0.05f * i * 0.3f;
+                    var leafGo = ShapeMeshes.Obj("Leaf", LeafMesh.Build(ll, ll * 0.85f, 0.05f, 0.06f, 10), (i + v) % 2 == 0 ? light : foliage, parent, Vector3.zero, Vector3.zero, Vector3.one);
+                    var dir = (outv + Vector3.up * 0.18f).normalized;
+                    leafGo.transform.position = pos + pts[i] + dir * ll * 0.5f; leafGo.transform.rotation = Quaternion.FromToRotation(Vector3.right, dir);
+                    if (i == 4)   // a curly tendril next to the leaf
+                    {
+                        var tp = new List<Vector3>(); var sd = pts[i] + outv * 0.05f;
+                        for (int k = 0; k <= 12; k++) { float q = k / 12f, ang = q * 9f; tp.Add(sd + outv * (0.25f * q) + Vector3.up * (0.04f + 0.1f * q * Mathf.Sin(ang)) + tan * (0.1f * q * Mathf.Cos(ang))); }
+                        At("Tendril", ShapeMeshes.Tube(tp, q => 0.012f * (1f - 0.5f * q), 5), light, Vector3.zero, Vector3.zero, Vector3.one);
+                    }
+                }
+                // a small yellow flower at the vine tip
+                var tip = pts[pts.Count - 1] + Vector3.up * 0.05f;
+                for (int pt = 0; pt < 5; pt++)
+                {
+                    float pa = pt * 1.257f;
+                    At("Petal", ShapeMeshes.Ellipsoid(0.1f, 0.02f, 8, 5), _yellow, tip + new Vector3(Mathf.Cos(pa) * 0.1f, 0f, Mathf.Sin(pa) * 0.1f), new Vector3(0, -pa * Mathf.Rad2Deg, 20f), new Vector3(1.2f, 1f, 0.7f));
+                }
+                At("FlowerCentre", ShapeMeshes.Ellipsoid(0.04f, 0.035f, 8, 6), _gold, tip + Vector3.up * 0.02f, Vector3.zero, Vector3.one);
+            }
+            // the melons: ribbed ovals in the seed's warm orange, two paler green-gold ones, resting on little leaf pads
+            var pale = new Material(fruit) { name = "M_MelonPale" };
+            if (pale.HasProperty("_BaseColor")) pale.SetColor("_BaseColor", Color.Lerp(fruit.GetColor("_BaseColor"), new Color(0.55f, 0.75f, 0.25f), 0.65f));
+            var melon = ShapeMeshes.Melon();
+            for (int m = 0; m < 5; m++)
+            {
+                float a = m * 1.257f + (float)rnd.NextDouble() * 0.4f, d = m == 0 ? 0.1f : 0.7f + (float)rnd.NextDouble() * 0.55f, s = 1.05f + (float)rnd.NextDouble() * 0.5f;
+                var g = At("Melon" + m, melon, m % 3 == 2 ? pale : fruit, new Vector3(Mathf.Cos(a) * d, 0.23f * s + 0.03f, Mathf.Sin(a) * d), new Vector3(90f + (float)(rnd.NextDouble() - 0.5) * 10f, (float)rnd.NextDouble() * 360f, 0f), Vector3.one * s);
+                var padGo = ShapeMeshes.Obj("Pad", LeafMesh.Build(0.9f, 0.7f, 0.02f, 0.03f, 8), light, parent, Vector3.zero, Vector3.zero, Vector3.one);
+                padGo.transform.position = pos + new Vector3(Mathf.Cos(a) * d, 0.015f, Mathf.Sin(a) * d); padGo.transform.rotation = Quaternion.Euler(0, a * 57f + 90f * m, 0);
+            }
+        }
+
         /// <summary>Vine-seed source: a grove of tall bright-green bamboo culms with leafy tufts and bamboo pieces hanging in the middle.</summary>
         public static void BambooGrove(Transform parent, Vector3 pos, Material fruit, Mesh fruitMesh, System.Random rnd)
         {
@@ -1023,8 +1082,14 @@ namespace PlantGame.World
         }
 
         /// <summary>Portal arch: two pillars, a lintel, a glowing disc in the middle and steps. Faces `rot` forward.</summary>
-        static void Arch(Transform parent, Vector3 pos, Quaternion rot)
+        /// <param name="gate">the goal gate: no permanent glowing disc (the gate builds its own portal that opens on use)</param>
+        /// <summary>Position and rotation of the temple arch on the island being dressed; the vine dressing keeps clear of the opening.</summary>
+        internal static readonly List<(Vector3 pos, Quaternion rot)> ArchSpots = new List<(Vector3, Quaternion)>();
+
+        internal static GameObject Arch(Transform parent, Vector3 pos, Quaternion rot, bool gate = false)
         {
+            EnsureMaterials();
+            if (!gate) ArchSpots.Add((pos, rot));
             var go = new GameObject("Arch"); go.transform.SetParent(parent, true); go.transform.SetPositionAndRotation(pos, rot);
             Vector3 P(float x, float y, float z) => pos + rot * new Vector3(x, y, z);
             void Part(string n, PrimitiveType t, Vector3 lp, Vector3 sc, Material m, bool col, Quaternion? r = null)
@@ -1036,11 +1101,15 @@ namespace PlantGame.World
             Part("PillarR", PrimitiveType.Cube, new Vector3(2.1f, 2.1f, 0), new Vector3(0.9f, 4.2f, 0.9f), _marble, true);
             Part("Lintel", PrimitiveType.Cube, new Vector3(0, 4.45f, 0), new Vector3(5.6f, 0.8f, 1.1f), _marble, true);
             Part("Crest", PrimitiveType.Cube, new Vector3(0, 5.1f, 0), new Vector3(2.4f, 0.55f, 0.9f), _marble, false);
-            Part("Disc", PrimitiveType.Cylinder, new Vector3(0, 2.3f, 0.05f), new Vector3(3.4f, 0.06f, 3.4f), PortalDiscMat(), false, Quaternion.Euler(90, 0, 0));
-            for (int k = 0; k < 28; k++)   // hollow gold ring (a solid cylinder here hid the translucent disc)
+            if (!gate)   // the glow screen fills the arch's clear opening exactly, so no stone or vine of the model pokes through it
             {
-                float a = k * Mathf.PI * 2f / 28f;
-                Part("RingSeg", PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 1.9f, 2.3f + Mathf.Sin(a) * 1.9f, -0.02f), new Vector3(0.14f, 0.5f, 0.06f), _gold, false, Quaternion.Euler(0, 0, a * Mathf.Rad2Deg));
+                var scr = ShapeMeshes.Obj("Disc", ShapeMeshes.OpeningPanel(), PortalDiscMat(), go.transform, Vector3.zero, Vector3.zero, Vector3.one);
+                scr.transform.SetPositionAndRotation(P(0, 0, 0.0f), rot);
+            }
+            foreach (float tz in new[] { 0.2f, -0.4f })   // gold trim inlaid along the opening on both faces
+            {
+                var trim = ShapeMeshes.Obj("OpeningTrim", ShapeMeshes.Tube(ShapeMeshes.OpeningTrim(0.03f, 0f), q => 0.035f, 6), _gold, go.transform, Vector3.zero, Vector3.zero, Vector3.one);
+                trim.transform.SetPositionAndRotation(P(0, 0, tz), rot);
             }
             Part("Step1", PrimitiveType.Cube, new Vector3(0, 0.1f, 1.2f), new Vector3(4.6f, 0.2f, 1.2f), _marble, true);
             Part("Step2", PrimitiveType.Cube, new Vector3(0, 0.3f, 0.6f), new Vector3(4.2f, 0.2f, 1.0f), _marble, true);
@@ -1055,6 +1124,7 @@ namespace PlantGame.World
                 Part("RuneL", PrimitiveType.Cylinder, new Vector3(-2.1f, 1.5f, 0), new Vector3(0.95f, 0.04f, 0.95f), _gold, false);
                 Part("RuneR", PrimitiveType.Cylinder, new Vector3(2.1f, 1.5f, 0), new Vector3(0.95f, 0.04f, 0.95f), _gold, false);
             }
+            return go;
         }
 
         /// <summary>

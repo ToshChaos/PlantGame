@@ -21,7 +21,7 @@ MonoBehaviour:
   waterMode: 0
   theme: 0
   wind: 0
-  goal: 0
+  goal: 2
   roundTrip: 0
   spiral: 0
   sequence: 0000000000000000i

@@ -152,3 +152,12 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - `CameraOcclusionFade` destroyed nothing: every fade made a new HideAndDontSave material (161 had piled up in the editor). Per-renderer copies are now destroyed when the renderer turns solid or the component is disabled (checked in edit mode: 163 -> 162, the shared template stays).
 - `PlayerController.Instance` (set in OnEnable) replaces seven lazy `FindAnyObjectByType<PlayerController>` lookups; `WorldGenerator.SpawnPlayer` keeps the scene search because it can run before a scene player's OnEnable.
 - Repo size: ruin normal maps re-saved 16-bit -> 8-bit (42 MB -> 8 MB, max difference half an 8-bit step); `docs/shots/` (139 PNGs, 119 MB) is gitignored and kept on disk only.
+
+## Day 3 polish: goals, arch, melon patch, plants (T67 follow-ups)
+- Goals rebuilt from procedural meshes (`ShapeMeshes`, `GoalBuilder`, about 8k vertices each, was 0.8-5k): flag (marble shrine, tall brown pole, light purple pennant, rises 4.6 m), golden fruit (textured `M_GoldFruit`, leafy bush on a rune pedestal), gate (the temple arch model plus two door leaves that swing open and a blue 50 % `RuntimeMats.NewParticles` portal, shaped to the arch opening), campfire (stone rings, teepee logs, benches, embers and sparks once lit).
+- `WorldTheme.ResolveGoal`: Snow levels always get the campfire; random / code levels always get the gate. Curated: level 1 and 5 gate, 2 and 10 fruit, 8 (Windy Summit) flag, 3 and 7 campfire.
+- Temple arch: the glow screen is `ShapeMeshes.OpeningPanel` (outline measured from `AP4_A3_Door1.fbx`, 2.9 m wide, pointed top), so nothing of the model reaches into it; the gold ring became a trim along the opening. `Overgrowth` keeps vines out of the arch footprint (`Scenery.ArchSpots`) and uses about half the ruin vines.
+- Heat Seed patch is a melon patch (`Scenery.MelonPatch`), the Heat Seed pickup a small ribbed melon, the Heart Seed pickup a red inflated heart with skin textures (`T_SeedHeart`, `T_SeedMelon`, `T_GoldFruit`).
+- Bamboo patch: two flowers (white, yellow) grow on the culms like on the bridges.
+- Beanstalk steps are Catmull-Clark rounded slabs (one level, `plants_ladder.py`, variants 7.8-10k tris); mushroom stalks rise together from the planting spot and lean out near their caps (`plants_platform.py`, `add_stalks`).
+- Lathe / torus meshes: winding is `(i0, i2, i1)`; the first version was inside out (check with the outward-face fraction of a mesh).

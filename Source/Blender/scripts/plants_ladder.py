@@ -88,7 +88,7 @@ def build_group():
 
     parts = []
     # ---- stalk
-    prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 12, 'Radius': 1.0})
+    prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 10, 'Radius': 1.0})
     stalk = b.make('GeometryNodeCurveToMesh', {'Curve': base, 'Profile Curve': prof, 'Scale': taper, 'Fill Caps': True})
     parts.append(store_part(stalk, 0.0).outputs[0])
 
@@ -110,7 +110,9 @@ def build_group():
     rpts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': rcount}, mode='COUNT')
     pz = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
     sel = b.m('MULTIPLY', b.m('GREATER_THAN', pz, 0.3), b.m('LESS_THAN', pz, b.m('SUBTRACT', height, 0.45)))
-    cube = b.make('GeometryNodeMeshCube', {'Size': b.xyz(0.8, 0.3, 0.08)})
+    # rounded step: a slab smoothed with one Catmull-Clark level (tri budget), so every corner and edge is soft (the plain box looked artificial)
+    cube = b.make('GeometryNodeMeshCube', {'Size': b.xyz(0.86, 0.32, 0.1)})
+    cube = b.make('GeometryNodeSubdivisionSurface', {'Mesh': cube, 'Level': 1})
     rung = xform(cube, b.xyz(0, b.m('ADD', rad, 0.05), 0))
     rrot = b.make('FunctionNodeRandomValue', {'Min': (0, 0, -0.2), 'Max': (0, 0, 0.2), 'Seed': b.m('ADD', seed, 7)},
                   data_type='FLOAT_VECTOR')
@@ -208,7 +210,7 @@ def variant_params(n):
     r = random.Random(2000 + n)
     heights = [8.5, 9.5, 11.0, 11.5, 12.0, 12.3]   # T51: taller (variant 3 = 11 m is the generator's LadderHeight)
     return dict(Seed=n * 13 + 5, Height=heights[(n - 1) % 6], Twist=r.uniform(0.3, 1.2),
-                StalkRadius=r.uniform(0.17, 0.23), RungSpacing=r.uniform(0.44, 0.56),
+                StalkRadius=r.uniform(0.17, 0.23), RungSpacing=r.uniform(0.48, 0.6),
                 LeafSize=r.uniform(0.7, 1.4), Sway=r.uniform(0.1, 0.4))
 
 

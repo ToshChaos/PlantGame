@@ -165,6 +165,36 @@ namespace PlantGame.Editor
                 c = new Color(lum, lum, lum, 1f);
                 return (c, h);
             });
+            Make("T_SeedHeart", 256, (u, v, c, h) =>
+            {
+                // glossy ripe skin: fine pitting, faint vein lines (cell borders) and a soft darker shading toward the tip
+                Worley(u, v, 12, 101, out float f1, out float f2);
+                float vein = Mathf.Clamp01((0.03f - (f2 - f1)) * 8f) * 0.5f, pit = ValueNoise(u * 70f, v * 70f, 70, 102), soft = Fbm(u, v, 5, 3, 103);
+                float lum = Mathf.Clamp01((0.9f + 0.08f * soft - 0.06f * pit) * (1f - 0.25f * vein) * (0.82f + 0.18f * v));
+                h = soft * 0.3f + (1f - vein) * 0.25f + pit * 0.1f;
+                c = new Color(lum, lum * 0.95f, lum * 0.95f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedMelon", 256, (u, v, c, h) =>
+            {
+                // rind: darker stripes along each rib (u wraps round, v along the melon) under a net of raised cracks
+                float rib = 0.5f + 0.5f * Mathf.Cos(u * Mathf.PI * 2f * 10f), stripe = Mathf.Clamp01((0.45f - rib) * 3f);
+                Worley(u * 3f, v * 3f, 14, 104, out float f1, out float f2);
+                float net = Mathf.Clamp01((0.07f - (f2 - f1)) * 10f), mott = Fbm(u, v, 6, 4, 105);
+                float lum = Mathf.Clamp01((0.95f - 0.28f * stripe + 0.06f * mott) * (1f - 0.14f * net) * (1f - 0.1f * Mathf.Pow(Mathf.Abs(v - 0.5f) * 2f, 4f)));
+                h = net * 0.6f + (1f - stripe) * 0.2f + mott * 0.2f;
+                c = new Color(lum, lum, lum * 0.92f, 1f);
+                return (c, h);
+            });
+            Make("T_GoldFruit", 256, (u, v, c, h) =>
+            {
+                // goal fruit skin: gently dimpled gold, soft lengthwise bands and a darker, warmer stem end
+                float band = 0.5f + 0.5f * Mathf.Cos(u * Mathf.PI * 2f * 5f), dimple = ValueNoise(u * 36f, v * 36f, 36, 106), flow = Fbm(u, v, 5, 4, 107);
+                float lum = Mathf.Clamp01((0.86f + 0.08f * band + 0.1f * flow) * (1f - 0.1f * dimple));
+                h = dimple * 0.45f + flow * 0.3f + band * 0.1f;
+                c = new Color(lum, lum * 0.97f, lum * 0.88f, 1f);
+                return (c, h);
+            });
             Make("T_SeedCoconut", 256, (u, v, c, h) =>
             {
                 float hair = ValueNoise(u * 90f, v * 14f, 90, 99), coarse = Fbm(u, v, 7, 4, 100);

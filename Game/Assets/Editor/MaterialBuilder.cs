@@ -39,6 +39,11 @@ namespace PlantGame.Editor
             Make("M_Stone", lit, m => { SetLit(m, Palette.MistBlue, 0.15f); SetTextured(m, "T_Rock", 1f); });
             Make("M_Foliage", lit, m => { SetLit(m, Palette.Moss, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
             Make("M_FoliageLight", lit, m => { SetLit(m, Palette.LeafGreen, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
+            Make("M_GoldFruit", lit, m =>   // the goal's golden fruit
+            {
+                SetLit(m, new Color(1f, 0.7f, 0.16f), 0.65f); SetTextured(m, "T_GoldFruit", 1.2f);
+                SetEmission(m, new Color(1f, 0.55f, 0.1f) * 0.2f);
+            });
             Make("M_Bark", lit, m => { SetLit(m, Palette.Bark, 0.1f); SetTextured(m, "T_Bark", 1.2f); });
             Make("M_Soil", lit, m => { SetLit(m, Palette.Soil, 0.05f); SetTextured(m, "T_Soil", 1.4f); });
             Make("M_Cloud", lit, m =>

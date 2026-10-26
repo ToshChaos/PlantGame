@@ -313,11 +313,22 @@ namespace PlantGame.World
                 var top = new Vector3(centre.x + dir.x * rr, centre.y + IslandTerrain.Shoulder - (float)rnd.NextDouble() * 1.8f, centre.z + dir.z * rr);
                 Vine(top, 1.2f + (float)rnd.NextDouble() * 2.4f, dir, 0.18f, roots, 0.045f + (float)rnd.NextDouble() * 0.05f, false);
             }
+            // vines never hang in the temple arch's opening (they would cut through its screen): its column and the strip in front of it stay clear
+            bool InArch(Vector2 q)
+            {
+                foreach (var ar in Scenery.ArchSpots)
+                {
+                    var l = Quaternion.Inverse(ar.rot) * (new Vector3(q.x, ar.pos.y, q.y) - ar.pos);
+                    if (Mathf.Abs(l.x) < 2.3f && l.z > -1.4f && l.z < 1.6f) return true;
+                }
+                return false;
+            }
             foreach (var rs in ruinSpots)
-                for (int k = 0; k < 6; k++)
+                for (int k = 0; k < 4; k++)
                 {
                     float a = (float)(rnd.NextDouble() * 6.283), r = 0.5f + (float)rnd.NextDouble() * 1.7f;
                     var p = new Vector2(rs.x + Mathf.Cos(a) * r, rs.z + Mathf.Sin(a) * r);
+                    if (InArch(p)) continue;
                     var dir = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
                     float h = 1.2f + (float)rnd.NextDouble() * 2.2f;
                     Vine(new Vector3(p.x, Y(p) + h, p.y), h, dir, 0.08f);
@@ -327,18 +338,20 @@ namespace PlantGame.World
             {
                 var rs = ruinSpots[ri];
                 if (new System.Random(index * 131 + ri * 17 + 5).NextDouble() > 0.5) continue;
-                for (int k = 0; k < 26; k++)
+                for (int k = 0; k < 14; k++)
                 {
                     float a = (float)(rnd.NextDouble() * 6.283), r = 0.5f + (float)rnd.NextDouble() * 1.9f;
                     var p = new Vector2(rs.x + Mathf.Cos(a) * r, rs.z + Mathf.Sin(a) * r);
+                    if (InArch(p)) continue;
                     var dir = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
                     float h = 1.4f + (float)rnd.NextDouble() * 2.6f;
                     Vine(new Vector3(p.x, Y(p) + h, p.y), h * (0.7f + (float)rnd.NextDouble() * 0.3f), dir, 0.1f, null, 0.09f);
                 }
-                for (int k = 0; k < 14; k++)
+                for (int k = 0; k < 8; k++)
                 {
                     float a = (float)(rnd.NextDouble() * 6.283), r = 0.4f + (float)rnd.NextDouble() * 1.8f;
                     var p = new Vector2(rs.x + Mathf.Cos(a) * r, rs.z + Mathf.Sin(a) * r);
+                    if (InArch(p)) continue;
                     float sz = 0.25f + (float)rnd.NextDouble() * 0.3f;
                     Blob(vineLeaves, new Vector3(p.x, Y(p) + 0.2f + (float)rnd.NextDouble() * 2.6f, p.y), sz, sz * 0.8f, (float)(rnd.NextDouble() * 6.283), rnd);
                 }

@@ -29,8 +29,9 @@ namespace PlantGame.Core
 
         public static GoalKind ResolveGoal(RunConfig c)
         {
+            if (Resolve(c) == LevelTheme.Snow) return GoalKind.Fire;   // snowy levels always end at the campfire
             if (!string.IsNullOrEmpty(c.levelId)) return c.goal;
-            return (GoalKind)(unchecked((int)((uint)c.seed * 40503u) >> 7) & 3);
+            return GoalKind.Gate;   // the default goal: the temple gate to the next level
         }
     }
 
