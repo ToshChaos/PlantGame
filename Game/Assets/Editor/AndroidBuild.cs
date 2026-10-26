@@ -68,7 +68,9 @@ namespace PlantGame.Editor
             };
             var s = BuildPipeline.BuildPlayer(opts).summary;
             File.WriteAllText("Logs/build-android.txt", $"{s.result} size {s.totalSize / (1024 * 1024)} MB time {s.totalTime.TotalSeconds:0}s errors {s.totalErrors} warnings {s.totalWarnings} -> {s.outputPath}\n");
-            if (s.result != BuildResult.Succeeded) Debug.LogError("[PlantGame] Android build failed: " + s.result);
+            bool made = File.Exists(opts.locationPathName);   // the report can say Succeeded while the Android post-processing threw (module just installed, editor not restarted): trust the file
+            if (s.result == BuildResult.Succeeded && !made) Debug.LogError("[PlantGame] Build reported success but " + opts.locationPathName + " was not created. Restart Unity after installing the Android module, and check the console for 'Build target Android not supported'.");
+            else if (s.result != BuildResult.Succeeded) Debug.LogError("[PlantGame] Android build failed: " + s.result);
             else Debug.Log("[PlantGame] Android build done: " + s.outputPath);
         }
     }
