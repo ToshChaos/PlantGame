@@ -365,7 +365,7 @@ namespace PlantGame.UI
                 _slotBg[i].raycastTarget = true;
                 int slotIndex = i;
                 slot.gameObject.AddComponent<Button>().onClick.AddListener(() => OnSlotTapped(slotIndex));   // tap selects; tapping the selected slot again drops it
-                _slotIcon[i] = Img("Icon", slot, UiSprites.Disc, Color.white, SlotSize * 0.55f);
+                _slotIcon[i] = Img("Icon", slot, UiSprites.Disc, Color.white, SlotSize * 0.82f);
             }
             _selName = touch ? Label("SelectedName", root, "", 28, TextAnchor.MiddleCenter, new Vector2(-(total * 0.5f + 40f), -(SlotSize + 66f)), new Vector2(total, 40), new Vector2(1f, 1f))
                              : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
