@@ -199,7 +199,7 @@ def build_group():
     wrap_circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 4, 'Radius': 0.09})
     deck_parts = []
     ph_d = b.m('MULTIPLY', t, b.m('MULTIPLY', length, 1.5))   # slow braid
-    n_str = 4
+    n_str = 3   # user request: one fewer main vine (was 4)
     for k in range(n_str):
         lat0 = (k / (n_str - 1) - 0.5) * 0.78                  # fraction of the width
         ang = b.m('ADD', ph_d, k * 1.9)
