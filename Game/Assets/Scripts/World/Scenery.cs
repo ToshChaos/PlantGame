@@ -143,7 +143,7 @@ namespace PlantGame.World
             if (index == HugeTreeIsland) Scatter(1, 120, 0.4f, 0.8f, 10f, 8f, p => Tree(root.transform, World(p), 20f, rnd, PickKind(weights, rnd)), 8f);   // one tree three times a normal one
             Scatter(Count(14), 160, 0.6f, 0.92f, 4.5f, 3.2f, p => Tree(root.transform, World(p), 4.8f + (float)rnd.NextDouble() * 4.0f, rnd, PickKind(weights, rnd)), 3.2f);
             Scatter(Count(10), 120, 0.35f, 0.92f, 1.8f, 1.2f, p => Bush(root.transform, World(p), 0.7f + (float)rnd.NextDouble() * 0.7f, rnd), 1.2f);
-            Scatter(Count(18), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
+            Scatter(Mathf.RoundToInt(Count(18) * (vegetation < 0.3f ? 0.5f : 1f)), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
 
             // T39: ferns and tall grass fill the gaps (own picks so the trees and bushes above keep their layout)
             if (Kit.Prop("Fern_1") != null || Kit.Prop("grass_large") != null)
