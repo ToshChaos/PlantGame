@@ -28,11 +28,6 @@ namespace PlantGame.Core
 
         public static RunConfig Current => PendingRun ?? DefaultConfig(GameMode.Exploration);
 
-        public static void SetMode(GameMode m)
-        {
-            var c = Current; c.mode = m; PendingRun = c;
-            if (RunSession.Instance != null) RunSession.Instance.Config = c;
-        }
 
         public float killDepth = 30f;
         PlayerController _player;

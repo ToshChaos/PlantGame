@@ -844,68 +844,6 @@ namespace PlantGame.World
             Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(2.4f, 0.05f, 2.4f), PatchBase(foliage), false);
         }
 
-        /// <summary>
-        /// A leaf shaped like an open parachute canopy: a flattened dome of `gores` panels (alternating two submeshes) that bulge a little, with a
-        /// scalloped lower edge. Two-sided. The dome is centred on the origin, its rim at y = 0, its top at y = height.
-        /// </summary>
-        public static Mesh CanopyMesh(float radius, float height, int gores = 10)
-        {
-            const int cols = 6, rows = 12;   // T67: finer panels (was 4 x 5), seam ribs, a top knob and UVs
-            var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>[] { new List<int>(), new List<int>() };
-            for (int g = 0; g < gores; g++)
-            {
-                int o = verts.Count;
-                for (int r = 0; r <= rows; r++)
-                {
-                    float t = r / (float)rows, lat = t * 1.3f;                 // 0 at the top, 1.3 rad (75 degrees) at the rim
-                    for (int c = 0; c <= cols; c++)
-                    {
-                        float u = c / (float)cols, ang = (g + u) * Mathf.PI * 2f / gores;
-                        float rr = radius * Mathf.Sin(lat) / Mathf.Sin(1.3f);
-                        rr *= 1f + 0.07f * Mathf.Sin(u * Mathf.PI) * t;       // each panel puffs out
-                        float seam = Mathf.Exp(-Mathf.Pow(Mathf.Min(u, 1f - u) * 14f, 2f));
-                        rr *= 1f + 0.035f * seam;                              // raised stitched seam between panels
-                        if (r == 0) rr = 0f;
-                        float y = height * (Mathf.Cos(lat) - Mathf.Cos(1.3f)) / (1f - Mathf.Cos(1.3f));
-                        y += 0.14f * radius * Mathf.Sin(u * Mathf.PI) * t * t;   // scalloped edge: the middle of a panel hangs higher
-                        verts.Add(new Vector3(Mathf.Cos(ang) * rr, y + 0.02f * radius * seam * t, Mathf.Sin(ang) * rr));
-                        uvs.Add(new Vector2((g + u) / gores * 3f, t * 2f));
-                    }
-                }
-                for (int r = 0; r < rows; r++)
-                    for (int c = 0; c < cols; c++)
-                    {
-                        int a = o + r * (cols + 1) + c, b = a + 1, d = a + cols + 1, e = d + 1;
-                        var t = tris[g % 2];
-                        t.AddRange(new[] { a, b, d, b, e, d });                  // outside
-                        t.AddRange(new[] { a, d, b, b, d, e });                  // inside
-                    }
-            }
-            // top knob: a small bulb on the apex, in the second panel material
-            int k0 = verts.Count; float kr = radius * 0.07f; int kseg = 10, krow = 5;
-            for (int r = 0; r <= krow; r++)
-            {
-                float ph = r / (float)krow * Mathf.PI;
-                for (int c = 0; c <= kseg; c++)
-                {
-                    float a = c * Mathf.PI * 2f / kseg;
-                    verts.Add(new Vector3(Mathf.Cos(a) * Mathf.Sin(ph) * kr, height + 0.01f * radius - Mathf.Cos(ph) * kr * 0.9f + kr * 0.6f, Mathf.Sin(a) * Mathf.Sin(ph) * kr));
-                    uvs.Add(new Vector2(c / (float)kseg, r / (float)krow));
-                }
-            }
-            for (int r = 0; r < krow; r++)
-                for (int c = 0; c < kseg; c++)
-                {
-                    int a = k0 + r * (kseg + 1) + c, b = a + 1, d = a + kseg + 1, e = d + 1;
-                    tris[1].AddRange(new[] { a, b, d, b, e, d, a, d, b, b, d, e });
-                }
-            var mesh = new Mesh { name = "Canopy" };
-            mesh.SetVertices(verts); mesh.SetUVs(0, uvs); mesh.subMeshCount = 2;
-            mesh.SetTriangles(tris[0], 0); mesh.SetTriangles(tris[1], 1);
-            mesh.RecalculateNormals(); mesh.RecalculateBounds();
-            return mesh;
-        }
-
         /// <summary>Parachute leaf plant: a short pale stalk carrying three huge leaves (the parachute leaves) on curved stems, plus a soft glow so it stands out on the island.</summary>
         public static void LeafPlant(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
         {

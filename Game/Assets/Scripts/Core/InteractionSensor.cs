@@ -38,8 +38,6 @@ namespace PlantGame.Core
         public Target Focus { get; private set; }
         public IInteractable Interactable => Focus.interactable;
         public IUsableTarget Usable => Focus.usable;
-        public IWaterable Waterable => Focus.waterable;
-        public GameObject FocusedObject => Focus.component != null ? Focus.component.gameObject : null;
         public Vector3 Chest => transform.position + Vector3.up * chestHeight;
 
         static int Mask => LayerMask.GetMask(Layers.InteractableName, Layers.WaterName, Layers.PlantName);

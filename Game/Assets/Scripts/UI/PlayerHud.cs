@@ -19,7 +19,6 @@ namespace PlantGame.UI
     public class PlayerHud : MonoBehaviour
     {
         const float SlotSize = 92f, Gap = 12f;
-        static readonly Color WaterBlue = new Color(0.45f, 0.72f, 1f, 1f);   // left side (water) is blue, the key hints on the right stay orange
         const string PauseTip = "Tip: the seeds for later gaps grow on other islands. Your bag holds only 4, so plan ahead - or walk back.";
 
         PlayerInteraction _pi;

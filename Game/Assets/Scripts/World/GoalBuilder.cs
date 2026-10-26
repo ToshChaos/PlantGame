@@ -12,7 +12,6 @@ namespace PlantGame.World
     public static class GoalBuilder
     {
         static Material _portalMat, _emberMat;
-        static Mesh _cylCol;
 
         public static GoalFlag Build(Transform parent, Vector3 pos, GoalKind kind, LevelTheme theme)
         {
@@ -25,13 +24,6 @@ namespace PlantGame.World
             {
                 var g = ShapeMeshes.Obj(n, m, mat, under != null ? under : root.transform, lp, euler, sc);
                 g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                return g;
-            }
-            GameObject Prim(string n, PrimitiveType t, Vector3 lp, Vector3 sc, Material mat, Transform under = null)
-            {
-                var g = GameObject.CreatePrimitive(t); g.name = n; g.transform.SetParent(under != null ? under : root.transform, false);
-                g.transform.localPosition = lp; g.transform.localScale = sc; g.GetComponent<Renderer>().sharedMaterial = mat;
-                Object.DestroyImmediate(g.GetComponent<Collider>());
                 return g;
             }
             void Col(PrimitiveType t, string n, Vector3 lp, Vector3 sc)   // invisible collider on the Ground layer
