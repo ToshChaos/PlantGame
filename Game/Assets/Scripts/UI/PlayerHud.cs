@@ -367,8 +367,8 @@ namespace PlantGame.UI
             _selName = Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
             _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f));
             _hints.color = Palette.TextOrange;
-            _timer = Label("Timer", root, "", 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f));
-            _prompt = Label("Prompt", root, "", 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f));
+            _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f));
+            _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f));
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;

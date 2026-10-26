@@ -34,7 +34,7 @@ namespace PlantGame.Core
         public bool NearRefillSource { get; private set; }
 
         /// <summary>T58: what the touch context button does right now (Pickup = Q, Use = E, Drop = drop the selected item).</summary>
-        public enum ContextKind { None, Pickup, Use, Drop }
+        public enum ContextKind { None, Pickup, Use, Drop, Grab, LetGo }
         public ContextKind Context { get; private set; }
         public string ContextLabel { get; private set; } = "";
         /// <summary>The touch water button has a use: a thirsty sprout, a refill point in reach, or the can is empty near one.</summary>
@@ -74,6 +74,8 @@ namespace PlantGame.Core
                 case ContextKind.Pickup: PickupOrDrop(); break;
                 case ContextKind.Use: Use(); break;
                 case ContextKind.Drop: Drop(); break;
+                case ContextKind.Grab: GetComponent<PlayerController>()?.Grab(); break;
+                case ContextKind.LetGo: GetComponent<PlayerController>()?.LetGo(); break;
                 default: GameEvents.RaiseUseRejected(); break;
             }
         }
@@ -254,9 +256,11 @@ namespace PlantGame.Core
             // touch context button: Q and E collapse into one label that always agrees with what pressing it does
             var sel = Inventory.SelectedItem;
             var pc = GetComponent<PlayerController>();
-            if (k == "Pickup") { Context = ContextKind.Pickup; ContextLabel = p; }
+            if (pc != null && pc.IsClimbing) { Context = ContextKind.LetGo; ContextLabel = "Let go"; }
+            else if (k == "Pickup") { Context = ContextKind.Pickup; ContextLabel = p; }
             else if (k == "Use") { Context = ContextKind.Use; ContextLabel = p; }
             else if (sel != null && sel.id == "parachute_leaf" && pc != null && pc.IsAirborne && !pc.IsGliding) { Context = ContextKind.Use; ContextLabel = "Glide"; }
+            else if (pc != null && pc.CanGrab) { Context = ContextKind.Grab; ContextLabel = "Grab"; }
             else if (sel != null && sel.worldPrefab != null) { Context = ContextKind.Drop; ContextLabel = "Drop " + sel.displayName; }
             else { Context = ContextKind.None; ContextLabel = ""; }
             WaterUseful = k == "Water" || NearRefillSource || thirsty != null;

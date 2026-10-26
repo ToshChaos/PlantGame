@@ -19,7 +19,7 @@ namespace PlantGame.Player
     [DefaultExecutionOrder(-100)]
     public class TouchControls : MonoBehaviour
     {
-        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 250f, StickZone = 0.4f;
+        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 250f, StickZone = 0.4f, AxisSnap = 0.2f;
 
         enum Role { None, Stick, Look, Button }
         enum Btn { Jump, Context, Water, Pause, Count }
@@ -36,7 +36,7 @@ namespace PlantGame.Player
         readonly bool[] _btnHeld = new bool[(int)Btn.Count];
         readonly Slot[] _slots = new Slot[16];
         Font _font;
-        bool _simulating;
+        bool _simulating, _running;
         Vector2 _restPos;
 
         void Awake()
@@ -101,7 +101,11 @@ namespace PlantGame.Player
                             Vector2 d = Vector2.ClampMagnitude((pos - s.origin) / radius, 1f);
                             float m = d.magnitude;
                             Vector2 v = m < Deadzone ? Vector2.zero : d / m * Mathf.InverseLerp(Deadzone, 1f, m);
-                            TouchInput.Move = v; TouchInput.Run = m >= RunThreshold;
+                            // within ~11 degrees of an axis the stick snaps to it: walking straight along a 1.2 m bridge needs no steady thumb
+                            float ax = Mathf.Abs(v.x), ay = Mathf.Abs(v.y);
+                            if (ax < ay * AxisSnap) v.x = 0f; else if (ay < ax * AxisSnap) v.y = 0f;
+                            _running = m >= (_running ? RunThreshold - 0.06f : RunThreshold + 0.04f);   // hysteresis: no flicker between walk and run at the edge
+                            TouchInput.Move = v; TouchInput.Run = _running;
                             _stickKnob.position = s.origin + d * radius; stickHeld = true;
                         }
                         break;

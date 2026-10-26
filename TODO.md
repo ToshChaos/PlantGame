@@ -16,7 +16,7 @@ adds a touch column.
 | [T58](tasks/T58-touch-auto-focus-context-button.md) | Auto-focus interaction and one context button | A1 | T57 | REVIEW |
 | [T59](tasks/T59-mobile-touch-hud-layout.md) | Touch HUD layout, safe area, scaling, left-handed mode | A7 | T57 | TODO |
 | [T60](tasks/T60-touch-hotbar-and-pause.md) | Tappable hotbar, pause / Back, touch-friendly menus, soft-keyboard seed entry | A7 | T59 | REVIEW |
-| [T61](tasks/T61-touch-gameplay-tuning.md) | Camera, climbing, jump and glide tuning for touch | A1 | T57, T58 | TODO |
+| [T61](tasks/T61-touch-gameplay-tuning.md) | Camera, climbing, jump and glide tuning for touch | A1 | T57, T58 | REVIEW |
 | [T62](tasks/T62-mobile-pause-focus-lifecycle.md) | App lifecycle, orientation, auto-pause, frame rate | A0 | — | TODO |
 | [T63](tasks/T63-mobile-performance-quality-tier.md) | Quality tier, decoration thinning, texture compression, profiling | A6 | T23 | TODO |
 | [T64](tasks/T64-android-build-and-beta.md) | Android build, signing, beta track, test matrix | A8 | T62, T63 | TODO |

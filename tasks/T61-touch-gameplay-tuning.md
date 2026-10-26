@@ -1,6 +1,6 @@
 # T61 — Touch gameplay tuning: camera, climbing, jumps, glide
 
-**Owner:** A1 Gameplay · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T57, T58
+**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TODO.md`) · **Depends on:** T57, T58
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -15,4 +15,10 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - Two testers who have not played the game finish Level 1 on a phone (Exploration) without verbal help; notes on falls and mis-grabs are in `docs/task-log.md`.
 
 ## Handoff
-_(fill in when done)_
+Done (all values are first guesses, tune on a phone):
+- Stick: snaps to an axis within ~11 degrees (`TouchControls.AxisSnap`), run has hysteresis (enter 0.89, leave 0.79).
+- Camera (touch only): FOV +8, follow starts at 3 degrees (5 on desktop) and swings 1.5x faster.
+- Climbing: a grab needs a stick push above 0.8 with the player facing the stalk; the context button shows Grab near a stalk and Let go while climbing (`PlayerController.CanGrab / Grab / LetGo`); Jump still jumps off.
+- Glide: context shows Glide in the air with the leaf (T58). Wind gusts left alone.
+- Phone text: timer 62 (was 46), prompt 44 (was 36).
+Verified in the editor: Grab label, Grab, Let go. Not verified: any of the feel (snap, FOV, follow), mis-grab rate, `CameraOcclusionFade` on a small screen, the two-tester Level 1 acceptance (needs a phone).

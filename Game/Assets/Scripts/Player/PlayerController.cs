@@ -76,6 +76,11 @@ namespace PlantGame.Player
 
         public State CurrentState { get; private set; } = State.Airborne;
         public bool IsClimbing => CurrentState == State.Climbing;
+        /// <summary>Touch context button: the player stands at a climbable stalk, on its climb side and below the top zone, so Grab would start a climb.</summary>
+        public bool CanGrab => CurrentState != State.Climbing && _touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position) && transform.position.y < _touching.TopY - topZone;
+        public void Grab() { if (CanGrab) StartClimb(_touching); }
+        /// <summary>Touch context button while climbing: let go and drop (the jump button jumps off instead).</summary>
+        public void LetGo() { if (CurrentState == State.Climbing) { ExitClimb(State.Airborne); _vVel = 0f; _hVel = Vector3.zero; } }
         public bool IsGliding { get; private set; }
         /// <summary>T50: extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
         public Vector3 WindVelocity;
@@ -153,6 +158,11 @@ namespace PlantGame.Player
         void Start()
         {
             SetCursorLocked(true);
+            if (TouchInput.Active && cameraTransform != null)   // small screen: a wider view keeps islands and gaps readable
+            {
+                var cam = cameraTransform.GetComponent<Camera>();
+                if (cam != null) cam.fieldOfView = Mathf.Min(cam.fieldOfView + 8f, 80f);
+            }
             if (cameraTransform != null && cameraTransform.GetComponent<CameraOcclusionFade>() == null)
                 cameraTransform.gameObject.AddComponent<CameraOcclusionFade>().target = cameraPivot != null ? cameraPivot : transform;   // scenery between the camera and the player turns see-through
         }
@@ -193,7 +203,9 @@ namespace PlantGame.Player
             {
                 bool nearTop = transform.position.y >= _touching.TopY - topZone;
                 float ci = Input.ClimbAxis;   // W / S or the up / down arrows
-                if ((ci > 0.5f && !nearTop) || (ci < -0.5f && nearTop && grounded))
+                // touch: the stick is analog and always near "up" while walking, so a grab needs a firm push and the player facing the stalk
+                bool firm = !TouchInput.Active || (Mathf.Abs(ci) > 0.8f && (model == null || Vector3.Dot(model.forward, -_touching.SurfaceNormal) > 0.3f));
+                if (firm && ((ci > 0.5f && !nearTop) || (ci < -0.5f && nearTop && grounded)))
                 {
                     StartClimb(_touching);
                     return;
@@ -389,11 +401,11 @@ namespace PlantGame.Player
                 bool turning = Mathf.Abs(Mathf.DeltaAngle(_lastFaceYaw, faceYaw)) > 0.01f;
                 _lastFaceYaw = faceYaw;
                 if (mi.y < -0.1f) _followFacing = false;
-                else if (turning && Mathf.Abs(diff) > 5f) _followFacing = true;
+                else if (turning && Mathf.Abs(diff) > (TouchInput.Active ? 3f : 5f)) _followFacing = true;   // touch: the look thumb is often busy, so follow earlier and faster
                 if (_followFacing)
                 {
                     if (Mathf.Abs(diff) < 1f) _followFacing = false;
-                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, faceYaw, cameraFollowSpeed * dt), 360f);
+                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, faceYaw, cameraFollowSpeed * (TouchInput.Active ? 1.5f : 1f) * dt), 360f);
                 }
             }
             else if (look.sqrMagnitude >= 0.01f) _followFacing = false;
