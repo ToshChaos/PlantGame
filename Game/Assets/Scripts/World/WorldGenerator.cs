@@ -327,7 +327,7 @@ namespace PlantGame.World
         /// <summary>Seed producer: a tree (trunk + crown) or a low patch of mounds, with fruit in the seed's colour. Drops 2 seeds at start, one more every 60 s while fewer than 2 lie around.</summary>
         static SeedTree SeedSource(Transform parent, Vector3 pos, ItemDefinition item, bool tree, int index, int drop, int maxAlive, Isle isle, bool ambience = true)
         {
-            var foliage = Scenery.Mat("M_Foliage");
+            var foliage = item.id == "heat_seed" ? Kit.Mat("M_Foliage") : Scenery.Mat("M_Foliage");   // the Heat Seed mounds stay green: they sit on warm, unfrozen ground
             var root = new GameObject(tree ? "SeedTree_" + item.id : "SeedPatch_" + item.id);
             root.transform.SetParent(parent, true); root.transform.position = pos;
             Material fruitMat = null;

@@ -21,6 +21,21 @@ namespace PlantGame.World
 
         static List<Vector4> _leafTrees;   // x, y, z, height of the leaf trees of the island being decorated (T39 falling leaves)
 
+        static readonly Dictionary<string, Material> _snowFoliage = new Dictionary<string, Material>();
+        /// <summary>Snow levels: green plant parts turn frosted white (dark foliage a frosty grey-brown) instead of staying green.</summary>
+        static Material SnowFoliage(string name)
+        {
+            if (_snowFoliage.TryGetValue(name, out var m) && m != null) return m;
+            var src = Kit.Mat(name) ?? Kit.Mat("M_Foliage");
+            if (src == null) return null;
+            Color c = name == "M_FoliageLight" ? new Color(0.96f, 0.98f, 1f) : name == "M_Foliage" ? new Color(0.86f, 0.92f, 0.93f) : new Color(0.58f, 0.56f, 0.52f);
+            m = new Material(src) { name = name + "_Snow", hideFlags = HideFlags.DontSave };
+            if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", null);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+            return _snowFoliage[name] = m;
+        }
+
         public static Material Mat(string name)
         {
             if (Theme == LevelTheme.Autumn)
@@ -31,6 +46,7 @@ namespace PlantGame.World
                     case "M_FoliageDark": case "M_Blossom": name = "M_AutumnRed"; break;
                     case "M_Terrain": name = "M_TerrainAutumn"; break;
                 }
+            if (Theme == LevelTheme.Snow && (name == "M_Foliage" || name == "M_FoliageLight" || name == "M_FoliageDark" || name == "M_Blossom")) return SnowFoliage(name);
             return Kit.Mat(name) ?? Kit.Mat(name == "M_TerrainAutumn" ? "M_Terrain" : "M_Foliage");
         }
 
@@ -664,7 +680,7 @@ namespace PlantGame.World
                 float a = i * 6.28f / n + (float)rnd.NextDouble() * 0.5f, d = i == 0 ? 0f : 0.55f + (float)rnd.NextDouble() * 0.45f;
                 int tier = (i + rnd.Next(3)) % 3;   // T40: short, medium and tall culms in one grove
                 float h = tier == 0 ? 2.2f + (float)rnd.NextDouble() * 0.9f : tier == 1 ? 3.5f + (float)rnd.NextDouble() * 1.1f : 5.0f + (float)rnd.NextDouble() * 1.3f;
-                var cp = pos + new Vector3(Mathf.Cos(a) * d, 0, Mathf.Sin(a) * d);
+                var cp = pos + new Vector3(Mathf.Cos(a) * d, -0.18f, Mathf.Sin(a) * d);   // culm feet sunk into the ground
                 var culm = new GameObject("Culm" + i); culm.transform.SetParent(parent, true); culm.transform.position = cp;
                 culm.transform.rotation = Quaternion.Euler(Mathf.Sin(a) * 5f, 0, -Mathf.Cos(a) * 5f);   // leaning a little outwards
                 culm.AddComponent<MeshFilter>().sharedMesh = SeedMeshes.Culm(h, 0.12f + (float)rnd.NextDouble() * 0.03f, Mathf.Clamp(Mathf.RoundToInt(h * 1.2f), 3, 8), false);
@@ -684,7 +700,7 @@ namespace PlantGame.World
                     Fruit(parent, "Fruit" + f, pos + new Vector3(Mathf.Cos(a) * d, y, Mathf.Sin(a) * d), 0.55f, fruitMesh, fruit,
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.6f, 0.05f, 2.6f), PatchBase(foliage), false);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(2.6f, 0.05f, 2.6f), PatchBase(foliage), false);
         }
 
         /// <summary>Dew-seed source: a few big teal succulent rosettes in a nest of stones.</summary>
