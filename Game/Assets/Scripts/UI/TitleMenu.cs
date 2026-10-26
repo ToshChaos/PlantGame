@@ -432,13 +432,14 @@ namespace PlantGame.UI
             return label;
         }
 
-        /// <summary>Quit: a muted red button so it reads as "leaves the game".</summary>
+        /// <summary>Quit: a muted red button, a bit smaller than the rest, so it reads as "leaves the game".</summary>
         public static Text Danger(Text label)
         {
             var im = label.transform.parent.GetComponent<Image>();
             im.color = new Color(0.62f, 0.2f, 0.24f, 0.97f);
             var b = im.GetComponent<UnityEngine.UI.Button>(); var cb = b.colors; cb.highlightedColor = new Color(0.95f, 0.4f, 0.42f, 1f); cb.pressedColor = new Color(0.4f, 0.12f, 0.16f, 1f); b.colors = cb;
             label.color = Color.white;
+            im.rectTransform.localScale = Vector3.one * 0.85f;   // a little smaller than the other buttons
             return label;
         }
 
