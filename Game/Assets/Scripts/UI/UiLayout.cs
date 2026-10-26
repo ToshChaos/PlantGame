@@ -8,8 +8,8 @@ namespace PlantGame.UI
     public static class UiLayout
     {
         /// <summary>CanvasScaler match value: height on wide touch screens, the old half-and-half on desktop and on near-square tablets.</summary>
-        /// <summary>Text size multiplier: 1.5x on desktop, 2x on phones. Large titles (60 and up) keep their size.</summary>
-        public static float TextScale => TouchInput.Active ? 2f : 1.5f;
+        /// <summary>Text size multiplier: 1.3x on desktop, 2x on phones. Large titles (60 and up) keep their size.</summary>
+        public static float TextScale => TouchInput.Active ? 2f : 1.3f;
 
         /// <summary>Menus (title, pause, end screens) scale less than the HUD: 1.2x desktop, 1.4x phones.</summary>
         public static float MenuScale => TouchInput.Active ? 1.4f : 1.2f;
