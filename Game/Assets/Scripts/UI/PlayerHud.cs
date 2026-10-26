@@ -154,7 +154,7 @@ namespace PlantGame.UI
             if (pause) RefreshOptionLabels();
             if (pause && _pauseHint != null)
             {
-                _pauseHint.gameObject.SetActive(GameBootstrap.Current.mode == GameMode.Exploration || SeedLine().Length > 0);
+                _pauseHint.gameObject.SetActive(SeedLine().Length > 0 || (GameBootstrap.Current.mode == GameMode.Exploration && GameSettings.Hints));
                 if (_copyCode != null) _copyCode.SetActive(SeedLine().Length > 0);
                 _pauseHint.text = SeedLine().Length > 0 ? SeedLine() + "   (share it: the same code gives the same world)" : PauseTip;
             }
@@ -415,7 +415,7 @@ namespace PlantGame.UI
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
             _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
             _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f), true, true);
-            _pauseHint.color = Palette.TextOrange;
+            _pauseHint.color = Color.white;
             _pausePanel.SetActive(false);
 
             // end panel (win / fail)
@@ -479,6 +479,7 @@ namespace PlantGame.UI
         void RefreshOptionLabels()
         {
             foreach (var t in new[] { _hintsButtonLabel }) if (t != null) t.text = OnOff("Hints", GameSettings.Hints);
+            if (_pauseHint != null && _pausePanel.activeSelf && SeedLine().Length == 0) _pauseHint.gameObject.SetActive(GameBootstrap.Current.mode == GameMode.Exploration && GameSettings.Hints);   // the tip follows the Hints toggle
             if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Glow", GameSettings.Bloom);
