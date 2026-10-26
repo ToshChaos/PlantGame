@@ -372,7 +372,7 @@ namespace PlantGame.UI
             _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f), false);
             _hints.color = Palette.TextOrange;
             _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f), false);
-            _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f), false);
+            _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, TouchInput.Active ? 0 : 70), new Vector2(1000, 54), new Vector2(0.5f, 0.2f), false);
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;
