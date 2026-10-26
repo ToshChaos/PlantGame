@@ -32,7 +32,8 @@ namespace PlantGame.UI
         Text _selName, _prompt, _waterLabel, _waterWarn, _hints, _hintsButtonLabel;
         float _flashUntil;
         Text _timer, _endTitle, _endBody;
-        GameObject _endPanel;
+        GameObject _endPanel, _nextButton;
+        Transform[] _endButtons;
         float _endAt = -1f;
         bool _ended;
         Image[] _drops;
@@ -86,6 +87,7 @@ namespace PlantGame.UI
             _endBody.text = "Time  " + Fmt(seconds) + "\n" + (newBest ? "New best!" : best.HasValue ? "Best  " + Fmt(best.Value) : "");
             if (SeedLine().Length > 0) _endBody.text += "\n" + SeedLine();
             _endAt = Time.unscaledTime + 1.8f;
+            LayoutEndButtons(NextCuratedLevel() != null);
         }
 
         void OnRunFailed()
@@ -93,6 +95,7 @@ namespace PlantGame.UI
             _endTitle.text = "Time's up"; _retryLabel.text = "Retry";
             _endBody.text = "The goal was not reached in time.";
             _endAt = Time.unscaledTime + 0.5f;
+            LayoutEndButtons(false);
         }
 
         void ShowEnd()
@@ -153,6 +156,32 @@ namespace PlantGame.UI
         }
 
         void Restart() { RestartRun(); }
+
+        /// <summary>The curated level after the current one (wraps from the last back to the first), null for random / code levels.</summary>
+        static LevelDefinition NextCuratedLevel()
+        {
+            var levels = PlantGame.World.Kit.Asset != null ? PlantGame.World.Kit.Asset.levels : null;
+            string id = GameBootstrap.Current.levelId;
+            if (levels == null || levels.Length == 0 || string.IsNullOrEmpty(id)) return null;
+            for (int i = 0; i < levels.Length; i++) if (levels[i] != null && levels[i].id == id) return levels[(i + 1) % levels.Length];
+            return null;
+        }
+
+        void NextLevel()
+        {
+            var next = NextCuratedLevel();
+            if (next == null) return;
+            GameBootstrap.PendingRun = next.ToConfig(GameBootstrap.Current.mode);
+            RestartRun();
+        }
+
+        void LayoutEndButtons(bool showNext)
+        {
+            _nextButton.SetActive(showNext);
+            float y = -70f;
+            if (showNext) y -= 100f;
+            foreach (var t in _endButtons) { ((RectTransform)t).anchoredPosition = new Vector2(0, y); y -= 100f; }
+        }
 
         /// <summary>Reloads the scene and goes straight into the run (same RunConfig, same world).</summary>
         public void RestartRun() { _skipMenu = true; Reload(); }
@@ -369,9 +398,9 @@ namespace PlantGame.UI
             _endTitle = Label("EndTitle", er, "", 84, TextAnchor.MiddleCenter, new Vector2(0, 200), new Vector2(1000, 120), new Vector2(0.5f, 0.5f));
             _endBody = Label("EndBody", er, "", 44, TextAnchor.MiddleCenter, new Vector2(0, 80), new Vector2(1000, 150), new Vector2(0.5f, 0.5f));
             _endBody.color = Palette.TextOrange;
+            _nextButton = Button("Next level", er, new Vector2(0, -70), NextLevel).transform.parent.gameObject;
             _retryLabel = Button("Play again", er, new Vector2(0, -70), Restart);
-            Button("Menu", er, new Vector2(0, -170), ToMenu);
-            Button("Quit", er, new Vector2(0, -270), Quit);
+            _endButtons = new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, Button("Quit", er, new Vector2(0, -270), Quit).transform.parent };
             _endPanel.SetActive(false);
         }
 
