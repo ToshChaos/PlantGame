@@ -269,22 +269,18 @@ def build_group():
             ang = b.m('ADD', b.m('MULTIPLY', fi, 2 * math.pi / count), phase)
             fpts = b.make('GeometryNodeMeshToPoints', {'Mesh': b.make('GeometryNodeMeshLine', {'Count': count})}, mode='VERTICES')
             fpos = b.make('GeometryNodeSetPosition', {'Geometry': fpts, 'Position': b.xyz(b.m('MULTIPLY', b.m('COSINE', ang), radius), b.m('MULTIPLY', b.m('SINE', ang), radius), 0)})
-            petal = b.make('GeometryNodeMeshCone', {'Vertices': 4, 'Radius Top': 0.0, 'Radius Bottom': rb, 'Depth': depth})   # more detail: 4-sided petals, more of them
+            petal = b.make('GeometryNodeMeshCone', {'Vertices': 3, 'Radius Top': 0.0, 'Radius Bottom': rb, 'Depth': depth})
             pet = b.make('GeometryNodeInstanceOnPoints', {'Points': fpos, 'Instance': petal, 'Rotation': b.xyz(0, math.pi / 2 - tilt, ang), 'Scale': b.xyz(1.0, 0.45, 1.0)})
             pet = b.make('GeometryNodeRealizeInstances', {'Geometry': pet})
             return b.make('GeometryNodeStoreNamedAttribute', {'Geometry': pet, 'Name': 'part', 'Value': part}, data_type='FLOAT', domain='POINT')
-        outer = ring(9, 0.05, 0.5, 0.21, 0.05, outer_part, 0.0)
-        middle = ring(7, 0.037, 0.75, 0.17, 0.045, outer_part, math.pi / 7)
-        inner = ring(5, 0.03, 1.0, 0.13, 0.04, inner_part, math.pi / 5)
-        sepal = ring(5, 0.02, -0.35, 0.1, 0.03, 0.67, 0.3)               # little green sepals under the petals
-        stam = ring(6, 0.016, 1.35, 0.07, 0.012, centre_part, 0.0)       # a crown of stamens round the glowing bead
-        cen = b.make('GeometryNodeMeshUVSphere', {'Segments': 8, 'Rings': 5, 'Radius': 0.03})
-        cen = b.make('GeometryNodeTransform', {'Geometry': cen, 'Translation': (0, 0, 0.035)})
+        outer = ring(7, 0.045, 0.55, 0.2, 0.05, outer_part, 0.0)
+        inner = ring(5, 0.03, 0.95, 0.13, 0.04, inner_part, math.pi / 5)
+        cen = b.make('GeometryNodeMeshCone', {'Vertices': 4, 'Radius Top': 0.0, 'Radius Bottom': 0.04, 'Depth': 0.07})
+        cen = b.make('GeometryNodeTransform', {'Geometry': cen, 'Translation': (0, 0, 0.03)})
         cen = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': cen, 'Name': 'part', 'Value': centre_part}, data_type='FLOAT', domain='POINT')
         fj = b.make('GeometryNodeJoinGeometry')
         tree.links.new(outer.outputs[0], fj.inputs[0])
-        for g_ in (middle, inner, sepal, stam):
-            tree.links.new(g_.outputs[0], fj.inputs[0])
+        tree.links.new(inner.outputs[0], fj.inputs[0])
         tree.links.new(cen.outputs[0], fj.inputs[0])
         return fj
     flower_white = flower(0.985, 0.975, 0.995)    # white petals, mist-blue inner petals, glowing centre

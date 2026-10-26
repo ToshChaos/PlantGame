@@ -143,7 +143,7 @@ namespace PlantGame.World
             if (index == HugeTreeIsland) Scatter(1, 120, 0.4f, 0.8f, 10f, 8f, p => Tree(root.transform, World(p), 20f, rnd, PickKind(weights, rnd)), 8f);   // one tree three times a normal one
             Scatter(Count(14), 160, 0.6f, 0.92f, 4.5f, 3.2f, p => Tree(root.transform, World(p), 4.8f + (float)rnd.NextDouble() * 4.0f, rnd, PickKind(weights, rnd)), 3.2f);
             Scatter(Count(10), 120, 0.35f, 0.92f, 1.8f, 1.2f, p => Bush(root.transform, World(p), 0.7f + (float)rnd.NextDouble() * 0.7f, rnd), 1.2f);
-            Scatter(Count(16), 200, 0.25f, 0.92f, 1.2f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
+            Scatter(Count(18), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
 
             // T39: ferns and tall grass fill the gaps (own picks so the trees and bushes above keep their layout)
             if (Kit.Prop("Fern_1") != null || Kit.Prop("grass_large") != null)
@@ -938,12 +938,24 @@ namespace PlantGame.World
             var go = new GameObject("Flowers"); go.transform.SetParent(parent, true); go.transform.position = pos;
             if (Kit.Prop("flower_redA") != null)
             {
-                string[] cols = { "red", "purple", "yellow" }; string col = cols[rnd.Next(cols.Length)], col2 = cols[rnd.Next(cols.Length)];   // T40: two colours per clump, more flowers, varied heights
-                for (int i = 0; i < 4; i++)
+                // richer clumps: three colours, eight to eleven blooms of varied height and slight lean, a ring of grass and small buds round the base
+                string[] cols = { "red", "purple", "yellow" }; string col = cols[rnd.Next(cols.Length)], col2 = cols[rnd.Next(cols.Length)], col3 = cols[rnd.Next(cols.Length)];
+                int n = 8 + rnd.Next(4);
+                for (int i = 0; i < n; i++)
                 {
-                    var o = new Vector3((float)(rnd.NextDouble() - 0.5) * 1.1f, 0f, (float)(rnd.NextDouble() - 0.5) * 1.1f);
-                    Model(go.transform, "flower_" + (i % 3 == 2 ? col2 : col) + "ABC"[rnd.Next(3)], pos + o, (float)rnd.NextDouble() * 360f, 0.45f + (float)rnd.NextDouble() * 0.5f, false);
+                    float ang = (float)(rnd.NextDouble() * 6.283), rad = Mathf.Sqrt((float)rnd.NextDouble()) * 0.75f;
+                    var o = new Vector3(Mathf.Cos(ang) * rad, 0f, Mathf.Sin(ang) * rad);
+                    string c = i % 3 == 2 ? col2 : i % 3 == 1 && i > 3 ? col3 : col;
+                    float h = (0.3f + (float)rnd.NextDouble() * 0.55f) * (1.1f - rad * 0.5f);   // taller in the middle of the clump
+                    var f = Model(go.transform, "flower_" + c + "ABC"[rnd.Next(3)], pos + o, (float)rnd.NextDouble() * 360f, h, false);
+                    if (f != null) f.transform.rotation = Quaternion.Euler(((float)rnd.NextDouble() - 0.5f) * 14f, f.transform.eulerAngles.y, ((float)rnd.NextDouble() - 0.5f) * 14f);
                 }
+                if (Kit.Prop("grass") != null || Kit.Prop("grass_large") != null)
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float ang = i * 2.1f + (float)rnd.NextDouble(); var o = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * 0.6f;
+                        Model(go.transform, FirstAvailable(rnd, "grass", "grass_large"), pos + o, (float)rnd.NextDouble() * 360f, 0.3f + (float)rnd.NextDouble() * 0.2f, false);
+                    }
                 return;
             }
             var stem = Mat("M_FoliageLight");
