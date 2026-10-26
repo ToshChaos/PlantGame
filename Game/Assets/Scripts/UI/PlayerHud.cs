@@ -353,7 +353,7 @@ namespace PlantGame.UI
             // touch: the hotbar uses the extra width of a phone screen, in the top right corner, clear of both thumbs (the sticks and buttons own the bottom)
             bool touch = TouchInput.Active;
             var bar = touch ? Rect("Hotbar", root, new Vector2(1f, 1f), new Vector2(total, SlotSize), new Vector2(-(total * 0.5f + 40f), -(SlotSize * 0.5f + 30f)))
-                            : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 54));
+                            : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 90));
             _slotBg = new Image[n]; _slotIcon = new Image[n]; _slotNum = new Text[n];
             for (int i = 0; i < n; i++)
             {
@@ -368,7 +368,7 @@ namespace PlantGame.UI
                 _slotIcon[i] = Img("Icon", slot, UiSprites.Disc, Color.white, SlotSize * 0.82f);
             }
             _selName = touch ? Label("SelectedName", root, "", 28, TextAnchor.MiddleCenter, new Vector2(-(total * 0.5f + 40f), -(SlotSize + 66f)), new Vector2(total, 40), new Vector2(1f, 1f))
-                             : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
+                             : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 110), new Vector2(600, 36), new Vector2(0.5f, 0f));
             _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f), false);
             _hints.color = Palette.TextOrange;
             _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f), false);
