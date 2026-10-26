@@ -732,7 +732,7 @@ namespace PlantGame.World
             var bark = Kit.Mat("M_Bark"); var foliage = Mat("M_Foliage"); var light = Mat("M_FoliageLight");
             for (int i = 0; i < 4; i++)
             {
-                float a = i * 1.57f + (float)rnd.NextDouble() * 0.5f; var o = new Vector3(Mathf.Cos(a) * 0.9f, 0, Mathf.Sin(a) * 0.9f);
+                float a = i * 1.57f + (float)rnd.NextDouble() * 0.5f; var o = new Vector3(Mathf.Cos(a) * 0.9f, -0.18f, Mathf.Sin(a) * 0.9f);   // pole feet sunk into the ground
                 float h = 2.4f + (float)rnd.NextDouble() * 1.0f;
                 Prim("Pole" + i, PrimitiveType.Cylinder, parent, pos + o + Vector3.up * h * 0.5f, new Vector3(0.09f, h * 0.5f, 0.09f), bark, false);
                 for (int l = 0; l < 6; l++)   // leaves spiralling up the pole
@@ -748,7 +748,7 @@ namespace PlantGame.World
                     else Prim("Pod", PrimitiveType.Capsule, parent, pp, new Vector3(0.07f, 0.16f, 0.07f), fruit != null ? fruit : _bean, false);
                 }
             }
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.4f, 0.05f, 2.4f), PatchBase(foliage), false);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(2.4f, 0.05f, 2.4f), PatchBase(foliage), false);
         }
 
         /// <summary>
