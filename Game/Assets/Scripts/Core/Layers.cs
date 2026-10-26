@@ -18,15 +18,8 @@ namespace PlantGame.Core
         public const string PlayerTag = "Player";
         public const string RespawnTag = "Respawn";
 
-        public static int Ground => LayerMask.NameToLayer(GroundName);
-        public static int Plant => LayerMask.NameToLayer(PlantName);
-        public static int Climbable => LayerMask.NameToLayer(ClimbableName);
-        public static int Interactable => LayerMask.NameToLayer(InteractableName);
-        public static int Water => LayerMask.NameToLayer(WaterName);
-        public static int Player => LayerMask.NameToLayer(PlayerName);
-
-        /// <summary>Everything the player can stand on.</summary>
-        public static int WalkableMask => LayerMask.GetMask("Default", GroundName, PlantName);
-        public static int InteractableMask => LayerMask.GetMask(InteractableName, WaterName);
+        /// <summary>Everything the player can stand on (cached: the layers sit at fixed indices).</summary>
+        public static int WalkableMask => _walkable != 0 ? _walkable : _walkable = LayerMask.GetMask("Default", GroundName, PlantName);
+        static int _walkable;
     }
 }

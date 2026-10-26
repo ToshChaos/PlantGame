@@ -1,7 +1,7 @@
 # T47 — Surface footsteps and vine-bridge sounds
 
 **Owner:** A7 + A1 · **Depends on:** T18, T35 (T45 for snow)
-**Status:** REVIEW
+**Status:** DONE
 
 ## Goal
 - **Footsteps per surface:** each island's ground kind picks the footstep set: grass (soft rustle), mud (squelch), rock (hard tap), snow (crunch, with T45), plus wood/stone for ruin floors if cheap. Footsteps follow the surface actually under the player (raycast / island ground kind), also for landing thuds. Pitch/volume variation, no repeats back to back.

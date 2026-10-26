@@ -15,7 +15,7 @@ namespace PlantGame.World
         LevelTheme _theme;
         bool _started;
         Transform _fxRoot, _player;
-        Material _particleMat, _leafMat;
+        Material _particleMat;
 
         bool _wind;
         /// <summary>The blown-leaves particle system of windy levels (WindGusts steers it), null otherwise.</summary>

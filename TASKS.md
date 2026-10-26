@@ -1,7 +1,8 @@
-# TASKS.md — board (every task, including the former stretch ones, is in scope)
+# TASKS.md — MVP board (complete)
 
-Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `FIXED` · `CUT` · `POST-MVP` (planned, not part of the hackathon MVP). Owners update their own row.
-Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles: see `AGENTS.md` section 4.
+The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CUT`. Post-MVP work (mobile, bare trees,
+palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria and handoff notes are in
+`tasks/T<nn>-*.md`; roles in `AGENTS.md` section 4.
 
 ## Board
 | ID | Task | Owner | Depends on | Status |
@@ -27,10 +28,9 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T18](tasks/T18-sound-effects.md) | Sound effects set + event hookup | A7 | T00, T04, T11 | DONE |
 | [T19](tasks/T19-ui-hud-menus.md) | HUD: hotbar, prompts, timer, pause, win/fail panels | A7 | T05 (soft: T25, T27 — stubbed) | DONE |
 | [T20](tasks/T20-growth-vfx.md) | Growth VFX polish (cuttable) | A6 | T11 | DONE |
-| [T21](tasks/T21-level-tuning.md) | Seed & difficulty tuning, pick showcase seeds | A0 | T14, T15 | POST-MVP |
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | DONE |
 | [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | DONE |
-| [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE (reduced) |
+| [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE |
 | [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
 | [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | DONE |
@@ -63,25 +63,15 @@ Details, acceptance criteria and handoff notes live in `tasks/T<nn>-*.md`. Roles
 | [T54](tasks/T54-island-dressing.md) | Island dressing: more grass, decals, shrubs, sticks, marble chips, gems, shiny debris, vine-heavy ruins, pond plants, murky ponds | A5+A6 | T39, T35, T36 | DONE |
 | [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
 | [T56](tasks/T56-palms-and-parachute.md) | Palm trees (Kenney CC0 models, generated bark / frond textures, one coconut pickup each), all trees vary in size, rare purple grass; glide visual is now a real parachute (green/yellow dome + cords) | A5+A1 | T36, T32 | DONE |
-| [T65](tasks/T65-leafless-trees.md) | Bare trees: snow-level leaf trees leafless except two yellow leaves, rare leafless variation on other levels | A5+A6 | T36, T39, T45, T56 | TODO |
-| [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | TODO |
 | [T67](tasks/T67-plant-and-seed-detail-pass.md) | Plant and seed detail pass: richer bridge / beanstalk / mushroom patch / collector models, plant textures, detailed seeds, parachute as a big leaf | A3+A6 | T49, T56 | DONE |
-| [T57](tasks/T57-mobile-input-layer.md) | Mobile: touch input layer (stick, look drag, buttons) behind PlayerInputReader | A1 | — | POST-MVP |
-| [T58](tasks/T58-touch-auto-focus-context-button.md) | Mobile: auto-focus interaction and context button | A1 | T57 | POST-MVP |
-| [T59](tasks/T59-mobile-touch-hud-layout.md) | Mobile: touch HUD layout, safe area, scaling, left-handed mode | A7 | T57 | POST-MVP |
-| [T60](tasks/T60-touch-hotbar-and-pause.md) | Mobile: tappable hotbar, pause / Back, touch-friendly menus + soft keyboard seed entry | A7 | T59 | POST-MVP |
-| [T61](tasks/T61-touch-gameplay-tuning.md) | Mobile: camera, climbing, jump and glide tuning for touch | A1 | T57, T58 | POST-MVP |
-| [T62](tasks/T62-mobile-pause-focus-lifecycle.md) | Mobile: app lifecycle, orientation, auto-pause, frame rate | A0 | — | POST-MVP |
-| [T63](tasks/T63-mobile-performance-quality-tier.md) | Mobile: quality tier, decoration thinning, texture compression, profiling | A6 | T23 | POST-MVP |
-| [T64](tasks/T64-android-build-and-beta.md) | Android build, signing, beta track, test matrix | A8 | T62, T63 | POST-MVP |
 
-## Status notes (latest)
-- Mobile (POST-MVP, T57-T64; not part of the hackathon MVP): Android beta target. Design and control mapping in `docs/mobile-controls.md`; desktop controls stay the contract until T57 adds a touch column.
-- Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 2; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
-- Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island, on unfrozen grass; the source regrows them. Not balance-tested.
-- Challenge mode: Time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode (Exploration and Challenge each have their own record, both shown on the level card).
-- Audio: surface footsteps (grass, mud, rock, snow, bridge) with bridge creaks (T47); ten gameplay tunes (T53: level 1 and generated levels share the sunny tune, 2 autumn, 3 rain, 4-10 their own), a menu tune, win music; a level-start jingle pauses the music until it ends; wind ambience scales with altitude on windy levels. None of it has had a listening pass.
-- Plants: platform pads are dishes (T48); `PlantGrow` has procedural surface detail (T49 done); the Water Collector spawns at 0.75 scale; the beanstalk has no top platform (T51).
-- Title screen: Play, Select level, Generate level, Input seed, Options (volume sliders, reset all best times, hints) over a generated showcase world; the only test scene left under Select level is the Movement course (one of every item). Pause menu: Esc to resume, option buttons show On/Off.
-- World look: imported CC0 / royalty-free packs dress the islands (Kenney, Quaternius, FreeStylized Ruins; see `docs/asset-sources.md` and `Game/Assets/ThirdParty/LICENSES.md`). T10 (Blender island kit) is CUT. Islands are grass, mud or rock; trees, bushes, rocks and ruin slabs have colliders; grass tufts (blade sprites), leaf litter, moss and vines overgrow grass islands.
-- Still open: T21-T24 (tuning, a real playthrough of every level, standalone build, demo), a real Parachute Bloom plant (T32 shipped as a leaf plant), listening and play passes for everything added on 2026-10-24.
+## Final state (2026-10-26)
+- Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 3; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
+- Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island; the source regrows them.
+- Challenge mode: time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode.
+- Audio: surface footsteps with bridge creaks (T47); ten gameplay tunes (T53), a menu tune, win music; a level-start jingle; altitude-scaled wind on windy levels.
+- Plants: vine bridge, beanstalk ladder (no top platform), mushroom-patch platform, Water Collector; textured grow shader (T49, T67); parachute is a big leaf pickup.
+- Title screen: Play, Select level, Generate level, Input seed, Options (volume, reset best times, hints) over a generated showcase world; Select level also lists the Movement course (one of every item).
+- World look: imported CC0 / royalty-free models (Kenney, Quaternius, FreeStylized Ruins; `Game/Assets/ThirdParty/LICENSES.md`), only the ones the game places. T10 (Blender island kit) is CUT; islands are procedural (grass, mud or rock ground; snow on snow levels).
+- Cleanup (2026-10-26): unused models, materials, dead code and the T02 test fixture removed; raw Blender exports and the built `.app` are git-ignored (see `docs/task-log.md`).
+- Not covered by the MVP (by-hand playthrough, built-player smoke test, listening pass, balance): see `TODO.md`.

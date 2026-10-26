@@ -82,7 +82,6 @@ namespace PlantGame.World
         public float EdgeDeg(float degrees) => Edge(degrees * Mathf.Deg2Rad);
 
         public float MaxEdge { get { float m = 0; for (int i = 0; i < 72; i++) m = Mathf.Max(m, Edge(i * Mathf.PI * 2f / 72f)); return m; } }
-        public float MinEdge { get { float m = float.MaxValue; for (int i = 0; i < 72; i++) m = Mathf.Min(m, Edge(i * Mathf.PI * 2f / 72f)); return m; } }
 
         /// <summary>Random but deterministic shape of mean size `radius`: elongated, lobed, sometimes with a bay.</summary>
         public static IslandShape Random(System.Random rnd, float radius, float wobble)

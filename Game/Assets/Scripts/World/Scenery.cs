@@ -467,9 +467,7 @@ namespace PlantGame.World
             return go;
         }
 
-        static readonly string[] TreeModel = { "tree_oak", "tree_pineTallA", "tree_thin", "tree_fat", "tree_default", "tree_cone", "tree_oak" };
-
-        // Quaternius Stylized Nature MegaKit (CC0): textured trees; used when present and the theme is not autumn
+        // Quaternius Stylized Nature MegaKit (CC0): the textured trees, picked by kind; autumn and "coloured" (kind 6) oaks and willows are recoloured in Tree()
         static readonly string[][] QuaterniusTrees =
         {
             new[] { "CommonTree_1", "CommonTree_2", "CommonTree_3", "CommonTree_4", "CommonTree_5" },   // oak
@@ -478,7 +476,6 @@ namespace PlantGame.World
             new[] { "CommonTree_1", "CommonTree_3" },                                                   // blossom
             new[] { "TwistedTree_1", "TwistedTree_2", "TwistedTree_3", "TwistedTree_4", "TwistedTree_5" }, // willow
             new[] { "Pine_2", "Pine_4" },                                                               // cypress
-            null,                                                                                       // autumn: Kenney _fall models
         };
 
         static readonly string[] PalmModels = { "tree_palmTall", "tree_palmDetailedTall", "tree_palmBend", "tree_palm", "tree_palmDetailedShort", "tree_palmShort" };
@@ -486,19 +483,8 @@ namespace PlantGame.World
         static string ThemedTree(int kind, System.Random rnd)
         {
             if (kind == 7) return FirstAvailable(rnd, PalmModels);
-            bool autumn = Theme == LevelTheme.Autumn || kind == 6;
-            if ((kind == 1 || kind == 5) && Kit.Prop(QuaterniusTrees[kind][0]) != null) autumn = false;   // conifers stay green (the Kenney fall cones were the flat orange trees)
-            var q = kind == 6 ? QuaterniusTrees[0] : QuaterniusTrees[kind];   // coloured trees: the textured oaks, recoloured in Tree()
-            if (kind == 6 && Kit.Prop(q[0]) != null) return q[rnd.Next(q.Length)];
-            if (Theme == LevelTheme.Autumn && (kind == 0 || kind == 2 || kind == 3 || kind == 4) && Kit.Prop(QuaterniusTrees[kind][0]) != null) return QuaterniusTrees[kind][rnd.Next(QuaterniusTrees[kind].Length)];
-            if (!autumn && q != null && kind != 6)
-            {
-                var pick = q[rnd.Next(q.Length)];
-                if (Kit.Prop(pick) != null) return pick;
-            }
-            string n = TreeModel[kind];
-            if (autumn && Kit.Prop(n + "_fall") != null) return n + "_fall";
-            return n;
+            var q = QuaterniusTrees[kind == 6 ? 0 : kind];   // kind 6 (coloured): the textured oaks
+            return q[rnd.Next(q.Length)];
         }
 
         static string FirstAvailable(System.Random rnd, params string[] names)

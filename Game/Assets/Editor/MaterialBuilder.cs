@@ -19,9 +19,8 @@ namespace PlantGame.Editor
         {
             Directory.CreateDirectory(Dir);
             var lit = Shader.Find("Universal Render Pipeline/Lit");
-            var unlit = Shader.Find("Universal Render Pipeline/Unlit");
             var grow = Shader.Find("PlantGame/PlantGrow");
-            if (lit == null || unlit == null)
+            if (lit == null)
             {
                 Debug.LogError("[PlantGame] URP shaders not found. Is the Universal Render Pipeline package installed and the project using a URP asset?");
                 return;
@@ -46,11 +45,6 @@ namespace PlantGame.Editor
             });
             Make("M_Bark", lit, m => { SetLit(m, Palette.Bark, 0.1f); SetTextured(m, "T_Bark", 1.2f); });
             Make("M_Soil", lit, m => { SetLit(m, Palette.Soil, 0.05f); SetTextured(m, "T_Soil", 1.4f); });
-            Make("M_Cloud", lit, m =>
-            {
-                SetLit(m, Palette.CloudWhite, 0.05f);
-                SetEmission(m, Palette.CloudWhite * 0.25f);
-            });
             Make("M_Crystal", lit, m =>
             {
                 SetLit(m, Palette.GlowCyan, 0.8f);
@@ -64,7 +58,6 @@ namespace PlantGame.Editor
                 m.SetFloat("_Metallic", 0.75f);
                 SetEmission(m, Palette.Gold * 0.15f);   // keeps the trim gold in shadow; no reflection probes yet
             });
-            Make("M_UI", unlit, m => { m.SetColor("_BaseColor", Palette.CloudWhite); });
             if (grow != null)
                 Make("M_PlantGrow", grow, m =>
                 {

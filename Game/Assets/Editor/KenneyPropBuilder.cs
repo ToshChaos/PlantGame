@@ -15,11 +15,11 @@ namespace PlantGame.Editor
     {
         public const string ModelDir = "Assets/Art/Models/Kenney", MatDir = "Assets/Art/Materials/Kenney";
 
-        // art-bible greens instead of Kenney's teal (docs/art-bible.md: leaf green #5DB46B, moss #2F7D4F)
+        // art-bible green instead of Kenney's teal (docs/art-bible.md: leaf green #5DB46B)
         static readonly System.Collections.Generic.Dictionary<string, Color> Tint = new System.Collections.Generic.Dictionary<string, Color>
         {
-            { "K_leafsGreen", new Color32(0x5D, 0xB4, 0x6B, 255) }, { "K_leafsDark", new Color32(0x2F, 0x7D, 0x4F, 255) }, { "K_grass", new Color32(0x5D, 0xB4, 0x6B, 255) },
-            { "K_woodBark", new Color32(0x8A, 0x5E, 0x3E, 255) }, { "K_woodBarkDark", new Color32(0x5E, 0x3E, 0x2A, 255) },
+            { "K_leafsGreen", new Color32(0x5D, 0xB4, 0x6B, 255) }, { "K_grass", new Color32(0x5D, 0xB4, 0x6B, 255) },
+            { "K_woodBark", new Color32(0x8A, 0x5E, 0x3E, 255) },
         };
 
         [MenuItem("PlantGame/17 Build Kenney Props")]

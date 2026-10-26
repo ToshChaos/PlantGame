@@ -109,20 +109,20 @@ namespace PlantGame.Editor
                 return (c, h);
             });
             // T67: tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
-            Make("T_PlantBark", 256, (u, v, c, h) =>
+            Make("T_PlantBark", 256, normalMap: false, gen: (u, v, c, h) =>
             {
                 float grain = ValueNoise(u * 24f, v * 4f, 24, 111), fis = Mathf.Clamp01((0.5f - Mathf.Abs(ValueNoise(u * 12f, v * 3f, 12, 112) - 0.5f)) * 6f);
                 float lum = Mathf.Clamp01((0.72f + 0.35f * grain) * (1f - 0.35f * fis) * (0.9f + 0.2f * Fbm(u, v, 5, 3, 113)));
                 h = grain * 0.5f + (1f - fis) * 0.5f; c = new Color(lum, lum, lum, 1f); return (c, h);
             });
-            Make("T_PlantLeaf", 256, (u, v, c, h) =>
+            Make("T_PlantLeaf", 256, normalMap: false, gen: (u, v, c, h) =>
             {
                 Worley(u, v, 7, 114, out float f1, out float f2);
                 float vein = Mathf.Clamp01((f2 - f1) * 14f), mid = Mathf.Clamp01(1f - Mathf.Abs(u - 0.5f) * 18f) * 0.4f;
                 float lum = Mathf.Clamp01((0.92f - 0.28f * (1f - vein) - mid * 0.3f) * (0.88f + 0.2f * Fbm(u, v, 6, 3, 115)));
                 h = vein * 0.6f + mid; c = new Color(lum, lum, lum, 1f); return (c, h);
             });
-            Make("T_PlantCap", 256, (u, v, c, h) =>
+            Make("T_PlantCap", 256, normalMap: false, gen: (u, v, c, h) =>
             {
                 float blot = Fbm(u, v, 5, 4, 116), flake = ValueNoise(u * 40f, v * 40f, 40, 117);
                 Worley(u, v, 8, 118, out float f1, out float f2);
@@ -213,7 +213,10 @@ namespace PlantGame.Editor
 
         delegate (Color, float) Gen(float u, float v, Color c, float h);
 
-        static void Make(string name, int n, Gen gen)
+        /// <summary>Writes the albedo and, unless `normalMap` is false (the PlantGrow maps have no normal slot), a matching _N normal map from the height.</summary>
+        static void Make(string name, int n, Gen gen) => Make(name, n, true, gen);
+
+        static void Make(string name, int n, bool normalMap, Gen gen)
         {
             var albedo = new Color[n * n];
             var height = new float[n * n];
@@ -234,7 +237,7 @@ namespace PlantGame.Editor
                     normal[y * n + x] = new Color(nv.x * 0.5f + 0.5f, nv.y * 0.5f + 0.5f, nv.z * 0.5f + 0.5f, 1f);
                 }
             Write(name, n, albedo, false);
-            Write(name + "_N", n, normal, true);
+            if (normalMap) Write(name + "_N", n, normal, true);
         }
 
         static void Write(string name, int n, Color[] px, bool isNormal)

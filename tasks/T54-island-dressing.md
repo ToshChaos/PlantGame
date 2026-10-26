@@ -1,7 +1,7 @@
 # T54 — Island dressing: grass, decals, shiny bits, overgrown ruins, pond plants
 
 **Owner:** A5 + A6 · **Depends on:** T39, T35, T36
-**Status:** REVIEW
+**Status:** DONE
 
 ## Goal
 More life on every island: lots more grass on grassy islands (a little on mud and rock, rock about 15% less than first tried), mud and stone decals on bare ground, moss, low shrubs, sticks and pebbles everywhere; marble chips and brick chunks round ruins, a few glinting gems, shiny debris hovering outside the rim; some ruins heavily vine-covered; plants on ponds and some murky (green, undrinkable) ponds; no random spheres where rocks, gems or bricks fit.

@@ -62,7 +62,6 @@ namespace PlantGame.Player
         public Vector2 Move => Enabled && _move != null ? Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f) : Vector2.zero;
         public Vector2 Look => Enabled && _look != null ? _look.ReadValue<Vector2>() : Vector2.zero;
         public bool JumpPressed => Enabled && _jump != null && _jump.WasPressedThisFrame();
-        public bool JumpHeld => Enabled && _jump != null && _jump.IsPressed();
         public bool RunHeld => Enabled && _run != null && _run.IsPressed();
         /// <summary>Q: pick up the focused item, or drop the selected one (resolution in T04).</summary>
         public bool PickupDropPressed => Enabled && _pickupDrop != null && _pickupDrop.WasPressedThisFrame();

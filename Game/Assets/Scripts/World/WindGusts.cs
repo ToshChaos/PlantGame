@@ -14,7 +14,7 @@ namespace PlantGame.World
     {
         public float maxStandPush = 2.2f, maxAirPush = 4.5f;
         WeatherController _weather;
-        PlayerController _pc; float _startY, _next, _t, _len, _dir; bool _hinted; float _strength;
+        PlayerController _pc; float _startY, _next, _t, _len, _dir; bool _hinted;
 
         void Start() { _next = Time.time + Random.Range(4f, 8f); _dir = Random.Range(0f, 360f); }
 
@@ -38,7 +38,6 @@ namespace PlantGame.World
             float height = Mathf.Clamp01((_pc.transform.position.y - _startY) / 25f);
             float altitude = Mathf.Lerp(0.35f, 1f, height);
             float push = (_pc.IsAirborne ? maxAirPush : maxStandPush) * altitude * gust;
-            _strength = gust;
             var d = Quaternion.Euler(0, _dir, 0) * Vector3.forward;
             if (_weather == null) _weather = GetComponent<WeatherController>();
             var wl = _weather != null ? _weather.WindLeaves : null;
@@ -56,6 +55,5 @@ namespace PlantGame.World
         void OnDestroy() { if (_pc != null) _pc.WindVelocity = Vector3.zero; if (AudioManager.Instance != null) { AudioManager.Instance.AmbienceBoost = 1f; AudioManager.Instance.AmbiencePitch = 1f; } }
 
         /// <summary>0..1: how hard the current gust blows (for effects and sound).</summary>
-        public float Strength => _strength;
     }
 }

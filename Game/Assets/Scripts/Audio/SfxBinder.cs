@@ -18,7 +18,6 @@ namespace PlantGame.Audio
         Vector3 _lastPos;
         float _stepDist, _climbDist, _creakTimer; int _bridgeSteps;
         int _lastSecond = -1, _lastSelected;
-        GameObject _growLoopOwner;
 
         void OnEnable()
         {

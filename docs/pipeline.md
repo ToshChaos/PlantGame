@@ -9,7 +9,7 @@ exec(open(S + 'export_fbx.py').read())          # also loads pipeline_common.py 
 export_collections(['Plant_Bridge_01'])          # validates, then writes Source/Blender/exports/Plant_Bridge_01.fbx
 ```
 Then copy into Unity from the sandbox shell: `python3 Source/Blender/scripts/sync_to_unity.py` (add `--dry` to preview).
-Plants go to `Game/Assets/Art/Models/Plants/`, kit pieces to `.../Kit/`, `Test_*` to `.../Test/`.
+Plants go to `Game/Assets/Art/Models/Plants/`, the player to `.../Characters/`. `Source/Blender/exports/` is git-ignored: the copies under `Game/Assets/Art/Models/` are what the repo keeps.
 Each Blender call is a fresh Python namespace, so re-run the `exec` lines in every call.
 
 ## Pinned FBX settings (`pipeline_common.FBX_SETTINGS`)
@@ -42,14 +42,14 @@ faces Unity +Z, left at -X, 1:1 scale; the FBX root empty keeps a ~90° X rotati
 in model space (see `PlayerAnimator`). Plants/kit pieces with nested parts should use the same overrides.
 
 ## Unity import (`Assets/Editor/ModelImportSettings.cs`)
-Applied automatically on first import of any FBX under `Assets/Art/Models`: scale 1 with `useFileScale`, no material import, mesh compression off, Read/Write on for `Plants/` and `Test/`, hierarchy preserved (empties kept), no animation/cameras/lights. Menu `PlantGame > Tools > Reapply Model Import Settings` re-applies after a preset change. `growth_t` is read with `mesh.colors[i].r`.
+Applied automatically on first import of any FBX under `Assets/Art/Models`: scale 1 with `useFileScale`, no material import, mesh compression off, Read/Write on for `Plants/`, hierarchy preserved (empties kept), no animation/cameras/lights. Menu `PlantGame > Tools > Reapply Model Import Settings` re-applies after a preset change. `growth_t` is read with `mesh.colors[i].r`.
 
-## Round-trip test
-1. Blender: `exec(open(S+'t02_make_test_object.py').read()); make_test_asym()` then `export_collection('Test_Asym', validate_profile='generic')`.
-2. Shell: `python3 Source/Blender/scripts/sync_to_unity.py`.
-3. Unity: menu `PlantGame > Tools > Verify Pipeline Round-trip` and read the Console report: height = 1.0 m, `growth_t` range 0..1, `Anchor` found, arm side.
+## Round-trip test (T02, done)
+The axis / scale settings above were verified once with an asymmetric test object (`Test_Asym`). The fixture
+(`t02_make_test_object.py`, `Test_Asym.fbx`, `Editor/PipelineRoundTripTest.cs`) was removed in the 2026-10-26 cleanup;
+restore it from git history (commit before that date) if the export settings ever change.
 
 ## Status of the open questions
 - **Verified in Blender (T02):** the exporter writes `Test_Asym.fbx`; the `_NN` stripping works and names are restored; validation passes on a plant skeleton.
-- **Verified in Unity 6000.6.5f1 (Test_Asym round trip):** scale 1:1, no X mirror (arm +X, nub +Z) with `axis_forward='Z'`, `growth_t` readable from vertex colour R and drives the grow shader. Menu `PlantGame/Tools/Verify Pipeline Round-trip` re-runs the check.
+- **Verified in Unity 6000.6.5f1 (Test_Asym round trip):** scale 1:1, no X mirror (arm +X, nub +Z) with `axis_forward='Z'`, `growth_t` readable from vertex colour R and drives the grow shader. 
 - FBX is the default format; glTF only if vertex colours misbehave.

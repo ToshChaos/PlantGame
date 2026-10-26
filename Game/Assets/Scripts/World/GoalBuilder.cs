@@ -173,7 +173,7 @@ namespace PlantGame.World
                     }
                     Tuft(Vector3.zero, 14, 2.4f, 0.4f);
                     var ash = new List<Vector2> { new Vector2(0.001f, 0.02f), new Vector2(1.0f, 0.03f), new Vector2(1.05f, 0.08f), new Vector2(0.8f, 0.1f), new Vector2(0.5f, 0.07f), new Vector2(0.001f, 0.06f) };
-                    var ashMesh = Obj("Ash", ShapeMeshes.Lathe(ash, 28, false, (ang, p) => 1f + 0.06f * Mathf.Sin(ang * 5f), "Ash"), Kit.Mat("M_PlayerBlack"), Vector3.zero, Vector3.zero, Vector3.one);
+                    Obj("Ash", ShapeMeshes.Lathe(ash, 28, false, (ang, p) => 1f + 0.06f * Mathf.Sin(ang * 5f), "Ash"), Kit.Mat("M_PlayerBlack"), Vector3.zero, Vector3.zero, Vector3.one);
                     Col(PrimitiveType.Cylinder, "AshCol", new Vector3(0, 0.03f, 0), new Vector3(2.0f, 0.03f, 2.0f));
                     GameObject LogAt(string n, Vector3 from, Vector3 to, float r, float len)
                     {

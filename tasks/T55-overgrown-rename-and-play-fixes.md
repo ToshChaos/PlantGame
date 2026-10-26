@@ -1,7 +1,7 @@
 # T55 — Rename to Overgrown, camera fade, soil patches, level generation fixes, test scene cleanup
 
 **Owner:** A0 + A1 + A5 · **Depends on:** T14, T26, T45, T54
-**Status:** REVIEW
+**Status:** DONE
 
 ## Goal
 - Game renamed **Overgrown**; description "Grow plants to cross the floating islands." (title screen, README, AGENTS, CLAUDE, art bible, product name).

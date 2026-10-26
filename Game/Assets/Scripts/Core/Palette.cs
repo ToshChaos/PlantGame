@@ -11,8 +11,6 @@ namespace PlantGame.Core
         public static readonly Color DeepBlue   = Hex("2C5E8F");
         public static readonly Color LeafGreen  = Hex("5DB46B");
         public static readonly Color Moss       = Hex("2F7D4F");
-        /// <summary>Vine seed (basic seed): a lime that stays readable against the grassy island tops.</summary>
-        public static readonly Color SeedLime   = Hex("B8E35F");
         /// <summary>T33 seed colours: bamboo (vine seed), bean (beanstalk seed), succulent (dew seed); the puffball (shelf seed) is cloud white.</summary>
         public static readonly Color SeedBamboo = Hex("6BE23B");
         public static readonly Color SeedBean = Hex("8B4FD6");

@@ -28,7 +28,7 @@ namespace PlantGame.Editor
             m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/") || m.assetPath.StartsWith(Root + "Plants/");   // hierarchies exported without bake_space_transform (T31)
             m.materialImportMode = ModelImporterMaterialImportMode.None;
             m.meshCompression = ModelImporterMeshCompression.Off;
-            m.isReadable = m.assetPath.StartsWith(Root + "Plants/") || m.assetPath.StartsWith(Root + "Test/");
+            m.isReadable = m.assetPath.StartsWith(Root + "Plants/");
             m.preserveHierarchy = true;                  // keep empty transforms (Anchor, Tip, Land, COL_*)
             m.importBlendShapes = false;
             m.importCameras = false;

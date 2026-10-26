@@ -92,7 +92,6 @@ namespace PlantGame.Player
             var parent = model != null ? model : transform;
             _leafVisual = World.LeafMesh.CreateHeld(parent, World.Kit.Mat("M_GlideLeaf") ?? World.Kit.Mat("M_FoliageLight"), World.Kit.Mat("M_FoliageLight") ?? World.Kit.Mat("M_GlideLeaf"));
             _vVel = Mathf.Max(_vVel, -glideFallSpeed);
-            GameEvents.RaiseGlideStarted();
             return true;
         }
 
@@ -101,7 +100,6 @@ namespace PlantGame.Player
             if (!IsGliding) return;
             IsGliding = false;
             if (_leafVisual != null) Destroy(_leafVisual);
-            GameEvents.RaiseGlideEnded();
         }
 
         public enum ClimbHint { None, Climb, Descend, Climbing }
@@ -119,8 +117,6 @@ namespace PlantGame.Player
         }
         /// <summary>The view the player aims with (camera, else pivot). T04 casts its focus ray from here.</summary>
         public Transform EyeTransform => cameraTransform != null ? cameraTransform : cameraPivot != null ? cameraPivot : transform;
-        /// <summary>Camera yaw in degrees; movement is relative to it.</summary>
-        public float Yaw => _yaw;
         /// <summary>Current velocity in m/s (horizontal + vertical). PlayerAnimator reads this.</summary>
         public Vector3 Velocity => CurrentState == State.Climbing ? Vector3.up * _climbVel : _hVel + Vector3.up * _vVel;
         public PlayerInputReader Input { get; private set; }

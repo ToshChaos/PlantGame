@@ -1,6 +1,5 @@
 using System;
 using PlantGame.Inventory;
-using PlantGame.Plants;
 
 namespace PlantGame.Core
 {
@@ -17,11 +16,9 @@ namespace PlantGame.Core
         public static event Action<string> FocusChanged;                      // HUD prompt, "" = nothing focused
         public static event Action<string> HintRequested;                     // short transient HUD hint (a few seconds)
         public static event Action UseRejected;                               // E / Q with nothing to act on
-        // Plants
-        public static event Action<PlantDefinition> PlantStarted, PlantGrown;
         // World / game flow
         public static event Action<int> WorldGenerated;                       // seed
-        public static event Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded, GlideStarted, GlideEnded;
+        public static event Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded;
         public static event Action<GameMode> RunStarted;
         public static event Action<float, bool> RunFinished;                  // seconds, newBest
         // Water
@@ -36,16 +33,12 @@ namespace PlantGame.Core
         public static void RaiseFocusChanged(string prompt) => FocusChanged?.Invoke(prompt);
         public static void RaiseHint(string text) => HintRequested?.Invoke(text);
         public static void RaiseUseRejected() => UseRejected?.Invoke();
-        public static void RaisePlantStarted(PlantDefinition p) => PlantStarted?.Invoke(p);
-        public static void RaisePlantGrown(PlantDefinition p) => PlantGrown?.Invoke(p);
         public static void RaiseWorldGenerated(int seed) => WorldGenerated?.Invoke(seed);
         public static void RaiseGameWon() => GameWon?.Invoke();
         public static void RaiseGameFailed() => GameFailed?.Invoke();
         public static void RaisePlayerRespawned() => PlayerRespawned?.Invoke();
         public static void RaisePlayerJumped() => PlayerJumped?.Invoke();
         public static void RaisePlayerLanded() => PlayerLanded?.Invoke();
-        public static void RaiseGlideStarted() => GlideStarted?.Invoke();
-        public static void RaiseGlideEnded() => GlideEnded?.Invoke();
         public static void RaiseRunStarted(GameMode m) => RunStarted?.Invoke(m);
         public static void RaiseRunFinished(float seconds, bool newBest) => RunFinished?.Invoke(seconds, newBest);
         public static void RaiseCanChanged(int charges) => CanChanged?.Invoke(charges);

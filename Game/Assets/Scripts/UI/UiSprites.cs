@@ -6,7 +6,7 @@ namespace PlantGame.UI
     public static class UiSprites
     {
         const int N = 64;
-        static Sprite _coconut, _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _ringThick, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
+        static Sprite _coconut, _disc, _ring, _drop, _leaf, _bamboo, _bean, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
 
         public static Sprite Disc => _disc != null ? _disc : _disc = Make((x, y) => Mathf.Clamp01(N * 0.5f - 1f - Dist(x, y)));
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
@@ -14,12 +14,7 @@ namespace PlantGame.UI
             float d = Dist(x, y);
             return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 24f) - 2.5f) / 2f), d < 24f ? 0.16f : 0f);   // bold outline + faint fill
         });
-        /// <summary>Thick ring / diamond: the "this is the right thing" markers (the thin pair above is the faded one).</summary>
-        public static Sprite RingThick => _ringThick != null ? _ringThick : _ringThick = Make((x, y) =>
-        {
-            float d = Dist(x, y);
-            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 23f) - 4.5f) / 2f), d < 23f ? 0.18f : 0f);
-        });
+        /// <summary>Thick diamond: the "this is the right thing" marker (the thin one below is the faded one).</summary>
         public static Sprite DiamondThick => _diamondThick != null ? _diamondThick : _diamondThick = Make((x, y) =>
         {
             float d = (Mathf.Abs(x - (N - 1) * 0.5f) + Mathf.Abs(y - (N - 1) * 0.5f));
@@ -38,11 +33,6 @@ namespace PlantGame.UI
             return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 24f) - 1.2f) / 1.5f), d < 24f ? 0.12f : 0f);
         });
         public static Sprite RingThin => _ringThin != null ? _ringThin : _ringThin = Make((x, y) => Mathf.Clamp01(1.5f - Mathf.Abs(Dist(x, y) - 25f)));
-        public static Sprite Diamond => _diamond != null ? _diamond : _diamond = Make((x, y) =>
-        {
-            float d = (Mathf.Abs(x - (N - 1) * 0.5f) + Mathf.Abs(y - (N - 1) * 0.5f));   // L1 distance: diamond
-            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 26f) - 2.5f) / 2f), d < 26f ? 0.16f : 0f);   // bold outline + faint fill
-        });
 
         /// <summary>Teardrop: pointed top, round belly (HUD water charges).</summary>
         public static Sprite Drop => _drop != null ? _drop : _drop = Make((x, y) =>

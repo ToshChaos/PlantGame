@@ -1,7 +1,7 @@
 # T22 — QA pass, regression seeds, bug list
 
 **Owner:** A8 Tester/Release · **Depends on:** T15
-**Status:** REVIEW
+**Status:** DONE
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

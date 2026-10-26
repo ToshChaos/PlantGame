@@ -66,21 +66,25 @@ the run fails (retry/back to menu). **Best times** (time spent to finish) are sa
 ## 3. Repository layout (contract — do not invent new top-level folders)
 ```
 PlantGame/                         (git root)
-  AGENTS.md  CLAUDE.md  TASKS.md  README.md
-  tasks/                           one file per task (T00..T31)
-  docs/                            art-bible, pipeline, controls, test-seeds, qa-checklist, task-log, shots/
+  AGENTS.md  CLAUDE.md  README.md
+  TASKS.md                         MVP board (complete)
+  TODO.md                          post-MVP backlog (mobile, polish, checks)
+  tasks/                           one file per task (T00..T67)
+  docs/                            art-bible, pipeline, controls, mobile-controls, test-seeds, qa-checklist, bugs, task-log, shots/ (local, git-ignored)
+  Builds/                          standalone builds (git-ignored)
   Source/Blender/
-    plants.blend  kit.blend        Geometry Nodes live here
+    plants.blend                   Geometry Nodes live here
     characters.blend               the player model (T31, script char_player.py)
     scripts/                       python run through the Blender tools — commit these
-    exports/                       raw exports before they are copied into the Unity project
+    exports/                       raw exports before they are copied into the Unity project (git-ignored)
+  Source/ThirdParty-raw/           downloaded third-party packs (git-ignored; only used models are copied into Game/)
   Game/                            Unity project root
     Assets/
       Art/{Models,Textures,Materials,Shaders,VFX}
       Audio/{Music,SFX,Mixers}
       Prefabs/{Plants,Island,Items,UI,Player,Environment}
-      Scenes/                      Title, Main, Sandbox_*, PlantGallery
-      ScriptableObjects/{Items,Plants,World}
+      Scenes/                      Title, Main, Sandbox_Gameplay
+      ScriptableObjects/{Items,World}
       Scripts/{Core,Player,Inventory,Plants,World,Audio,UI}    namespace PlantGame.<Folder>
       Editor/                      builder menus, importers
       Tests/
@@ -96,7 +100,7 @@ Roles, not necessarily separate sessions — one session may wear several hats, 
 | A1 | **Gameplay** | `Scripts/Player`, `Scripts/Inventory`, `Scripts/Core` (interaction), Player/Items prefabs, `Scripts/Core/Modes`, `Scripts/Core/Save` | Unity | T03 T04 T05 T12 T25 T31 |
 | A2 | **Botanist** | `Scripts/Plants`, plant ScriptableObjects, Plants prefabs, grow shader hookup, watering can | Unity | T11 T27 |
 | A3 | **Plant Smith** | `Source/Blender/plants.blend`, `characters.blend`, `Source/Blender/scripts/plants_*`, `char_*`, `Art/Models/Plants`, `Art/Models/Characters` | Blender | T06 T07 T08 T28 T09 T31 |
-| A4 | **Stonemason** | `Source/Blender/kit.blend`, `Source/Blender/scripts/kit_*`, `Art/Models/Kit` | Blender | T10 T29 |
+| A4 | **Stonemason** | imported props `Art/Models/{Kenney,Quaternius,Ruins}` (the Blender island kit, T10, was CUT) | Unity | T10 T29 |
 | A5 | **Cartographer** | `Scripts/World`, `ScriptableObjects/World`, Island prefabs | Unity | T13 T14 |
 | A6 | **Tech Artist** | `Art/Shaders`, `Art/Materials`, `Art/VFX`, skybox, post-processing, water shaders | Unity (+Blender for cloud cards) | T01 T16 T20 T30 |
 | A7 | **Sound & UI** | `Scripts/Audio`, `Scripts/UI`, `Audio/*`, `Prefabs/UI` | Unity (+ python for SFX) | T17 T18 T19 T26 |
@@ -185,7 +189,6 @@ namespace PlantGame.Core {
   }
   public static class GameEvents {            // static C# events, no hard references between systems
     public static event System.Action<ItemDefinition> ItemPickedUp, ItemDropped, ItemUsed;
-    public static event System.Action<PlantDefinition> PlantStarted, PlantGrown;
     public static event System.Action<int> WorldGenerated;         // seed
     public static event System.Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded;
     public static event System.Action<GameMode> RunStarted; public static event System.Action<float, bool> RunFinished; // seconds, newBest
@@ -198,7 +201,6 @@ namespace PlantGame.Inventory {
   [CreateAssetMenu] public class ItemDefinition : ScriptableObject {
     public string id; public string displayName; public Sprite icon;
     public GameObject worldPrefab; public ItemKind kind;     // Seed, Key, Misc
-    public PlantDefinition plant;                            // set if kind == Seed
   }
   public class Inventory : MonoBehaviour {                   // 4 slots, no stacking
     public const int Slots = 4;
@@ -208,13 +210,9 @@ namespace PlantGame.Inventory {
   }
 }
 namespace PlantGame.Plants {
-  [CreateAssetMenu] public class PlantDefinition : ScriptableObject {
-    public string id; public PlantKind kind;                 // Bridge, Ladder, Platform, Collector
-    public bool needsWater = true;                           // false for Collector
-    public GameObject[] variants;                            // baked Blender variants (prefabs)
-    public float growSeconds; public AnimationCurve growCurve;
-  }
-  public class SoilPatch : MonoBehaviour, IUsableTarget { public void Plant(PlantDefinition d, int seed); }
+  public enum PlantKind { Bridge, Ladder, Platform, Collector, Glider }   // seeds map to a kind by item id (World.SeedItems)
+  public class PlantInstance : MonoBehaviour { public PlantKind kind; public float growSeconds; }   // one grown / growing plant
+  // Soil patches are PlantGame.Core.SandboxTarget (IUsableTarget + IWaterable); baked variants come from Resources/WorldKit.
 }
 namespace PlantGame.Plants {
   public interface IWaterable { bool NeedsWater { get; } void Water(GameObject actor); }   // sprouts
@@ -299,7 +297,7 @@ how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `D
 Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`).
 
 ## 8. Scope & cut line
-_Day 3 update: there is time, so the stretch items (T32 parachute leaf, ...) are in scope; the cut order below only applies if time runs out again._
+_Final (2026-10-26): the MVP below shipped complete (`TASKS.md`); post-MVP work is in `TODO.md`. The cut order is kept for reference._
 
 **MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->
@@ -309,6 +307,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v2.9 (2026-10-26, cleanup): `PlantDefinition` (never created) removed, `PlantKind` lives in `Plants/PlantKind.cs`, `ItemDefinition.plant` removed; `GameEvents.PlantStarted` / `PlantGrown` (never raised) and `GlideStarted` / `GlideEnded` (no listeners) removed; `kit.blend` deleted (T10 cut); raw Blender exports and built `.app` folders are git-ignored; post-MVP tasks moved to `TODO.md`.
 - v2.8 (day 3, T67): plant variant tri budget 10k (was 4k); platform plant is a mushroom patch (per-cap stalks from the ground, no central stem; decorative baby mushroom has `padi = -1`); bridge sprout = two small vines (`spr` flag, bridge growth_t starts at 0.085); parachute is a big leaf (`LeafMesh.CreateHeld`, `Scenery.LeafPlant`).
 - v2.7 (day 3): vine bridges tilt up or down by the height difference to the next island (`LevelLayout.MaxBridgeRise` 3.4 m, was 1.5); the plant is stretched along its slope so the horizontal reach stays the same.
 - v2.6 (day 3): beanstalk climbing: Up / Down arrows climb like W / S; the player climbs on the start-island side of the stalk (`ClimbableVolume.playerBehind`, volume spans both sides, grab only from the player's side), so the camera has open air behind the player; frozen water shows a cold glow and the prompt "Frozen water: it needs a Heat Seed" (F says so too); after a use (plant, thaw, glide) the selection moves to the next filled slot (`Inventory.SelectNextFilled`).

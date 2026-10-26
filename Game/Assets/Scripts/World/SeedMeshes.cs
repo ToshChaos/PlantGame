@@ -126,7 +126,6 @@ namespace PlantGame.World
             var b = new Builder();
             b.Ellipsoid(new Vector3(0, 0.07f, 0), Quaternion.identity, new Vector3(0.22f, 0.21f, 0.22f), 32, 20);       // cap
             b.Displace(0.008f, 9f, 5f);
-            int capEnd = b.Count;
             for (int i = 0; i < 16; i++)                                                                                   // T67: warty scales on the cap
             {
                 float a = i * 2.39996f, yy = 0.97f - i * 0.058f, r = Mathf.Sqrt(1f - yy * yy);

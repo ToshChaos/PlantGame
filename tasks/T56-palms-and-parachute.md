@@ -1,6 +1,6 @@
 # T56 — Palm trees and a real parachute
 
-**Owner:** A5 Cartographer + A1 Gameplay · **Status:** REVIEW
+**Owner:** A5 Cartographer + A1 Gameplay · **Status:** DONE
 
 ## Done
 - Palms: `Scenery.TreeKinds` is 8; kind 7 uses the already imported Kenney palm models (`tree_palmTall`, `DetailedTall`, `Bend`, `tree_palm`, `DetailedShort`, `Short`; CC0, listed in LICENSES.md). Per-island weight: 0 in Snow / Fog, 0.2 in Rain / Autumn, 0.9-1.9 in Sunny / Sunset / Sunrise. 1.3x height, trunk capsule collider, no falling leaves.

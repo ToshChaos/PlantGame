@@ -158,7 +158,7 @@ namespace PlantGame.Editor
             if (SeedMeshes.For(item.id) != null) return BuildShapedPrefab(name, item, color);
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = name;
-            go.transform.localScale = item.id == "parachute_leaf" ? new Vector3(0.9f, 0.14f, 0.6f) : Vector3.one * 0.4f;   // the leaf is a flat green blade
+            go.transform.localScale = Vector3.one * 0.4f;
             Object.DestroyImmediate(go.GetComponent<SphereCollider>());
             var solid = go.AddComponent<SphereCollider>();   // lets the item rest on the ground (Interactable only collides with Ground)
             solid.radius = 0.5f;

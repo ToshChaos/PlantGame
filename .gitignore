@@ -7,12 +7,16 @@ Thumbs.db
 *.blend1
 *.blend2
 # Raw Blender exports are regenerated; the copies in Game/Assets/Art/Models are what Unity uses
-# (keep Source/Blender/exports/.gitkeep)
+Source/Blender/exports/*
+!Source/Blender/exports/.gitkeep
 # Raw third-party downloads (only the models we use are copied to Game/Assets/Art/Models/<Pack>)
 Source/ThirdParty-raw/
 
 # Screenshots are local working notes (docs/shots/ stays on disk, out of git)
 docs/shots/
 
-# Standalone builds (T23)
+# Standalone builds (T23): the built .app and Unity's per-build backup folder, wherever they land
 Builds/
+*.app/
+*_BackUpThisFolder_ButDontShipItWithYourGame/
+*_BurstDebugInformation_DoNotShip/

@@ -74,5 +74,5 @@ Think: gentle animated-film landscapes; harp and pad music.
 
 ## Reference mood (user screenshot, T16 art pass)
 Lush and bright: dense round trees and bushes with flowers on the island rims, **white carved-stone ruins** (pillars, broken slabs, a portal arch with a glowing disc and gold runes), floating rocks and small tree-topped islets in a deep blue sky with fluffy clouds, warm sun and saturated colour, **glowing golden butterflies** drifting around the player. Waterfalls spilling off islands are planned for T29/T30.
-Implemented by `Editor/Scenery.cs` (islands + sky debris), `Scripts/World/GoldenButterflies.cs`, `FloatBob.cs`, the Atmosphere prefab (more cloud cards, warmer sun, stronger bloom and saturation). Shots: `docs/shots/art_pass_*.png`.
+Implemented by `Scripts/World/Scenery.cs` (islands + sky debris), `Scripts/World/GoldenButterflies.cs`, `FloatBob.cs`, the Atmosphere prefab (more cloud cards, warmer sun, stronger bloom and saturation). Shots: `docs/shots/art_pass_*.png`.
 Not yet: real modelled trees / ruins (T10 kit), volumetric god rays, waterfall, wind-moved foliage.

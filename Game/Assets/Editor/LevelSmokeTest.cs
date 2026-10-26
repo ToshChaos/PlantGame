@@ -34,6 +34,7 @@ namespace PlantGame.Editor
             File.WriteAllText(ReportPath, "");
             EditorPrefs.SetInt(K, 0);
             EditorPrefs.SetBool("PlantGame.PlayFromTitle", false);   // PlayFromTitle would reset the start scene after every reload; restored when the run ends
+            EditorSceneManager.playModeStartScene = null;            // the pref alone does not clear it: the first level would start in Title
             EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");   // with PlayFromTitle off, play mode starts in the open scene
             EditorApplication.isPlaying = true;
         }

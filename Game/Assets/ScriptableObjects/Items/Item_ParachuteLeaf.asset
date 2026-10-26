@@ -17,4 +17,3 @@ MonoBehaviour:
   icon: {fileID: 0}
   worldPrefab: {fileID: 8281646463248846722, guid: f2380e18bda5a471eb5fa8ff2c8789ca, type: 3}
   kind: 2
-  plant: {fileID: 0}

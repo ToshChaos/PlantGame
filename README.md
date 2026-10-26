@@ -2,61 +2,81 @@
 
 _Grow plants to cross the floating islands._
 
-A third-person exploration game on floating islands. You cannot cross the gaps, so you grow plants:
-vine **bridges**, beanstalk **ladders**, shelf-fungus **platforms**. Seeds are found on the islands, carried in a
-4-slot inventory and planted in soil patches; a watering can (2 charges) makes sprouts grow. Every run is built from a
-shareable **seed code**. Goal: reach the Heart Tree.
+A third-person exploration game on floating islands. You cannot jump the gaps, so you grow your way across: vine
+**bridges**, beanstalk **ladders**, mushroom-patch **platforms**. Seeds come from seed plants on the islands, ride in a
+4-slot inventory and are planted in soil patches; a watering can (2 charges) makes the sprouts grow. Every level is built
+from a shareable **seed code**. Reach the goal on the last island.
 
-Built in three days for a hackathon. The demo is showcased manually (no recorded video or gallery scene).
+Built in three days for a hackathon. **Status: the MVP is complete** (every task on `TASKS.md` is done). Post-MVP work,
+including the Android port, is in `TODO.md`.
 
 ## How to play
 | Key | Action |
 |-----|--------|
-| W A S D / arrows | Move (W / S or Up / Down also climb up / down a beanstalk) |
+| W A S D / arrows | Move (W / S or Up / Down also climb a beanstalk) |
 | Mouse | Look |
 | Shift | Run |
-| Space | Jump (jumps off a vine while climbing) |
+| Space | Jump (jumps off a beanstalk while climbing) |
 | Q | Pick up the item you look at, or drop the selected one |
-| Tab / Shift+Tab | Cycle the inventory slot |
-| E | Use: plant the selected seed on a soil patch (a Heat Seed melts frozen water) |
-| F | Water a sprout, or refill the can at a lake, waterfall or Water Collector |
+| Tab / Shift+Tab, 1-4 | Change the inventory slot |
+| E | Use: plant the selected seed on a soil patch; a Heat Seed thaws frozen soil or water; the leaf glides mid-jump |
+| F | Water a sprout, or refill the can at a pond, waterfall or Water Collector |
 | Esc / hold R | Pause / restart the run |
 
-Full table: `docs/controls.md`. Key hints are on by default and can be switched off in the pause menu.
+Full table: `docs/controls.md`. Key hints are on by default and can be switched off in Options or the pause menu.
 
-**Loop:** pick up seeds, plant them in soil patches (E), water the sprouts (F), cross what grows. The can starts empty:
-fill it at the start island's water. Dew Seeds grow a Water Collector (one charge every 20 s) for levels without lakes.
+**Loop:** pick up seeds, plant them (E), water the sprouts (F), cross what grows. The can starts empty, so fill it at the
+start island's water first. Dew Seeds grow a Water Collector (one charge every 20 s) for levels without ponds.
 
 ## Modes and levels
 - **Exploration:** no lose condition; falling just respawns you.
-- **Challenge:** a countdown per level; reach the Heart Tree before it hits zero. Time fruits add seconds.
+- **Challenge:** a countdown per level; reach the goal before it runs out. Time fruits add seconds.
 - Best times are saved per level and per mode.
-- Ten curated levels (sunny, autumn, rain, snow, wind, fog, sunset, sunrise), plus **Random Level** and **Enter Seed Code**.
+- **Ten curated levels:** First Steps, Beanstalk Hill (autumn), Water from the Sky (rain, collector only), Skyfall (leaf
+  glide), Stepping Stones, There and Back (sunrise), Snowed In (snow, Heat Seeds), Windy Summit (spiral, gusts), Into the
+  Mist (fog), Storm Season (rain and gusts).
+- **Generate level** builds a random world; **Input seed** rebuilds any world from its code.
 
 ### Seed codes
-Every generated level has a shareable code of five dash-joined words, shown on the win and pause screens. On the
-title screen choose **Enter Seed Code**, paste or type it, and the same world is built (same seed, same islands, same plants).
+Every generated level has a code of five dash-joined words, shown on the pause and win screens. Type or paste it under
+**Input seed** and the same world is built: same islands, plants, seeds and water.
 
-## Tech overview
-- **Unity 6 (URP)**, C#, new Input System, Cinemachine. Project in `Game/`.
-- **Blender 5.2 Geometry Nodes** build the plants. Each plant kind has six seeded variants, baked with a `growth_t`
-  vertex colour and collision proxies, exported to FBX (`Source/Blender/scripts/`).
-- A shared grow shader reveals the mesh as the plant grows; colliders switch on progressively.
-- A deterministic world generator (`System.Random(seed ^ salt)`) lays out islands, gaps, plants and water and
-  validates that every level is beatable.
-- Everything is rebuildable from editor menus (**PlantGame > Build ...**) and Blender scripts; see `docs/pipeline.md`.
+## Features
+- Plants from **Blender Geometry Nodes**: six seeded variants per kind (bridge, beanstalk, mushroom patch, Water Collector),
+  baked with a `growth_t` vertex colour and collision proxies. A shared grow shader reveals each plant as it grows and
+  its colliders switch on step by step.
+- **Deterministic world generator** (`System.Random(seed ^ salt)`): island graph, gaps a jump cannot clear, seed supply,
+  water access and side islands, then a validator that simulates the watering can so every level is beatable.
+- Themes with their own sky and weather (sunny, rain, autumn, snow, fog, sunset, sunrise), wind gusts, four goal types
+  (flag, golden fruit, gate, campfire).
+- 8-bit music per level, ambience that matches its source, surface footsteps, synthesized SFX.
 
-## Where things are
-- `AGENTS.md` — contracts, roles, rules. Read first.
-- `TASKS.md` — task board; details in `tasks/`.
-- `Game/` — Unity project. Open this folder in Unity Hub (version in `AGENTS.md` section 2).
-- `Source/Blender/` — `.blend` sources and the python scripts that rebuild/export assets.
-- `docs/` — art bible, pipeline, controls, test seeds, QA checklist, task log.
+## Getting started
+1. Open `Game/` in Unity Hub with **Unity 6000.6.5f1** (URP).
+2. Open `Assets/Scenes/Title.unity` and press Play. `Sandbox_Gameplay.unity` is a movement course with one of every item.
 
-## Quick start
-1. Open `Game/` in Unity.
-2. Run menu **PlantGame > Build All** once (layers, tags, physics, materials, player prefab, scenes).
-3. Open the Title scene and press Play, or open `Game/Assets/Scenes/Sandbox_Gameplay.unity` for one of every item.
+Every generated asset is committed. After changing a builder, rerun its **PlantGame** menu: **Build All** (project
+settings, materials, items, player, sandbox), **7 / 8 / 10 / 14** (plant prefabs), **14 Build World Kit** (the runtime
+asset list), **11 Build Atmosphere**, **12 Build Main**, **16 Build Title**.
+
+### Build
+**PlantGame > Build Standalone (macOS)** writes `Builds/Overgrown-mac/Overgrown.app` (git-ignored), then:
+```bash
+open Builds/Overgrown-mac/Overgrown.app
+```
+
+### Checks
+- EditMode tests (Test Runner): inventory, seed codes, save service, world generation (including golden seeds).
+- **PlantGame > 15 Validate Seeds** checks that generated levels are beatable; **PlantGame > Smoke Test Levels** loads
+  all ten curated levels in play mode and logs frame time and draw calls.
+
+## Repository
+- `AGENTS.md`: contracts (scale, plant envelopes, C# API, controls), roles and rules. Read it before changing code.
+- `TASKS.md`: the finished MVP board; `TODO.md`: the post-MVP backlog. Each task has a file in `tasks/`.
+- `Game/`: the Unity project. Scenes, prefabs and materials are rebuilt by the **PlantGame** editor menus.
+- `Source/Blender/`: `plants.blend`, `characters.blend` and the Python scripts that build and export them
+  (`docs/pipeline.md`). Raw exports and downloaded packs are git-ignored.
+- `docs/`: art bible, pipeline, controls, mobile design, QA checklist, test seeds, bug list, task log.
 
 ## Credits (third-party art)
 Full list with licences: `Game/Assets/ThirdParty/LICENSES.md`.

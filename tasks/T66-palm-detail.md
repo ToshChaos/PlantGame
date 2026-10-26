@@ -1,6 +1,6 @@
 # T66 — More polygons in the palm trunks and fronds
 
-**Owner:** A5 Cartographer + A3 Plant Smith · **Status:** TODO · **Depends on:** T56
+**Owner:** A5 Cartographer + A3 Plant Smith · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T56
 
 ## Goal
 The Kenney palms (T56) look blocky up close: low-poly trunks and flat-looking fronds. Give them more geometry.

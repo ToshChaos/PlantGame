@@ -1,6 +1,6 @@
 # T61 — Touch gameplay tuning: camera, climbing, jumps, glide
 
-**Owner:** A1 Gameplay · **Status:** POST-MVP · **Depends on:** T57, T58
+**Owner:** A1 Gameplay · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T57, T58
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

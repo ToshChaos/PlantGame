@@ -115,7 +115,5 @@ namespace PlantGame.Editor
             EditorUtility.SetDirty(d);
             return d;
         }
-
-        public static void EnsureBuilt() { if (AssetDatabase.LoadAssetAtPath<WorldKit>(KitPath) == null) Build(); }
     }
 }

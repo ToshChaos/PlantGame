@@ -42,8 +42,6 @@ namespace PlantGame.Player
             }
         }
 
-        public int ActiveCount => _active.Count;
-        public int CandidateCount => _candidates.Count;
         void LateUpdate() { Tick(); }
 
         public void Tick()
