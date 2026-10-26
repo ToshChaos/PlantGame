@@ -414,7 +414,7 @@ namespace PlantGame.UI
             Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
             _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
-            _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f));
+            _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f), true, true);
             _pauseHint.color = Palette.TextOrange;
             _pausePanel.SetActive(false);
 
@@ -424,7 +424,7 @@ namespace PlantGame.UI
             er.anchorMin = Vector2.zero; er.anchorMax = Vector2.one; er.offsetMin = er.offsetMax = Vector2.zero;
             var edim = _endPanel.AddComponent<Image>(); edim.color = new Color(0.04f, 0.09f, 0.14f, 0.78f);
             _endTitle = Label("EndTitle", er, "", 84, TextAnchor.MiddleCenter, new Vector2(0, 200), new Vector2(1000, 120), new Vector2(0.5f, 0.5f));
-            _endBody = Label("EndBody", er, "", 44, TextAnchor.MiddleCenter, new Vector2(0, 80), new Vector2(1000, 150), new Vector2(0.5f, 0.5f));
+            _endBody = Label("EndBody", er, "", 44, TextAnchor.MiddleCenter, new Vector2(0, 80), new Vector2(1000, 150), new Vector2(0.5f, 0.5f), true, true);
             _endBody.color = Palette.TextOrange;
             _nextButton = Button("Next level", er, new Vector2(0, -70), NextLevel).transform.parent.gameObject;
             _retryLabel = Button("Play again", er, new Vector2(0, -70), Restart);
@@ -465,11 +465,11 @@ namespace PlantGame.UI
             return im;
         }
 
-        Text Label(string name, Transform parent, string text, int size, TextAnchor align, Vector2 pos, Vector2 box, Vector2? anchor = null, bool scale = true)
+        Text Label(string name, Transform parent, string text, int size, TextAnchor align, Vector2 pos, Vector2 box, Vector2? anchor = null, bool scale = true, bool menu = false)
         {
             var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : (Vector2?)null);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
+            t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size, menu); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
             t.color = Palette.TextPurple;
             var sh = rt.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.6f); sh.effectDistance = new Vector2(2, -2);
             return t;
@@ -500,7 +500,7 @@ namespace PlantGame.UI
             enter.callback.AddListener(_ => Audio.AudioManager.PlaySfx("ui_hover"));
             trig.triggers.Add(enter);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
-            var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, 76), new Vector2(0.5f, 0.5f));
+            var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, 76), new Vector2(0.5f, 0.5f), true, true);
             t.color = Palette.TextOrange;
             return t;
         }

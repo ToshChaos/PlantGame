@@ -11,13 +11,16 @@ namespace PlantGame.UI
         /// <summary>Text size multiplier: 1.5x on desktop, 2x on phones. Large titles (60 and up) keep their size.</summary>
         public static float TextScale => TouchInput.Active ? 2f : 1.5f;
 
-        public static int Font(int size) => size >= 60 ? size : Mathf.RoundToInt(size * TextScale);
+        /// <summary>Menus (title, pause, end screens) scale less than the HUD: 1.2x desktop, 1.4x phones.</summary>
+        public static float MenuScale => TouchInput.Active ? 1.4f : 1.2f;
+
+        public static int Font(int size, bool menu = false) => size >= 60 ? size : Mathf.RoundToInt(size * (menu ? MenuScale : TextScale));
 
         /// <summary>Applies the scaled size; the text shrinks (never below the original size) when its box is too small, so buttons and cards still fit.</summary>
-        public static void Fit(Text t, int baseSize)
+        public static void Fit(Text t, int baseSize, bool menu = false)
         {
             if (baseSize >= 60) { t.fontSize = baseSize; return; }
-            t.fontSize = Font(baseSize);
+            t.fontSize = Font(baseSize, menu);
             t.resizeTextForBestFit = true; t.resizeTextMinSize = baseSize; t.resizeTextMaxSize = t.fontSize;
             t.verticalOverflow = VerticalWrapMode.Overflow;
         }

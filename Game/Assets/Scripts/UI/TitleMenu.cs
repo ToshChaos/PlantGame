@@ -405,9 +405,9 @@ namespace PlantGame.UI
 
         Text Label(Transform parent, string text, int size, Vector2 pos, float width, Color color)
         {
-            var rt = Rect("Label", parent, new Vector2(width, UiLayout.Font(size) * 1.4f), pos);
+            var rt = Rect("Label", parent, new Vector2(width, UiLayout.Font(size, true) * 1.4f), pos);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = _font; t.text = text; UiLayout.Fit(t, size); t.alignment = TextAnchor.MiddleCenter; t.color = color; t.raycastTarget = false;
+            t.font = _font; t.text = text; UiLayout.Fit(t, size, true); t.alignment = TextAnchor.MiddleCenter; t.color = color; t.raycastTarget = false;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             var sh = rt.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.6f); sh.effectDistance = new Vector2(2, -2);
             return t;
