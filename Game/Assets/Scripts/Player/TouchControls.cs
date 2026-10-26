@@ -181,7 +181,7 @@ namespace PlantGame.Player
 
             _stickBase = Circle("StickBase", root, new Vector2(0f, 0f), new Vector2(260, 260), new Vector2(260, 260), UiSprites.Ring);
             _stickKnob = Circle("StickKnob", root, new Vector2(0f, 0f), new Vector2(110, 110), new Vector2(260, 260), UiSprites.Disc);
-            _stickKnob.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.5f);
+            var gold = Palette.Gold; gold.a = 0.85f; _stickKnob.GetComponent<Image>().color = gold;   // ring white, knob gold: the player's colours
 
             MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
             MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-400, 140), 150, "");
