@@ -1002,6 +1002,18 @@ namespace PlantGame.World
             }
         }
 
+        static Material _portalDisc;
+        /// <summary>Translucent copy of the portal glow, so the view through the arch stays visible.</summary>
+        static Material PortalDiscMat()
+        {
+            if (_portalDisc != null) return _portalDisc;
+            var m = new Material(_glow) { name = "M_PortalDisc" };
+            var c = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : Color.white; c.a = 0.3f;
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            RuntimeMats.SetTransparent(m);
+            return _portalDisc = m;
+        }
+
         /// <summary>Portal arch: two pillars, a lintel, a glowing disc in the middle and steps. Faces `rot` forward.</summary>
         static void Arch(Transform parent, Vector3 pos, Quaternion rot)
         {
@@ -1016,7 +1028,7 @@ namespace PlantGame.World
             Part("PillarR", PrimitiveType.Cube, new Vector3(2.1f, 2.1f, 0), new Vector3(0.9f, 4.2f, 0.9f), _marble, true);
             Part("Lintel", PrimitiveType.Cube, new Vector3(0, 4.45f, 0), new Vector3(5.6f, 0.8f, 1.1f), _marble, true);
             Part("Crest", PrimitiveType.Cube, new Vector3(0, 5.1f, 0), new Vector3(2.4f, 0.55f, 0.9f), _marble, false);
-            Part("Disc", PrimitiveType.Cylinder, new Vector3(0, 2.3f, 0.05f), new Vector3(3.4f, 0.06f, 3.4f), _glow, false, Quaternion.Euler(90, 0, 0));
+            Part("Disc", PrimitiveType.Cylinder, new Vector3(0, 2.3f, 0.05f), new Vector3(3.4f, 0.06f, 3.4f), PortalDiscMat(), false, Quaternion.Euler(90, 0, 0));
             Part("Ring", PrimitiveType.Cylinder, new Vector3(0, 2.3f, -0.02f), new Vector3(3.8f, 0.05f, 3.8f), _gold, false, Quaternion.Euler(90, 0, 0));
             Part("Step1", PrimitiveType.Cube, new Vector3(0, 0.1f, 1.2f), new Vector3(4.6f, 0.2f, 1.2f), _marble, true);
             Part("Step2", PrimitiveType.Cube, new Vector3(0, 0.3f, 0.6f), new Vector3(4.2f, 0.2f, 1.0f), _marble, true);
