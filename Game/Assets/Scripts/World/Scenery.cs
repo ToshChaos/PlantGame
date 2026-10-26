@@ -639,6 +639,9 @@ namespace PlantGame.World
         }
 
         // ------------------------------------------------------------------ seed patches (distinct look per seed)
+        /// <summary>Ground disc under a seed source: snow-white on snowy levels, otherwise the given foliage material.</summary>
+        static Material PatchBase(Material foliage) => Theme == LevelTheme.Snow ? Ground.Top(GroundKind.Grass) : foliage;
+
         /// <summary>T33: a copy of the seed's shape (its pickup mesh and material) used as fruit on the seed sources.</summary>
         static GameObject Fruit(Transform parent, string name, Vector3 pos, float scale, Mesh mesh, Material mat, Quaternion rot)
         {
@@ -681,7 +684,7 @@ namespace PlantGame.World
                     Fruit(parent, "Fruit" + f, pos + new Vector3(Mathf.Cos(a) * d, y, Mathf.Sin(a) * d), 0.55f, fruitMesh, fruit,
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.6f, 0.05f, 2.6f), foliage, false);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.6f, 0.05f, 2.6f), PatchBase(foliage), false);
         }
 
         /// <summary>Dew-seed source: a few big teal succulent rosettes in a nest of stones.</summary>
@@ -689,7 +692,7 @@ namespace PlantGame.World
         {
             EnsureMaterials();
             var foliage = Mat("M_Foliage");
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.4f, 0.05f, 2.4f), foliage, false);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.4f, 0.05f, 2.4f), PatchBase(foliage), false);
             float[] sc = { 3.2f, 2.2f, 1.7f, 1.3f };
             for (int i = 0; i < sc.Length; i++)
             {
@@ -729,7 +732,7 @@ namespace PlantGame.World
                     else Prim("Pod", PrimitiveType.Capsule, parent, pp, new Vector3(0.07f, 0.16f, 0.07f), fruit != null ? fruit : _bean, false);
                 }
             }
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.4f, 0.05f, 2.4f), foliage, false);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(2.4f, 0.05f, 2.4f), PatchBase(foliage), false);
         }
 
         /// <summary>
@@ -804,8 +807,8 @@ namespace PlantGame.World
             var bark = Kit.Mat("M_Bark"); var foliage = Mat("M_Foliage");
             var log = Prim("Log", PrimitiveType.Cylinder, parent, pos + new Vector3(0, 0.38f, 0), new Vector3(0.7f, 1.4f, 0.7f), bark, false);
             log.transform.rotation = Quaternion.Euler(0, (float)rnd.NextDouble() * 180f, 90f);
-            Prim("Moss", PrimitiveType.Sphere, parent, pos + new Vector3(0, 0.62f, 0), new Vector3(1.6f, 0.3f, 0.7f), foliage, false).transform.rotation = log.transform.rotation * Quaternion.Euler(0, 0, -90f) * Quaternion.Euler(0, 0, 90f);
-            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(3.2f, 0.05f, 3.2f), foliage, false);
+            Prim("Moss", PrimitiveType.Sphere, parent, pos + new Vector3(0, 0.62f, 0), new Vector3(1.6f, 0.3f, 0.7f), PatchBase(foliage), false).transform.rotation = log.transform.rotation * Quaternion.Euler(0, 0, -90f) * Quaternion.Euler(0, 0, 90f);
+            Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(3.2f, 0.05f, 3.2f), PatchBase(foliage), false);
             float[] sc = { 2.6f, 2.0f, 1.6f, 1.4f, 1.2f, 1.0f, 0.9f };
             for (int i = 0; i < sc.Length; i++)
             {
