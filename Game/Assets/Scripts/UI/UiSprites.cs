@@ -18,7 +18,7 @@ namespace PlantGame.UI
         public static Sprite DiamondThick => _diamondThick != null ? _diamondThick : _diamondThick = Make((x, y) =>
         {
             float d = (Mathf.Abs(x - (N - 1) * 0.5f) + Mathf.Abs(y - (N - 1) * 0.5f));
-            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 25f) - 4.5f) / 2f), d < 25f ? 0.18f : 0f);
+            return Mathf.Max(Mathf.Clamp01(1f - (Mathf.Abs(d - 25f) - 3.8f) / 2f), d < 25f ? 0.18f : 0f);
         });
         /// <summary>Hairline diamond (about 2 px) for pickups that are still far away.</summary>
         public static Sprite DiamondThin => _diamondThin != null ? _diamondThin : _diamondThin = Make((x, y) =>
