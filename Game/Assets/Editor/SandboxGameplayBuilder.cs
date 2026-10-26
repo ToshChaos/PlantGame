@@ -33,9 +33,7 @@ namespace PlantGame.Editor
             // Floors (top surface at y = 0)
             TexturedBox.Create("Floor_Start", new Vector3(-7.5f, -0.5f, -3f), new Vector3(25f, 1f, 16f), terrain, stone);      // x -20..5, z -11..5
             TexturedBox.Create("Floor_Gap5_Far", new Vector3(0f, -0.5f, 15f), new Vector3(10f, 1f, 10f), terrain, stone);       // z 10..20  (5 m gap from z=5)
-            TexturedBox.Create("Floor_Gap7_Far", new Vector3(17f, -0.5f, 0f), new Vector3(10f, 1f, 10f), terrain, stone);       // x 12..22  (7 m gap from x=5)
             Marker("Marker_Gap5m", new Vector3(0f, 0.5f, 4.6f), crystal);
-            Marker("Marker_Gap7m", new Vector3(4.6f, 0.5f, 0f), crystal);
 
             // 1.6 m ledge (jump height) at -Z
             Box("Ledge_1.6m", new Vector3(0f, 0.8f, -8f), new Vector3(6f, 1.6f, 2f), stone);
@@ -71,7 +69,7 @@ namespace PlantGame.Editor
             vol.land = land.transform;
 
             // test props: one of every item on the start floor (more than the 4 slots hold: the extra pickups are refused), a plant target and a water sign
-            var seedAssets = new[] { "Item_VineSeed", "Item_BeanstalkSeed", "Item_ShelfSeed", "Item_DewSeed", "Item_HeartSeed", "Item_HeatSeed", "Item_ParachuteLeaf" };
+            var seedAssets = new[] { "Item_VineSeed", "Item_BeanstalkSeed", "Item_ShelfSeed", "Item_DewSeed", "Item_HeartSeed", "Item_HeatSeed", "Item_ParachuteLeaf", "Item_Coconut" };
             if (ItemBuilder.Load(seedAssets[0]) == null) ItemBuilder.Build();
             for (int i = 0; i < seedAssets.Length; i++)
             {
@@ -79,20 +77,6 @@ namespace PlantGame.Editor
                 if (it == null || it.worldPrefab == null) continue;
                 var seed = (GameObject)PrefabUtility.InstantiatePrefab(it.worldPrefab);
                 seed.transform.position = new Vector3(-5f + i * 1.2f, 0.4f, -4f);
-            }
-            // Two seed trees that drop a seed each when the level starts (user request)
-            for (int i = 0; i < 2; i++)
-            {
-                var trunk = Box("SeedTree_" + i, new Vector3(-6f + i * 3f, 1.5f, 2f), new Vector3(0.6f, 3f, 0.6f), foliage);
-                var crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                crown.name = "Crown"; Object.DestroyImmediate(crown.GetComponent<Collider>());
-                crown.transform.SetParent(trunk.transform, false); crown.transform.localPosition = new Vector3(0f, 0.7f, 0f);
-                crown.transform.localScale = new Vector3(4f / 0.6f, 2f / 3f * 1f, 4f / 0.6f);
-                crown.GetComponent<Renderer>().sharedMaterial = terrain;
-                var tree = trunk.AddComponent<SeedTree>();
-                tree.possibleSeeds = new[] { ItemBuilder.Load("Item_VineSeed"), ItemBuilder.Load("Item_BeanstalkSeed") };
-                tree.seedsToDrop = 1; tree.sandboxSeed = 7;
-                tree.transform.position = new Vector3(-6f + i * 3f, 1.5f, 2f);
             }
             // Soil patch on the edge of the first island, facing the 7 m gap (+X): E plants, the bridge grows across to the far floor
             var target = Box("Sandbox_PlantTarget", new Vector3(3.9f, 0.15f, -2.2f), new Vector3(1.2f, 0.3f, 1.2f), terrain);

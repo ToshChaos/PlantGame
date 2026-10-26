@@ -44,17 +44,17 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(MusicKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
-        /// <summary>Glow (bloom) post effect; turn off on weak machines. On by default. The Atmosphere (T16) reads it.</summary>
+        /// <summary>Glow (bloom) post effect; turn on for a softer look. Off by default. The Atmosphere (T16) reads it.</summary>
         public static bool Bloom
         {
-            get => PlayerPrefs.GetInt(BloomKey, 1) == 1;
+            get => PlayerPrefs.GetInt(BloomKey, 0) == 1;
             set { PlayerPrefs.SetInt(BloomKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
-        /// <summary>FPS counter, top right. On by default.</summary>
+        /// <summary>FPS counter, top right. Off by default.</summary>
         public static bool Fps
         {
-            get => PlayerPrefs.GetInt(FpsKey, 1) == 1;
+            get => PlayerPrefs.GetInt(FpsKey, 0) == 1;
             set { PlayerPrefs.SetInt(FpsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
