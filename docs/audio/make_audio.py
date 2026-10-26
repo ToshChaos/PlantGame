@@ -399,6 +399,8 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
     Arrangement per track: bass = eighths | octave | drone | walk | pulse16 | offbeat; arp = up | down | updown | wide | slow | none;
     drum = rock | four | half | march | sparse | storm; rhythms = lead rhythm pool; vib = lead vibrato; decay = lead pluck;
     echo = gain of a delayed copy of the lead."""
+    arp = "none" if arp == "none" else "slow"   # calm: no fast swirling arpeggios, only a gentle slow chord pick
+    arp_vol *= 0.7; echo *= 0.5; vib *= 0.5; bpm = round(bpm * 0.9)
     progression = progression * 2               # 16 bars; the lead motifs differ in the second half
     rng = random.Random(seed)
     rhythms = rhythms or RH_BASIC
