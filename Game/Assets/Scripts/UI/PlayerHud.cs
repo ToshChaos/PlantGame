@@ -492,7 +492,9 @@ namespace PlantGame.UI
 
         Text Button(string label, Transform parent, Vector2 pos, UnityEngine.Events.UnityAction click, float width = 360f, int fontSize = 36)
         {
-            var rt = Rect(label + "Button", parent, new Vector2(0.5f, 0.5f), new Vector2(width, 76), pos);
+            float height = 76f;
+            if (TouchInput.Active) { width *= 1.2f; height = 92f; }   // phones: bigger touch targets
+            var rt = Rect(label + "Button", parent, new Vector2(0.5f, 0.5f), new Vector2(width, height), pos);
             var im = rt.gameObject.AddComponent<Image>(); im.sprite = RoundedSquare(); im.type = Image.Type.Sliced; im.color = new Color(0.17f, 0.37f, 0.56f, 0.95f);
             var b = rt.gameObject.AddComponent<UnityEngine.UI.Button>(); b.targetGraphic = im; b.onClick.AddListener(click);
             b.onClick.AddListener(() => Audio.AudioManager.PlaySfx("ui_click"));
@@ -501,7 +503,7 @@ namespace PlantGame.UI
             enter.callback.AddListener(_ => Audio.AudioManager.PlaySfx("ui_hover"));
             trig.triggers.Add(enter);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
-            var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, 76), new Vector2(0.5f, 0.5f), true, true);
+            var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, height), new Vector2(0.5f, 0.5f), true, true);
             t.color = Palette.TextOrange;
             return t;
         }

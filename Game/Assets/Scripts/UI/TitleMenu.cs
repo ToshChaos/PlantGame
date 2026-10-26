@@ -415,12 +415,13 @@ namespace PlantGame.UI
 
         Text Button(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction click, float width = 360f, int fontSize = 38, float height = 70f)
         {
+            if (TouchInput.Active) { width *= 1.15f; height = Mathf.Max(height * 1.25f, 64f); }   // phones: bigger touch targets
             var rt = Rect(label + "Button", parent, new Vector2(width, height), pos);
             var im = rt.gameObject.AddComponent<Image>(); im.sprite = Rounded(); im.type = Image.Type.Sliced; im.color = new Color(0.17f, 0.37f, 0.56f, 0.95f);
             var b = rt.gameObject.AddComponent<UnityEngine.UI.Button>(); b.targetGraphic = im; b.onClick.AddListener(click);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
             var t = Label(rt, label, fontSize, Vector2.zero, width, Palette.TextOrange);
-            if (height < 70f) ((RectTransform)t.transform).sizeDelta = new Vector2(width, height);   // compact button: the label box follows it
+            if (height < 70f || TouchInput.Active) ((RectTransform)t.transform).sizeDelta = new Vector2(width, height);   // compact button: the label box follows it
             return t;
         }
 
