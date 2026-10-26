@@ -30,6 +30,11 @@ Shader "PlantGame/PlantGrow"
         _ShadeSoftness ("Toon Softness", Range(0.01, 0.5)) = 0.15
         _DetailStrength ("T49 surface detail strength (bark, veins, mottling)", Range(0, 2)) = 1
         _DetailScale ("T49 surface detail scale (per metre)", Range(1, 4)) = 1.8
+        [NoScaleOffset] _BarkTex ("T67 bark / fibre texture (stalks, vines, stems)", 2D) = "white" {}
+        [NoScaleOffset] _LeafTex ("T67 leaf texture (veins, blades, petals)", 2D) = "white" {}
+        [NoScaleOffset] _CapTex ("T67 cap texture (mushroom caps, bowls)", 2D) = "white" {}
+        _TexStrength ("T67 texture strength", Range(0, 1)) = 0.85
+        _TexScale ("T67 texture tiling (per metre)", Range(0.2, 6)) = 1.4
         [Toggle] _PartColors ("Use part id (vertex colour G) for the palette", Float) = 0
     }
 
@@ -60,7 +65,21 @@ Shader "PlantGame/PlantGrow"
             float _PartColors;
             float _DetailStrength;
             float _DetailScale;
+            float _TexStrength;
+            float _TexScale;
         CBUFFER_END
+
+        TEXTURE2D(_BarkTex); SAMPLER(sampler_BarkTex);
+        TEXTURE2D(_LeafTex); SAMPLER(sampler_LeafTex);
+        TEXTURE2D(_CapTex); SAMPLER(sampler_CapTex);
+
+        // T67: triplanar sample of a tileable map (the bakes carry no UVs), weighted by the surface normal
+        float TriTex(TEXTURE2D_PARAM(tex, smp), float3 posOS, float3 n)
+        {
+            float3 w = pow(abs(n), 4.0); w /= (w.x + w.y + w.z + 1e-4);
+            float3 p = posOS * _TexScale;
+            return SAMPLE_TEXTURE2D(tex, smp, p.zy).r * w.x + SAMPLE_TEXTURE2D(tex, smp, p.xz).r * w.y + SAMPLE_TEXTURE2D(tex, smp, p.xy).r * w.z;
+        }
 
 
         // T49: cheap procedural surface detail from the object-space position (the bakes carry no UVs): fibre / bark grain, cracks and veins, cap mottling.
@@ -85,6 +104,14 @@ Shader "PlantGame/PlantGrow"
             {
                 float under = saturate(-normalWS.y * 1.6);
                 d = lerp(0.85 + 0.3 * mid, 1.35, under);
+            }
+            if (partColors > 0.5)
+            {
+                float t;
+                if (part > 0.88 && part < 0.97) t = TriTex(TEXTURE2D_ARGS(_CapTex, sampler_CapTex), posOS, normalWS);
+                else if (part > 0.5 && part < 0.72) t = TriTex(TEXTURE2D_ARGS(_LeafTex, sampler_LeafTex), posOS, normalWS);
+                else t = TriTex(TEXTURE2D_ARGS(_BarkTex, sampler_BarkTex), posOS, normalWS);
+                d *= lerp(1.0, t * 1.15, _TexStrength);
             }
             return lerp(1.0, d, saturate(_DetailStrength));
         }

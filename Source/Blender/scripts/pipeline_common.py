@@ -58,7 +58,7 @@ STRIP_NN_PREFIXES = ('Anchor', 'Tip', 'Land', 'Reservoir', 'WaterMin', 'WaterMax
 
 PLANT_KINDS = ('Bridge', 'Ladder', 'Platform', 'Collector')
 PLANT_NAME_RE = re.compile(r'^Plant_(Bridge|Ladder|Platform|Collector)_(0[1-6])$')
-MAX_TRIS = 4000
+MAX_TRIS = 10000     # v2.8 (T67): was 4000
 
 # Blender object names are unique per file, but every plant kind uses Anchor_NN / COL_NN_i with the same NN. Non-mesh helper
 # objects therefore carry a kind tag in Blender ("Anchor_01@L"); the exporter strips it, so Unity sees the contract names.

@@ -115,7 +115,7 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.22
-  m_Center: {x: 0, y: 0.010000005, z: 0}
+  m_Center: {x: 0.00056343526, y: 0.011804774, z: -0.003455177}
 --- !u!135 &4329794915571821964
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -136,7 +136,7 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.7
-  m_Center: {x: 0, y: 0.010000005, z: 0}
+  m_Center: {x: 0.00056343526, y: 0.011804774, z: -0.003455177}
 --- !u!114 &1182752854419569953
 MonoBehaviour:
   m_ObjectHideFlags: 0

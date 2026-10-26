@@ -88,27 +88,9 @@ namespace PlantGame.Player
         {
             if (CurrentState != State.Airborne || IsGliding) return false;
             IsGliding = true; _glideTime = 0f;
-            // a real parachute: a green dome of alternating panels above the head, joined to the shoulders by thin cords
-            _leafVisual = new GameObject("GlideLeaf");
+            // the parachute is a big leaf: held overhead by its stem, with the blade arching over the head
             var parent = model != null ? model : transform;
-            _leafVisual.transform.SetParent(parent, false);
-            _leafVisual.transform.localPosition = Vector3.up * 3.1f;
-            _leafVisual.transform.localRotation = Quaternion.Euler(-8f, 0f, 0f);   // leading edge up a little so the chase camera sees the top
-            _leafVisual.AddComponent<MeshFilter>().sharedMesh = World.Scenery.CanopyMesh(1.7f, 1.0f);
-            var mr = _leafVisual.AddComponent<MeshRenderer>();
-            mr.sharedMaterials = new[] { World.Kit.Mat("M_FoliageLight") ?? World.Kit.Mat("M_GlideLeaf"), World.Kit.Mat("M_GlideLeaf") ?? World.Kit.Mat("M_FoliageLight") };
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            for (int i = 0; i < 6; i++)
-            {
-                float a = i * Mathf.PI / 3f;
-                var rim = new Vector3(Mathf.Cos(a) * 1.7f, 0f, Mathf.Sin(a) * 1.7f);
-                var low = new Vector3(Mathf.Cos(a) * 0.25f, -1.6f, Mathf.Sin(a) * 0.25f);   // shoulders, 1.6 m below the rim
-                var cord = GameObject.CreatePrimitive(PrimitiveType.Cylinder); Destroy(cord.GetComponent<Collider>());
-                cord.name = "Cord" + i; cord.transform.SetParent(_leafVisual.transform, false);
-                cord.transform.localPosition = (rim + low) * 0.5f; cord.transform.localScale = new Vector3(0.025f, (rim - low).magnitude * 0.5f, 0.025f);
-                cord.transform.localRotation = Quaternion.FromToRotation(Vector3.up, rim - low);
-                var cr = cord.GetComponent<MeshRenderer>(); cr.sharedMaterial = World.Kit.Mat("M_FoliageLight"); cr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
+            _leafVisual = World.LeafMesh.CreateHeld(parent, World.Kit.Mat("M_GlideLeaf") ?? World.Kit.Mat("M_FoliageLight"), World.Kit.Mat("M_FoliageLight") ?? World.Kit.Mat("M_GlideLeaf"));
             _vVel = Mathf.Max(_vVel, -glideFallSpeed);
             GameEvents.RaiseGlideStarted();
             return true;

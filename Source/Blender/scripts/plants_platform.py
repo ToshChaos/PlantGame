@@ -28,7 +28,7 @@ _empty = _ns['_empty']
 MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Platform'
-SEGMENTS = 24
+SEGMENTS = 40
 PAD_DEPTH = 0.18
 DISH = 0.22                            # T48: how far the middle of a cap sits below its rim (task: 0.15-0.3 m)
 MAX_RISE_STEP, MAX_HOP = 1.2, 3.2      # jump-delta limits (task file)
@@ -101,15 +101,19 @@ def build_group():
 
     parts = []
     # ---- caps: a shallow dish (rim at the point's height, middle DISH lower) over an inverted cone, like a bracket mushroom
-    cyl = b.make('GeometryNodeMeshCylinder', {'Vertices': 16, 'Radius': 0.5, 'Depth': PAD_DEPTH, 'Fill Segments': 3}, fill_type='TRIANGLE_FAN')
+    cyl = b.make('GeometryNodeMeshCylinder', {'Vertices': 32, 'Radius': 0.5, 'Depth': PAD_DEPTH, 'Fill Segments': 6}, fill_type='TRIANGLE_FAN')
     flat = xform(cyl, b.xyz(0, 0, -PAD_DEPTH / 2))
     pxyz = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')})
     r2 = b.m('ADD', b.m('MULTIPLY', pxyz.outputs['X'], pxyz.outputs['X']), b.m('MULTIPLY', pxyz.outputs['Y'], pxyz.outputs['Y']))
     bend = b.m('SUBTRACT', b.m('MULTIPLY', r2, 4.0 * DISH), DISH)        # -DISH in the middle, 0 at the rim (r = 0.5)
     disc = b.make('GeometryNodeSetPosition', {'Geometry': flat, 'Offset': b.xyz(0, 0, bend)})
-    under = xform(b.make('GeometryNodeMeshCone', {'Vertices': 16, 'Radius Top': 0.5, 'Radius Bottom': 0.1, 'Depth': 0.32}),
+    under = xform(b.make('GeometryNodeMeshCone', {'Vertices': 32, 'Radius Top': 0.5, 'Radius Bottom': 0.08, 'Depth': 0.36, 'Side Segments': 3}),
                   b.xyz(0, 0, -PAD_DEPTH - 0.16 - DISH))
     cap_join = b.make('GeometryNodeJoinGeometry')
+    # T67: rolled rim lip (torus) (gills come from the shader)
+    lip = b.make('GeometryNodeCurveToMesh', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 32, 'Radius': 0.5}),
+                                             'Profile Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.045})})
+    tree.links.new(xform(lip, b.xyz(0, 0, -0.04)).outputs[0], cap_join.inputs[0])
     tree.links.new(disc.outputs[0], cap_join.inputs[0])
     tree.links.new(under.outputs[0], cap_join.inputs[0])
     pi = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Instance': cap_join, 'Scale': b.xyz(size, size, 1.0)})
@@ -117,12 +121,34 @@ def build_group():
     pi = store(pi, 'padi', idx, 'INSTANCE')
     parts.append(pi.outputs[0])
 
-    # ---- mushroom stalks from the stem axis out to each cap (round, ~0.3 m thick; unit cylinder laid along +X)
-    arm_geo = b.make('GeometryNodeTransform', {'Geometry': b.make('GeometryNodeMeshCylinder', {'Vertices': 8, 'Radius': 0.5, 'Depth': 1.0}),
-                                               'Rotation': b.xyz(0, math.pi / 2, 0), 'Translation': b.xyz(0.5, 0, 0)})
-    ai = b.make('GeometryNodeInstanceOnPoints', {'Points': axis_pts, 'Instance': arm_geo,
-                                                 'Rotation': b.xyz(0, b.m('MULTIPLY', pitch, -1.0), theta), 'Scale': b.xyz(slen, 0.36, 0.36)})
-    parts.append(store(ai, 'part', 1.0, 'INSTANCE').outputs[0])
+    # ---- user request: a mushroom patch. Every cap has its own stalk rising straight from the ground under it (no central stem), so the
+    # caps end up at different heights. Stalk = tapered cone with a swollen foot and a collar ring.
+    px_ = b.m('MULTIPLY', r, b.m('COSINE', theta))
+    py_ = b.m('MULTIPLY', r, b.m('SINE', theta))
+    slen2 = b.m('MAXIMUM', b.m('SUBTRACT', z, 0.45), 0.3)                                  # stalk top sits inside the cap's underside
+    foot_pts = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(px_, py_, 0)})
+    ring_pts = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(px_, py_, b.m('MULTIPLY', slen2, 0.6))})
+    sw = b.m('ADD', 0.32, b.m('MULTIPLY', stemt, 0.5))                                       # stalk diameter scale
+    cone = xform(b.make('GeometryNodeMeshCone', {'Vertices': 16, 'Radius Top': 0.5, 'Radius Bottom': 0.78, 'Depth': 1.0, 'Side Segments': 6}), b.xyz(0, 0, 0.0))   # the GN cone's base sits at z = 0
+    sti = b.make('GeometryNodeInstanceOnPoints', {'Points': foot_pts, 'Instance': cone, 'Scale': b.xyz(sw, sw, slen2)})
+    parts.append(store(sti, 'part', 1.0, 'INSTANCE').outputs[0])
+    foot = b.make('GeometryNodeMeshUVSphere', {'Segments': 16, 'Rings': 8, 'Radius': 0.5})
+    fti = b.make('GeometryNodeInstanceOnPoints', {'Points': foot_pts, 'Instance': foot, 'Scale': b.xyz(b.m('MULTIPLY', sw, 1.9), b.m('MULTIPLY', sw, 1.9), 0.5)})
+    parts.append(store(fti, 'part', 1.0, 'INSTANCE').outputs[0])
+    ringg = b.make('GeometryNodeMeshUVSphere', {'Segments': 16, 'Rings': 6, 'Radius': 0.5})
+    rgi = b.make('GeometryNodeInstanceOnPoints', {'Points': ring_pts, 'Instance': ringg, 'Scale': b.xyz(b.m('MULTIPLY', sw, 1.45), b.m('MULTIPLY', sw, 1.45), 0.1)})
+    parts.append(store(rgi, 'part', 1.0, 'INSTANCE').outputs[0])
+    # small decorative mushrooms at the foot of the patch, so there are always three (variants with two walkable caps get one extra); no collider, padi = -1
+    bth = b.m('ADD', theta, 2.4)
+    br = b.m('ADD', r, 1.7)
+    baby_sel = b.m('LESS_THAN', idx, b.m('SUBTRACT', 3.0, pads))
+    baby_pts = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(b.m('MULTIPLY', br, b.m('COSINE', bth)), b.m('MULTIPLY', br, b.m('SINE', bth)), 0.85)})
+    baby_foot = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(b.m('MULTIPLY', br, b.m('COSINE', bth)), b.m('MULTIPLY', br, b.m('SINE', bth)), 0)})
+    bcap = b.make('GeometryNodeInstanceOnPoints', {'Points': baby_pts, 'Selection': baby_sel, 'Instance': cap_join, 'Scale': b.xyz(0.7, 0.7, 0.8)})
+    bcap = store(store(bcap, 'part', 0.92, 'INSTANCE'), 'padi', -1.0, 'INSTANCE')
+    parts.append(bcap.outputs[0])
+    bst = b.make('GeometryNodeInstanceOnPoints', {'Points': baby_foot, 'Selection': baby_sel, 'Instance': cone, 'Scale': b.xyz(0.3, 0.3, 0.62)})
+    parts.append(store(bst, 'part', 1.0, 'INSTANCE').outputs[0])
 
     # ---- white spots on top of each cap: two small rings (5 + 3), built once in unit-cap space and scaled with the cap
     spot = xform(b.make('GeometryNodeMeshCylinder', {'Vertices': 8, 'Radius': 0.07, 'Depth': 0.04}), b.xyz(0, 0, 0.02))
@@ -136,15 +162,6 @@ def build_group():
     spots = b.make('GeometryNodeRealizeInstances', {'Geometry': spot_join})
     si = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Instance': spots, 'Scale': b.xyz(size, size, 1.0)})
     parts.append(store(si, 'part', 1.0, 'INSTANCE').outputs[0])
-
-    # ---- stem: tapered, up to the last pad
-    sline = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0, rise)})
-    sres = b.make('GeometryNodeResampleCurve', {'Curve': sline, 'Count': SEGMENTS}, mode='COUNT')
-    t = b.make('GeometryNodeSplineParameter').outputs['Factor']
-    taper = b.m('MULTIPLY', stemt, b.m('SUBTRACT', 1.2, b.m('MULTIPLY', t, 0.5)))
-    prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 8, 'Radius': 1.0})
-    stem = b.make('GeometryNodeCurveToMesh', {'Curve': sres, 'Profile Curve': prof, 'Scale': taper, 'Fill Caps': True})
-    parts.append(store(stem, 'part', 0.67, 'POINT').outputs[0])
 
     join = b.make('GeometryNodeJoinGeometry')
     for p in parts:
@@ -205,7 +222,7 @@ def pad_info(me):
     padi = me.attributes['padi'].data
     groups = {}
     for i, v in enumerate(me.vertices):
-        if 0.88 < ca.data[i].color[1] < 0.96:   # caps only
+        if 0.88 < ca.data[i].color[1] < 0.96 and padi[i].value > -0.5:   # walkable caps only (decorative baby caps have padi -1)
             groups.setdefault(int(round(padi[i].value)), []).append(v.co)
     out = []
     for k in sorted(groups):

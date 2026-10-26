@@ -51,7 +51,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.050392, y: 0.2, z: 2.050392}
+  m_Size: {x: 2.2349272, y: 0.2, z: 2.2349272}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1897691766343632884
 GameObject:
@@ -79,7 +79,7 @@ Transform:
   m_GameObject: {fileID: 1897691766343632884}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2386589, y: 0.97900003, z: 1.3165178}
+  m_LocalPosition: {x: -0.2386589, y: 0.97900003, z: 1.3165177}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -104,7 +104,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.0903587, y: 0.2, z: 2.0903587}
+  m_Size: {x: 2.2784913, y: 0.2, z: 2.2784913}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2175479754491281442
 GameObject:
@@ -259,7 +259,7 @@ Transform:
   m_GameObject: {fileID: 5145927226244272522}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.2283249, y: 2.1790001, z: 2.80194}
+  m_LocalPosition: {x: -1.228323, y: 2.1790001, z: 2.80194}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -284,7 +284,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.9673113, y: 0.2, z: 1.9673113}
+  m_Size: {x: 2.1443696, y: 0.2, z: 2.1443696}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5238206292829801832
 GameObject:

@@ -25,7 +25,7 @@ _empty = _ns['_empty']
 MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Ladder'
-SEGMENTS = 48
+SEGMENTS = 64
 LAND_Y = 1.9           # Land: where the climber steps off, in front of the stalk top (on the target island)
 
 
@@ -37,7 +37,7 @@ def _interface(tree):
         ('Seed', 'NodeSocketInt', 1, 0, 9999),
         ('Height', 'NodeSocketFloat', 6.0, 4.0, 9.0),
         ('Twist', 'NodeSocketFloat', 0.7, 0.0, 1.5),
-        ('StalkRadius', 'NodeSocketFloat', 0.13, 0.08, 0.3),
+        ('StalkRadius', 'NodeSocketFloat', 0.18, 0.08, 0.3),
         ('RungSpacing', 'NodeSocketFloat', 0.5, 0.4, 0.7),
         ('LeafSize', 'NodeSocketFloat', 1.0, 0.4, 1.8),
         ('Sway', 'NodeSocketFloat', 0.25, 0.0, 0.5),
@@ -80,12 +80,15 @@ def build_group():
     ox = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', nx.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, s))
     oy = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', ny.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, s))
     moved = b.make('GeometryNodeSetPosition', {'Geometry': res, 'Offset': b.xyz(ox, oy, 0)})
-    taper = b.m('MULTIPLY', rad, b.m('SUBTRACT', 1.15, b.m('MULTIPLY', t, 0.35)))
+    zz_ = b.m('MULTIPLY', t, height)
+    knots = b.m('ADD', 1.0, b.m('MULTIPLY', 0.22, b.m('MAXIMUM', b.m('SINE', b.m('ADD', b.m('MULTIPLY', zz_, 4.2), b.m('MULTIPLY', seed, 0.7))), 0.0)))   # T67: knobbly nodes
+    flare = b.m('ADD', 1.0, b.m('MULTIPLY', 0.7, b.m('POWER', b.m('MAXIMUM', b.m('SUBTRACT', 1.0, b.m('MULTIPLY', t, 9.0)), 0.0), 2.0)))   # swollen root
+    taper = b.m('MULTIPLY', b.m('MULTIPLY', rad, b.m('SUBTRACT', 1.15, b.m('MULTIPLY', t, 0.35))), b.m('MULTIPLY', knots, flare))
     base = moved
 
     parts = []
     # ---- stalk
-    prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 8, 'Radius': 1.0})
+    prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 12, 'Radius': 1.0})
     stalk = b.make('GeometryNodeCurveToMesh', {'Curve': base, 'Profile Curve': prof, 'Scale': taper, 'Fill Caps': True})
     parts.append(store_part(stalk, 0.0).outputs[0])
 
@@ -117,9 +120,14 @@ def build_group():
 
     # ---- leaves and blossoms on the back side (-Y)
     lcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.6)), 1.0)
-    leaf_geo = xform(b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle',
-                                                                     {'Resolution': 4, 'Radius': 0.3})}, mode='N-gons'),
-                     b.xyz(0, b.m('MULTIPLY', rad, -2.0), 0))
+    lf = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 12, 'Radius': 0.3})}, mode='N-gons')
+    lf = b.make('GeometryNodeSubdivideMesh', {'Mesh': lf, 'Level': 1})
+    lf = b.make('GeometryNodeTransform', {'Geometry': lf, 'Scale': b.xyz(0.75, 1.9, 1.0), 'Translation': b.xyz(0, -0.55, 0)})   # T67: long pointed blade, base at the stalk
+    ly = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Y']
+    lx = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['X']
+    droop = b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.35), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.6))   # drooping tip, cupped sides
+    lf = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, droop)})
+    leaf_geo = xform(lf, b.xyz(0, b.m('MULTIPLY', rad, -1.6), 0))
     for cnt, geo, pid, smin, smax, sd in ((lcount, leaf_geo, 0.67, 0.7, 1.3, 11),):
         pts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': cnt}, mode='COUNT')
         rv = b.make('FunctionNodeRandomValue', {'Min': (-0.4, 0.0, -1.2), 'Max': (0.4, 0.0, 1.2),
@@ -130,25 +138,52 @@ def build_group():
                                                      'Rotation': b.en(rv), 'Scale': b.xyz(sc, sc, sc)})
         parts.append(store_part(ip, pid, 'INSTANCE').outputs[0])
 
-    # ---- bean pods hanging on the back side: a slim green pod with three yellow beans bulging out of it
+    # ---- curling tendrils (T67)
+    sp = b.make('GeometryNodeCurveSpiral', {'Resolution': 6, 'Rotations': 2.2, 'Start Radius': 0.12, 'End Radius': 0.01, 'Height': 0.1})
+    sp = b.make('GeometryNodeTransform', {'Geometry': sp, 'Rotation': b.xyz(math.pi / 2, 0, 0)})
+    tm = b.make('GeometryNodeCurveToMesh', {'Curve': sp, 'Profile Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 3, 'Radius': 0.014})})
+    tcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.4)), 3.0)
+    tpts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': tcount}, mode='COUNT')
+    trv = b.make('FunctionNodeRandomValue', {'Min': (-0.5, 0.0, -2.6), 'Max': (0.5, 0.0, 2.6), 'Seed': b.m('ADD', seed, 71)}, data_type='FLOAT_VECTOR')
+    tmesh = xform(tm, b.xyz(0, b.m('MULTIPLY', rad, -0.9), 0))
+    tins = b.make('GeometryNodeInstanceOnPoints', {'Points': tpts.outputs['Points'], 'Instance': tmesh, 'Rotation': b.en(trv),
+                                                   'Scale': b.xyz(1.6, 1.6, 1.6)})
+    parts.append(store_part(tins, 0.34, 'INSTANCE').outputs[0])
+
+    # ---- bean pods hanging on the back side: slim closed green pods (a seam ridge, a curled tip) and ONE open pod showing three yellow beans
     pcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.5)), 3.0)
-    pod = b.make('GeometryNodeMeshUVSphere', {'Segments': 6, 'Rings': 4, 'Radius': 0.5})
-    pod = xform(b.make('GeometryNodeTransform', {'Geometry': pod, 'Scale': b.xyz(0.2, 0.17, 0.5)}), b.xyz(0, 0, -0.3))
-    pod = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': pod, 'Name': 'part', 'Value': 0.34}, data_type='FLOAT', domain='POINT')
-    pod_join = b.make('GeometryNodeJoinGeometry')
-    tree.links.new(pod.outputs[0], pod_join.inputs[0])
-    for k, zz in enumerate((-0.14, -0.3, -0.46)):
-        bean = b.make('GeometryNodeMeshUVSphere', {'Segments': 5, 'Rings': 3, 'Radius': 0.075})
-        bean = xform(bean, b.xyz(0, 0.075, zz))
-        bean = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': bean, 'Name': 'part', 'Value': 0.8}, data_type='FLOAT', domain='POINT')
-        tree.links.new(bean.outputs[0], pod_join.inputs[0])
-    pod_geo = xform(b.make('GeometryNodeRealizeInstances', {'Geometry': pod_join}), b.xyz(0, b.m('MULTIPLY', rad, -1.2), 0))
+
+    def pod_shape(open_pod):
+        body = b.make('GeometryNodeMeshUVSphere', {'Segments': 10, 'Rings': 8, 'Radius': 0.5})
+        body = xform(b.make('GeometryNodeTransform', {'Geometry': body, 'Scale': b.xyz(0.2, 0.17, 0.5)}), b.xyz(0, 0, -0.3))
+        body = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': body, 'Name': 'part', 'Value': 0.34}, data_type='FLOAT', domain='POINT')
+        pj = b.make('GeometryNodeJoinGeometry')
+        tree.links.new(body.outputs[0], pj.inputs[0])
+        ridge = b.make('GeometryNodeMeshUVSphere', {'Segments': 6, 'Rings': 8, 'Radius': 0.5})                    # seam along the front of the pod
+        ridge = xform(b.make('GeometryNodeTransform', {'Geometry': ridge, 'Scale': b.xyz(0.04, 0.05, 0.46)}), b.xyz(0, 0.075, -0.3))
+        ridge = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': ridge, 'Name': 'part', 'Value': 0.67}, data_type='FLOAT', domain='POINT')
+        tree.links.new(ridge.outputs[0], pj.inputs[0])
+        tip = b.make('GeometryNodeMeshUVSphere', {'Segments': 6, 'Rings': 4, 'Radius': 0.5})                       # little curled stem end
+        tip = xform(b.make('GeometryNodeTransform', {'Geometry': tip, 'Scale': b.xyz(0.05, 0.05, 0.14)}), b.xyz(0, 0, -0.02))
+        tip = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': tip, 'Name': 'part', 'Value': 0.67}, data_type='FLOAT', domain='POINT')
+        tree.links.new(tip.outputs[0], pj.inputs[0])
+        if open_pod:
+            for zz in (-0.14, -0.3, -0.46):
+                bean = b.make('GeometryNodeMeshUVSphere', {'Segments': 8, 'Rings': 5, 'Radius': 0.085})
+                bean = xform(bean, b.xyz(0, 0.085, zz))
+                bean = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': bean, 'Name': 'part', 'Value': 0.8}, data_type='FLOAT', domain='POINT')
+                tree.links.new(bean.outputs[0], pj.inputs[0])
+        return xform(b.make('GeometryNodeRealizeInstances', {'Geometry': pj}), b.xyz(0, b.m('MULTIPLY', rad, -1.2), 0))
+
     ppts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': pcount}, mode='COUNT')
     prv = b.make('FunctionNodeRandomValue', {'Min': (-0.55, 0.0, -1.3), 'Max': (-0.15, 0.0, 1.3), 'Seed': b.m('ADD', seed, 53)}, data_type='FLOAT_VECTOR')
     psz = b.en(b.make('FunctionNodeRandomValue', {'Min': 1.3, 'Max': 1.9, 'Seed': b.m('ADD', seed, 59)}, data_type='FLOAT'))
-    pins = b.make('GeometryNodeInstanceOnPoints', {'Points': ppts.outputs['Points'], 'Instance': pod_geo,
-                                                   'Rotation': b.en(prv), 'Scale': b.xyz(psz, psz, psz)})
-    parts.append(pins.outputs[0])
+    pidx = b.make('GeometryNodeInputIndex').outputs[0]
+    is_open = b.m('MULTIPLY', b.m('GREATER_THAN', pidx, 2.5), b.m('LESS_THAN', pidx, 3.5))
+    for open_pod, sel_ in ((False, b.m('SUBTRACT', 1.0, is_open)), (True, is_open)):
+        pins = b.make('GeometryNodeInstanceOnPoints', {'Points': ppts.outputs['Points'], 'Selection': sel_, 'Instance': pod_shape(open_pod),
+                                                       'Rotation': b.en(prv), 'Scale': b.xyz(psz, psz, psz)})
+        parts.append(pins.outputs[0])
 
     # (T51: no platform at the top any more: the climber steps straight onto the target island at `Land`)
 
@@ -173,7 +208,7 @@ def variant_params(n):
     r = random.Random(2000 + n)
     heights = [8.5, 9.5, 11.0, 11.5, 12.0, 12.3]   # T51: taller (variant 3 = 11 m is the generator's LadderHeight)
     return dict(Seed=n * 13 + 5, Height=heights[(n - 1) % 6], Twist=r.uniform(0.3, 1.2),
-                StalkRadius=r.uniform(0.10, 0.16), RungSpacing=r.uniform(0.44, 0.56),
+                StalkRadius=r.uniform(0.17, 0.23), RungSpacing=r.uniform(0.44, 0.56),
                 LeafSize=r.uniform(0.7, 1.4), Sway=r.uniform(0.1, 0.4))
 
 

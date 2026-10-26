@@ -158,7 +158,7 @@ Each exported mesh variant `Plant_<Kind>_<NN>` (NN = 01..06, = Blender seed) mus
 - **Collector variants** (`Plant_Collector_NN`) additionally export: child mesh `Reservoir` (the water volume; Unity scales/clips it
   0..1 for the fill level), empties `WaterMin` / `WaterMax`, and one interaction trigger `INTERACT_NN` (layer `Interactable`). No
   `COL_`/`CLIMB_` needed beyond a small body collider. `growth_t` still runs 0->1 base to rim.
-- Tri budget: <= 4k tris per variant. One material slot (`M_PlantGrow` instance via vertex colours for look).
+- Tri budget: <= 10k tris per variant (v2.8; was 4k). One material slot (`M_PlantGrow` instance via vertex colours for look).
 
 ### 5.4 Island kit contract (A4 -> A5)
 - Pieces snap to a 4 m grid, pivot at bottom centre. Names `Kit_<Category>_<Name>_<NN>`.
@@ -309,6 +309,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v2.8 (day 3, T67): plant variant tri budget 10k (was 4k); platform plant is a mushroom patch (per-cap stalks from the ground, no central stem; decorative baby mushroom has `padi = -1`); bridge sprout = two small vines (`spr` flag, bridge growth_t starts at 0.085); parachute is a big leaf (`LeafMesh.CreateHeld`, `Scenery.LeafPlant`).
 - v2.7 (day 3): vine bridges tilt up or down by the height difference to the next island (`LevelLayout.MaxBridgeRise` 3.4 m, was 1.5); the plant is stretched along its slope so the horizontal reach stays the same.
 - v2.6 (day 3): beanstalk climbing: Up / Down arrows climb like W / S; the player climbs on the start-island side of the stalk (`ClimbableVolume.playerBehind`, volume spans both sides, grab only from the player's side), so the camera has open air behind the player; frozen water shows a cold glow and the prompt "Frozen water: it needs a Heat Seed" (F says so too); after a use (plant, thaw, glide) the selection moves to the next filled slot (`Inventory.SelectNextFilled`).
 - v2.5 (day 3): game renamed **Overgrown** ("Grow plants to cross the floating islands."); `SeedCode.GeneratorVersion` 3: two vine bridges from one island leave at least 50 degrees apart and bridges elsewhere keep 7 m between them, one or two decoy soil patches (`Soil_*_decoy`, no route needs them) on levels with more than 3 islands; swamp ponds (`Isle.murky`, not a `WaterSource`); the Heat Seed melts ice with E; scenery between the camera and the player fades (`CameraOcclusionFade`); shrubs have no colliders; Sandbox_PlantTest, Sandbox_Plants and Sandbox_World are gone, Sandbox_Gameplay holds one of every item.

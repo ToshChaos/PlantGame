@@ -108,6 +108,71 @@ namespace PlantGame.Editor
                 c = new Color(lum, lum, lum, 1f);
                 return (c, h);
             });
+            // T67: tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
+            Make("T_PlantBark", 256, (u, v, c, h) =>
+            {
+                float grain = ValueNoise(u * 24f, v * 4f, 24, 111), fis = Mathf.Clamp01((0.5f - Mathf.Abs(ValueNoise(u * 12f, v * 3f, 12, 112) - 0.5f)) * 6f);
+                float lum = Mathf.Clamp01((0.72f + 0.35f * grain) * (1f - 0.35f * fis) * (0.9f + 0.2f * Fbm(u, v, 5, 3, 113)));
+                h = grain * 0.5f + (1f - fis) * 0.5f; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            Make("T_PlantLeaf", 256, (u, v, c, h) =>
+            {
+                Worley(u, v, 7, 114, out float f1, out float f2);
+                float vein = Mathf.Clamp01((f2 - f1) * 14f), mid = Mathf.Clamp01(1f - Mathf.Abs(u - 0.5f) * 18f) * 0.4f;
+                float lum = Mathf.Clamp01((0.92f - 0.28f * (1f - vein) - mid * 0.3f) * (0.88f + 0.2f * Fbm(u, v, 6, 3, 115)));
+                h = vein * 0.6f + mid; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            Make("T_PlantCap", 256, (u, v, c, h) =>
+            {
+                float blot = Fbm(u, v, 5, 4, 116), flake = ValueNoise(u * 40f, v * 40f, 40, 117);
+                Worley(u, v, 8, 118, out float f1, out float f2);
+                float lum = Mathf.Clamp01((0.72f + 0.5f * blot) * (0.9f + 0.18f * flake) * (1f - 0.12f * Mathf.Clamp01((f2 - f1) * 4f)));
+                h = blot * 0.5f + flake * 0.3f; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            // T67: seed pickup textures (u wraps round the seed, v runs along it). Grey values multiply the item colour.
+            Make("T_SeedBamboo", 256, (u, v, c, h) =>
+            {
+                float fibre = ValueNoise(u * 60f, v * 4f, 60, 91), band = Mathf.Abs(Mathf.Sin(v * Mathf.PI * 3f));
+                float node = Mathf.Clamp01((band - 0.9f) * 12f);
+                float lum = Mathf.Clamp01((0.78f + 0.3f * fibre) * (1f - 0.25f * node) * (0.9f + 0.2f * Fbm(u, v, 6, 3, 92)));
+                h = fibre * 0.4f + node * 0.8f;
+                c = new Color(lum, lum, lum * 0.95f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedBean", 256, (u, v, c, h) =>
+            {
+                float mott = Fbm(u, v, 5, 4, 93), fine = Fbm(u, v, 40, 2, 94);
+                float speck = Hash(Mathf.FloorToInt(u * 256), Mathf.FloorToInt(v * 256), 95);
+                float lum = Mathf.Clamp01(0.62f + 0.5f * mott - (speck > 0.93f ? 0.3f : 0f) + 0.1f * fine);
+                h = mott * 0.6f + fine * 0.3f;
+                c = new Color(lum, lum * 0.97f, lum * 0.92f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedPuff", 256, (u, v, c, h) =>
+            {
+                Worley(u, v, 9, 96, out float f1, out float f2);
+                float pore = Mathf.Clamp01((0.18f - f1) * 8f), flake = Fbm(u, v, 14, 3, 97);
+                float lum = Mathf.Clamp01((0.86f + 0.2f * flake) * (1f - 0.25f * pore) - (f2 - f1 < 0.05f ? 0.1f : 0f));
+                h = flake * 0.4f + (1f - pore) * 0.4f;
+                c = new Color(lum, lum, lum, 1f);
+                return (c, h);
+            });
+            Make("T_SeedSucc", 256, (u, v, c, h) =>
+            {
+                float vein = Mathf.Abs(Mathf.Sin(u * Mathf.PI * 16f)), stripe = Mathf.Clamp01((0.15f - Mathf.Abs(vein - 0.0f)) * 5f);
+                float lum = Mathf.Clamp01((0.8f + 0.25f * Fbm(u, v, 8, 3, 98)) * (1f - 0.2f * stripe) * (0.7f + 0.4f * v));
+                h = stripe * 0.4f + Fbm(u, v, 8, 3, 98) * 0.3f;
+                c = new Color(lum, lum, lum, 1f);
+                return (c, h);
+            });
+            Make("T_SeedCoconut", 256, (u, v, c, h) =>
+            {
+                float hair = ValueNoise(u * 90f, v * 14f, 90, 99), coarse = Fbm(u, v, 7, 4, 100);
+                float lum = Mathf.Clamp01((0.58f + 0.45f * hair) * (0.8f + 0.35f * coarse));
+                h = hair * 0.7f + coarse * 0.3f;
+                c = new Color(lum, lum * 0.93f, lum * 0.85f, 1f);
+                return (c, h);
+            });
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[PlantGame] Textures built in " + Dir);

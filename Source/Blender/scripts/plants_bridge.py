@@ -250,10 +250,16 @@ def build_group():
             parts.append(store_part(m, 0.34).outputs[0])
 
     # ---- leaves and blossoms scattered on the handrails
-    leaf_n = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', length, b.m('MULTIPLY', leafd, 2.4))), 0.0)
+    leaf_n = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', length, b.m('MULTIPLY', leafd, 1.3))), 0.0)
     flw_n = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', length, b.m('MULTIPLY', leafd, 0.3))), 2.0)
-    leaf_geo = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle',
-                                                               {'Resolution': 4, 'Radius': 0.3})}, mode='N-gons')
+    # T67: pointed blade with drooping tip and cupped sides (was a 4-gon diamond)
+    lf = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 10, 'Radius': 0.3})}, mode='N-gons')
+    lf = b.make('GeometryNodeSubdivideMesh', {'Mesh': lf, 'Level': 1})
+    lf = b.make('GeometryNodeTransform', {'Geometry': lf, 'Scale': b.xyz(0.8, 1.7, 1.0), 'Translation': b.xyz(0, 0.5, 0)})
+    _lp = b.make('GeometryNodeInputPosition')
+    ly = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['Y']
+    lx = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['X']
+    leaf_geo = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.3), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.4)))})
     def flower(outer_part, inner_part, centre_part):
         # T40: two rings of flattened, cupped petals (7 outer, 5 inner turned half a step) round a glowing bead; `part` is stored per vertex
         # so the outer petals, inner petals and centre can differ (shader PlantGrow: .995 glow centre, .985 white petals, .975 mist-blue petals; 1.0 stays plain white)
@@ -289,11 +295,40 @@ def build_group():
                                                     'Seed': b.m('ADD', seed, sd + i)}, data_type='FLOAT_VECTOR')
             rs = b.make('FunctionNodeRandomValue', {'Min': smin, 'Max': smax, 'Seed': b.m('ADD', seed, sd + 5 + i)},
                         data_type='FLOAT')
-            ip = b.make('GeometryNodeInstanceOnPoints', {'Points': pts.outputs['Points'], 'Instance': geo,
-                                                         'Rotation': b.en(rv), 'Scale': b.xyz(b.en(rs), b.en(rs), b.en(rs))})
+            scl, sel = b.en(rs), True
             if pid is not None:
+                # user request: fewer, smaller leaves mid-span (walking area); full size toward the ends
+                ypos = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Y']
+                edge = b.m('MINIMUM', b.m('MULTIPLY', b.m('ABSOLUTE', b.m('SUBTRACT', b.m('MULTIPLY', b.m('DIVIDE', ypos, length), 2.0), 1.0)), 1.6), 1.0)
+                scl = b.m('MULTIPLY', scl, b.m('ADD', 0.35, b.m('MULTIPLY', edge, 0.55)))
+                keep = b.en(b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': b.m('ADD', seed, sd + 91 + i)}, data_type='FLOAT'))
+                sel = b.m('LESS_THAN', b.m('MULTIPLY', keep, b.m('SUBTRACT', 1.5, edge)), 0.38)   # mid-span keeps only a few leaves
+            ip = b.make('GeometryNodeInstanceOnPoints', {'Points': pts.outputs['Points'], 'Instance': geo,
+                                                         'Rotation': b.en(rv), 'Scale': b.xyz(scl, scl, scl)})
+            if pid is not None:
+                tree.links.new(sel, ip.inputs['Selection'])
                 ip = store_part(ip, pid, 'INSTANCE')
             parts.append(ip.outputs[0])
+
+    # ---- user request: the sprout (growth 0.08) reads as two small vines heading in the bridge direction. They sit in the first 0.9 m
+    # (growth_t R <= 0.075) and are flagged `spr`; the rest of the bridge starts revealing only after the sprout (R remapped below).
+    for side in (-1.0, 1.0):
+        vl = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0.9, 0)})
+        vr = b.make('GeometryNodeResampleCurve', {'Curve': vl, 'Count': 12}, mode='COUNT')
+        vt = b.make('GeometryNodeSplineParameter').outputs['Factor']
+        vx = b.m('MULTIPLY', b.m('ADD', 0.15, b.m('MULTIPLY', 0.08, b.m('SINE', b.m('MULTIPLY', vt, 5.0)))), side)
+        vz = b.m('ADD', 0.06, b.m('MULTIPLY', 0.3, b.m('POWER', vt, 1.6)))
+        vm = b.make('GeometryNodeSetPosition', {'Geometry': vr, 'Offset': b.xyz(vx, 0, vz)})
+        vprof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 1.0})
+        vmesh = b.make('GeometryNodeCurveToMesh', {'Curve': vm, 'Profile Curve': vprof, 'Scale': b.m('MULTIPLY', 0.035, b.m('SUBTRACT', 1.0, b.m('MULTIPLY', vt, 0.55))), 'Fill Caps': True})
+        sv = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': store_part(vmesh, 0.34), 'Name': 'spr', 'Value': 1.0}, data_type='FLOAT', domain='POINT')
+        parts.append(sv.outputs[0])
+        lpts = b.make('GeometryNodeCurveToPoints', {'Curve': vm, 'Count': 3}, mode='COUNT')
+        lrot = b.make('FunctionNodeRandomValue', {'Min': (-0.3, -0.3, 0.0), 'Max': (0.3, 0.3, 6.28), 'Seed': b.m('ADD', seed, 400 + int(side))}, data_type='FLOAT_VECTOR')
+        lins = b.make('GeometryNodeInstanceOnPoints', {'Points': lpts.outputs['Points'], 'Instance': leaf_geo, 'Rotation': b.en(lrot), 'Scale': b.xyz(0.3, 0.3, 0.3)})
+        lins = store_part(lins, 0.67, 'INSTANCE')
+        lsv = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': lins, 'Name': 'spr', 'Value': 1.0}, data_type='FLOAT', domain='INSTANCE')
+        parts.append(lsv.outputs[0])
 
     join = b.make('GeometryNodeJoinGeometry')
     for p in parts:
@@ -301,7 +336,9 @@ def build_group():
     real = b.make('GeometryNodeRealizeInstances', {'Geometry': join})
     # ---- growth_t vertex colour: R = y / Length, G = part, B = tint
     py = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Y']
-    tt = b.m('DIVIDE', py, length, clamp=True)
+    tt0 = b.m('DIVIDE', py, length, clamp=True)
+    spr = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'spr'}).outputs['Attribute']
+    tt = b.m('ADD', b.m('MULTIPLY', b.m('ADD', 0.085, b.m('MULTIPLY', tt0, 0.915)), b.m('SUBTRACT', 1.0, spr)), b.m('MULTIPLY', tt0, spr))   # sprout vines keep R = y / Length, the bridge starts after them
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
     tint = b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT')
     tint = b.en(tint)

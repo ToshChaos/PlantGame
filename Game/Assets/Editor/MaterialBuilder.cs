@@ -72,11 +72,28 @@ namespace PlantGame.Editor
                     m.SetFloat("_Growth", 1f);
                 });
 
+            AssignPlantTextures();
             BuildKeepers(lit);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[PlantGame] Materials built in " + Dir);
+        }
+
+        /// <summary>T67: give every PlantGrow material the bark / leaf / cap maps.</summary>
+        [MenuItem("PlantGame/2b Assign Plant Textures")]
+        public static void AssignPlantTextures()
+        {
+            if (TextureBuilder.Albedo("T_PlantBark") == null) TextureBuilder.Build();
+            var bark = TextureBuilder.Albedo("T_PlantBark"); var leaf = TextureBuilder.Albedo("T_PlantLeaf"); var cap = TextureBuilder.Albedo("T_PlantCap");
+            foreach (var guid in AssetDatabase.FindAssets("t:Material", new[] { Dir }))
+            {
+                var m = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guid));
+                if (m == null || m.shader == null || m.shader.name != "PlantGame/PlantGrow") continue;
+                m.SetTexture("_BarkTex", bark); m.SetTexture("_LeafTex", leaf); m.SetTexture("_CapTex", cap);
+                EditorUtility.SetDirty(m);
+            }
+            AssetDatabase.SaveAssets();
         }
 
         /// <summary>

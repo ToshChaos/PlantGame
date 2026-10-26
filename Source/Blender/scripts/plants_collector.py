@@ -35,7 +35,7 @@ VARIANTS = [
     (2.1, 0.85, 6, 0.70, 4, 0.14),
     (2.3, 0.78, 7, 0.45, 6, 0.13),
 ]
-SEG = 14
+SEG = 24
 
 
 def variant_params(n):
@@ -51,8 +51,10 @@ class _Mesh:
         self.v.append(tuple(co)); self.part.append(part)
         return len(self.v) - 1
 
-    def ring(self, centre, r, z, part, seg=SEG, ox=0.0, oy=0.0):
-        return [self.add((centre[0] + ox + math.cos(a * math.tau / seg) * r, centre[1] + oy + math.sin(a * math.tau / seg) * r, z), part) for a in range(seg)]
+    def ring(self, centre, r, z, part, seg=SEG, ox=0.0, oy=0.0, rib=0.0):
+        # rib: T67 vertical ridges (8 round the ring), fraction of the radius
+        return [self.add((centre[0] + ox + math.cos(a * math.tau / seg) * r * (1 + rib * math.cos(a * 8 * math.tau / seg)),
+                          centre[1] + oy + math.sin(a * math.tau / seg) * r * (1 + rib * math.cos(a * 8 * math.tau / seg)), z), part) for a in range(seg)]
 
     def bridge(self, a, b, seg=SEG, flip=False):
         for i in range(seg):
@@ -73,21 +75,21 @@ def _build(p):
     lean = (rnd.uniform(-0.2, 0.2), rnd.uniform(-0.2, 0.2))
     # ---- stem: curved tube from the soil to the bowl base
     rings = []
-    for i in range(9):
-        t = i / 8
-        r = SR * (1.5 - 0.6 * t)
-        rings.append(m.ring((0, 0), r, zb * t, 0.67, ox=lean[0] * t * t, oy=lean[1] * t * t))
+    for i in range(13):
+        t = i / 12
+        r = SR * (1.5 - 0.6 * t) * (1.0 + 0.16 * math.sin(t * 30.0 + p['Seed']) ** 2 + 0.5 * max(0.0, 1.0 - t * 8.0) ** 2)   # T67: nodes + flared root
+        rings.append(m.ring((0, 0), r, zb * t, 0.67, ox=lean[0] * t * t, oy=lean[1] * t * t, rib=0.05))
     for a, b in zip(rings, rings[1:]):
         m.bridge(a, b)
     m.cap(rings[0], flip=True)
     cx, cy = lean[0], lean[1]
     # ---- bowl: outer wall up to the rim, a rolled lip, then the inner wall down to the floor
-    outer = [(0.16, 0.00), (0.50, 0.10), (0.86, 0.30), (1.00, 0.55), (0.97, 0.88), (1.00, 1.00)]
-    inner = [(0.90, 1.00), (0.84, 0.80), (0.72, 0.45), (0.42, 0.16), (0.0, 0.12)]
+    outer = [(0.14, 0.00), (0.34, 0.04), (0.56, 0.11), (0.74, 0.20), (0.88, 0.33), (0.97, 0.46), (1.00, 0.60), (0.98, 0.76), (0.96, 0.90), (1.03, 0.98), (1.06, 1.01)]
+    inner = [(1.01, 1.04), (0.93, 1.01), (0.88, 0.86), (0.80, 0.62), (0.68, 0.38), (0.48, 0.20), (0.24, 0.14), (0.0, 0.12)]
     prof = [(R * rr, zb + bowl_h * hh) for rr, hh in outer] + [(R * rr, zb + bowl_h * hh) for rr, hh in inner]
     bowl_rings = []
     for k, (r, z) in enumerate(prof):
-        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92 if k < len(outer) else 0.92))
+        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92, rib=0.045 if 2 <= k < len(outer) else 0.0))
     for a, b in zip(bowl_rings, bowl_rings[1:]):
         m.bridge(a, b)
     rim_z = zb + bowl_h
@@ -96,38 +98,44 @@ def _build(p):
     for k in range(PC):
         ang = k / PC * math.tau + rnd.uniform(-0.1, 0.1)
         L = R * rnd.uniform(1.1, 1.5); W = R * 0.62 * (6.0 / PC) ** 0.5
-        steps = 4
-        left, right = [], []
-        for s in range(steps + 1):
-            t = s / steps
+        steps = 6
+        left, mid, right = [], [], []
+        for s_ in range(steps + 1):
+            t = s_ / steps
             out = R * 0.95 + L * t * (1.0 - 0.35 * CURL)
             z = rim_z + L * 0.9 * math.sin(t * math.pi * 0.5) * (1.0 - CURL * t)
-            w = W * (1.0 - t) ** 0.7 * (0.4 + 0.6 * math.sin(min(1.0, t * 1.6 + 0.2) * math.pi)) / 1.0 + 0.012
+            w = W * (1.0 - t) ** 0.7 * (0.4 + 0.6 * math.sin(min(1.0, t * 1.6 + 0.2) * math.pi)) + 0.012
             c, sn = math.cos(ang), math.sin(ang)
             px, py = cx + c * out, cy + sn * out
-            left.append(m.add((px - sn * w, py + c * w, z), 1.0))
-            right.append(m.add((px + sn * w, py - c * w, z), 1.0))
-            top = max(top, z)
-        for s in range(steps):
-            m.f.append((left[s], right[s], right[s + 1], left[s + 1]))
-            m.f.append((left[s + 1], right[s + 1], right[s], left[s]))   # two-sided so the shader culling never hides it
+            cup = 0.5 * w * (1.0 - t * 0.5)          # T67: petals cup around a raised midrib
+            left.append(m.add((px - sn * w, py + c * w, z + cup * 0.35), 1.0))
+            mid.append(m.add((px, py, z - cup * 0.25), 1.0))
+            right.append(m.add((px + sn * w, py - c * w, z + cup * 0.35), 1.0))
+            top = max(top, z + cup * 0.35)
+        for s_ in range(steps):
+            for a_, b_ in ((left, mid), (mid, right)):
+                m.f.append((a_[s_], b_[s_], b_[s_ + 1], a_[s_ + 1]))
+                m.f.append((a_[s_ + 1], b_[s_ + 1], b_[s_], a_[s_]))   # two-sided so the shader culling never hides it
     # ---- base leaves: broad curved blades lying outward from the stem foot
     for k in range(NL):
         ang = k / NL * math.tau + rnd.uniform(-0.25, 0.25)
         L = rnd.uniform(0.9, 1.4); W = rnd.uniform(0.28, 0.42)
-        cols = 5
-        left, right = [], []
-        for s in range(cols):
-            t = s / (cols - 1)
+        cols = 8
+        left, mid, right = [], [], []
+        for s_ in range(cols):
+            t = s_ / (cols - 1)
             out = 0.12 + L * t
             z = 0.06 + 0.5 * math.sin(t * math.pi * 0.7) * (1.0 - 0.3 * t)
             w = W * math.sin(min(1.0, t * 1.1 + 0.08) * math.pi) + 0.01
+            ripple = 0.025 * math.sin(t * 17.0 + k)                      # T67: wavy margin
             c, sn = math.cos(ang), math.sin(ang)
-            left.append(m.add((c * out - sn * w, sn * out + c * w, z), 0.67))
-            right.append(m.add((c * out + sn * w, sn * out - c * w, z), 0.67))
-        for s in range(cols - 1):
-            m.f.append((left[s], right[s], right[s + 1], left[s + 1]))
-            m.f.append((left[s + 1], right[s + 1], right[s], left[s]))
+            left.append(m.add((c * out - sn * w, sn * out + c * w, z - 0.12 * w + ripple), 0.67))
+            mid.append(m.add((c * out, sn * out, z + 0.05), 0.67))
+            right.append(m.add((c * out + sn * w, sn * out - c * w, z - 0.12 * w - ripple), 0.67))
+        for s_ in range(cols - 1):
+            for a_, b_ in ((left, mid), (mid, right)):
+                m.f.append((a_[s_], b_[s_], b_[s_ + 1], a_[s_ + 1]))
+                m.f.append((a_[s_ + 1], b_[s_ + 1], b_[s_], a_[s_]))
     # ---- dew dots on the rim: little octahedra, cyan accent
     for k in range(8):
         ang = k / 8 * math.tau + 0.2
@@ -181,8 +189,10 @@ def bake_variant(n, offset_x=0.0):
     for i, (co, part) in enumerate(zip(m.v, m.part)):
         ca.data[i].color = (max(0.0, min(1.0, co[2] / top)), part, tint, 1.0)
     me.materials.append(make_material())
-    for poly in me.polygons:
-        poly.use_smooth = False
+    nstem = 13 * SEG
+    for poly in me.polygons:   # T67: smooth the stem and the bowl (two-sided leaves / petals share verts, so they stay flat)
+        vs = poly.vertices
+        poly.use_smooth = all(v < nstem for v in vs) or all(m.part[v] == 0.92 for v in vs)
     coll = bpy.data.collections.new(name)
     bpy.context.scene.collection.children.link(coll)
     main = bpy.data.objects.new(name, me)

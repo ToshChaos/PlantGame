@@ -757,8 +757,8 @@ namespace PlantGame.World
         /// </summary>
         public static Mesh CanopyMesh(float radius, float height, int gores = 10)
         {
-            const int cols = 4, rows = 5;
-            var verts = new List<Vector3>(); var tris = new List<int>[] { new List<int>(), new List<int>() };
+            const int cols = 6, rows = 12;   // T67: finer panels (was 4 x 5), seam ribs, a top knob and UVs
+            var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>[] { new List<int>(), new List<int>() };
             for (int g = 0; g < gores; g++)
             {
                 int o = verts.Count;
@@ -770,9 +770,13 @@ namespace PlantGame.World
                         float u = c / (float)cols, ang = (g + u) * Mathf.PI * 2f / gores;
                         float rr = radius * Mathf.Sin(lat) / Mathf.Sin(1.3f);
                         rr *= 1f + 0.07f * Mathf.Sin(u * Mathf.PI) * t;       // each panel puffs out
+                        float seam = Mathf.Exp(-Mathf.Pow(Mathf.Min(u, 1f - u) * 14f, 2f));
+                        rr *= 1f + 0.035f * seam;                              // raised stitched seam between panels
+                        if (r == 0) rr = 0f;
                         float y = height * (Mathf.Cos(lat) - Mathf.Cos(1.3f)) / (1f - Mathf.Cos(1.3f));
                         y += 0.14f * radius * Mathf.Sin(u * Mathf.PI) * t * t;   // scalloped edge: the middle of a panel hangs higher
-                        verts.Add(new Vector3(Mathf.Cos(ang) * rr, y, Mathf.Sin(ang) * rr));
+                        verts.Add(new Vector3(Mathf.Cos(ang) * rr, y + 0.02f * radius * seam * t, Mathf.Sin(ang) * rr));
+                        uvs.Add(new Vector2((g + u) / gores * 3f, t * 2f));
                     }
                 }
                 for (int r = 0; r < rows; r++)
@@ -784,19 +788,50 @@ namespace PlantGame.World
                         t.AddRange(new[] { a, d, b, b, d, e });                  // inside
                     }
             }
+            // top knob: a small bulb on the apex, in the second panel material
+            int k0 = verts.Count; float kr = radius * 0.07f; int kseg = 10, krow = 5;
+            for (int r = 0; r <= krow; r++)
+            {
+                float ph = r / (float)krow * Mathf.PI;
+                for (int c = 0; c <= kseg; c++)
+                {
+                    float a = c * Mathf.PI * 2f / kseg;
+                    verts.Add(new Vector3(Mathf.Cos(a) * Mathf.Sin(ph) * kr, height + 0.01f * radius - Mathf.Cos(ph) * kr * 0.9f + kr * 0.6f, Mathf.Sin(a) * Mathf.Sin(ph) * kr));
+                    uvs.Add(new Vector2(c / (float)kseg, r / (float)krow));
+                }
+            }
+            for (int r = 0; r < krow; r++)
+                for (int c = 0; c < kseg; c++)
+                {
+                    int a = k0 + r * (kseg + 1) + c, b = a + 1, d = a + kseg + 1, e = d + 1;
+                    tris[1].AddRange(new[] { a, b, d, b, e, d, a, d, b, b, d, e });
+                }
             var mesh = new Mesh { name = "Canopy" };
-            mesh.SetVertices(verts); mesh.subMeshCount = 2;
+            mesh.SetVertices(verts); mesh.SetUVs(0, uvs); mesh.subMeshCount = 2;
             mesh.SetTriangles(tris[0], 0); mesh.SetTriangles(tris[1], 1);
             mesh.RecalculateNormals(); mesh.RecalculateBounds();
             return mesh;
         }
 
-        /// <summary>Parachute leaf plant: a short pale stalk carrying three huge green leaves shaped like open parachute canopies, plus a soft glow so it stands out on the island.</summary>
+        /// <summary>Parachute leaf plant: a short pale stalk carrying three huge leaves (the parachute leaves) on curved stems, plus a soft glow so it stands out on the island.</summary>
         public static void LeafPlant(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
         {
             EnsureMaterials();
             var stem = Mat("M_FoliageLight"); var light = Mat("M_FoliageLight"); var dark = Mat("M_Foliage"); var glow = Kit.Mat("M_PortalGlow");
-            Prim("Stalk", PrimitiveType.Cylinder, parent, pos + Vector3.up * 1.0f, new Vector3(0.18f, 1.0f, 0.18f), stem, false);
+            // T67: a knobbly stalk (stacked tapering segments with node rings), a swollen root and a few leaflets low down
+            for (int k = 0; k < 6; k++)
+            {
+                float w = 0.2f - k * 0.016f;
+                Prim("StalkSeg" + k, PrimitiveType.Cylinder, parent, pos + Vector3.up * (0.2f + k * 0.34f), new Vector3(w, 0.19f, w), stem, false);
+                if (k > 0) Prim("Node" + k, PrimitiveType.Sphere, parent, pos + Vector3.up * (0.03f + k * 0.34f), new Vector3(w * 1.5f, 0.07f, w * 1.5f), dark, false);
+            }
+            Prim("Root", PrimitiveType.Sphere, parent, pos + Vector3.up * 0.1f, new Vector3(0.7f, 0.3f, 0.7f), dark, false);
+            for (int k = 0; k < 5; k++)
+            {
+                float la = k * 1.2566f + 0.3f; var lo = new Vector3(Mathf.Cos(la), 0, Mathf.Sin(la));
+                var lf = Prim("Leaflet" + k, PrimitiveType.Sphere, parent, pos + lo * 0.5f + Vector3.up * (0.25f + 0.12f * k), new Vector3(0.7f, 0.05f, 0.24f), light, false);
+                lf.transform.rotation = Quaternion.AngleAxis(-la * Mathf.Rad2Deg, Vector3.up) * Quaternion.Euler(0, 0, 18f);
+            }
             float a0 = (float)rnd.NextDouble() * 6.28f;
             for (int i = 0; i < 3; i++)
             {
@@ -805,11 +840,17 @@ namespace PlantGame.World
                 var armEnd = pos + Vector3.up * (1.9f + i * 0.12f) + outward * 0.9f;
                 var arm = Prim("Arm" + i, PrimitiveType.Cylinder, parent, (pos + Vector3.up * 1.7f + armEnd) * 0.5f, new Vector3(0.07f, 0.55f, 0.07f), stem, false);
                 arm.transform.rotation = Quaternion.FromToRotation(Vector3.up, armEnd - (pos + Vector3.up * 1.7f));
-                var leaf = new GameObject("Canopy" + i); leaf.transform.SetParent(parent, true);
-                leaf.transform.position = armEnd + Vector3.up * 0.05f + outward * R * 0.35f;
-                leaf.transform.rotation = Quaternion.AngleAxis(28f, Vector3.Cross(Vector3.up, outward)) * Quaternion.Euler(0, a * Mathf.Rad2Deg, 0);   // dome leaning outward
-                leaf.AddComponent<MeshFilter>().sharedMesh = CanopyMesh(R, R * 0.62f);
-                leaf.AddComponent<MeshRenderer>().sharedMaterials = new[] { light, dark };
+                Prim("Bud" + i, PrimitiveType.Sphere, parent, armEnd, Vector3.one * 0.16f, dark, false);   // T67: knuckle where the arm meets the canopy
+                // T67: the plant grows big leaves (not canopies): a blade at the end of the arm, its stem on the near side, tip up and outward
+                float L = R * 1.9f, W = R * 1.2f;
+                var dirUp = (outward * Mathf.Cos(0.35f) + Vector3.up * Mathf.Sin(0.35f)).normalized;
+                var leaf = new GameObject("Leaf" + i); leaf.transform.SetParent(parent, true);
+                leaf.transform.position = armEnd + dirUp * (L * 0.5f);
+                leaf.transform.rotation = Quaternion.FromToRotation(Vector3.right, dirUp);
+                leaf.AddComponent<MeshFilter>().sharedMesh = LeafMesh.Build(L, W, 0.25f, 0.3f, 28);
+                leaf.AddComponent<MeshRenderer>().sharedMaterial = Kit.Mat("M_GlideLeaf") ?? light;
+                var rib = Prim("Rib" + i, PrimitiveType.Cylinder, parent, armEnd + dirUp * (L * 0.45f), new Vector3(0.05f, L * 0.45f, 0.05f), stem, false);
+                rib.transform.rotation = Quaternion.FromToRotation(Vector3.up, dirUp);
             }
             Prim("Halo", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.04f, new Vector3(2.6f, 0.02f, 2.6f), glow, false);
             var lg = new GameObject("LeafGlow"); lg.transform.SetParent(parent, true); lg.transform.position = pos + Vector3.up * 2.5f;

@@ -49,7 +49,12 @@ namespace PlantGame.Editor
 
         public static ItemDefinition Load(string asset) => AssetDatabase.LoadAssetAtPath<ItemDefinition>($"{ItemDir}/{asset}.asset");
 
-        static Material SeedMaterial(string matName, Color color, bool shaped = false)
+        static string SeedTexture(string id)
+        {
+            switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; default: return null; }
+        }
+
+        static Material SeedMaterial(string matName, Color color, bool shaped = false, string itemId = null)
         {
             var path = $"{MaterialBuilder.Dir}/{matName}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -57,7 +62,12 @@ namespace PlantGame.Editor
             mat.SetColor("_BaseColor", color);
             if (shaped)   // bamboo / bean / puffball / succulent: the mesh carries the detail, plain colour with a soft glow
             {
-                mat.SetTexture("_BaseMap", null); mat.SetTexture("_BumpMap", null); mat.DisableKeyword("_NORMALMAP"); mat.SetFloat("_Smoothness", 0.45f);
+                string tex = SeedTexture(itemId);
+                if (tex != null && TextureBuilder.Albedo(tex) == null) TextureBuilder.Build();
+                mat.SetTexture("_BaseMap", tex != null ? TextureBuilder.Albedo(tex) : null);
+                mat.SetTexture("_BumpMap", tex != null ? TextureBuilder.Normal(tex) : null);
+                if (tex != null) { mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP"); } else mat.DisableKeyword("_NORMALMAP");
+                mat.SetFloat("_Smoothness", 0.45f);
                 mat.EnableKeyword("_EMISSION"); mat.SetColor("_EmissionColor", color * 0.22f);
             }
             else
@@ -128,7 +138,7 @@ namespace PlantGame.Editor
 
             var go = new GameObject(name);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, true);
+            go.AddComponent<MeshRenderer>().sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, true, item.id);
             var solid = go.AddComponent<SphereCollider>(); solid.radius = SeedMeshes.RestRadius(item.id);
             var pick = go.AddComponent<SphereCollider>(); pick.isTrigger = true; pick.radius = 0.7f;
             int layer = LayerMask.NameToLayer(Layers.InteractableName);

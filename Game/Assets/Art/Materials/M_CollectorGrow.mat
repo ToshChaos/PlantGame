@@ -23,9 +23,23 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _BarkTex:
+        m_Texture: {fileID: 2800000, guid: 0adb3b827a7a04f68b91ff959dfd89aa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CapTex:
+        m_Texture: {fileID: 2800000, guid: 581f997c25a8146e6a7168016859fe29, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LeafTex:
+        m_Texture: {fileID: 2800000, guid: ae54f5c9ecb284400a3da754b4f06637, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _DetailScale: 1.8
+    - _DetailStrength: 1
     - _FrontGlowStrength: 1.5
     - _FrontGlowWidth: 0.02
     - _GradientEnd: 1
@@ -33,16 +47,18 @@ Material:
     - _Growth: 1
     - _PartColors: 1
     - _RimPower: 3
-    - _RimStrength: 0.6
+    - _RimStrength: 0.25
     - _ShadeSoftness: 0.15
     - _TaperAmount: 0.15
     - _TaperLength: 0.08
+    - _TexScale: 1.4
+    - _TexStrength: 0.85
     m_Colors:
     - _BaseColor: {r: 0.3647059, g: 0.7058824, b: 0.41960785, a: 1}
-    - _CapColor: {r: 0.8009804, g: 0.8813726, b: 0.9411765, a: 1}
+    - _CapColor: {r: 0.5764706, g: 0.74529415, b: 0.8945098, a: 1}
     - _FlowerColor: {r: 0.4862745, g: 0.9490196, b: 0.9019608, a: 1}
     - _RimColor: {r: 0.4862745, g: 0.9490196, b: 0.9019608, a: 1}
     - _ShadeColor: {r: 0.18431373, g: 0.49019608, b: 0.30980393, a: 1}
-    - _TipColor: {r: 0.95686275, g: 0.972549, b: 0.9647059, a: 1}
+    - _TipColor: {r: 0.48313725, g: 0.7592157, b: 0.52862746, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
