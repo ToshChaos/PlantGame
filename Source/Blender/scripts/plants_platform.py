@@ -84,7 +84,7 @@ def build_group():
     z = b.m('MULTIPLY', b.m('DIVIDE', b.m('ADD', idx, 1.0), pads), rise)
     frac = b.m('DIVIDE', idx, b.m('SUBTRACT', pads, 1.0))
     start = b.m('MULTIPLY', seed, 2.399)
-    theta = b.m('ADD', b.m('ADD', start, b.m('MULTIPLY', idx, twist)), b.m('MULTIPLY', b.m('MULTIPLY', rnd(-1.0, 1.0, 5), 0.12), wob))
+    theta = b.m('SUBTRACT', b.m('ADD', b.m('ADD', start, b.m('MULTIPLY', idx, twist)), b.m('MULTIPLY', b.m('MULTIPLY', rnd(-1.0, 1.0, 5), 0.12), wob)), b.m('MULTIPLY', b.m('LESS_THAN', idx, 0.5), 0.4))   # user request: the first cap sits a bit to the right (clockwise seen from above)
     r = b.m('ADD', b.m('MULTIPLY', reach, b.m('ADD', 0.25, b.m('MULTIPLY', frac, 0.75))),
             b.m('MULTIPLY', b.m('MULTIPLY', rnd(-1.0, 1.0, 7), 0.3), wob))
     size = b.m('MULTIPLY', psize, rnd(1.0, 1.25, 9))
