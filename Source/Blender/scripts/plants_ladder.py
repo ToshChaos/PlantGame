@@ -152,11 +152,11 @@ def build_group():
                                                    'Scale': b.xyz(1.6, 1.6, 1.6)})
     parts.append(store_part(tins, 0.34, 'INSTANCE').outputs[0])
 
-    # ---- bean pods hanging on the back side: slim closed green pods (a seam ridge, a curled tip) and ONE open pod showing three yellow beans
+    # ---- bean pods hanging on the back side: slim closed green pods (a seam ridge, a curled tip) and two open pods (one low, one near the top) showing three yellow beans
     pcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.5)), 3.0)
 
     def pod_shape(open_pod):
-        body = b.make('GeometryNodeMeshUVSphere', {'Segments': 10, 'Rings': 8, 'Radius': 0.5})
+        body = b.make('GeometryNodeMeshUVSphere', {'Segments': 8, 'Rings': 7, 'Radius': 0.5})
         body = xform(b.make('GeometryNodeTransform', {'Geometry': body, 'Scale': b.xyz(0.2, 0.17, 0.5)}), b.xyz(0, 0, -0.3))
         body = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': body, 'Name': 'part', 'Value': 0.34}, data_type='FLOAT', domain='POINT')
         pj = b.make('GeometryNodeJoinGeometry')
@@ -182,6 +182,8 @@ def build_group():
     psz = b.en(b.make('FunctionNodeRandomValue', {'Min': 1.3, 'Max': 1.9, 'Seed': b.m('ADD', seed, 59)}, data_type='FLOAT'))
     pidx = b.make('GeometryNodeInputIndex').outputs[0]
     is_open = b.m('MULTIPLY', b.m('GREATER_THAN', pidx, 2.5), b.m('LESS_THAN', pidx, 3.5))
+    top_open = b.m('MULTIPLY', b.m('GREATER_THAN', pidx, b.m('SUBTRACT', pcount, 3.5)), b.m('LESS_THAN', pidx, b.m('SUBTRACT', pcount, 2.5)))   # user request: a second open pod near the top (second from last)
+    is_open = b.m('MAXIMUM', is_open, top_open)
     for open_pod, sel_ in ((False, b.m('SUBTRACT', 1.0, is_open)), (True, is_open)):
         pins = b.make('GeometryNodeInstanceOnPoints', {'Points': ppts.outputs['Points'], 'Selection': sel_, 'Instance': pod_shape(open_pod),
                                                        'Rotation': b.en(prv), 'Scale': b.xyz(psz, psz, psz)})
