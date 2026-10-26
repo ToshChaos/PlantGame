@@ -1070,14 +1070,68 @@ namespace PlantGame.World
 
         static Material _portalDisc;
         /// <summary>Translucent copy of the portal glow, so the view through the arch stays visible.</summary>
+        static Texture2D _crackTex;
+        /// <summary>Glass with a crack pattern: pale translucent pane, bright thin cracks radiating from an impact point plus a few ring cracks. Alpha carries the pattern.</summary>
+        static Texture2D CrackTexture()
+        {
+            if (_crackTex != null) return _crackTex;
+            const int W = 256, H = 512;
+            var px = new Color32[W * H];
+            for (int i = 0; i < px.Length; i++) px[i] = new Color32(235, 250, 255, 120);   // the pane: 47 % opaque
+            var rnd = new System.Random(77);
+            void Dot(int x, int y, int r, byte a)
+            {
+                for (int dy = -r; dy <= r; dy++) for (int dx = -r; dx <= r; dx++)
+                {
+                    int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+                    var c = px[yy * W + xx]; if (c.a < a) px[yy * W + xx] = new Color32(255, 255, 255, a);
+                }
+            }
+            void Line(Vector2 p0, Vector2 p1, int r, byte a)
+            {
+                int n = Mathf.CeilToInt((p1 - p0).magnitude);
+                for (int i = 0; i <= n; i++) { var q = Vector2.Lerp(p0, p1, i / (float)n); Dot(Mathf.RoundToInt(q.x), Mathf.RoundToInt(q.y), r, a); }
+            }
+            var hit = new Vector2(W * 0.4f, H * 0.42f);
+            for (int k = 0; k < 13; k++)   // radial cracks that kink and fork
+            {
+                float ang = k * 6.283f / 13f + (float)rnd.NextDouble() * 0.3f, len = 90f + (float)rnd.NextDouble() * 260f;
+                var p = hit;
+                for (int seg = 0; seg < 6 && len > 0f; seg++)
+                {
+                    float step = Mathf.Min(len, 25f + (float)rnd.NextDouble() * 45f); len -= step;
+                    ang += ((float)rnd.NextDouble() - 0.5f) * 0.5f;
+                    var q = p + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * step;
+                    Line(p, q, seg < 2 ? 1 : 0, 235); p = q;
+                    if (seg == 2 && rnd.NextDouble() < 0.6) { float fa = ang + (rnd.NextDouble() < 0.5 ? 0.7f : -0.7f); Line(p, p + new Vector2(Mathf.Cos(fa), Mathf.Sin(fa)) * (30f + (float)rnd.NextDouble() * 50f), 0, 215); }
+                }
+            }
+            for (int ring = 1; ring <= 3; ring++)   // ring cracks joining the radials, broken into short arcs
+            {
+                float rad = ring * 38f + (float)rnd.NextDouble() * 8f;
+                for (int a0 = 0; a0 < 360; a0 += 12)
+                {
+                    if (rnd.NextDouble() < 0.4) continue;
+                    var p0 = hit + new Vector2(Mathf.Cos(a0 * Mathf.Deg2Rad), Mathf.Sin(a0 * Mathf.Deg2Rad)) * rad;
+                    var p1 = hit + new Vector2(Mathf.Cos((a0 + 12) * Mathf.Deg2Rad), Mathf.Sin((a0 + 12) * Mathf.Deg2Rad)) * (rad + (float)rnd.NextDouble() * 4f);
+                    Line(p0, p1, 0, 200);
+                }
+            }
+            for (int i = 0; i < 6; i++) Dot(Mathf.RoundToInt(hit.x + ((float)rnd.NextDouble() - 0.5f) * 14f), Mathf.RoundToInt(hit.y + ((float)rnd.NextDouble() - 0.5f) * 14f), 2, 255);   // the impact point
+            var tex = new Texture2D(W, H, TextureFormat.RGBA32, true) { name = "T_CrackedGlass", wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave };
+            tex.SetPixels32(px); tex.Apply();
+            return _crackTex = tex;
+        }
+
         static Material PortalDiscMat()
         {
             if (_portalDisc != null) return _portalDisc;
             var m = new Material(_glow) { name = "M_PortalDisc" };
-            var c = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : Color.white; c.a = 0.25f;
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", new Color(0.78f, 0.97f, 0.95f, 1f));   // alpha comes from the cracked glass texture
+            if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", CrackTexture());
             RuntimeMats.SetTransparent(m);
-            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", m.GetColor("_EmissionColor") * 0.35f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.9f);
+            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", m.GetColor("_EmissionColor") * 0.3f);
             return _portalDisc = m;
         }
 
@@ -1086,7 +1140,7 @@ namespace PlantGame.World
         /// <summary>Position and rotation of the temple arch on the island being dressed; the vine dressing keeps clear of the opening.</summary>
         internal static readonly List<(Vector3 pos, Quaternion rot)> ArchSpots = new List<(Vector3, Quaternion)>();
 
-        internal static GameObject Arch(Transform parent, Vector3 pos, Quaternion rot, bool gate = false)
+        public static GameObject Arch(Transform parent, Vector3 pos, Quaternion rot, bool gate = false)
         {
             EnsureMaterials();
             if (!gate) ArchSpots.Add((pos, rot));

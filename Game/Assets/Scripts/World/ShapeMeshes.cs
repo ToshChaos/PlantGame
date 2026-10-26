@@ -289,16 +289,25 @@ namespace PlantGame.World
         /// <summary>The clear opening filled in: a two-sided panel in the XY plane, floor centre at the origin. Nothing of the arch model reaches into it.</summary>
         public static Mesh OpeningPanel()
         {
-            var h = OpeningHalf(); var v = new List<Vector3>(); var t = new List<int>();
-            for (int i = 0; i < h.Count; i++) { v.Add(new Vector3(-h[i].x, h[i].y, 0)); v.Add(new Vector3(h[i].x, h[i].y, 0)); }
-            for (int i = 0; i < h.Count - 1; i++)
+            var h = OpeningHalf(); var v = new List<Vector3>(); var uv = new List<Vector2>(); var n = new List<Vector3>(); var t = new List<int>();
+            for (int side = 0; side < 2; side++)   // front and back copies with their own normals (the apex row has two vertices on one point, which would give a zero normal and a black triangle)
             {
-                int a = i * 2, b = a + 1, c = a + 2, d = a + 3;
-                t.Add(a); t.Add(c); t.Add(b); t.Add(b); t.Add(c); t.Add(d);
-                t.Add(a); t.Add(b); t.Add(c); t.Add(b); t.Add(d); t.Add(c);
+                int o = v.Count; var nrm = side == 0 ? Vector3.back : Vector3.forward;
+                for (int i = 0; i < h.Count; i++)
+                    for (int k = 0; k < 2; k++)
+                    {
+                        float x = k == 0 ? -h[i].x : h[i].x;
+                        v.Add(new Vector3(x, h[i].y, 0)); n.Add(nrm); uv.Add(new Vector2(0.5f + x / 3.0f, h[i].y / 4.43f));
+                    }
+                for (int i = 0; i < h.Count - 1; i++)
+                {
+                    int a = o + i * 2, b = a + 1, c = a + 2, d = a + 3;
+                    if (side == 0) { t.Add(a); t.Add(c); t.Add(b); t.Add(b); t.Add(c); t.Add(d); }
+                    else { t.Add(a); t.Add(b); t.Add(c); t.Add(b); t.Add(d); t.Add(c); }
+                }
             }
             var m = new Mesh { name = "OpeningPanel" };
-            m.SetVertices(v); m.SetTriangles(t, 0); m.RecalculateNormals(); m.RecalculateBounds();
+            m.SetVertices(v); m.SetNormals(n); m.SetUVs(0, uv); m.SetTriangles(t, 0); m.RecalculateBounds();
             return m;
         }
 
