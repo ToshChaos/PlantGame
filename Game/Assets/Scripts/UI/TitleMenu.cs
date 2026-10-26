@@ -157,7 +157,13 @@ namespace PlantGame.UI
 
         void RefreshLevels()
         {
-            foreach (var m in _modeLabels) m.text = "Mode: " + _mode + (_mode == GameMode.Challenge ? " (countdown)" : " (relaxed)");
+            foreach (var m in _modeLabels)
+            {
+                bool ch = _mode == GameMode.Challenge;
+                m.text = ch ? "Mode: Time challenge" : "Mode: Exploration";
+                m.color = ch ? Palette.DeepBlue : Palette.TextOrange;                                              // orange on green / deep blue on orange
+                m.transform.parent.GetComponent<Image>().color = ch ? Palette.TextOrange : new Color(0.18f, 0.52f, 0.32f, 0.97f);
+            }
             var levels = Kit.Asset != null ? Kit.Asset.levels : null;
             if (levels == null) return;
             for (int i = 0; i < _cardInfo.Length && i < levels.Length; i++)
