@@ -6,7 +6,7 @@ namespace PlantGame.Editor
     /// <summary>One-click rebuild of everything T00–T03 generate. Menu: PlantGame > Build All.</summary>
     public static class BuildAll
     {
-        [MenuItem("PlantGame/Build All")]
+        [MenuItem("PlantGame/Build All", false, 100)]
         public static void Run()
         {
             ProjectSetup.Run();

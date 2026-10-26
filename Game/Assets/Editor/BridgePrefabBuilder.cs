@@ -16,7 +16,7 @@ namespace PlantGame.Editor
         public const string PrefabDir = "Assets/Prefabs/Plants";
         public static string PrefabPath(int n) => $"{PrefabDir}/Plant_Bridge_{n:00}.prefab";
 
-        [MenuItem("PlantGame/7 Build Bridge Prefabs")]
+        [MenuItem("PlantGame/7 Build Bridge Prefabs", false, 7)]
         public static void Build()
         {
             Directory.CreateDirectory(PrefabDir);

@@ -25,7 +25,7 @@ namespace PlantGame.Editor
         public const string ScenesDir = "Assets/Scenes";
         public static readonly string[] SceneNames = { "Title", "Main", "Sandbox_Gameplay" };
 
-        [MenuItem("PlantGame/1 Setup Project")]
+        [MenuItem("PlantGame/1 Setup Project", false, 1)]
         public static void Run()
         {
             PlayerSettings.colorSpace = ColorSpace.Linear;

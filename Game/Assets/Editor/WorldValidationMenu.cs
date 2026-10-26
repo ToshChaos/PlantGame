@@ -10,7 +10,7 @@ namespace PlantGame.Editor
     /// <summary>Menu PlantGame > 15 Validate Seeds: SeedCode round trips and N generated levels through planner, layout and validator (nothing is built).</summary>
     public static class WorldValidationMenu
     {
-        [MenuItem("PlantGame/15 Validate Seeds")]
+        [MenuItem("PlantGame/16 Validate Seeds", false, 16)]
         public static void Run() { UnityEngine.Debug.Log(Report(200)); }
 
         public static string Report(int seeds)

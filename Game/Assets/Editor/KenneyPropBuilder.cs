@@ -22,7 +22,7 @@ namespace PlantGame.Editor
             { "K_woodBark", new Color32(0x8A, 0x5E, 0x3E, 255) },
         };
 
-        [MenuItem("PlantGame/17 Build Kenney Props")]
+        [MenuItem("PlantGame/19 Build Kenney Props", false, 19)]
         public static void Build()
         {
             Directory.CreateDirectory(MatDir);

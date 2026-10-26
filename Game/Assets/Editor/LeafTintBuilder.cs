@@ -10,7 +10,7 @@ namespace PlantGame.Editor
     /// </summary>
     public static class LeafTintBuilder
     {
-        [MenuItem("PlantGame/16 Build Leaf Tint")]
+        [MenuItem("PlantGame/18 Build Leaf Tint", false, 18)]
         public static void Build()
         {
             var src = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Quaternius/Q_Leaves_NormalTree.mat");

@@ -17,7 +17,7 @@ namespace PlantGame.Editor
     {
         public const string ModelDir = "Assets/Art/Models/Quaternius", MatDir = "Assets/Art/Materials/Quaternius";
 
-        [MenuItem("PlantGame/18 Build Quaternius Props")]
+        [MenuItem("PlantGame/20 Build Quaternius Props", false, 20)]
         public static void Build()
         {
             Directory.CreateDirectory(MatDir);

@@ -29,7 +29,7 @@ namespace PlantGame.Editor
             ("coconut", "Coconut", "Item_Coconut", new Color(0.55f, 0.37f, 0.21f), ItemKind.Misc),   // only palms drop one; nothing can plant it
         };
 
-        [MenuItem("PlantGame/6 Build Items")]
+        [MenuItem("PlantGame/6 Build Items", false, 6)]
         public static void Build()
         {
             Directory.CreateDirectory(ItemDir); Directory.CreateDirectory(PrefabDir);

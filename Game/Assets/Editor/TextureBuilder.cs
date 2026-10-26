@@ -13,7 +13,7 @@ namespace PlantGame.Editor
     {
         public const string Dir = "Assets/Art/Textures";
 
-        [MenuItem("PlantGame/11 Build Textures")]
+        [MenuItem("PlantGame/10 Build Textures", false, 10)]
         public static void Build()
         {
             Directory.CreateDirectory(Dir);

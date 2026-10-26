@@ -19,7 +19,7 @@ namespace PlantGame.Editor
         const float ClimbLineZ = 0.5f;   // (old: in front of the stalk) the line now sits this far BEHIND the plant origin, on the start-island side
         const float ClimbBoxBack = 1.2f, ClimbBoxFront = 1.25f;   // matches the Blender build: pad near edge is 0.9 m out
 
-        [MenuItem("PlantGame/8 Build Ladder Prefabs")]
+        [MenuItem("PlantGame/8 Build Ladder Prefabs", false, 8)]
         public static void Build()
         {
             Directory.CreateDirectory(BridgePrefabBuilder.PrefabDir);

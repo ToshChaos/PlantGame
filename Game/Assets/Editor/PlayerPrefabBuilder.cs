@@ -19,7 +19,7 @@ namespace PlantGame.Editor
         public const string InputPath = "Assets/Scripts/Player/PlantGameInput.inputactions";
         public const string ModelPath = "Assets/Art/Models/Characters/Char_Player_01.fbx";
 
-        [MenuItem("PlantGame/4 Build Player Prefab")]
+        [MenuItem("PlantGame/4 Build Player Prefab", false, 4)]
         public static GameObject Build()
         {
             var input = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputPath);

@@ -17,7 +17,7 @@ namespace PlantGame.Editor
     {
         public const string KitPath = "Assets/Resources/WorldKit.asset", LevelDir = "Assets/ScriptableObjects/World";
 
-        [MenuItem("PlantGame/14 Build World Kit")]
+        [MenuItem("PlantGame/15 Build World Kit", false, 15)]
         public static void Build()
         {
             if (AssetDatabase.LoadAssetAtPath<GameObject>(CollectorPrefabBuilder.PrefabPath(1)) == null && File.Exists("Assets/Art/Models/Plants/Plant_Collector_01.fbx")) CollectorPrefabBuilder.Build();

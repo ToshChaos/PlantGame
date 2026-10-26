@@ -11,7 +11,7 @@ namespace PlantGame.Editor
         public static Material Light => Load("M_Water"); public static Material Mid => Load("M_WaterMid"); public static Material Dark => Load("M_WaterDeep");
         static Material Load(string n) { var m = MaterialBuilder.Load(n); if (m == null || m.shader == null || m.shader.name != "PlantGame/OvergrowthWater") { Build(); m = MaterialBuilder.Load(n); } return m; }
 
-        [MenuItem("PlantGame/13 Build Water Materials")]
+        [MenuItem("PlantGame/13 Build Water Materials", false, 13)]
         public static void Build()
         {
             var tex = EnsureRipple();
