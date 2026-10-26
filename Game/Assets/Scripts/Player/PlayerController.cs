@@ -222,7 +222,7 @@ namespace PlantGame.Player
                 }
             }
 
-            Vector3 wish = Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
+            Vector3 wish = Quaternion.Euler(0f, _backLatched ? _backYaw : _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
             if (IsGliding)
             {
@@ -385,7 +385,7 @@ namespace PlantGame.Player
             }
         }
         public float orbitDegreesPerSecond = 9f;
-        bool _orbiting, _followFacing; float _yawSaved, _pitchSaved;
+        bool _orbiting, _followFacing, _backLatched; float _backYaw; float _yawSaved, _pitchSaved;
 
         void HandleCursorAndLook(float dt)
         {
@@ -402,14 +402,21 @@ namespace PlantGame.Player
             // camera follows the player's turns: A / D while moving forward steer the camera (and so the heading); the mouse overrides
             if (GameSettings.CameraFollow && CurrentState != State.Climbing && look.sqrMagnitude < 0.01f && model != null)
             {
-                // turning the player more than 15 degrees away from the camera makes the camera swing round to follow the facing
+                // turning the player more than 5 degrees away from the camera makes the camera swing round to follow the facing
                 Vector2 mi = Input.Move;
                 float diff = Mathf.DeltaAngle(_yaw, model.eulerAngles.y);
-                if (mi.y > 0.1f && Mathf.Abs(diff) > 15f) _followFacing = true;
+                // walking backwards (S / Down): movement stays relative to the yaw when S was pressed while the camera swings round
+                // to the new facing; released as soon as S is let go
+                if (mi.y < -0.1f)
+                {
+                    if (!_backLatched && Mathf.Abs(diff) < 90f) { _backLatched = true; _backYaw = _yaw; }
+                }
+                else _backLatched = false;
+                if ((mi.y > 0.1f || _backLatched) && Mathf.Abs(diff) > 5f) _followFacing = true;
                 if (_followFacing)
                 {
-                    if (mi.y <= 0.1f || Mathf.Abs(diff) < 1f) _followFacing = false;
-                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, model.eulerAngles.y, cameraFollowSpeed * dt), 360f);
+                    if ((mi.y <= 0.1f && !_backLatched) || Mathf.Abs(diff) < 1f) _followFacing = false;
+                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, model.eulerAngles.y, (_backLatched ? cameraFollowSpeed * 3f : cameraFollowSpeed) * dt), 360f);
                 }
             }
             else if (look.sqrMagnitude >= 0.01f) _followFacing = false;
