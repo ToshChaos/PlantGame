@@ -223,7 +223,7 @@ namespace PlantGame.Core
             {
                 var held = Inventory.SelectedItem;
                 if (held != null && held.id == "heat_seed") { p = "Melt the ice with the Heat Seed"; k = "Use"; }
-                else { p = "Frozen water: it needs a Heat Seed"; k = "Frozen"; }
+                else { p = "Frozen water, can be melted"; k = "Frozen"; }
             }
             CurrentPromptKey = k;
             if (p == CurrentPrompt) return;
