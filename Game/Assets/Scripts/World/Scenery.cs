@@ -674,7 +674,7 @@ namespace PlantGame.World
             var foliage = Mat("M_Foliage"); var light = Mat("M_FoliageLight");
             var culmMat = fruit != null ? new Material(fruit) { name = "M_BambooCulm" } : light;
             if (fruit != null) { culmMat.SetColor("_BaseColor", fruit.GetColor("_BaseColor") * 0.82f); culmMat.SetColor("_EmissionColor", fruit.GetColor("_BaseColor") * 0.12f); }
-            int n = 6;
+            int n = 6; var culms = new List<(Transform t, float h)>();
             for (int i = 0; i < n; i++)
             {
                 float a = i * 6.28f / n + (float)rnd.NextDouble() * 0.5f, d = i == 0 ? 0f : 0.55f + (float)rnd.NextDouble() * 0.45f;
@@ -684,7 +684,7 @@ namespace PlantGame.World
                 var culm = new GameObject("Culm" + i); culm.transform.SetParent(parent, true); culm.transform.position = cp;
                 culm.transform.rotation = Quaternion.Euler(Mathf.Sin(a) * 5f, 0, -Mathf.Cos(a) * 5f);   // leaning a little outwards
                 culm.AddComponent<MeshFilter>().sharedMesh = SeedMeshes.Culm(h, 0.12f + (float)rnd.NextDouble() * 0.03f, Mathf.Clamp(Mathf.RoundToInt(h * 1.2f), 3, 8), false);
-                culm.AddComponent<MeshRenderer>().sharedMaterial = culmMat;
+                culm.AddComponent<MeshRenderer>().sharedMaterial = culmMat; culms.Add((culm.transform, h));
                 for (int l = 0; l < 4; l++)   // narrow leaves drooping from the top joints
                 {
                     float la = l * 1.7f + i, y = h * (0.62f + 0.09f * l);
@@ -700,25 +700,32 @@ namespace PlantGame.World
                     Fruit(parent, "Fruit" + f, pos + new Vector3(Mathf.Cos(a) * d, y, Mathf.Sin(a) * d), 0.55f, fruitMesh, fruit,
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
-            // T67: two yellow flowers like the ones on the vine bridges (yellow-orange petals, white inner petals, glowing cyan centre), low among the culms
-            for (int fl = 0; fl < 2; fl++)
+            // T67: two flowers grow on the culms like the ones on the vine bridges (one white with mist-blue inner petals, one yellow), facing outwards
+            var blue = RuntimeMats.NewLit("M_FlowerBlue", new Color(0.75f, 0.85f, 0.95f));
+            var tall = new List<(Transform t, float h)>(culms); tall.Sort((x, y) => y.h.CompareTo(x.h));
+            for (int fl = 0; fl < 2 && fl < tall.Count; fl++)
             {
-                float fa = 1.0f + fl * 3.3f + (float)rnd.NextDouble() * 0.5f, fd = 1.0f + (float)rnd.NextDouble() * 0.25f;
-                var fb = pos + new Vector3(Mathf.Cos(fa) * fd, 0f, Mathf.Sin(fa) * fd); float fh = 1.2f + fl * 0.5f;
-                Prim("FlowerStem" + fl, PrimitiveType.Cylinder, parent, fb + Vector3.up * fh * 0.5f, new Vector3(0.05f, fh * 0.5f, 0.05f), light, false);
+                var (ct, ch) = tall[fl + 1 < tall.Count ? fl + 1 : fl];   // skip the very tallest so the flower sits at eye level
+                var on = ct.TransformPoint(new Vector3(0, ch * (0.5f + 0.1f * fl), 0));
+                var outward = new Vector3(on.x - pos.x, 0, on.z - pos.z); outward = outward.sqrMagnitude < 0.01f ? new Vector3(1, 0, 0) : outward.normalized;
+                var axis = (outward + Vector3.up * 0.35f).normalized;
+                var q = Quaternion.FromToRotation(Vector3.up, axis);
+                var fc = on + axis * 0.18f;
+                Material outer = fl == 0 ? _white : _yellow, inner = fl == 0 ? blue : _white;
+                Prim("FlowerStalk" + fl, PrimitiveType.Cylinder, parent, on + axis * 0.09f, new Vector3(0.04f, 0.09f, 0.04f), light, false).transform.rotation = q;
                 for (int pt = 0; pt < 8; pt++)
                 {
                     float pa = pt * 0.785f;
-                    var petal = Prim("Petal", PrimitiveType.Sphere, parent, fb + new Vector3(Mathf.Cos(pa) * 0.3f, fh + 0.05f, Mathf.Sin(pa) * 0.3f), new Vector3(0.55f, 0.04f, 0.16f), _yellow, false);
-                    petal.transform.rotation = Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 22f);
+                    var petal = Prim("Petal", PrimitiveType.Sphere, parent, fc + q * new Vector3(Mathf.Cos(pa) * 0.3f, 0.05f, Mathf.Sin(pa) * 0.3f), new Vector3(0.55f, 0.04f, 0.16f), outer, false);
+                    petal.transform.rotation = q * Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 22f);
                 }
                 for (int pt = 0; pt < 5; pt++)
                 {
                     float pa = pt * 1.257f + 0.4f;
-                    var petal = Prim("InnerPetal", PrimitiveType.Sphere, parent, fb + new Vector3(Mathf.Cos(pa) * 0.14f, fh + 0.11f, Mathf.Sin(pa) * 0.14f), new Vector3(0.32f, 0.03f, 0.1f), _white, false);
-                    petal.transform.rotation = Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 40f);
+                    var petal = Prim("InnerPetal", PrimitiveType.Sphere, parent, fc + q * new Vector3(Mathf.Cos(pa) * 0.14f, 0.11f, Mathf.Sin(pa) * 0.14f), new Vector3(0.32f, 0.03f, 0.1f), inner, false);
+                    petal.transform.rotation = q * Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 40f);
                 }
-                Prim("FlowerCentre" + fl, PrimitiveType.Sphere, parent, fb + Vector3.up * (fh + 0.1f), Vector3.one * 0.13f, Kit.Mat("M_Crystal") ?? _white, false);
+                Prim("FlowerCentre" + fl, PrimitiveType.Sphere, parent, fc + axis * 0.1f, Vector3.one * 0.13f, Kit.Mat("M_Crystal") ?? _white, false);
             }
             Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(2.6f, 0.05f, 2.6f), PatchBase(foliage), false);
         }
@@ -1008,9 +1015,10 @@ namespace PlantGame.World
         {
             if (_portalDisc != null) return _portalDisc;
             var m = new Material(_glow) { name = "M_PortalDisc" };
-            var c = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : Color.white; c.a = 0.3f;
+            var c = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : Color.white; c.a = 0.25f;
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             RuntimeMats.SetTransparent(m);
+            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", m.GetColor("_EmissionColor") * 0.35f);
             return _portalDisc = m;
         }
 
@@ -1029,7 +1037,11 @@ namespace PlantGame.World
             Part("Lintel", PrimitiveType.Cube, new Vector3(0, 4.45f, 0), new Vector3(5.6f, 0.8f, 1.1f), _marble, true);
             Part("Crest", PrimitiveType.Cube, new Vector3(0, 5.1f, 0), new Vector3(2.4f, 0.55f, 0.9f), _marble, false);
             Part("Disc", PrimitiveType.Cylinder, new Vector3(0, 2.3f, 0.05f), new Vector3(3.4f, 0.06f, 3.4f), PortalDiscMat(), false, Quaternion.Euler(90, 0, 0));
-            Part("Ring", PrimitiveType.Cylinder, new Vector3(0, 2.3f, -0.02f), new Vector3(3.8f, 0.05f, 3.8f), _gold, false, Quaternion.Euler(90, 0, 0));
+            for (int k = 0; k < 28; k++)   // hollow gold ring (a solid cylinder here hid the translucent disc)
+            {
+                float a = k * Mathf.PI * 2f / 28f;
+                Part("RingSeg", PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 1.9f, 2.3f + Mathf.Sin(a) * 1.9f, -0.02f), new Vector3(0.14f, 0.5f, 0.06f), _gold, false, Quaternion.Euler(0, 0, a * Mathf.Rad2Deg));
+            }
             Part("Step1", PrimitiveType.Cube, new Vector3(0, 0.1f, 1.2f), new Vector3(4.6f, 0.2f, 1.2f), _marble, true);
             Part("Step2", PrimitiveType.Cube, new Vector3(0, 0.3f, 0.6f), new Vector3(4.2f, 0.2f, 1.0f), _marble, true);
             var door = Model(go.transform, "AP4_A3_Door1", pos, rot.eulerAngles.y + 90f, 0f, false);
