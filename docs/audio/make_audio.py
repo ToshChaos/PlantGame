@@ -399,8 +399,12 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
     Arrangement per track: bass = eighths | octave | drone | walk | pulse16 | offbeat; arp = up | down | updown | wide | slow | none;
     drum = rock | four | half | march | sparse | storm; rhythms = lead rhythm pool; vib = lead vibrato; decay = lead pluck;
     echo = gain of a delayed copy of the lead."""
-    arp = "none" if arp == "none" else "slow"   # calm: no fast swirling arpeggios, only a gentle slow chord pick
-    arp_vol *= 0.7; echo *= 0.5; vib *= 0.5; bpm = round(bpm * 0.9)
+    # calm garden / floating style: no vibrato, no echo (both read as a wobble), slow held notes, soft triangle chord pick
+    arp = "none" if arp == "none" else "slow"
+    vib = 0.0; echo = 0.0; rhythms = RH_LONG; rest = max(rest, 0.2); bpm = round(min(bpm, 110) * 0.85)
+    bass = "walk" if bass not in ("drone", "walk") else bass
+    decay = max(decay, 1.6)                     # plucked, harp-like leaf notes
+    lead_vol *= 0.8
     progression = progression * 2               # 16 bars; the lead motifs differ in the second half
     rng = random.Random(seed)
     rhythms = rhythms or RH_BASIC
@@ -437,7 +441,7 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
                    "updown": [a0, a1, a2, a2 + 12, a2, a1, a0, a1] * 2, "wide": [a0 - 12, a2, a1 + 12, a2] * 4,
                    "slow": [a0 + 12, a1 + 12, a2 + 12, a1 + 12], "none": []}[arp]
         if arp == "slow":
-            for k, nt in enumerate(pattern): add(out, square(hz(nt), step * 3.6, 0.125, arp_vol, 2.5), at + k * 4 * step)
+            for k, nt in enumerate(pattern): add(out, tri(hz(nt), step * 3.6, arp_vol * 1.6), at + k * 4 * step)
         else:
             for k, nt in enumerate(pattern): add(out, square(hz(nt), step * 0.9, 0.25, arp_vol, 1.6), at + k * step)
         # bass (triangle)
@@ -457,6 +461,9 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
             for k in range(2, 16, 4): add(out, tri(hz(r), step * 1.8, 0.6), at + k * step)
             add(out, tri(hz(r - 5), step * 1.8, 0.5), at)
         if drums:
+            if bar % 2 == 0: add(out, drum_hit("kick", rng), at, 0.25)
+            add(out, drum_hit("hat", rng), at + 8 * step, 0.12)
+        if False:
             for k in range(16):
                 if drum == "rock":
                     if k % 8 == 0: add(out, drum_hit("kick", rng), at + k * step, 0.7)
@@ -480,6 +487,10 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
                     if k in (4, 12): add(out, drum_hit("snare", rng), at + k * step, 0.55)
                     if bar % 4 == 3 and k >= 12: add(out, drum_hit("snare", rng), at + k * step, 0.4)
                     elif k % 2: add(out, drum_hit("hat", rng), at + k * step, 0.18)
+    # soft low-pass so the pulse waves lose their buzz (still 8-bit, just mellow); loop edge wraps via the tail already added
+    y = 0.0
+    for i in range(len(out)):
+        y += 0.28 * (out[i] - y); out[i] = y
     write(os.path.join(ROOT, "Music", name + ".wav"), out, 0.5)
 
 
