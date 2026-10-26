@@ -228,10 +228,10 @@ namespace PlantGame.UI
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
             _waterLabel.color = Palette.TextPurple;
-            bool nearWater = _pi != null && _pi.NearRefillSource && _pi.CurrentPromptKey != "Water" && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
+            bool nearWater = _pi != null && _pi.NearRefillSource && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
-                _waterWarn.enabled = true; _waterWarn.text = "Press [" + Key("Water", "F") + "] to refill water at source"; _waterWarn.color = Palette.TextPurple;
+                _waterWarn.enabled = _pi.CurrentPromptKey != "Water"; _waterWarn.text = "Press [" + Key("Water", "F") + "] to refill water at source"; _waterWarn.color = Palette.TextPurple;
             }
             else
             {
