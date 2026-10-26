@@ -32,8 +32,6 @@ namespace PlantGame.Editor
 
             // Floors (top surface at y = 0)
             TexturedBox.Create("Floor_Start", new Vector3(-7.5f, -0.5f, -3f), new Vector3(25f, 1f, 16f), terrain, stone);      // x -20..5, z -11..5
-            TexturedBox.Create("Floor_Gap5_Far", new Vector3(0f, -0.5f, 15f), new Vector3(10f, 1f, 10f), terrain, stone);       // z 10..20  (5 m gap from z=5)
-            Marker("Marker_Gap5m", new Vector3(0f, 0.5f, 4.6f), crystal);
 
             // 1.6 m ledge (jump height) at -Z
             Box("Ledge_1.6m", new Vector3(0f, 0.8f, -8f), new Vector3(6f, 1.6f, 2f), stone);
@@ -42,7 +40,7 @@ namespace PlantGame.Editor
             for (int i = 0; i < 4; i++)
             {
                 float h = 0.3f * (i + 1);
-                Box("Stair_" + i, new Vector3(-3f, h * 0.5f, 3.5f - i * 0.6f), new Vector3(2f, h, 0.6f), stone);
+                Box("Stair_" + i, new Vector3(-3f, h * 0.5f, 1.7f + i * 0.6f), new Vector3(2f, h, 0.6f), stone);
             }
 
             // 30 degree ramp
@@ -118,7 +116,7 @@ namespace PlantGame.Editor
 
             EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Sandbox_Gameplay"));
             ProjectSetup.RegisterScenes();
-            Debug.Log("[PlantGame] Sandbox_Gameplay built. WASD/mouse/Space; 5 m gap ahead (+Z), tower+ladder to the left (-X).");
+            Debug.Log("[PlantGame] Sandbox_Gameplay built. WASD/mouse/Space; tower+ladder to the left (-X).");
         }
 
         static GameObject Box(string name, Vector3 pos, Vector3 size, Material mat)
