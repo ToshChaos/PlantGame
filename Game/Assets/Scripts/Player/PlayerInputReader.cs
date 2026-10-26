@@ -36,6 +36,7 @@ namespace PlantGame.Player
             _restart = _map.FindAction("RestartHold", true);
             _scroll = _map.FindAction("Scroll", true);
             _slots = new[] { _map.FindAction("Slot1", true), _map.FindAction("Slot2", true), _map.FindAction("Slot3", true), _map.FindAction("Slot4", true) };
+            if (GetComponent<TouchControls>() == null) gameObject.AddComponent<TouchControls>();   // T57: draws and reads the on-screen controls on touch devices only
         }
 
         void OnEnable() { _map?.Enable(); }
@@ -59,17 +60,20 @@ namespace PlantGame.Player
                 return Mathf.Clamp(v, -1f, 1f);
             }
         }
-        public Vector2 Move => Enabled && _move != null ? Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f) : Vector2.zero;
-        public Vector2 Look => Enabled && _look != null ? _look.ReadValue<Vector2>() : Vector2.zero;
-        public bool JumpPressed => Enabled && _jump != null && _jump.WasPressedThisFrame();
-        public bool RunHeld => Enabled && _run != null && _run.IsPressed();
+        public Vector2 Move => Enabled && _move != null ? Vector2.ClampMagnitude(_move.ReadValue<Vector2>() + TouchInput.Move, 1f) : Vector2.zero;
+        /// <summary>Mouse delta, or the right-side drag while the touch controls are shown (a stray mouse must not spin the camera then).</summary>
+        public Vector2 Look => !Enabled || _look == null ? Vector2.zero : TouchInput.Active ? TouchInput.Look : _look.ReadValue<Vector2>();
+        public bool JumpPressed => Enabled && (TouchInput.JumpPressed || _jump != null && _jump.WasPressedThisFrame());
+        public bool RunHeld => Enabled && (TouchInput.Run || _run != null && _run.IsPressed());
+        /// <summary>Touch context button: pick up, use or drop, whichever PlayerInteraction says it is (T58).</summary>
+        public bool ContextPressed => Enabled && TouchInput.ContextPressed;
         /// <summary>Q: pick up the focused item, or drop the selected one (resolution in T04).</summary>
         public bool PickupDropPressed => Enabled && _pickupDrop != null && _pickupDrop.WasPressedThisFrame();
         /// <summary>E: use the selected item on the focused target, or interact with the focused Use-interactable.</summary>
         public bool UsePressed => Enabled && _use != null && _use.WasPressedThisFrame();
         /// <summary>F: water a sprout.</summary>
-        public bool WaterPressed => Enabled && _water != null && _water.WasPressedThisFrame();
-        public bool PausePressed => _pause != null && _pause.WasPressedThisFrame();   // not gated by Enabled: Esc must always work
+        public bool WaterPressed => Enabled && (TouchInput.WaterPressed || _water != null && _water.WasPressedThisFrame());
+        public bool PausePressed => TouchInput.PausePressed || _pause != null && _pause.WasPressedThisFrame();   // not gated by Enabled: Esc must always work
         public bool RestartHeld => Enabled && _restart != null && _restart.IsPressed();
 
         /// <summary>+1 / -1 when the player pressed Tab / Shift+Tab this frame, else 0.</summary>
@@ -78,6 +82,7 @@ namespace PlantGame.Player
             get
             {
                 if (!Enabled || _cycle == null) return 0;
+                if (TouchInput.CyclePressed) return 1;
                 if (_cycle.WasPressedThisFrame())
                 {
                     var kb = Keyboard.current;

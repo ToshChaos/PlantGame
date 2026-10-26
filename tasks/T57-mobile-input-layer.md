@@ -1,6 +1,6 @@
 # T57 — Touch input layer: virtual stick, look drag, buttons feed PlayerInputReader
 
-**Owner:** A1 Gameplay · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** —
+**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TODO.md`) · **Depends on:** —
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -20,4 +20,6 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - `docs/controls.md` and AGENTS.md 5.8 get a touch column; contract change noted in section 9.
 
 ## Handoff
-_(fill in when done)_
+Files: `Player/TouchInput.cs` (per-frame state), `Player/TouchControls.cs` (polled EnhancedTouch layer: floating left stick = walk / run at the edge, right-side drag = look, buttons Jump / Context / Water / Next item / Pause), `PlayerInputReader` merges touch into Move / Look / Jump / Run / Pause / Cycle / ContextPressed, `InteractionSensor.SenseByFacing` (cone auto-focus, 70 deg, hysteresis), `PlayerInteraction.Context / ContextLabel / WaterUseful`, `GameSettings.TouchControls / TouchLookSensitivity / TouchInvertY`.
+Test: menu `PlantGame > Touch Controls (editor test)` then play (mouse acts as a finger via TouchSimulation); phones show it automatically. Verified in editor: simulated stick drag walked the player. Not verified: real device, look drag feel, context button in a full level, hotbar tap (T60), tuning (T61).
+Known: no long-press drop; items cycle with the Next item button.

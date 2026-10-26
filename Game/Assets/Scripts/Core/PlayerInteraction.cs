@@ -33,6 +33,14 @@ namespace PlantGame.Core
         /// <summary>The player is at (or standing in) a lake / waterfall, or next to a Water Collector with water: F would refill.</summary>
         public bool NearRefillSource { get; private set; }
 
+        /// <summary>T58: what the touch context button does right now (Pickup = Q, Use = E, Drop = drop the selected item).</summary>
+        public enum ContextKind { None, Pickup, Use, Drop }
+        public ContextKind Context { get; private set; }
+        public string ContextLabel { get; private set; } = "";
+        /// <summary>The touch water button has a use: a thirsty sprout, a refill point in reach, or the can is empty near one.</summary>
+        public bool WaterUseful { get; private set; }
+        public string WaterLabel { get; private set; } = "Water";
+
         void Awake()
         {
             Inventory = GetComponent<Inventory.Inventory>();
@@ -43,8 +51,10 @@ namespace PlantGame.Core
 
         void Update()
         {
+            if (Sensor.facing == null) Sensor.facing = model;
             if (input != null)
             {
+                if (input.ContextPressed) DoContext();
                 int delta = input.CycleDelta;
                 if (delta != 0) Inventory.Cycle(delta);
                 int slot = input.SlotPressed;
@@ -54,6 +64,18 @@ namespace PlantGame.Core
                 if (input.WaterPressed) Water();
             }
             UpdatePrompt();
+        }
+
+        /// <summary>Touch context button: runs the action the button label announces.</summary>
+        void DoContext()
+        {
+            switch (Context)
+            {
+                case ContextKind.Pickup: PickupOrDrop(); break;
+                case ContextKind.Use: Use(); break;
+                case ContextKind.Drop: Drop(); break;
+                default: GameEvents.RaiseUseRejected(); break;
+            }
         }
 
         public void PickupOrDrop()
@@ -213,13 +235,14 @@ namespace PlantGame.Core
         {
             NearRefillSource = FindRefillSource();
             string p = "", k = "";
+            var thirsty = NearbyWaterable();
             var target = Sensor.Interactable;
             CurrentPromptIsGoal = target is GoalFlag && target.CanInteract(gameObject);
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             { p = "Use " + Inventory.SelectedItem.displayName; k = "Use"; }
             else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
-            else if (NearbyWaterable() != null) { p = "Water sprout"; k = "Water"; }
+            else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
             else if (FindFrozenSource() != null)   // frozen pond: say so, and what melts it
             {
                 var held = Inventory.SelectedItem;
@@ -227,6 +250,18 @@ namespace PlantGame.Core
                 else { p = "Frozen water, can be melted"; k = "Frozen"; }
             }
             CurrentPromptKey = k;
+
+            // touch context button: Q and E collapse into one label that always agrees with what pressing it does
+            var sel = Inventory.SelectedItem;
+            var pc = GetComponent<PlayerController>();
+            if (k == "Pickup") { Context = ContextKind.Pickup; ContextLabel = p; }
+            else if (k == "Use") { Context = ContextKind.Use; ContextLabel = p; }
+            else if (sel != null && sel.id == "parachute_leaf" && pc != null && pc.IsAirborne && !pc.IsGliding) { Context = ContextKind.Use; ContextLabel = "Glide"; }
+            else if (sel != null && sel.worldPrefab != null) { Context = ContextKind.Drop; ContextLabel = "Drop " + sel.displayName; }
+            else { Context = ContextKind.None; ContextLabel = ""; }
+            WaterUseful = k == "Water" || NearRefillSource || thirsty != null;
+            WaterLabel = NearRefillSource || (k == "Water" && target != null) ? "Refill" : "Water";
+
             if (p == CurrentPrompt) return;
             CurrentPrompt = p;
             GameEvents.RaiseFocusChanged(p);

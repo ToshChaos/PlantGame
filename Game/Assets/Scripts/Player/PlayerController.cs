@@ -346,6 +346,7 @@ namespace PlantGame.Player
         public void SetCursorLocked(bool locked)
         {
             CursorLocked = locked;
+            if (TouchInput.Active) return;   // touch: nothing to lock; CursorLocked still gates looking
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !locked;
         }
@@ -369,7 +370,7 @@ namespace PlantGame.Player
         {
             if (_orbiting) { _yaw = Mathf.Repeat(_yaw + orbitDegreesPerSecond * Time.unscaledDeltaTime, 360f); return; }
             if (Input.PausePressed && CursorLocked) SetCursorLocked(false);                  // Esc releases the cursor
-            else if (!CursorLocked && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Input.Enabled)
+            else if (!CursorLocked && !TouchInput.Active && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Input.Enabled)
                 SetCursorLocked(true);                                                         // click to grab it back
 
             if (!CursorLocked) return;

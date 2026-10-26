@@ -269,7 +269,7 @@ namespace PlantGame.UI
                 _waterWarn.color = flashing ? Color.Lerp(WarnOrange, Color.white, pulse) : WarnOrange;
             }
 
-            _hints.enabled = GameSettings.Hints;
+            _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
             if (_hints.enabled)
                 _hints.text = Key("Pickup", "Q") + " - pickup / drop\n" + Key("Use", "E") + " - use\n" + Key("Water", "F") + " - use / refill water can\nSpace - Jump" + (_pc != null && (_pc.IsClimbing || _pc.CurrentClimbHint != PlayerController.ClimbHint.None) ? "\nW / S or Up / Down - climb" : "") + "\nTab - next slot";
 
@@ -285,13 +285,21 @@ namespace PlantGame.UI
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
+            else if (TouchInput.Active && key != "Frozen") _prompt.text = key == "Water" ? (_pi.NearRefillSource ? "Refill water" : "Water the sprout") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "") : p;   // touch: the button says it
             else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill water" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
-                _prompt.text = "Press [" + Key("Use", "E") + "] to glide";
+                _prompt.text = TouchInput.Active ? "Tap Glide to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
             if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
+            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && TouchInput.Active)   // touch ladder hints: the stick climbs
+                switch (_pc.CurrentClimbHint)
+                {
+                    case PlayerController.ClimbHint.Climb: _prompt.text = "Push the stick up to climb"; break;
+                    case PlayerController.ClimbHint.Descend: _prompt.text = "Pull the stick down to climb down"; break;
+                    case PlayerController.ClimbHint.Climbing: _prompt.text = "Stick up / down to climb    Jump to let go"; break;
+                }
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
                 switch (_pc.CurrentClimbHint)
                 {

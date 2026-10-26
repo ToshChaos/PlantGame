@@ -23,6 +23,10 @@ namespace PlantGame.Core
         [Tooltip("Degrees around the camera ray for the fallback when the cast hits nothing.")]
         public float assistAngle = 14f;
         public bool highlight = true;
+        [Tooltip("Touch auto-focus: the player's visual facing (PlayerInteraction.model). Falls back to this transform.")]
+        public Transform facing;
+        [Tooltip("Touch auto-focus: half-angle of the cone in front of the player.")]
+        public float touchCone = 70f;
         [Tooltip("Pickups/targets this close to the player are focusable even when not aimed at (items at your feet).")]
         public float proximityRadius = 1.6f;
 
@@ -53,6 +57,7 @@ namespace PlantGame.Core
         /// <summary>Re-evaluates the focus now. Public so tests can call it after teleporting the player.</summary>
         public void Sense()
         {
+            if (PlantGame.Player.TouchInput.Active) { SenseByFacing(); return; }
             var t = eye != null ? eye : transform;
             Vector3 origin = t.position, dir = t.forward, chest = Chest;
 
@@ -98,6 +103,33 @@ namespace PlantGame.Core
                 }
             }
 
+            SetFocus(best);
+        }
+
+        /// <summary>
+        /// T58: touch has no crosshair, so the player's facing picks the target: everything in range inside a cone in front of
+        /// the player (or right at the feet) is scored by distance plus angle; the current focus gets a bonus so it does not flicker.
+        /// </summary>
+        void SenseByFacing()
+        {
+            Vector3 chest = Chest;
+            var f = facing != null ? facing : transform;
+            Vector3 fwd = f.forward; fwd.y = 0f; fwd = fwd.sqrMagnitude < 1e-4f ? Vector3.forward : fwd.normalized;
+            int m = Physics.OverlapSphereNonAlloc(chest, range, _overlaps, Mask, QueryTriggerInteraction.Collide);
+            Target best = default; float bestScore = float.MaxValue;
+            for (int i = 0; i < m; i++)
+            {
+                var c = _overlaps[i];
+                if (!TryResolve(c, out var tg) || Blocked(chest, c, tg)) continue;
+                Vector3 p = c.bounds.ClosestPoint(chest);
+                float d = Vector3.Distance(p, chest); if (d > range) continue;
+                Vector3 to = p - chest; to.y = 0f;
+                float a = to.sqrMagnitude < 0.01f ? 0f : Vector3.Angle(fwd, to);
+                if (d > proximityRadius && a > touchCone) continue;
+                float score = d + a / touchCone;
+                if (tg.component == Focus.component) score -= 0.5f;
+                if (score < bestScore) { bestScore = score; best = tg; }
+            }
             SetFocus(best);
         }
 

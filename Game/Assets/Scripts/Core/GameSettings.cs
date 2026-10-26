@@ -23,6 +23,27 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(FollowKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
+        /// <summary>Show the on-screen touch controls on a non-mobile device (editor testing with simulated touch). Phones always show them.</summary>
+        public static bool TouchControls
+        {
+            get => PlayerPrefs.GetInt("plantgame.touch", 0) == 1;
+            set { PlayerPrefs.SetInt("plantgame.touch", value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
+        /// <summary>Touch look speed multiplier (1 = default).</summary>
+        public static float TouchLookSensitivity
+        {
+            get => PlayerPrefs.GetFloat("plantgame.touchlook", 1f);
+            set { PlayerPrefs.SetFloat("plantgame.touchlook", Mathf.Clamp(value, 0.3f, 3f)); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
+        /// <summary>Touch look: dragging up looks down.</summary>
+        public static bool TouchInvertY
+        {
+            get => PlayerPrefs.GetInt("plantgame.touchinvy", 0) == 1;
+            set { PlayerPrefs.SetInt("plantgame.touchinvy", value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
         /// <summary>Music volume 0..1 (the slider in the menus).</summary>
         public static float MusicVolume
         {
