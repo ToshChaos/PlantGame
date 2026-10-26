@@ -700,6 +700,26 @@ namespace PlantGame.World
                     Fruit(parent, "Fruit" + f, pos + new Vector3(Mathf.Cos(a) * d, y, Mathf.Sin(a) * d), 0.55f, fruitMesh, fruit,
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
+            // T67: two yellow flowers like the ones on the vine bridges (yellow-orange petals, white inner petals, glowing cyan centre), low among the culms
+            for (int fl = 0; fl < 2; fl++)
+            {
+                float fa = 1.0f + fl * 3.3f + (float)rnd.NextDouble() * 0.5f, fd = 1.0f + (float)rnd.NextDouble() * 0.25f;
+                var fb = pos + new Vector3(Mathf.Cos(fa) * fd, 0f, Mathf.Sin(fa) * fd); float fh = 1.2f + fl * 0.5f;
+                Prim("FlowerStem" + fl, PrimitiveType.Cylinder, parent, fb + Vector3.up * fh * 0.5f, new Vector3(0.05f, fh * 0.5f, 0.05f), light, false);
+                for (int pt = 0; pt < 8; pt++)
+                {
+                    float pa = pt * 0.785f;
+                    var petal = Prim("Petal", PrimitiveType.Sphere, parent, fb + new Vector3(Mathf.Cos(pa) * 0.3f, fh + 0.05f, Mathf.Sin(pa) * 0.3f), new Vector3(0.55f, 0.04f, 0.16f), _yellow, false);
+                    petal.transform.rotation = Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 22f);
+                }
+                for (int pt = 0; pt < 5; pt++)
+                {
+                    float pa = pt * 1.257f + 0.4f;
+                    var petal = Prim("InnerPetal", PrimitiveType.Sphere, parent, fb + new Vector3(Mathf.Cos(pa) * 0.14f, fh + 0.11f, Mathf.Sin(pa) * 0.14f), new Vector3(0.32f, 0.03f, 0.1f), _white, false);
+                    petal.transform.rotation = Quaternion.Euler(0, -pa * Mathf.Rad2Deg, 40f);
+                }
+                Prim("FlowerCentre" + fl, PrimitiveType.Sphere, parent, fb + Vector3.up * (fh + 0.1f), Vector3.one * 0.13f, Kit.Mat("M_Crystal") ?? _white, false);
+            }
             Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.down * 0.03f, new Vector3(2.6f, 0.05f, 2.6f), PatchBase(foliage), false);
         }
 
@@ -716,6 +736,13 @@ namespace PlantGame.World
                 var p = pos + new Vector3(Mathf.Cos(a) * d, 0.12f + 0.14f * sc[i], Mathf.Sin(a) * d);
                 if (fruitMesh != null) Fruit(parent, "Rosette" + i, p, sc[i], fruitMesh, fruit, Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0));
                 else Prim("Rosette" + i, PrimitiveType.Sphere, parent, p, new Vector3(sc[i] * 0.5f, sc[i] * 0.25f, sc[i] * 0.5f), fruit, false);
+                // T67: dew pooled in the middle of each rosette: a small water disc with a bright dewdrop on it
+                var water = Kit.Mat("M_Water");
+                if (water != null)
+                {
+                    Prim("Pool" + i, PrimitiveType.Cylinder, parent, p + Vector3.down * 0.005f * sc[i], new Vector3(0.46f * sc[i], 0.012f, 0.46f * sc[i]), water, false);
+                    Prim("Dew" + i, PrimitiveType.Sphere, parent, p + new Vector3(0.06f * sc[i], 0.012f * sc[i], 0.03f * sc[i]), Vector3.one * 0.05f * sc[i], Kit.Mat("M_Crystal") ?? water, false);
+                }
             }
             var stone = Kit.Mat("M_Bark");
             for (int i = 0; i < 5; i++)
@@ -873,6 +900,23 @@ namespace PlantGame.World
                 var p = pos + new Vector3(Mathf.Cos(a) * d, 0.27f * sc[i] + 0.04f, Mathf.Sin(a) * d);
                 if (fruitMesh != null) Fruit(parent, "Puffball" + i, p, sc[i], fruitMesh, fruit != null ? fruit : _white, Quaternion.Euler((float)(rnd.NextDouble() - 0.5) * 14f, (float)rnd.NextDouble() * 360f, (float)(rnd.NextDouble() - 0.5) * 14f));
                 else Prim("Puffball" + i, PrimitiveType.Sphere, parent, p, Vector3.one * 0.45f * sc[i], fruit != null ? fruit : _white, false);
+            }
+            // T67: red toadstools with white spots among the puffballs, like the grown mushroom patch
+            var red = Kit.Mat("M_BerryRed") ?? _pink;
+            float[] rs = { 1.6f, 1.2f, 0.9f };
+            for (int i = 0; i < rs.Length; i++)
+            {
+                float a = 4.1f + i * 1.7f + (float)rnd.NextDouble() * 0.5f, d = 1.3f + 0.25f * i + (float)rnd.NextDouble() * 0.3f, s = rs[i];
+                var b = pos + new Vector3(Mathf.Cos(a) * d, 0f, Mathf.Sin(a) * d);
+                float capY = 0.62f * s, capR = 0.42f * s, capH = 0.3f * s;     // cap: a domed ellipsoid sitting on the stalk
+                Prim("RedStalk" + i, PrimitiveType.Cylinder, parent, b + Vector3.up * 0.33f * s, new Vector3(0.2f * s, 0.33f * s, 0.2f * s), _white, false);
+                Prim("RedCap" + i, PrimitiveType.Sphere, parent, b + Vector3.up * capY, new Vector3(capR * 2f, capH * 2f, capR * 2f), red, false);
+                for (int k = 0; k < 6; k++)
+                {
+                    float ka = k * 1.047f + i, kr = k == 5 ? 0f : capR * 0.55f;
+                    float ky = capY + capH * Mathf.Sqrt(Mathf.Max(0f, 1f - (kr / capR) * (kr / capR)));
+                    var sp = Prim("Spot", PrimitiveType.Sphere, parent, b + new Vector3(Mathf.Cos(ka) * kr, ky - 0.01f * s, Mathf.Sin(ka) * kr), new Vector3(0.16f, 0.06f, 0.16f) * s, _white, false);
+                }
             }
         }
 

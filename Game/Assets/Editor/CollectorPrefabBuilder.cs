@@ -24,7 +24,7 @@ namespace PlantGame.Editor
             string mpath = MaterialBuilder.Dir + "/M_CollectorGrow.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(mpath);
             if (mat == null) { mat = new Material(MaterialBuilder.Load("M_PlantGrow")) { name = "M_CollectorGrow" }; AssetDatabase.CreateAsset(mat, mpath); }
-            mat.SetColor("_CapColor", Color.Lerp(Palette.SkyBlue, Palette.MistBlue, 0.45f));   // bowl
+            mat.SetColor("_CapColor", Palette.SeedSucculent);   // T67: the rosette leaves and basin are the same teal as the dew-seed source plant
             mat.SetColor("_BaseColor", Palette.LeafGreen); mat.SetColor("_TipColor", Color.Lerp(Palette.LeafGreen, Palette.CloudWhite, 0.2f)); mat.SetColor("_ShadeColor", Palette.Moss); mat.SetColor("_RimColor", Palette.GlowCyan); mat.SetFloat("_RimStrength", 0.25f);
             mat.SetColor("_FlowerColor", Palette.GlowCyan);                                       // dew dots
             mat.SetFloat("_PartColors", 1f); mat.EnableKeyword("_PARTCOLORS_ON"); mat.SetFloat("_Growth", 1f);

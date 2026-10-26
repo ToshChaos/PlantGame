@@ -84,61 +84,49 @@ def _build(p):
     m.cap(rings[0], flip=True)
     cx, cy = lean[0], lean[1]
     # ---- bowl: outer wall up to the rim, a rolled lip, then the inner wall down to the floor
-    outer = [(0.14, 0.00), (0.34, 0.04), (0.56, 0.11), (0.76, 0.20), (0.92, 0.33), (1.00, 0.46), (0.97, 0.60), (0.88, 0.74), (0.84, 0.85), (0.92, 0.93), (1.12, 0.98), (1.24, 1.01), (1.27, 1.03)]   # T67: pitcher: belly, waist, flared lip
-    inner = [(1.22, 1.06), (1.10, 1.02), (0.90, 0.92), (0.80, 0.80), (0.82, 0.62), (0.70, 0.38), (0.48, 0.20), (0.24, 0.14), (0.0, 0.12)]
+    outer = [(0.14, 0.00), (0.34, 0.04), (0.56, 0.11), (0.76, 0.20), (0.92, 0.33), (1.00, 0.46), (1.00, 0.62), (0.97, 0.80), (0.95, 0.93), (1.0, 1.0)]   # T67: a plain round basin; the rosette leaves hide most of it
+    inner = [(0.90, 1.0), (0.86, 0.86), (0.82, 0.62), (0.70, 0.38), (0.48, 0.20), (0.24, 0.14), (0.0, 0.12)]
     prof = [(R * rr, zb + bowl_h * hh) for rr, hh in outer] + [(R * rr, zb + bowl_h * hh) for rr, hh in inner]
     bowl_rings = []
     for k, (r, z) in enumerate(prof):
-        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92, rib=(0.12 if 10 <= k <= 12 else 0.045) if 2 <= k < len(outer) else 0.0))   # ribbed peristome (the lip) 
+        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92, rib=0.03 if 2 <= k < len(outer) else 0.0))
     for a, b in zip(bowl_rings, bowl_rings[1:]):
         m.bridge(a, b)
     rim_z = zb + bowl_h
-    # ---- petals: curled tapered strips around the rim, white
+    # ---- the rosette (matches the dew-seed source plant): three rings of fat, pointed, thick leaves growing from the basin and opening
+    # upwards like a cup, tips curling out. Each leaf is a closed lens (ridge on top and below), so it reads as a succulent leaf.
     top = rim_z
-    PC = max(3, PC - 3)
-    petal_scale = 0.75
-    for k in range(PC):
-        ang = k / PC * math.tau + rnd.uniform(-0.1, 0.1)
-        L = R * rnd.uniform(0.7, 1.0) * petal_scale; W = R * 0.62 * (6.0 / PC) ** 0.5
-        steps = 6
-        left, mid, right = [], [], []
-        for s_ in range(steps + 1):
-            t = s_ / steps
-            out = R * 0.95 + L * t * (1.0 - 0.35 * CURL)
-            z = rim_z + L * 0.9 * math.sin(t * math.pi * 0.5) * (1.0 - CURL * t)
-            w = W * (1.0 - t) ** 0.7 * (0.4 + 0.6 * math.sin(min(1.0, t * 1.6 + 0.2) * math.pi)) + 0.012
-            c, sn = math.cos(ang), math.sin(ang)
-            px, py = cx + c * out, cy + sn * out
-            cup = 0.5 * w * (1.0 - t * 0.5)          # T67: petals cup around a raised midrib
-            left.append(m.add((px - sn * w, py + c * w, z + cup * 0.35), 1.0))
-            mid.append(m.add((px, py, z - cup * 0.25), 1.0))
-            right.append(m.add((px + sn * w, py - c * w, z + cup * 0.35), 1.0))
-            top = max(top, z + cup * 0.35)
-        for s_ in range(steps):
-            for a_, b_ in ((left, mid), (mid, right)):
-                m.f.append((a_[s_], b_[s_], b_[s_ + 1], a_[s_ + 1]))
-                m.f.append((a_[s_ + 1], b_[s_ + 1], b_[s_], a_[s_]))   # two-sided so the shader culling never hides it
-    # ---- the lid (operculum): a hood arching over the back of the opening, two-sided, with a midrib ridge
-    ang_b = rnd.uniform(0, math.tau)
-    LR, LC = 8, 10
-    grid = []
-    for ri in range(LR + 1):
-        v = ri / LR
-        half = 0.95 * (1.0 - 0.4 * v ** 1.5)
-        row = []
-        for ci in range(LC + 1):
-            u = ci / LC * 2.0 - 1.0
-            a = ang_b + u * half
-            rad = R * (1.22 - 0.75 * v * (1.0 - 0.3 * abs(u)))
-            z = rim_z + 0.03 + 0.5 * R * math.sin(v * math.pi * 0.55) * (1.0 - 0.4 * u * u) + 0.03 * R * (1 - abs(u)) * v
-            row.append(m.add((cx + math.cos(a) * max(rad, 0.02), cy + math.sin(a) * max(rad, 0.02), z), 0.92))
-            top = max(top, z)
-        grid.append(row)
-    for ri in range(LR):
-        for ci in range(LC):
-            q = (grid[ri][ci], grid[ri][ci + 1], grid[ri + 1][ci + 1], grid[ri + 1][ci])
-            m.f.append(q)
-            m.f.append(q[::-1])
+    def fat_leaf(ang, r0, z0, length, width, tilt, thick, part=0.92):
+        rows = 8
+        c, sn = math.cos(ang), math.sin(ang)
+        left, mid, right, low = [], [], [], []
+        for i in range(rows + 1):
+            t = i / rows
+            out = r0 + length * (t * math.sin(math.radians(tilt)) + 0.25 * t * t * math.sin(math.radians(60)))
+            z = z0 + length * t * math.cos(math.radians(tilt)) * (1.0 - 0.12 * t)
+            w = width * math.sin(math.pi * min(1.0, t * 1.0 + 0.05)) ** 0.7 + 0.004
+            ridge = thick * w * (1.0 - 0.3 * t)
+            tr = math.radians(tilt)
+            def at(o, zz, off):
+                return (cx + c * o + off * -sn, cy + sn * o + off * c, zz)
+            left.append(m.add(at(out, z - 0.03 * w, w), part))
+            right.append(m.add(at(out, z - 0.03 * w, -w), part))
+            mid.append(m.add(at(out - math.cos(tr) * ridge, z + math.sin(tr) * ridge, 0.0), part))     # inner (cup-facing) ridge
+            low.append(m.add(at(out + math.cos(tr) * ridge * 0.8, z - math.sin(tr) * ridge * 0.8, 0.0), part))   # outer ridge
+            nonlocal_top[0] = max(nonlocal_top[0], z + math.sin(tr) * ridge)
+        for i in range(rows):
+            for a_, b_ in ((left, mid), (mid, right), (right, low), (low, left)):
+                q = (a_[i], b_[i], b_[i + 1], a_[i + 1])
+                m.f.append(q); m.f.append(q[::-1])
+    nonlocal_top = [top]
+    rings = ((PC + 3, 1.00 * R, -0.05, 1.45 * R, 0.40 * R, 44.0, 0.50), (PC, 1.0 * R, 0.1, 1.45 * R, 0.38 * R, 30.0, 0.50), (max(4, PC - 2), 1.0 * R, 0.2, 1.25 * R, 0.34 * R, 16.0, 0.50))   # r0 >= 0.95 R keeps the leaves out of the water volume
+    for ri, (n_, r0, dz, L, W_, tilt, th) in enumerate(rings):
+        base_z = zb + bowl_h * 0.22 + dz * bowl_h + ri * 0.04
+        for k in range(n_):
+            ang = (k + 0.5 * ri) / n_ * math.tau + rnd.uniform(-0.08, 0.08)
+            fat_leaf(ang, r0, base_z, L * rnd.uniform(0.92, 1.08), W_ * rnd.uniform(0.92, 1.1), tilt + rnd.uniform(-5, 5), th)
+    top = nonlocal_top[0]
+    # a few bright dew drops resting on the leaves are added below with the other dew dots
     # ---- base leaves: broad curved blades lying outward from the stem foot
     for k in range(NL):
         ang = k / NL * math.tau + rnd.uniform(-0.25, 0.25)

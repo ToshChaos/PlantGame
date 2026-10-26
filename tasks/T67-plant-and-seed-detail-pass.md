@@ -23,5 +23,11 @@
 - Water Collector head: pitcher shape with belly, waist, flared ribbed lip and a hood (lid) over the back of the opening; fewer, shorter petals.
 - Checked in play mode (level 4): sprouts, grown patch, collector present. Collector close-up was partly blocked by a cap; not inspected further.
 
+## Second feedback round (2026-10-26)
+- **Bug fixed: plants did not follow the bobbing island.** `SandboxTarget.Spawn` now parents the sprout / grown plant to the island's `FloatBob` transform (world pose kept). Checked in play: plant and island Y change together (offset constant -0.130 for a bridge and a sprouting beanstalk).
+- Mushroom caps: some are convex domes and about 14% smaller (`dome` per-pad attribute from `(index + seed) % 2`); dome colliders sit just under the apex. All jump checks still pass. Note: per-pad attributes (`padi`, `dome`) are stored on the points, because instance-domain fields restart their index after a Selection.
+- Water Collector head is now a teal succulent rosette (three rings of fat pointed leaves) around the water basin, matching the dew-seed source plant; `M_CollectorGrow` cap colour is `Palette.SeedSucculent`. The dew-seed source plant has a small water pool and dewdrop in the middle of each rosette (the seed mesh is an open cup now).
+- Mushroom seed patch has three red spotted toadstools; bamboo patch has two yellow flowers like the bridges'; the grown beanstalk's beans are purple (`M_LadderGrow`, `_FlowerColor = SeedBean`); puffball seed texture toned down (craters looked like a moon).
+
 ## Open
 - The platform stalks are cone + foot sphere: if they look too plain, add bark detail via the new triplanar texture strength (`_TexStrength`).

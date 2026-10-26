@@ -110,6 +110,10 @@ namespace PlantGame.Core
                 go.transform.rotation = Quaternion.FromToRotation(full, level) * go.transform.rotation;
                 go.transform.position += pivot - anchor.position;
             }
+            // the plant (sprout and grown) rides with the island it is planted on: islands bob up and down (FloatBob)
+            var bob = GetComponentInParent<PlantGame.World.FloatBob>();
+            var host = bob != null ? bob.transform : transform.parent;
+            if (host != null) go.transform.SetParent(host, true);
             var p = go.GetComponent<PlantInstance>();
             if (p != null) { p.kind = kind; p.ShowSprout(); }
             return p;

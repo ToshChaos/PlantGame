@@ -152,8 +152,8 @@ namespace PlantGame.Editor
             {
                 Worley(u, v, 9, 96, out float f1, out float f2);
                 float pore = Mathf.Clamp01((0.18f - f1) * 8f), flake = Fbm(u, v, 14, 3, 97);
-                float lum = Mathf.Clamp01((0.86f + 0.2f * flake) * (1f - 0.25f * pore) - (f2 - f1 < 0.05f ? 0.1f : 0f));
-                h = flake * 0.4f + (1f - pore) * 0.4f;
+                float lum = Mathf.Clamp01((0.9f + 0.15f * flake) * (1f - 0.07f * pore) - (f2 - f1 < 0.05f ? 0.05f : 0f));
+                h = flake * 0.4f + (1f - pore) * 0.08f;
                 c = new Color(lum, lum, lum, 1f);
                 return (c, h);
             });

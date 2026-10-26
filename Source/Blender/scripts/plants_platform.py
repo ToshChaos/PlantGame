@@ -30,6 +30,7 @@ MAT = _ns['MAT']
 GROUP = 'GN_Plant_Platform'
 SEGMENTS = 40
 PAD_DEPTH = 0.18
+DOME = 0.2                             # user request: some caps are convex instead of dished: apex at the pad height, rim DOME lower
 DISH = 0.22                            # T48: how far the middle of a cap sits below its rim (task: 0.15-0.3 m)
 MAX_RISE_STEP, MAX_HOP = 1.2, 3.2      # jump-delta limits (task file)
 
@@ -116,10 +117,25 @@ def build_group():
     tree.links.new(xform(lip, b.xyz(0, 0, -0.04)).outputs[0], cap_join.inputs[0])
     tree.links.new(disc.outputs[0], cap_join.inputs[0])
     tree.links.new(under.outputs[0], cap_join.inputs[0])
-    pi = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Instance': cap_join, 'Scale': b.xyz(size, size, 1.0)})
+    # convex variant: domed top, rim lower, a bit smaller (see `dome_sel`)
+    flat2 = xform(b.make('GeometryNodeMeshCylinder', {'Vertices': 32, 'Radius': 0.5, 'Depth': PAD_DEPTH, 'Fill Segments': 6}, fill_type='TRIANGLE_FAN'), b.xyz(0, 0, -PAD_DEPTH / 2))
+    bend2 = b.m('MULTIPLY', r2, -4.0 * DOME)
+    disc2 = b.make('GeometryNodeSetPosition', {'Geometry': flat2, 'Offset': b.xyz(0, 0, bend2)})
+    under2 = xform(b.make('GeometryNodeMeshCone', {'Vertices': 32, 'Radius Top': 0.5, 'Radius Bottom': 0.08, 'Depth': 0.36, 'Side Segments': 3}), b.xyz(0, 0, -0.54))
+    cap_dome = b.make('GeometryNodeJoinGeometry')
+    lip2 = xform(b.make('GeometryNodeCurveToMesh', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 32, 'Radius': 0.5}),
+                                                    'Profile Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.045})}), b.xyz(0, 0, -0.04 - DOME))
+    for g_ in (lip2, disc2, under2):
+        tree.links.new(g_.outputs[0], cap_dome.inputs[0])
+    dome_sel = b.m('GREATER_THAN', b.m('MODULO', b.m('ADD', idx, seed), 2.0), 0.5)
+    pad_pts = store(store(pad_pts, 'padi', idx, 'POINT'), 'dome', dome_sel, 'POINT')   # per-pad attributes live on the points: instance-domain fields restart their index after a Selection
+    dsize = b.m('MULTIPLY', size, 0.86)
+    pi = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Selection': b.m('SUBTRACT', 1.0, dome_sel), 'Instance': cap_join, 'Scale': b.xyz(size, size, 1.0)})
     pi = store(pi, 'part', 0.92, 'INSTANCE')
-    pi = store(pi, 'padi', idx, 'INSTANCE')
     parts.append(pi.outputs[0])
+    pd_ = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Selection': dome_sel, 'Instance': cap_dome, 'Scale': b.xyz(dsize, dsize, 1.0)})
+    pd_ = store(pd_, 'part', 0.92, 'INSTANCE')
+    parts.append(pd_.outputs[0])
 
     # ---- user request: a mushroom patch. Every cap has its own stalk rising straight from the ground under it (no central stem), so the
     # caps end up at different heights. Stalk = tapered cone with a swollen foot and a collar ring.
@@ -139,18 +155,22 @@ def build_group():
     bst = b.make('GeometryNodeInstanceOnPoints', {'Points': baby_foot, 'Selection': baby_sel, 'Instance': cone, 'Scale': b.xyz(0.3, 0.3, 0.62)})
     parts.append(store(bst, 'part', 1.0, 'INSTANCE').outputs[0])
 
-    # ---- white spots on top of each cap: two small rings (5 + 3), built once in unit-cap space and scaled with the cap
+    # ---- white spots on top of each cap: two small rings (5 + 3), built once in unit-cap space and scaled with the cap (dished and domed variants)
     spot = xform(b.make('GeometryNodeMeshCylinder', {'Vertices': 8, 'Radius': 0.07, 'Depth': 0.04}), b.xyz(0, 0, 0.02))
-    spot_join = b.make('GeometryNodeJoinGeometry')
-    for res_, rad_ in ((5, 0.3), (3, 0.13)):
-        rp = b.make('GeometryNodeCurveToPoints', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': res_, 'Radius': rad_}),
-                                                  'Count': res_}, mode='COUNT')
-        rp_low = b.make('GeometryNodeSetPosition', {'Geometry': rp.outputs['Points'], 'Offset': b.xyz(0, 0, 4.0 * DISH * rad_ * rad_ - DISH)})   # follow the dish
-        ri = b.make('GeometryNodeInstanceOnPoints', {'Points': rp_low, 'Instance': spot})
-        tree.links.new(ri.outputs[0], spot_join.inputs[0])
-    spots = b.make('GeometryNodeRealizeInstances', {'Geometry': spot_join})
-    si = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Instance': spots, 'Scale': b.xyz(size, size, 1.0)})
-    parts.append(store(si, 'part', 1.0, 'INSTANCE').outputs[0])
+    for domed in (False, True):
+        spot_join = b.make('GeometryNodeJoinGeometry')
+        for res_, rad_ in ((5, 0.3), (3, 0.13)):
+            rp = b.make('GeometryNodeCurveToPoints', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': res_, 'Radius': rad_}),
+                                                      'Count': res_}, mode='COUNT')
+            lift = -4.0 * DOME * rad_ * rad_ if domed else 4.0 * DISH * rad_ * rad_ - DISH      # follow the surface
+            rp_low = b.make('GeometryNodeSetPosition', {'Geometry': rp.outputs['Points'], 'Offset': b.xyz(0, 0, lift)})
+            ri = b.make('GeometryNodeInstanceOnPoints', {'Points': rp_low, 'Instance': spot})
+            tree.links.new(ri.outputs[0], spot_join.inputs[0])
+        spots = b.make('GeometryNodeRealizeInstances', {'Geometry': spot_join})
+        sel_ = dome_sel if domed else b.m('SUBTRACT', 1.0, dome_sel)
+        sz_ = dsize if domed else size
+        si = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Selection': sel_, 'Instance': spots, 'Scale': b.xyz(sz_, sz_, 1.0)})
+        parts.append(store(si, 'part', 1.0, 'INSTANCE').outputs[0])
 
     join = b.make('GeometryNodeJoinGeometry')
     for p in parts:
@@ -209,16 +229,19 @@ def pad_info(me):
     """Per pad (ordered base -> tip): dict(centre=(x,y), top=z, radius=r) measured from the baked mesh."""
     ca = me.color_attributes['growth_t']
     padi = me.attributes['padi'].data
-    groups = {}
+    domea = me.attributes['dome'].data if 'dome' in me.attributes else None
+    groups, domes = {}, {}
     for i, v in enumerate(me.vertices):
         if 0.88 < ca.data[i].color[1] < 0.96 and padi[i].value > -0.5:   # walkable caps only (decorative baby caps have padi -1)
             groups.setdefault(int(round(padi[i].value)), []).append(v.co)
+            if domea is not None:
+                domes[int(round(padi[i].value))] = domea[i].value > 0.5
     out = []
     for k in sorted(groups):
         cs = groups[k]
         cx = sum(c.x for c in cs) / len(cs)
         cy = sum(c.y for c in cs) / len(cs)
-        out.append(dict(centre=(cx, cy), top=max(c.z for c in cs),
+        out.append(dict(dome=domes.get(k, False), centre=(cx, cy), top=max(c.z for c in cs),
                         radius=max(math.hypot(c.x - cx, c.y - cy) for c in cs)))
     return out
 
@@ -377,7 +400,7 @@ def bake_variant(n, offset_x=0.0):
     mk('Land_%s@P' % nn, tip + mathutils.Vector((out.x, out.y, 0)))
     for k, pd in enumerate(pads):                       # flat-top collider per pad, ordered base -> tip
         d = 2 * pd['radius'] * 0.92
-        _box('COL_%s_%d@P' % (nn, k), (pd['centre'][0], pd['centre'][1], pd['top'] - DISH * 0.55 - 0.1), (d, d, 0.2), main, coll)   # top halfway down the dish
+        _box('COL_%s_%d@P' % (nn, k), (pd['centre'][0], pd['centre'][1], pd['top'] - (0.14 if pd['dome'] else DISH * 0.55 + 0.1)), (d, d, 0.2), main, coll)   # dish: top halfway down the dish; dome: just under the apex
     main['kind'] = 'Platform'
     main['params'] = str({k: round(v, 3) for k, v in p.items()})
     return main

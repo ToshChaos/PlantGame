@@ -165,12 +165,10 @@ namespace PlantGame.World
         public static Mesh Succulent()
         {
             var b = new Builder();
+            // T67: an open cup (no centre leaves, no bud) so the source patch can hold a little pool of water in the middle
             Ring(b, 12, 0.19f, -0.08f, 70f, new Vector3(0.085f, 0.2f, 0.045f), 0f);
             Ring(b, 9, 0.14f, -0.04f, 52f, new Vector3(0.075f, 0.19f, 0.045f), 0.5f);
-            Ring(b, 7, 0.09f, 0.0f, 34f, new Vector3(0.07f, 0.17f, 0.045f), 0.2f);
-            Ring(b, 5, 0.05f, 0.03f, 18f, new Vector3(0.065f, 0.15f, 0.045f), 0.6f);
-            Ring(b, 3, 0.02f, 0.05f, 6f, new Vector3(0.05f, 0.12f, 0.04f), 0.1f);
-            b.Ellipsoid(new Vector3(0, 0.12f, 0), Quaternion.identity, new Vector3(0.05f, 0.1f, 0.05f), 12, 8);
+            Ring(b, 7, 0.10f, 0.0f, 36f, new Vector3(0.07f, 0.17f, 0.045f), 0.2f);
             return b.ToMesh("Seed_Succulent");
         }
 

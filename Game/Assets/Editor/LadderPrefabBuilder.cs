@@ -26,6 +26,14 @@ namespace PlantGame.Editor
             if (MaterialBuilder.Load("M_PlantGrow") == null) MaterialBuilder.Build();
             var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialBuilder.Dir + "/M_BridgeGrow.mat");
             if (mat == null) { BridgePrefabBuilder.Build(); mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialBuilder.Dir + "/M_BridgeGrow.mat"); }
+            // T67: the beans on the grown beanstalk are purple like the bean seed (part id ~0.8 takes _FlowerColor); the bridge keeps its yellow flowers
+            var lpath = MaterialBuilder.Dir + "/M_LadderGrow.mat";
+            var lmat = AssetDatabase.LoadAssetAtPath<Material>(lpath);
+            if (lmat == null) { lmat = new Material(mat) { name = "M_LadderGrow" }; AssetDatabase.CreateAsset(lmat, lpath); }
+            lmat.CopyPropertiesFromMaterial(mat);
+            lmat.SetColor("_FlowerColor", Palette.SeedBean);
+            EditorUtility.SetDirty(lmat);
+            mat = lmat;
             int plantLayer = LayerMask.NameToLayer(Layers.PlantName);
             int climbLayer = LayerMask.NameToLayer(Layers.ClimbableName);
             for (int n = 1; n <= 6; n++)
