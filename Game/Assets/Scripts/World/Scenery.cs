@@ -403,6 +403,27 @@ namespace PlantGame.World
                 gem.transform.rotation = Quaternion.Euler((float)(rnd.NextDouble() - 0.5) * 30f, (float)rnd.NextDouble() * 360f, (float)(rnd.NextDouble() - 0.5) * 30f);
                 var sp = gem.AddComponent<GemSparkle>(); sp.glow = rnd.NextDouble() < 0.3 ? new Color(1f, 0.8f, 0.4f) : new Color(0.49f, 0.95f, 0.9f);
             }
+            // fallen logs on the rocky islands (a few on mud ones): bark lathe logs lying on the ground, some with a branch stub
+            if (ground != GroundKind.Grass)
+            {
+                var bark = Kit.Mat("M_Bark") ?? stone;
+                for (int k = 0, n = (ground == GroundKind.Rock ? 4 : 2) + rnd.Next(2); k < n; k++)
+                {
+                    float a = (float)(rnd.NextDouble() * 6.283), r = edge(a) * (0.25f + (float)rnd.NextDouble() * 0.6f);
+                    var p = c2 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r; if (!free(p, 1.4f)) continue;
+                    float len = 1.8f + (float)rnd.NextDouble() * 2.2f, rad = 0.17f + (float)rnd.NextDouble() * 0.12f;
+                    var prof = new List<Vector2> { new Vector2(0.001f, -len / 2), new Vector2(rad * 0.8f, -len / 2), new Vector2(rad, -len / 2 + 0.05f), new Vector2(rad * 1.06f, -len * 0.25f), new Vector2(rad, len * 0.25f), new Vector2(rad * 0.95f, len / 2 - 0.05f), new Vector2(rad * 0.78f, len / 2), new Vector2(0.001f, len / 2) };
+                    var lg = MeshPrim("FallenLog", ShapeMeshes.Lathe(prof, 12, false, (ang, q) => 1f + 0.08f * Mathf.Cos(ang * 7f), "FallenLog"), root.transform, new Vector3(p.x, Y(p) + rad * 0.8f, p.y), Vector3.one / 0.62f, bark, false);   // MeshPrim scales by 0.62
+                    lg.transform.rotation = Quaternion.Euler(90f + ((float)rnd.NextDouble() - 0.5f) * 8f, (float)rnd.NextDouble() * 360f, 0f);
+                    if (rnd.NextDouble() < 0.5)
+                    {
+                        var stub = MeshPrim("Branch", ShapeMeshes.Lathe(new List<Vector2> { new Vector2(0.001f, 0f), new Vector2(rad * 0.45f, 0f), new Vector2(rad * 0.3f, 0.45f), new Vector2(0.001f, 0.5f) }, 8, false, null, "Branch"), lg.transform, lg.transform.position, Vector3.one / 0.62f, bark, false);
+                        stub.transform.rotation = lg.transform.rotation * Quaternion.Euler(0, 0, 0) * Quaternion.AngleAxis(50f, Vector3.right) * Quaternion.AngleAxis((float)rnd.NextDouble() * 360f, Vector3.up);
+                        stub.transform.position = lg.transform.position + lg.transform.up * (((float)rnd.NextDouble() - 0.5f) * len * 0.5f);
+                    }
+                    lg.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
             // shiny debris outside the island: chips of marble and gems hovering just past the rim and under it
             for (int k = 0, n = 6 + rnd.Next(6); k < n; k++)
             {
