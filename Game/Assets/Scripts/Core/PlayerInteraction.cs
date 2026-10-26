@@ -131,7 +131,7 @@ namespace PlantGame.Core
             if (TryThaw()) return;   // E next to frozen water: a Heat Seed melts it
             if ((item != null && item.kind == ItemKind.Seed) || usable is SandboxTarget { frozen: true })
                 {
-                if (usable is SandboxTarget { frozen: true }) GameEvents.RaiseHint("The soil is frozen: melt it with a Heat Seed first");
+                if (usable is SandboxTarget { frozen: true }) GameEvents.RaiseHint("Frozen soil, needs heat");
                 else if (usable == null) GameEvents.RaiseHint("Seeds need a patch of soil: walk up to one and look at it, then press E");
                 // wrong seed for this soil: no text, the soil's ring already shows which seed it wants
             }
@@ -218,6 +218,7 @@ namespace PlantGame.Core
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             { p = "Use " + Inventory.SelectedItem.displayName; k = "Use"; }
+            else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (NearbyWaterable() != null) { p = "Water sprout"; k = "Water"; }
             else if (FindFrozenSource() != null)   // frozen pond: say so, and what melts it
             {
