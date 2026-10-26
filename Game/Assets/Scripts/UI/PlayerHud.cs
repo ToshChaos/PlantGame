@@ -19,7 +19,7 @@ namespace PlantGame.UI
     public class PlayerHud : MonoBehaviour
     {
         static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots (T60)
-        const float Gap = 12f;
+        const float Gap = 28f;
         const string PauseTip = "Tip: the seeds for later gaps grow on other islands. Your bag holds only 4, so plan ahead - or walk back.";
 
         PlayerInteraction _pi;
