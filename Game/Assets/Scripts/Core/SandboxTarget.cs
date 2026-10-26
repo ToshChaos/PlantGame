@@ -93,7 +93,6 @@ namespace PlantGame.Core
             {
                 Vector3 f = growDirection; f.y = 0f;
                 go.transform.rotation = Quaternion.LookRotation(f.normalized, Vector3.up);   // prefab forward (+Z) = climber side
-                go.transform.position += Vector3.down * 0.3f;   // sink the base into the terrain (the foot is flared and hovers over uneven ground)
             }
             else if (kind == PlantKind.Platform && anchor != null && tip != null)
             {

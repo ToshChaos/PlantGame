@@ -274,7 +274,7 @@ namespace PlantGame.World
         /// <summary>A soil patch for the gap `k` at `pos`, growing towards `dir`; keeps scenery clear of it.</summary>
         static void MakeSoil(Isle I, LinkPlan L, int k, Vector3 pos, Vector3 dir, string name, Material terrain, float reach, float rise)
         {
-            var soil = Box(name, pos - Vector3.up * 0.03f, new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows
+            var soil = Box(name, pos - Vector3.up * (L.kind == PlantKind.Ladder ? 0.1f : 0.03f), new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows (~0.05 m for the beanstalk's round patch, so it sits lower on uneven ground)
             soil.transform.rotation = Quaternion.LookRotation(dir);
             SoilPatchMesh.Apply(soil, L.kind);
             soil.transform.SetParent(I.go.transform, true);
