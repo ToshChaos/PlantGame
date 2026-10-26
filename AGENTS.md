@@ -145,7 +145,7 @@ T14 must keep plant-required gaps above the jump reach (or the jump is retuned).
   charges, up to what the can can hold.
 - **Water Collector:** once grown, +1 stored charge every **20 s**, capacity **1** (`WaterCollector.secondsPerCharge` / `capacity`, v1.8; was 15 s / 2), fill level visible in its bowl (`Reservoir`).
   It occupies a soil patch and a Dew Seed (inventory slot while carried).
-- **Collector-only levels (v1.8):** `WaterMode.CollectorOnly` levels have **no WaterSource at all**; the first island has a soil patch plus a Dew Seed, and the Water Collector grown there is the only water. Plan for waiting 20 s per charge (and the walk back to the first island). `Sandbox_PlantTest` is built this way; Level 1 uses `WaterMode.Sources`.
+- **Collector-only levels (v1.8):** `WaterMode.CollectorOnly` levels have **no WaterSource at all**; the first island has a grown single-use Water Collector (`WaterCollector.oneShot`: one charge, never refills, enough for the first plant) and the second island has the soil patch plus a Dew Seed; the Water Collector grown there is the only refilling water. Plan for waiting 20 s per charge (and the walk back to the first island). `Sandbox_PlantTest` is built this way; Level 1 uses `WaterMode.Sources`.
 - **World gen water rule (T14):** the Start island always has a water source (the can starts empty); other islands may have none (Level 1: water on 4 of 7 islands); along the main path there are never more than
   2 water-needing links between two water access points (source, or a ready collector); islands without a source may
   carry a Dew Seed supply. The validator simulates charges, so every level is beatable with at most one backtrack.

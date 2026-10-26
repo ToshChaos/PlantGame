@@ -133,7 +133,8 @@ namespace PlantGame.World
                     }
                 }
                 var spawnPos = spawn.transform.position;
-                if (collectorOnly && i == 0) CollectorSpot(I, rnd, heads, spawnPos);
+                if (collectorOnly && i == 0) CollectorSpot(I, rnd, heads, spawnPos, true);   // one charge in a single-use dew patch: enough for the first plant
+                if (collectorOnly && i == 1) CollectorSpot(I, rnd, heads, spawnPos, false);   // the dew seed and its soil: the water that refills
                 foreach (var s in plan.sources)
                 {
                     if (s.island != i) continue;
@@ -403,8 +404,11 @@ namespace PlantGame.World
             return src;
         }
 
-        /// <summary>Collector-only levels: a soil patch for the Water Collector plus the dew seed lying next to it, on the first island.</summary>
-        static void CollectorSpot(Isle I, System.Random rnd, float[] heads, Vector3 spawnPos)
+        /// <summary>
+        /// Collector-only levels. singleUse (first island): a Water Collector already grown with one charge that never refills.
+        /// Otherwise (second island): a soil patch for the Water Collector plus the dew seed lying next to it.
+        /// </summary>
+        static void CollectorSpot(Isle I, System.Random rnd, float[] heads, Vector3 spawnPos, bool singleUse)
         {
             var terrain = Scenery.Mat("M_Terrain");
             var pos = Spot(I, rnd, 0.3f, 0.75f, 4.5f, heads, spawnPos, SeedFromSpawn);
@@ -418,6 +422,7 @@ namespace PlantGame.World
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);
             if (interactable >= 0) soil.layer = interactable;
             var item = Kit.Item("dew_seed");
+            if (singleUse) { target.PlantSingleUse(); return; }
             if (item != null && item.worldPrefab != null) SeedSource(I.go.transform, Spot(I, rnd, 0.3f, 0.75f, 4f, heads, spawnPos, SeedFromSpawn), item, false, 9, 1, 1, I);
         }
 

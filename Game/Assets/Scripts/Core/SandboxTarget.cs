@@ -65,6 +65,19 @@ namespace PlantGame.Core
             if (kind == PlantKind.Collector) { watered = true; if (_plant != null) _plant.StartGrowing(); DisableCollider(); }
         }
 
+        /// <summary>Level-authored dew patch: the Water Collector stands grown at once and holds one charge it never refills.</summary>
+        public void PlantSingleUse()
+        {
+            if (planted || plantPrefabs == null || plantPrefabs.Length == 0) return;
+            planted = true; watered = true; useCount++;
+            _plant = Spawn(plantPrefabs[0]);
+            DisableCollider();
+            var r = GetComponent<Renderer>(); if (r != null) r.enabled = false;
+            if (_plant == null) return;
+            _plant.GrowInstantly();
+            var wc = _plant.GetComponent<WaterCollector>(); if (wc != null) wc.MakeOneShot();
+        }
+
         public bool NeedsWater => planted && !watered && kind != PlantKind.Collector;   // collectors grow without water
 
         public void Water(GameObject actor)

@@ -46,6 +46,9 @@ namespace PlantGame.Plants
 
         public void ShowSprout() { IsGrowing = false; IsGrown = false; _t = 0; SetGrowth(sproutGrowth); Sprouted?.Invoke(this); }
 
+        /// <summary>Skip the sprout and growth: the plant stands fully grown (level-authored plants).</summary>
+        public void GrowInstantly() { IsGrowing = false; IsGrown = true; _t = 1f; SetGrowth(1f); }
+
         public void StartGrowing() { if (!IsGrown && !IsGrowing) { IsGrowing = true; GrowthStarted?.Invoke(this); } }
 
         void Update()

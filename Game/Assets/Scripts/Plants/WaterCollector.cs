@@ -13,6 +13,7 @@ namespace PlantGame.Plants
     {
         public float secondsPerCharge = 20f;
         public int capacity = 1;
+        [Tooltip("A single-use dew patch: holds one charge from the start and never refills.")] public bool oneShot;
         public Transform reservoir;
 
         PlantInstance _plant;
@@ -38,6 +39,13 @@ namespace PlantGame.Plants
             Stored -= can.Refill(Stored);
         }
 
+        /// <summary>Single-use patch: one charge now, no dew afterwards.</summary>
+        public void MakeOneShot()
+        {
+            oneShot = true; capacity = Mathf.Max(1, capacity); Stored = 1; _progress = 0f;
+            ApplyFill();
+        }
+
         void Awake()
         {
             _plant = GetComponent<PlantInstance>();
@@ -48,7 +56,7 @@ namespace PlantGame.Plants
 
         void Update()
         {
-            if (_plant != null && !_plant.IsGrown) { ApplyFill(); return; }
+            if (oneShot || (_plant != null && !_plant.IsGrown)) { ApplyFill(); return; }
             if (Stored < capacity)
             {
                 _progress += Time.deltaTime;
