@@ -201,11 +201,11 @@ namespace PlantGame.UI
                 Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
                 ModeButton(_home.transform, new Vector2(-470, -110));
                 Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }, 380));
-                Button(_home.transform, "Select level", new Vector2(740, 140), () => Show(_levels), 380);
-                Button(_home.transform, "Generate level", new Vector2(150, 20), () => Show(_generate), 380);
+                Button(_home.transform, "Select level", new Vector2(150, 20), () => Show(_levels), 380);
+                Button(_home.transform, "Generate level", new Vector2(740, 140), () => Show(_generate), 380);
                 Button(_home.transform, "Input seed", new Vector2(740, 20), () => Show(_seed), 380);
                 Button(_home.transform, "Options", new Vector2(150, -100), () => Show(_options), 380);
-                Button(_home.transform, "Quit", new Vector2(740, -100), Quit, 380);
+                Danger(Button(_home.transform, "Quit", new Vector2(740, -100), Quit, 380));
             }
             else
             {
@@ -217,7 +217,7 @@ namespace PlantGame.UI
             Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
             Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
             Button(_home.transform, "Options", new Vector2(0, -350), () => Show(_options));
-            Button(_home.transform, "Quit", new Vector2(0, -445), Quit);
+            Danger(Button(_home.transform, "Quit", new Vector2(0, -445), Quit));
             }
 
             _options = Screen("Options", root, 0.85f);
@@ -415,12 +415,23 @@ namespace PlantGame.UI
             return t;
         }
 
-        /// <summary>The main call to action: a purple button with white text (Play on the home screen).</summary>
+        /// <summary>The main call to action: a purple button with white text, 20 percent bigger (Play on the home screen).</summary>
         Text Accent(Text label)
         {
             var im = label.transform.parent.GetComponent<Image>();
             im.color = new Color(0.46f, 0.30f, 0.84f, 0.97f);
             var b = im.GetComponent<UnityEngine.UI.Button>(); var cb = b.colors; cb.highlightedColor = new Color(0.68f, 0.52f, 1f, 1f); cb.pressedColor = new Color(0.33f, 0.2f, 0.62f, 1f); b.colors = cb;
+            label.color = Color.white;
+            im.rectTransform.localScale = Vector3.one * 1.2f;   // a little bigger than the other buttons
+            return label;
+        }
+
+        /// <summary>Quit: a muted red button so it reads as "leaves the game".</summary>
+        public static Text Danger(Text label)
+        {
+            var im = label.transform.parent.GetComponent<Image>();
+            im.color = new Color(0.62f, 0.2f, 0.24f, 0.97f);
+            var b = im.GetComponent<UnityEngine.UI.Button>(); var cb = b.colors; cb.highlightedColor = new Color(0.95f, 0.4f, 0.42f, 1f); cb.pressedColor = new Color(0.4f, 0.12f, 0.16f, 1f); b.colors = cb;
             label.color = Color.white;
             return label;
         }

@@ -411,7 +411,7 @@ namespace PlantGame.UI
             Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
             Button("Restart", pr, V(new Vector2(0, -40), new Vector2(420, 110)), Restart);
             Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
-            Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit);
+            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
             _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
             _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f));
             _pauseHint.color = Palette.TextOrange;
@@ -427,7 +427,7 @@ namespace PlantGame.UI
             _endBody.color = Palette.TextOrange;
             _nextButton = Button("Next level", er, new Vector2(0, -70), NextLevel).transform.parent.gameObject;
             _retryLabel = Button("Play again", er, new Vector2(0, -70), Restart);
-            _endButtons = new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, Button("Quit", er, new Vector2(0, -270), Quit).transform.parent };
+            _endButtons = new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, TitleMenu.Danger(Button("Quit", er, new Vector2(0, -270), Quit)).transform.parent };
             _endPanel.SetActive(false);
         }
 
