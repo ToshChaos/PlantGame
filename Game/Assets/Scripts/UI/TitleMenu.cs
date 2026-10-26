@@ -65,6 +65,9 @@ namespace PlantGame.UI
 
         void Update()
         {
+            // Esc / Android Back: back out of a sub-panel to the home screen
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && kb.escapeKey.wasPressedThisFrame && _home != null && !_home.activeSelf && !_codeField.isFocused) Show(_home);
             var cam = Camera.main;
             if (cam == null) return;
             if (_showcase != null && _showcase.Layout != null && _showcase.Layout.isles.Count > 1)
@@ -404,6 +407,7 @@ namespace PlantGame.UI
             var ph = Label(rt, "word-word-word-word-word", 32, Vector2.zero, size.x - 24, new Color(1, 1, 1, 0.35f));
             var f = rt.gameObject.AddComponent<InputField>();
             f.targetGraphic = im; f.textComponent = text; f.placeholder = ph; f.characterLimit = 80;
+            f.lineType = InputField.LineType.SingleLine; f.keyboardType = TouchScreenKeyboardType.ASCIICapable; f.inputType = InputField.InputType.Standard;   // soft keyboard on phones
             return f;
         }
 

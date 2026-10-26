@@ -11,7 +11,7 @@ namespace PlantGame.Player
     /// <summary>
     /// T57 / T58: the on-screen layer for phones (docs/mobile-controls.md). A floating stick on the left 40 percent of the
     /// screen walks (pushed to the edge = run), dragging anywhere else looks, and round buttons in the right thumb's arc jump,
-    /// run the context action (pick up / plant / use / drop, label from PlayerInteraction), water and cycle the item slot.
+    /// run the context action (pick up / plant / use / drop, label from PlayerInteraction) and water; the hotbar slots are tappable (PlayerHud).
     /// Touches are polled (EnhancedTouch) and classified when they begin: a touch that starts on a button never becomes a
     /// look drag, so stick, look and a button can be held at once. Results go to TouchInput; PlayerInputReader reads them.
     /// In the editor, GameSettings.TouchControls turns the layer on and TouchSimulation lets the mouse act as one finger.
@@ -22,7 +22,7 @@ namespace PlantGame.Player
         const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 250f, StickZone = 0.4f;
 
         enum Role { None, Stick, Look, Button }
-        enum Btn { Jump, Context, Water, Cycle, Pause, Count }
+        enum Btn { Jump, Context, Water, Pause, Count }
 
         struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; }
 
@@ -133,7 +133,6 @@ namespace PlantGame.Player
                 case Btn.Jump: TouchInput.JumpPressed = true; break;
                 case Btn.Context: TouchInput.ContextPressed = true; break;
                 case Btn.Water: TouchInput.WaterPressed = true; break;
-                case Btn.Cycle: TouchInput.CyclePressed = true; break;
                 case Btn.Pause: TouchInput.PausePressed = true; break;
             }
         }
@@ -178,7 +177,6 @@ namespace PlantGame.Player
             MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
             MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-400, 140), 150, "");
             MakeButton(Btn.Water, root, new Vector2(1f, 0f), new Vector2(-150, 410), 125, "Water");
-            MakeButton(Btn.Cycle, root, new Vector2(1f, 0f), new Vector2(-400, 330), 105, "Next\nitem");
             MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(90, -90), 100, "II");
             LayoutNow();
         }

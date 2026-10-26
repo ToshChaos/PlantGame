@@ -1,6 +1,6 @@
 # T60 — Touch hotbar, pause and menus
 
-**Owner:** A7 Sound & UI · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T59
+**Owner:** A7 Sound & UI · **Status:** REVIEW (post-MVP, see `TODO.md`) · **Depends on:** T59
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -14,4 +14,5 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - Whole flow title -> level select -> play -> pause -> restart -> win -> back to menu works with touch only, including entering a seed code.
 
 ## Handoff
-_(fill in when done)_
+Done: hotbar slots are buttons (`PlayerHud.OnSlotTapped`: tap selects, tap the selected slot drops), 130 px slots on touch; the temporary Next-item button is gone; the seed field asks for an ASCII soft keyboard (the Paste button and `systemCopyBuffer` copy already existed); Esc / Android Back backs out of title sub-panels (`TitleMenu.Update`). The pause menu and title screens were already big uGUI buttons on a 1920x1080 canvas, so they were left as they are.
+Verified in the editor: slot taps change the selection. Not verified: drop by tapping, real-device soft keyboard, that Android Back arrives as Escape, scrolling lists (none exist), win / fail flow by touch.

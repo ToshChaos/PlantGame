@@ -18,7 +18,8 @@ namespace PlantGame.UI
     [DefaultExecutionOrder(40)]
     public class PlayerHud : MonoBehaviour
     {
-        const float SlotSize = 92f, Gap = 12f;
+        static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots (T60)
+        const float Gap = 12f;
         const string PauseTip = "Tip: the seeds for later gaps grow on other islands. Your bag holds only 4, so plan ahead - or walk back.";
 
         PlayerInteraction _pi;
@@ -74,6 +75,14 @@ namespace PlantGame.UI
         }
 
         float _timeFlash;
+        void OnSlotTapped(int i)
+        {
+            if (Paused || _ended || _pi == null) return;
+            var inv = _pi.Inventory;
+            if (inv.Selected != i) inv.Select(i);
+            else if (inv.SelectedItem != null) _pi.Drop();
+        }
+
         void OnTimeAdded(float s) { _timeFlash = 1.2f; GameEvents.RaiseHint("+" + Mathf.RoundToInt(s) + " s"); }
         void OnEnable() { GameEvents.TimeAdded += OnTimeAdded; GameEvents.CanEmptyTried += OnCanEmptyTried; GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; GameEvents.GameFailed += OnRunFailed; }
         void OnDisable() { GameEvents.TimeAdded -= OnTimeAdded; GameEvents.CanEmptyTried -= OnCanEmptyTried; GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; GameEvents.GameFailed -= OnRunFailed; if (Paused) SetPaused(false); }
@@ -349,6 +358,9 @@ namespace PlantGame.UI
                 _slotBg[i] = Img("Bg", slot, UiSprites.Disc, Color.white, SlotSize);
                 _slotBg[i].sprite = RoundedSquare();
                 _slotBg[i].type = Image.Type.Sliced;
+                _slotBg[i].raycastTarget = true;
+                int slotIndex = i;
+                slot.gameObject.AddComponent<Button>().onClick.AddListener(() => OnSlotTapped(slotIndex));   // tap selects; tapping the selected slot again drops it
                 _slotIcon[i] = Img("Icon", slot, UiSprites.Disc, Color.white, SlotSize * 0.55f);
                 _slotNum[i] = Label("Num", slot, (i + 1).ToString(), 22, TextAnchor.UpperLeft, new Vector2(8, -4), new Vector2(SlotSize, SlotSize));
             }
