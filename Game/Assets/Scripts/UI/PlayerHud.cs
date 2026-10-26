@@ -265,7 +265,7 @@ namespace PlantGame.UI
             }
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            _waterLabel.color = Palette.DeepBlue;
+            _waterLabel.color = new Color(0.44f, 0.66f, 0.86f, 1f);   // same blue as the droplets
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
