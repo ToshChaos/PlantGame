@@ -265,7 +265,7 @@ namespace PlantGame.UI
             }
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            _waterLabel.color = Palette.TextPurple;
+            _waterLabel.color = Palette.DeepBlue;
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
@@ -383,7 +383,7 @@ namespace PlantGame.UI
             // water charges, bottom left
             var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
-            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, new Vector2(370, 41), new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
+            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, new Vector2(370, 86), new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
@@ -403,7 +403,7 @@ namespace PlantGame.UI
             _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-620, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
             _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-620, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
             _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-250, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
-            _followLabelP = Button("Camera", pr, V(new Vector2(330, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
+            _followLabelP = Button("Camera", pr, V(new Vector2(360, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             _glowLabelP = Button("Glow", pr, V(new Vector2(330, 160), new Vector2(-250, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
             _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-250, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
