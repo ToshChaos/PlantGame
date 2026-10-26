@@ -54,29 +54,36 @@ namespace PlantGame.World
         }
 
         /// <summary>
-        /// The glide leaf as the player holds it: one big leaf blade arching over the head, its stem (petiole) running down to the hands
-        /// on one side, the midrib is the blade's centre ridge. `parent` is the player model; returns the root ("GlideLeaf").
+        /// The glide leaf as the player holds it: one big leaf blade lying sideways over the head, long axis from the left hand to the right hand, its stem and its tip
+        /// both running down to the hands. `parent` is the player model; returns the root ("GlideLeaf").
         /// </summary>
         public static GameObject CreateHeld(Transform parent, Material blade, Material stem)
         {
             var root = new GameObject("GlideLeaf");
             root.transform.SetParent(parent, false);
-            const float L = 3.0f, W = 2.1f;
-            var hand = new Vector3(0.5f, 1.25f, 0.15f); var ctrl = new Vector3(0.6f, 2.1f, -0.2f); var basePt = new Vector3(0.1f, 2.45f, -1.5f);   // the stem is held in the right hand and runs up beside the body
-            var tilt = Quaternion.Euler(-6f, 0f, 0f);            // nearly level, low enough for the chase camera to see the top
+            const float L = 3.2f, W = 2.5f, H = 2.4f;
+            // the leaf lies sideways over the head, long axis from the left hand to the right hand: the stem end and the tip are each held in a hand
+            var leftHand = new Vector3(-0.5f, 1.25f, 0.15f); var rightHand = new Vector3(0.5f, 1.25f, 0.15f);
+            var leftEnd = new Vector3(-L * 0.5f + 0.1f, H - 0.05f, 0f); var rightEnd = new Vector3(L * 0.5f - 0.1f, H - 0.05f, 0f);
             var b = new GameObject("Blade"); b.transform.SetParent(root.transform, false);
-            b.transform.localPosition = basePt + tilt * new Vector3(0f, 0f, L * 0.5f);
-            b.transform.localRotation = tilt * Quaternion.Euler(0f, -90f, 0f);   // blade tip (+X) points forward
-            b.AddComponent<MeshFilter>().sharedMesh = Build(L, W, 0.4f, 0.1f, 28);
+            b.transform.localPosition = new Vector3(0f, H, 0f);
+            b.transform.localRotation = Quaternion.Euler(-24f, 0f, 0f);   // the blade tip (+X) points to the player's right; the front edge lifts so the chase camera sees the top
+            b.AddComponent<MeshFilter>().sharedMesh = Build(L, W, 0.35f, 0.1f, 28);
             var mr = b.AddComponent<MeshRenderer>(); mr.sharedMaterial = blade; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            // petiole: a curved stem from the hands up to the base of the blade
-            Vector3 prev = hand;
+            Arm(root.transform, leftHand, leftEnd, new Vector3(-0.95f, 1.9f, 0.1f), 0.075f, stem);    // the leaf's stem, thicker
+            Arm(root.transform, rightHand, rightEnd, new Vector3(0.95f, 1.9f, 0.1f), 0.05f, stem);    // a thinner vine from the tip
+            return root;
+        }
+
+        /// <summary>A curved stem (quadratic Bezier) from `from` to `to` bending through `ctrl`, in 6 segments.</summary>
+        static void Arm(Transform parent, Vector3 from, Vector3 to, Vector3 ctrl, float radius, Material m)
+        {
+            Vector3 prev = from;
             for (int i = 1; i <= 6; i++)
             {
-                float t = i / 6f; var q = (1 - t) * (1 - t) * hand + 2 * (1 - t) * t * ctrl + t * t * basePt;
-                Segment(root.transform, prev, q, 0.075f - 0.02f * t, stem); prev = q;
+                float t = i / 6f; var q = (1 - t) * (1 - t) * from + 2 * (1 - t) * t * ctrl + t * t * to;
+                Segment(parent, prev, q, radius * (1f - 0.25f * t), m); prev = q;
             }
-            return root;
         }
 
         static void Segment(Transform parent, Vector3 a, Vector3 b, float radius, Material m)

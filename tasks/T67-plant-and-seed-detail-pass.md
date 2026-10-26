@@ -14,7 +14,7 @@
 - **Parachute is a leaf:** the glide visual (`LeafMesh.CreateHeld`) is one big serrated leaf held overhead by its curved stem with a midrib; the leaf plant on seed sources (`Scenery.LeafPlant`) grows three big leaves on curved stems instead of canopy domes. Still called / used as the parachute.
 
 ## Play test (2026-10-26, level 4 Exploration)
-- Bridge: sprout shows two small vines, grows, grown bridge looks right (`t67_play_*`). Beanstalk grows, closed pods visible. Glide leaf held in the right hand, stem beside the body, blade over the head; first version was too high and edge-on to the chase camera, lowered to 2.45 m and levelled; last tweak (less fold, no separate midrib) compiled but was not re-captured.
+- Bridge: sprout shows two small vines, grows, grown bridge looks right (`t67_play_*`). Beanstalk grows, closed pods visible. Glide leaf held in the right hand, stem beside the body, blade over the head; first version was too high and edge-on to the chase camera, then reworked per feedback: the leaf lies sideways over the head (long axis left hand to right hand), stem and tip vines go down to the hands, front edge lifted 24 degrees; user confirmed "leaf is good now".
 - Not play-tested: walking a grown mushroom patch (colliders unchanged from the verified Blender jump check), a full beanstalk climb.
 
 ## Open
