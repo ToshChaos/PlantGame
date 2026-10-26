@@ -1,6 +1,6 @@
 # T64 — Android build, signing and beta distribution
 
-**Owner:** A8 Tester/Release · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T62, T63
+**Owner:** A8 Tester/Release · **Status:** DOING (post-MVP, see `TODO.md`) · **Depends on:** T62, T63
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -15,4 +15,6 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - A signed .aab installs from the test track on two physical devices, plays Level 1 start to finish, and the best-time save survives a reinstall-free update.
 
 ## Handoff
-_(fill in when done)_
+Done (groundwork): `Editor/AndroidBuild.cs`, menu `PlantGame > Configure Android / Build Android APK / Build Android AAB (Play)`, CLI `-executeMethod PlantGame.Editor.AndroidBuild.BuildApk`. Applies IL2CPP, ARM64, min API 26, target API auto, Vulkan + GLES3, package id `com.overgrown.game`, landscape only. Output: `Builds/Overgrown-android/` (git-ignored), log `Game/Logs/build-android.txt`.
+Blocked: the Unity 6000.6.5f1 install has no Android Build Support module (only macOS and WebGL), so no APK has been built yet. Install it in Unity Hub (Android Build Support, OpenJDK, Android SDK & NDK Tools), then run the menu item.
+Not done: release keystore (debug keystore until then; keep the real one outside the repo), icons check, LICENSES.md review, beta track, test matrix.

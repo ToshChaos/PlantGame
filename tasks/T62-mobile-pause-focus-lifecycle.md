@@ -1,6 +1,6 @@
 # T62 — App lifecycle, orientation and screen behaviour on Android
 
-**Owner:** A0 Director · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** —
+**Owner:** A0 Director · **Status:** DOING (post-MVP, see `TODO.md`) · **Depends on:** —
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -14,4 +14,5 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - Home button during a Challenge run then returning shows the pause menu with the same remaining time; killing the app does not lose best times.
 
 ## Handoff
-_(fill in when done)_
+Done: `Core/MobileLifecycle.cs` (mobile only): landscape left / right auto-rotation, screen never sleeps, 60 fps target, auto-pause of the run on app pause plus `PlayerPrefs.Save()`. Player settings landscape only (`AndroidBuild.Configure`).
+Not done: Back button behaviour on a real device, 30 fps option, audio focus, `Screen.safeArea` layout (T59). Not verified on a device.
