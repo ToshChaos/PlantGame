@@ -231,12 +231,12 @@ namespace PlantGame.UI
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
-                _waterWarn.enabled = _pi.CurrentPromptKey != "Water"; _waterWarn.text = "Press [" + Key("Water", "F") + "] to refill water at source"; _waterWarn.color = Palette.TextPurple;
+                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)"; _waterWarn.color = Palette.TextPurple;
             }
             else
             {
                 _waterWarn.enabled = empty && GameSettings.Hints;
-                _waterWarn.text = "Refill water at source or a Water Collector";
+                _waterWarn.text = "Refill water at source (pond, stream, plant)";
                 _waterWarn.color = flashing ? Color.Lerp(WarnOrange, Color.white, pulse) : WarnOrange;
             }
 
@@ -256,7 +256,7 @@ namespace PlantGame.UI
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
-            else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill water at source" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
+            else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill water" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
