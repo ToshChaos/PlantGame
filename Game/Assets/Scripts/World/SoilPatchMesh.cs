@@ -113,14 +113,14 @@ namespace PlantGame.World
         }
 
         static readonly Dictionary<Plants.PlantKind, Material> KindMats = new Dictionary<Plants.PlantKind, Material>();
-        /// <summary>The soil material tinted per plant kind so the patches tell apart at a glance: bridge warm tan, beanstalk dark green loam, mushroom violet, water collector blue.</summary>
+        /// <summary>The soil material tinted per plant kind so the patches tell apart at a glance: bridge warm tan, beanstalk dark green loam, mushroom grey, water collector blue.</summary>
         static Material KindMat(Plants.PlantKind kind)
         {
             var src = Kit.Mat("M_Soil"); if (src == null) return null;
             if (KindMats.TryGetValue(kind, out var m) && m != null) return m;
-            Color tint = kind == Plants.PlantKind.Ladder ? new Color(0.62f, 1.0f, 0.62f) : kind == Plants.PlantKind.Platform ? new Color(1.1f, 0.7f, 1.25f) : kind == Plants.PlantKind.Collector ? new Color(0.65f, 0.95f, 1.35f) : new Color(1.25f, 0.95f, 0.65f);
+            Color tint = kind == Plants.PlantKind.Ladder ? new Color(0.62f, 1.0f, 0.62f) : kind == Plants.PlantKind.Platform ? new Color(1f, 1f, 1f) : kind == Plants.PlantKind.Collector ? new Color(0.65f, 0.95f, 1.35f) : new Color(1.25f, 0.95f, 0.65f);
             m = new Material(src) { name = "M_Soil_" + kind, hideFlags = HideFlags.DontSave };
-            foreach (var prop in new[] { "_BaseColor", "_Color" }) if (m.HasProperty(prop)) { var c = m.GetColor(prop); m.SetColor(prop, new Color(c.r * tint.r, c.g * tint.g, c.b * tint.b, c.a)); }
+            foreach (var prop in new[] { "_BaseColor", "_Color" }) if (m.HasProperty(prop)) { var c = m.GetColor(prop); m.SetColor(prop, kind == Plants.PlantKind.Platform ? new Color(0.5f, 0.5f, 0.53f, c.a) : new Color(c.r * tint.r, c.g * tint.g, c.b * tint.b, c.a)); }   // mushroom patch: neutral grey
             return KindMats[kind] = m;
         }
     }

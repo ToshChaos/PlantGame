@@ -272,15 +272,18 @@ namespace PlantGame.World
             isles.Add(X);
         }
 
+        const float BridgeSoilSink = 0.09f;   // the bridge's squircle bed sinks 6 cm deeper than the other beds so it sticks out less
+
         /// <summary>A soil patch for the gap `k` at `pos`, growing towards `dir`; keeps scenery clear of it.</summary>
         static void MakeSoil(Isle I, LinkPlan L, int k, Vector3 pos, Vector3 dir, string name, Material terrain, float reach, float rise)
         {
-            var soil = Box(name, pos - Vector3.up * (L.kind == PlantKind.Ladder ? 0.1f : 0.03f), new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows (~0.05 m for the beanstalk's round patch, so it sits lower on uneven ground)
+            var soil = Box(name, pos - Vector3.up * (L.kind == PlantKind.Ladder ? 0.1f : L.kind == PlantKind.Bridge ? BridgeSoilSink : 0.03f), new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows (~0.05 m for the beanstalk's round patch, so it sits lower on uneven ground)
             soil.transform.rotation = Quaternion.LookRotation(dir);
             SoilPatchMesh.Apply(soil, L.kind);
             soil.transform.SetParent(I.go.transform, true);
             var target = soil.AddComponent<SandboxTarget>();
             target.kind = L.kind; target.acceptedItemId = L.seedItem; target.growDirection = dir;
+            if (L.kind == PlantKind.Bridge) target.spawnOffset += Vector3.up * (BridgeSoilSink - 0.03f);   // the bed sits lower, the vine stays where it was
             target.bridgeReach = L.kind == PlantKind.Bridge ? reach : 0f; target.bridgeRise = rise;
             target.plantPrefabs = Kit.Plants(L.kind);
             target.variantIndex = L.kind == PlantKind.Ladder ? LevelLayout.LadderVariant - 1 : L.kind == PlantKind.Platform ? LevelLayout.PlatformVariant - 1 : -1;
