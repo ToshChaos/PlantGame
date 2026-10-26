@@ -232,6 +232,7 @@ namespace PlantGame.UI
             // two columns: toggles on the left, sliders on the right; camera follow and glow sit below the sliders
             var o = _options.transform;
             _musicToggle = Button(o, "Music", new Vector2(-330, 260), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
+            if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(o, _font, "Music volume", new Vector2(330, 260), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             _soundToggle = Button(o, "Sound", new Vector2(-330, 140), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
             UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 140), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
@@ -404,9 +405,9 @@ namespace PlantGame.UI
 
         Text Label(Transform parent, string text, int size, Vector2 pos, float width, Color color)
         {
-            var rt = Rect("Label", parent, new Vector2(width, size * 1.4f), pos);
+            var rt = Rect("Label", parent, new Vector2(width, UiLayout.Font(size) * 1.4f), pos);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = _font; t.text = text; t.fontSize = size; t.alignment = TextAnchor.MiddleCenter; t.color = color; t.raycastTarget = false;
+            t.font = _font; t.text = text; UiLayout.Fit(t, size); t.alignment = TextAnchor.MiddleCenter; t.color = color; t.raycastTarget = false;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             var sh = rt.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.6f); sh.effectDistance = new Vector2(2, -2);
             return t;

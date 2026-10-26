@@ -358,6 +358,7 @@ namespace PlantGame.UI
             for (int i = 0; i < n; i++)
             {
                 var slot = Rect("Slot" + (i + 1), bar, new Vector2(0f, 0.5f), new Vector2(SlotSize, SlotSize), new Vector2(i * (SlotSize + Gap) + SlotSize * 0.5f, 0));
+                var rim = Img("Rim", slot, RoundedSquare(), Palette.Gold, SlotSize + 10f); rim.type = Image.Type.Sliced;   // gold outline
                 _slotBg[i] = Img("Bg", slot, UiSprites.Disc, Color.white, SlotSize);
                 _slotBg[i].sprite = RoundedSquare();
                 _slotBg[i].type = Image.Type.Sliced;
@@ -368,10 +369,10 @@ namespace PlantGame.UI
             }
             _selName = touch ? Label("SelectedName", root, "", 28, TextAnchor.MiddleCenter, new Vector2(-(total * 0.5f + 40f), -(SlotSize + 66f)), new Vector2(total, 40), new Vector2(1f, 1f))
                              : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
-            _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f));
+            _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f), false);
             _hints.color = Palette.TextOrange;
-            _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f));
-            _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f));
+            _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f), false);
+            _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f), false);
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;
@@ -405,6 +406,7 @@ namespace PlantGame.UI
             _followLabelP = Button("Camera", pr, V(new Vector2(330, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
             _glowLabelP = Button("Glow", pr, V(new Vector2(330, 160), new Vector2(-250, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
             _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-250, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
+            if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
@@ -463,11 +465,11 @@ namespace PlantGame.UI
             return im;
         }
 
-        Text Label(string name, Transform parent, string text, int size, TextAnchor align, Vector2 pos, Vector2 box, Vector2? anchor = null)
+        Text Label(string name, Transform parent, string text, int size, TextAnchor align, Vector2 pos, Vector2 box, Vector2? anchor = null, bool scale = true)
         {
             var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : (Vector2?)null);
             var t = rt.gameObject.AddComponent<Text>();
-            t.font = _font; t.text = text; t.fontSize = size; t.alignment = align; t.raycastTarget = false;
+            t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
             t.color = Palette.TextPurple;
             var sh = rt.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.6f); sh.effectDistance = new Vector2(2, -2);
             return t;

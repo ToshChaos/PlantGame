@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using PlantGame.Player;
 
 namespace PlantGame.UI
@@ -7,6 +8,20 @@ namespace PlantGame.UI
     public static class UiLayout
     {
         /// <summary>CanvasScaler match value: height on wide touch screens, the old half-and-half on desktop and on near-square tablets.</summary>
+        /// <summary>Text size multiplier: 1.5x on desktop, 2x on phones. Large titles (60 and up) keep their size.</summary>
+        public static float TextScale => TouchInput.Active ? 2f : 1.5f;
+
+        public static int Font(int size) => size >= 60 ? size : Mathf.RoundToInt(size * TextScale);
+
+        /// <summary>Applies the scaled size; the text shrinks (never below the original size) when its box is too small, so buttons and cards still fit.</summary>
+        public static void Fit(Text t, int baseSize)
+        {
+            if (baseSize >= 60) { t.fontSize = baseSize; return; }
+            t.fontSize = Font(baseSize);
+            t.resizeTextForBestFit = true; t.resizeTextMinSize = baseSize; t.resizeTextMaxSize = t.fontSize;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+        }
+
         public static float MatchHeight => TouchInput.Active && Screen.width >= Screen.height * 1.77f ? 1f : 0.5f;
     }
 }

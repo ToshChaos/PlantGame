@@ -131,7 +131,7 @@ namespace PlantGame.Player
             }
             if (!stickHeld && holdForward) { TouchInput.Move = Vector2.up; TouchInput.Run = false; }
             if (!stickHeld) { if (!holdForward) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; } _stickBase.position = _restPos; _stickKnob.position = _restPos; }
-            for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = new Color(0.49f, 0.95f, 0.9f, _btnHeld[i] ? 0.95f : 0.9f);
+            for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = _btnHeld[i] ? new Color(0.85f, 0.95f, 0.85f, 1f) : new Color(1f, 1f, 1f, 0.95f);
             _stickBase.GetComponent<Image>().color = new Color(1f, 1f, 1f, stickHeld ? 0.7f : 0.35f);
         }
 
@@ -160,7 +160,12 @@ namespace PlantGame.Player
             if (_pi == null) return;
             bool ctx = _pi.Context != PlayerInteraction.ContextKind.None;
             _btn[(int)Btn.Context].gameObject.SetActive(ctx);
-            if (ctx) _btnLabel[(int)Btn.Context].text = _pi.ContextLabel;
+            if (ctx)
+            {
+                string l = _pi.ContextLabel;
+                if (l.StartsWith("Use ") && l.EndsWith("Seed", System.StringComparison.OrdinalIgnoreCase)) l = "Use seed";   // the seed name does not fit the button
+                _btnLabel[(int)Btn.Context].text = l;
+            }
             bool water = _pi.WaterUseful;
             _btn[(int)Btn.Water].gameObject.SetActive(water);
             if (water) _btnLabel[(int)Btn.Water].text = _pi.WaterLabel;
@@ -186,7 +191,7 @@ namespace PlantGame.Player
             MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
             MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-400, 140), 150, "");
             MakeButton(Btn.Water, root, new Vector2(1f, 0f), new Vector2(-150, 410), 125, "Water");
-            MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(90, -90), 100, "II");
+            MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(120, -120), 150, "Pause");
             LayoutNow();
         }
 
@@ -209,16 +214,19 @@ namespace PlantGame.Player
 
         void MakeButton(Btn b, Transform parent, Vector2 anchor, Vector2 pos, float size, string label)
         {
+            // the player's colours: white disc, dark green text, yellow outline (the outer disc is the outline, the inner one the fill)
             var rt = Circle("Btn_" + b, parent, anchor, new Vector2(size, size), pos, UiSprites.Disc);
-            var img = rt.GetComponent<Image>(); img.color = new Color(0.49f, 0.95f, 0.9f, 0.9f);
-            img.sprite = UiSprites.Disc;
-            // dark label on the pale disc keeps the text readable on sky and scenery
+            rt.GetComponent<Image>().color = Palette.FlowerYellow;
+            var fill = Circle("Fill", rt, new Vector2(0.5f, 0.5f), new Vector2(size - 14f, size - 14f), Vector2.zero, UiSprites.Disc);
+            var img = fill.GetComponent<Image>(); img.color = new Color(1f, 1f, 1f, 0.95f);
             var tgo = new GameObject("Label", typeof(RectTransform), typeof(Text));
             var trt = (RectTransform)tgo.transform; trt.SetParent(rt, false);
-            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(6, 6); trt.offsetMax = new Vector2(-6, -6);
+            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(10, 10); trt.offsetMax = new Vector2(-10, -10);
             var t = tgo.GetComponent<Text>();
-            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = Palette.TextPurple;
-            t.fontSize = size > 140 ? 34 : 26; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = new Color(0.07f, 0.24f, 0.14f);
+            bool bold = b == Btn.Jump || b == Btn.Context;   // Jump, pick up and use read bold
+            t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+            t.fontSize = size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
     }
