@@ -1064,10 +1064,14 @@ namespace PlantGame.World
         /// <summary>Position and rotation of the temple arch on the island being dressed; the vine dressing keeps clear of the opening.</summary>
         internal static readonly List<(Vector3 pos, Quaternion rot)> ArchSpots = new List<(Vector3, Quaternion)>();
 
+        /// <summary>How far the arch and the goal gate sink into the terrain (the gate builder lowers its doors and portal by the same amount).</summary>
+        public const float ArchSink = 0.35f;
+
         public static GameObject Arch(Transform parent, Vector3 pos, Quaternion rot, bool gate = false)
         {
             EnsureMaterials();
             if (!gate) ArchSpots.Add((pos, rot));
+            pos.y -= ArchSink;
             var go = new GameObject("Arch"); go.transform.SetParent(parent, true); go.transform.SetPositionAndRotation(pos, rot);
             Vector3 P(float x, float y, float z) => pos + rot * new Vector3(x, y, z);
             void Part(string n, PrimitiveType t, Vector3 lp, Vector3 sc, Material m, bool col, Quaternion? r = null)
@@ -1089,8 +1093,32 @@ namespace PlantGame.World
                 var trim = ShapeMeshes.Obj("OpeningTrim", ShapeMeshes.Tube(ShapeMeshes.OpeningTrim(0.03f, 0f), q => 0.035f, 6), _gold, go.transform, Vector3.zero, Vector3.zero, Vector3.one);
                 trim.transform.SetPositionAndRotation(P(0, 0, tz), rot);
             }
-            Part("Step1", PrimitiveType.Cube, new Vector3(0, 0.1f, 1.2f), new Vector3(4.6f, 0.2f, 1.2f), _marble, true);
-            Part("Step2", PrimitiveType.Cube, new Vector3(0, 0.3f, 0.6f), new Vector3(4.2f, 0.2f, 1.0f), _marble, true);
+            // crumbling steps: a few chunks per step, each with its own offset, yaw and tilt, some missing. The gate keeps them small and worn,
+            // the transparent arch is much more broken (fewer chunks, wider gaps, bigger tilts)
+            var srnd = new System.Random(Mathf.RoundToInt(pos.x * 31f + pos.z * 17f) ^ 0x5eed);
+            void Steps(string n, float top, float width, float depth, float z, int chunks, float skip, float tilt)
+            {
+                float w = width / chunks;
+                for (int i = 0; i < chunks; i++)
+                {
+                    if (srnd.NextDouble() < skip) continue;
+                    float cw = w * (0.55f + (float)srnd.NextDouble() * 0.4f), cd = depth * (0.6f + (float)srnd.NextDouble() * 0.4f);
+                    float x = -width * 0.5f + w * (i + 0.5f) + ((float)srnd.NextDouble() - 0.5f) * w * 0.3f;
+                    float drop = (float)srnd.NextDouble() * 0.08f * (1f + tilt / 8f);
+                    var tilted = Quaternion.Euler(((float)srnd.NextDouble() - 0.5f) * tilt, ((float)srnd.NextDouble() - 0.5f) * tilt * 2f, ((float)srnd.NextDouble() - 0.5f) * tilt);
+                    Part(n + i, PrimitiveType.Cube, new Vector3(x, top - 0.1f - drop + ArchSink, z + ((float)srnd.NextDouble() - 0.5f) * 0.25f), new Vector3(cw, 0.2f, cd), _marble, true, tilted);
+                }
+            }
+            if (gate)
+            {
+                Steps("Step1_", 0.14f, 3.6f, 0.9f, 1.0f, 4, 0.12f, 6f);
+                Steps("Step2_", 0.3f, 3.0f, 0.8f, 0.5f, 3, 0.25f, 8f);
+            }
+            else
+            {
+                Steps("Step1_", 0.1f, 4.2f, 0.9f, 1.15f, 5, 0.4f, 16f);
+                Steps("Step2_", 0.24f, 3.4f, 0.8f, 0.55f, 3, 0.5f, 20f);
+            }
             var door = Model(go.transform, "AP4_A3_Door1", pos, rot.eulerAngles.y + 90f, 0f, false);
             if (door != null)   // stone arch model replaces the cube frame; the cubes stay as invisible colliders
             {

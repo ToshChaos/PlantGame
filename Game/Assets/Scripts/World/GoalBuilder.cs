@@ -133,7 +133,7 @@ namespace PlantGame.World
                     for (int s = -1; s <= 1; s += 2)
                     {
                         bool left = s < 0;
-                        var door = new GameObject(left ? "DoorLeft" : "DoorRight"); door.transform.SetParent(root.transform, false); door.transform.localPosition = new Vector3(hw * s, 0f, 0.12f);   // hinge at the outer edge, in front of the portal
+                        var door = new GameObject(left ? "DoorLeft" : "DoorRight"); door.transform.SetParent(root.transform, false); door.transform.localPosition = new Vector3(hw * s, -Scenery.ArchSink, 0.12f);   // hinge at the outer edge, in front of the portal
                         var hinge = new GameObject("Leaf"); hinge.transform.SetParent(door.transform, false); hinge.transform.localPosition = new Vector3(-hw * s, 0, 0);
                         Obj("Slab", ShapeMeshes.OpeningSlab(left, 0.16f), stone, Vector3.zero, Vector3.zero, Vector3.one, hinge.transform);
                         Obj("Rim", ShapeMeshes.Tube(ShapeMeshes.OpeningTrim(-0.06f, 0.09f, true, left), q => 0.03f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, hinge.transform);
@@ -146,7 +146,7 @@ namespace PlantGame.World
                         Obj("SealGem", ShapeMeshes.Ellipsoid(0.17f, 0.17f, 14, 9), crystal, new Vector3(0.5f * s, 2.0f, 0.12f), new Vector3(90, 0, 0), new Vector3(1f, 0.5f, 1f), hinge.transform);
                         doors[left ? 0 : 1] = door;
                     }
-                    var portal = Obj("Portal", ShapeMeshes.OpeningPanel(), PortalMat(), new Vector3(0, 0f, 0.0f), Vector3.zero, Vector3.one);
+                    var portal = Obj("Portal", ShapeMeshes.OpeningPanel(), PortalMat(), new Vector3(0, -Scenery.ArchSink, 0.0f), Vector3.zero, Vector3.one);
                     portal.SetActive(false);
                     for (int s = -1; s <= 1; s += 2)   // glowing crystals and moss at the foot of the pillars
                     {
