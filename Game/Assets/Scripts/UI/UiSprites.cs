@@ -6,7 +6,7 @@ namespace PlantGame.UI
     public static class UiSprites
     {
         const int N = 64;
-        static Sprite _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _ringThick, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
+        static Sprite _coconut, _disc, _ring, _diamond, _drop, _leaf, _bamboo, _bean, _ringThick, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
 
         public static Sprite Disc => _disc != null ? _disc : _disc = Make((x, y) => Mathf.Clamp01(N * 0.5f - 1f - Dist(x, y)));
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
@@ -78,6 +78,7 @@ namespace PlantGame.UI
                 case "dew_seed": return Succulent;
                 case "heart_seed": return Heart;
                 case "heat_seed": return Melon;
+                case "coconut": return Coconut;
                 default: return null;
             }
         }
@@ -179,6 +180,24 @@ namespace PlantGame.UI
             float light = 0.82f + 0.2f * Mathf.Clamp01((-u * 0.6f + v * 0.8f) * 1.2f) - 0.12f * Mathf.Clamp01(d / R);   // lit from the upper left
             float hl = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(u, v), new Vector2(-0.25f, 0.28f)) / 0.14f) * 0.25f;
             return new Vector2(body, Mathf.Clamp01(light * lines + hl));
+        });
+
+        /// <summary>Coconut: a round hairy husk with a lit upper left, fibre streaks and the three dark "eyes" near the top.</summary>
+        public static Sprite Coconut => _coconut != null ? _coconut : _coconut = MakeShaded((x, y) =>
+        {
+            float u = (x - (N - 1) * 0.5f) / (N * 0.5f), v = (y - (N - 1) * 0.5f) / (N * 0.5f);
+            const float R = 0.7f;
+            float d = Mathf.Sqrt(u * u + v * v);
+            float body = Mathf.Clamp01((R - d) * 10f);
+            if (body <= 0f) return Vector2.zero;
+            float fibre = 0.5f + 0.5f * Mathf.Sin((u * 38f + v * 9f) + Mathf.Sin(v * 17f) * 2f);   // short hairy streaks
+            float light = 0.78f + 0.25f * Mathf.Clamp01((-u * 0.6f + v * 0.8f) * 1.2f) - 0.15f * Mathf.Clamp01(d / R);
+            light *= 0.86f + 0.14f * fibre;
+            float eyes = 1f;
+            Vector2[] e = { new Vector2(-0.14f, 0.3f), new Vector2(0.14f, 0.3f), new Vector2(0f, 0.14f) };
+            foreach (var c in e) eyes = Mathf.Min(eyes, Mathf.Clamp01(Vector2.Distance(new Vector2(u, v), c) / 0.075f) * 0.7f + 0.3f);
+            float hl = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(u, v), new Vector2(-0.28f, 0.3f)) / 0.14f) * 0.18f;
+            return new Vector2(body, Mathf.Clamp01(light * eyes + hl));
         });
 
         static float Dist(int x, int y) => Vector2.Distance(new Vector2(x, y), new Vector2((N - 1) * 0.5f, (N - 1) * 0.5f));

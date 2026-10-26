@@ -17,6 +17,7 @@ namespace PlantGame.World
                 case "beanstalk_seed": return Bean();
                 case "shelf_seed": return Puffball();
                 case "dew_seed": return Succulent();
+                case "coconut": return Coconut();
                 default: return null;
             }
         }
@@ -24,7 +25,7 @@ namespace PlantGame.World
         /// <summary>Radius of the solid collider that lets the pickup rest on the ground.</summary>
         public static float RestRadius(string itemId)
         {
-            switch (itemId) { case "vine_seed": return 0.1f; case "beanstalk_seed": return 0.1f; case "shelf_seed": return 0.22f; default: return 0.15f; }
+            switch (itemId) { case "vine_seed": return 0.1f; case "beanstalk_seed": return 0.1f; case "shelf_seed": return 0.22f; case "coconut": return 0.19f; default: return 0.15f; }
         }
 
         // ---------------------------------------------------------------- shapes
@@ -92,6 +93,21 @@ namespace PlantGame.World
             b.Ellipsoid(new Vector3(0, -0.15f, 0), Quaternion.identity, new Vector3(0.085f, 0.11f, 0.085f), 10, 6);     // stalk
             b.Ellipsoid(new Vector3(0, -0.2f, 0), Quaternion.identity, new Vector3(0.12f, 0.06f, 0.12f), 10, 6);        // foot
             return b.ToMesh("Seed_Puffball");
+        }
+
+        /// <summary>A coconut: a slightly egg-shaped husk (0.4 m) with a blunt tip and the three "eyes" as small bumps on one side.</summary>
+        public static Mesh Coconut()
+        {
+            var b = new Builder();
+            b.Ellipsoid(Vector3.zero, Quaternion.identity, new Vector3(0.18f, 0.2f, 0.18f), 18, 12);                  // husk
+            b.Ellipsoid(new Vector3(0, -0.17f, 0), Quaternion.identity, new Vector3(0.07f, 0.06f, 0.07f), 10, 6);     // blunt bottom tip
+            b.Ellipsoid(new Vector3(0, 0.185f, 0), Quaternion.identity, new Vector3(0.1f, 0.05f, 0.1f), 10, 6);       // shoulder where the eyes sit
+            for (int i = 0; i < 3; i++)
+            {
+                float a = i * 2.0944f + 0.4f;
+                b.Ellipsoid(new Vector3(Mathf.Cos(a) * 0.045f, 0.205f, Mathf.Sin(a) * 0.045f), Quaternion.identity, new Vector3(0.028f, 0.02f, 0.028f), 8, 5);
+            }
+            return b.ToMesh("Seed_Coconut");
         }
 
         /// <summary>A succulent: a rosette of fat, pointed leaves in three rings (0.5 m wide).</summary>
