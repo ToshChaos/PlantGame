@@ -19,12 +19,12 @@ namespace PlantGame.Player
     [DefaultExecutionOrder(-100)]
     public class TouchControls : MonoBehaviour
     {
-        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 250f, StickZone = 0.4f, AxisSnap = 0.2f;
+        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 140f, StickZone = 0.4f, AxisSnap = 0.2f, HoldSeconds = 0.25f, HoldSlop = 30f;
 
         enum Role { None, Stick, Look, Button }
         enum Btn { Jump, Context, Water, Pause, Count }
 
-        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; }
+        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; public float t0, travel; public bool fwd; }
 
         PlayerInputReader _input;
         PlayerInteraction _pi;
@@ -78,7 +78,7 @@ namespace PlantGame.Player
             float radius = StickRadiusRef * scale;
             UpdateButtonVisibility();
             System.Array.Clear(_btnHeld, 0, _btnHeld.Length);
-            bool stickHeld = false;
+            bool stickHeld = false, holdForward = false;
 
             foreach (var t in Touch.activeTouches)
             {
@@ -88,7 +88,7 @@ namespace PlantGame.Player
                 bool ended = t.phase == UnityEngine.InputSystem.TouchPhase.Ended || t.phase == UnityEngine.InputSystem.TouchPhase.Canceled;
                 if (t.phase == UnityEngine.InputSystem.TouchPhase.Began || !s.used || s.id != t.touchId)
                 {
-                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look };
+                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look, t0 = Time.unscaledTime };
                     int b = HitButton(pos);
                     if (b >= 0) { s.role = Role.Button; s.btn = b; Pressed((Btn)b); }
                     else if (pos.x < Screen.width * StickZone) { s.role = Role.Stick; PlaceStick(pos); }
@@ -113,6 +113,10 @@ namespace PlantGame.Player
                         if (!ended)
                         {
                             float k = LookCountsPerInch / Mathf.Max(Screen.dpi, 96f) * GameSettings.TouchLookSensitivity;
+                            // press and hold on the spot (a finger that has barely moved) walks forward; dragging while holding still looks
+                            s.travel += t.delta.magnitude;
+                            if (!s.fwd && s.travel < HoldSlop * _canvas.scaleFactor && Time.unscaledTime - s.t0 >= HoldSeconds) s.fwd = true;
+                            if (s.fwd) holdForward = true;
                             Vector2 dl = t.delta * k;
                             if (GameSettings.TouchInvertY) dl.y = -dl.y;
                             TouchInput.Look += dl;
@@ -125,8 +129,9 @@ namespace PlantGame.Player
                 s.used = !ended;
                 _slots[fi] = s;
             }
-            if (!stickHeld) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; _stickBase.position = _restPos; _stickKnob.position = _restPos; }
-            for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = new Color(1f, 1f, 1f, _btnHeld[i] ? 0.9f : 0.55f);
+            if (!stickHeld && holdForward) { TouchInput.Move = Vector2.up; TouchInput.Run = false; }
+            if (!stickHeld) { if (!holdForward) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; } _stickBase.position = _restPos; _stickKnob.position = _restPos; }
+            for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = new Color(0.49f, 0.95f, 0.9f, _btnHeld[i] ? 0.95f : 0.9f);
             _stickBase.GetComponent<Image>().color = new Color(1f, 1f, 1f, stickHeld ? 0.7f : 0.35f);
         }
 
@@ -205,14 +210,14 @@ namespace PlantGame.Player
         void MakeButton(Btn b, Transform parent, Vector2 anchor, Vector2 pos, float size, string label)
         {
             var rt = Circle("Btn_" + b, parent, anchor, new Vector2(size, size), pos, UiSprites.Disc);
-            var img = rt.GetComponent<Image>(); img.color = new Color(1f, 1f, 1f, 0.55f);
+            var img = rt.GetComponent<Image>(); img.color = new Color(0.49f, 0.95f, 0.9f, 0.9f);
             img.sprite = UiSprites.Disc;
             // dark label on the pale disc keeps the text readable on sky and scenery
             var tgo = new GameObject("Label", typeof(RectTransform), typeof(Text));
             var trt = (RectTransform)tgo.transform; trt.SetParent(rt, false);
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(6, 6); trt.offsetMax = new Vector2(-6, -6);
             var t = tgo.GetComponent<Text>();
-            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = new Color(0.1f, 0.25f, 0.15f);
+            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = Palette.TextPurple;
             t.fontSize = size > 140 ? 34 : 26; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
