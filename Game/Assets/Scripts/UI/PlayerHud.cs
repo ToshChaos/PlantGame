@@ -381,8 +381,8 @@ namespace PlantGame.UI
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
-            var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 70), new Vector2(0f, 0.5f));
-            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(250, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
+            var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
+            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, new Vector2(370, 41), new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
