@@ -20,6 +20,13 @@ namespace PlantGame.Core
             return h < 4 ? LevelTheme.Sunny : h < 6 ? LevelTheme.Sunset : h < 7 ? LevelTheme.Sunrise : h < 10 ? LevelTheme.Autumn : h < 12 ? LevelTheme.Rain : h < 14 ? LevelTheme.Snow : h < 15 ? LevelTheme.Fog : LevelTheme.Sunny;
         }
 
+        /// <summary>Curated levels carry their water mode. Random / code levels in the rain (the seed picks about half of them) have no lakes: a single-use dew patch on the first island, then a Water Collector grown from the second island's dew seed.</summary>
+        public static WaterMode ResolveWater(RunConfig c)
+        {
+            if (!string.IsNullOrEmpty(c.levelId) || c.waterMode == WaterMode.CollectorOnly || Resolve(c) != LevelTheme.Rain) return c.waterMode;
+            return (unchecked((int)((uint)c.seed * 3266489917u) >> 11) & 1) == 0 ? WaterMode.CollectorOnly : c.waterMode;
+        }
+
         /// <summary>T50: wind gusts are an extra on top of any theme: set per curated level, about one random level in five.</summary>
         public static bool ResolveWind(RunConfig c)
         {

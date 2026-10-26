@@ -63,7 +63,7 @@ namespace PlantGame.World
         /// </summary>
         static LevelPlan Level1(RunConfig c)
         {
-            var p = new LevelPlan { layoutSeed = 20261, islandCount = 7, bigIsland = 3, hugeTreeIsland = 2, collectorOnly = c.waterMode == WaterMode.CollectorOnly };
+            var p = new LevelPlan { layoutSeed = 20261, islandCount = 7, bigIsland = 3, hugeTreeIsland = 2, collectorOnly = WorldTheme.ResolveWater(c) == WaterMode.CollectorOnly };
             void L(int from, PlantKind k, float h) => p.links.Add(new LinkPlan { from = from, kind = k, heading = h, seedItem = SeedItems.For(k) });
             L(0, PlantKind.Bridge, 0f); L(1, PlantKind.Bridge, -78f); L(1, PlantKind.Ladder, 24f);
             L(3, PlantKind.Platform, 8f); L(4, PlantKind.Bridge, -22f); L(5, PlantKind.Ladder, 28f);
@@ -89,7 +89,7 @@ namespace PlantGame.World
             if (c.allowedKinds != null) foreach (var k in c.allowedKinds) if (k != PlantKind.Collector && !kinds.Contains(k)) kinds.Add(k);
             if (kinds.Count == 0) kinds.Add(PlantKind.Bridge);
 
-            var p = new LevelPlan { layoutSeed = c.seed ^ unchecked(attempt * (int)0x9E3779B1), islandCount = n, attempt = attempt, collectorOnly = c.waterMode == WaterMode.CollectorOnly, roundTrip = c.roundTrip, spiral = c.spiral };
+            var p = new LevelPlan { layoutSeed = c.seed ^ unchecked(attempt * (int)0x9E3779B1), islandCount = n, attempt = attempt, collectorOnly = WorldTheme.ResolveWater(c) == WaterMode.CollectorOnly, roundTrip = c.roundTrip, spiral = c.spiral };
             float heading = 0f; PlantKind prev = PlantKind.Collector; int run = 0;
             for (int i = 0; i < n - 1; i++)
             {

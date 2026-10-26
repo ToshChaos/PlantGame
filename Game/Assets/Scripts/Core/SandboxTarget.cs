@@ -72,8 +72,7 @@ namespace PlantGame.Core
             planted = true; watered = true; useCount++;
             _plant = Spawn(plantPrefabs[0]);
             DisableCollider();
-            var r = GetComponent<Renderer>(); if (r != null) r.enabled = false;
-            if (_plant == null) return;
+            if (_plant == null) return;   // the soil patch stays as the plant's base, like the planter on the next island
             _plant.GrowInstantly();
             var wc = _plant.GetComponent<WaterCollector>(); if (wc != null) wc.MakeOneShot();
         }
