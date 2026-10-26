@@ -228,7 +228,7 @@ namespace PlantGame.UI
             {
                 var l = levels[i];
                 int row = i / perRow, col = i % perRow, inRow = Mathf.Min(perRow, levels.Length - row * perRow);
-                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (row == 0 ? 180f : -150f) : 110f, h = two ? 310f : 370f;
+                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (row == 0 ? 135f : -195f) : 110f, h = two ? 310f : 370f;
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? 21 : 23, new Vector2(0, h / 2 - 35), 290, Palette.TextOrange);
                 _cardInfo[i] = Label(card, "", two ? 16 : 19, new Vector2(0, two ? 5 : 10), 280, Color.white);
@@ -237,7 +237,7 @@ namespace PlantGame.UI
                 Button(card, "Play", new Vector2(0, -h / 2 + 41), () => StartRun(l.ToConfig(_mode)), 200, 30);
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
-            float testY = two ? -340f : -170f;
+            float testY = two ? -385f : -170f;
             Label(_levels.transform, "Test scenes", 30, new Vector2(0, testY), 400, Palette.TextOrange);
             for (int i = 0; i < TestScenes.Length; i++)
             {
