@@ -327,11 +327,12 @@ def rain():
 
 
 # ------------------------------------------------------------------ 8-bit music (pulse leads, triangle bass, noise drums)
-def square(freq, dur, duty=0.5, vol=1.0, decay=1.2, arp=None):
+def square(freq, dur, duty=0.5, vol=1.0, decay=1.2, arp=None, vib=0.0):
     n = int(dur * SR); out = []
     for i in range(n):
         t = i / SR
         f = freq if not arp else freq * 2 ** (arp[int(t * 30) % len(arp)] / 12)   # fast arpeggio, the classic chip chord
+        if vib: f *= 1 + vib * min(1.0, t / 0.15) * math.sin(TAU * 5.5 * t)       # late vibrato
         ph = (t * f) % 1.0
         v = 1.0 if ph < duty else -1.0
         env = min(1.0, t / 0.004) * math.exp(-decay * t / max(dur, 0.05)) if decay else min(1.0, t / 0.004)
@@ -351,7 +352,7 @@ def tri(freq, dur, vol=1.0):
     return out
 
 
-def drum(kind, rng):
+def drum_hit(kind, rng):
     if kind == "kick":
         return [math.sin(TAU * (110 * math.exp(-i / SR * 30) + 45) * i / SR) * math.exp(-i / SR * 18) for i in range(int(0.16 * SR))]
     if kind == "snare":
@@ -385,10 +386,22 @@ def seed_ambience():
     write(os.path.join(ROOT, "..", "Resources", "Audio", "seed_tree_ambience.wav"), out, 0.5)
 
 
-def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0.22, lead_vol=0.5, octave=0):
-    """progression: list of (scale degree of the chord root, 'M' or 'm'); 2 bars per chord pair -> 16 bars, loops seamlessly."""
+RH_LONG = [[(0, 6), (6, 2), (8, 6), (14, 2)], [(0, 8), (8, 4), (12, 4)], [(0, 4), (4, 4), (8, 8)]]
+RH_STACC = [[(0, 1), (3, 1), (6, 1), (8, 1), (11, 1), (14, 1)], [(2, 1), (6, 1), (10, 1), (12, 1), (14, 1)], [(0, 1), (4, 1), (7, 1), (10, 1)]]
+RH_DENSE = [[(i, 2) for i in range(0, 16, 2)], [(0, 1), (1, 1), (2, 2), (4, 1), (5, 1), (6, 2), (8, 1), (9, 1), (10, 2), (12, 4)], [(0, 3), (3, 3), (6, 2), (8, 3), (11, 3), (14, 2)]]
+RH_SYNC = [[(0, 3), (3, 3), (6, 2), (8, 3), (11, 2), (14, 2)], [(2, 2), (4, 2), (7, 2), (10, 2), (12, 4)], [(0, 2), (3, 2), (6, 4), (10, 2), (13, 3)]]
+RH_BASIC = RHYTHMS
+
+
+def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0.22, lead_vol=0.5, octave=0,
+         bass="eighths", arp="up", drum="rock", rhythms=None, vib=0.0, decay=0.9, echo=0.0, rest=0.12):
+    """progression: list of (scale degree of the chord root, 'M' or 'm'); 2 bars per chord pair -> 16 bars, loops seamlessly.
+    Arrangement per track: bass = eighths | octave | drone | walk | pulse16 | offbeat; arp = up | down | updown | wide | slow | none;
+    drum = rock | four | half | march | sparse | storm; rhythms = lead rhythm pool; vib = lead vibrato; decay = lead pluck;
+    echo = gain of a delayed copy of the lead."""
     progression = progression * 2               # 16 bars; the lead motifs differ in the second half
     rng = random.Random(seed)
+    rhythms = rhythms or RH_BASIC
     step = 60.0 / bpm / 4                       # one 16th note
     bars = len(progression) * 2
     out = buf(bars * 16 * step)
@@ -401,8 +414,8 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
         at = bar * 16 * step
         # lead: bar 0 and 1 of each chord pair share a rhythm; pitches walk through the scale, strong beats land on chord tones
         key = bar // 2
-        if key not in motifs: motifs[key] = rng.choice(RHYTHMS)
-        rhythm = motifs[key] if bar % 2 == 0 or rng.random() < 0.6 else rng.choice(RHYTHMS)
+        if key not in motifs: motifs[key] = rng.choice(rhythms)
+        rhythm = motifs[key] if bar % 2 == 0 or rng.random() < 0.6 else rng.choice(rhythms)
         cur = chord[rng.randrange(3)] + 12 + 12 * octave
         for pos, ln in rhythm:
             if pos % 4 == 0 and rng.random() < 0.75:
@@ -412,21 +425,59 @@ def chip(name, bpm, tonic, scale, progression, lead_duty, drums, seed, arp_vol=0
                 nb = [tonic + sc + 12 * k for sc in scale for k in (0, 1, 2, 3)]
                 nb = [x for x in nb if abs(x - cur) <= 4 and x != cur and 62 + 12 * octave <= x <= 88 + 12 * octave]
                 if nb: cur = rng.choice(nb)
-            if rng.random() < 0.12: continue    # a rest
-            add(out, square(hz(cur), ln * step * 0.92, lead_duty, lead_vol, 0.9), at + pos * step)
-        # arpeggio chord (second pulse voice, quiet, 8th notes)
-        for k in range(0, 16, 2):
-            nt = chord[(k // 2) % 3] + 12 * (1 + (1 if (k // 2) % 3 == 2 else 0))
-            add(out, square(hz(nt), step * 1.8, 0.25, arp_vol, 1.6), at + k * step)
-        # bass: triangle, root and fifth on the 8ths
-        for k in range(0, 16, 2):
-            nt = chord[0] - 12 if (k // 2) % 4 != 3 else chord[0] - 5
-            add(out, tri(hz(nt), step * 1.8, 0.55), at + k * step)
+            if rng.random() < rest: continue    # a rest
+            note = square(hz(cur), ln * step * 0.92, lead_duty, lead_vol, decay, vib=vib)
+            add(out, note, at + pos * step)
+            if echo: add(out, note, at + pos * step + step * 3, echo)
+        # arpeggio chord (second pulse voice, quiet)
+        a0, a1, a2 = chord[0] + 12, chord[1] + 12, chord[2] + 12
+        pattern = {"up": [a0, a1, a2, a1 + 12] * 4, "down": [a2 + 12, a2, a1, a0] * 4,
+                   "updown": [a0, a1, a2, a2 + 12, a2, a1, a0, a1] * 2, "wide": [a0 - 12, a2, a1 + 12, a2] * 4,
+                   "slow": [a0 + 12, a1 + 12, a2 + 12, a1 + 12], "none": []}[arp]
+        if arp == "slow":
+            for k, nt in enumerate(pattern): add(out, square(hz(nt), step * 3.6, 0.125, arp_vol, 2.5), at + k * 4 * step)
+        else:
+            for k, nt in enumerate(pattern): add(out, square(hz(nt), step * 0.9, 0.25, arp_vol, 1.6), at + k * step)
+        # bass (triangle)
+        r = chord[0] - 12
+        if bass == "eighths":
+            for k in range(0, 16, 2): add(out, tri(hz(r if (k // 2) % 4 != 3 else chord[0] - 5), step * 1.8, 0.55), at + k * step)
+        elif bass == "octave":
+            for k in range(0, 16, 2): add(out, tri(hz(r + (12 if (k // 2) % 2 else 0)), step * 1.8, 0.55), at + k * step)
+        elif bass == "drone":
+            add(out, tri(hz(r), step * 15.5, 0.5), at)
+        elif bass == "walk":
+            walk = [r, chord[1] - 12, chord[2] - 12, chord[1] - 12]
+            for k in range(4): add(out, tri(hz(walk[k]), step * 3.6, 0.55), at + k * 4 * step)
+        elif bass == "pulse16":
+            for k in range(16): add(out, tri(hz(r + 7 if k % 8 == 4 else r), step * 0.9, 0.5), at + k * step)
+        elif bass == "offbeat":
+            for k in range(2, 16, 4): add(out, tri(hz(r), step * 1.8, 0.6), at + k * step)
+            add(out, tri(hz(r - 5), step * 1.8, 0.5), at)
         if drums:
             for k in range(16):
-                if k % 8 == 0: add(out, drum("kick", rng), at + k * step, 0.7)
-                elif k % 8 == 4: add(out, drum("snare", rng), at + k * step, 0.45)
-                elif k % 2 == 0: add(out, drum("hat", rng), at + k * step, 0.28)
+                if drum == "rock":
+                    if k % 8 == 0: add(out, drum_hit("kick", rng), at + k * step, 0.7)
+                    elif k % 8 == 4: add(out, drum_hit("snare", rng), at + k * step, 0.45)
+                    elif k % 2 == 0: add(out, drum_hit("hat", rng), at + k * step, 0.28)
+                elif drum == "four":
+                    if k % 4 == 0: add(out, drum_hit("kick", rng), at + k * step, 0.7)
+                    elif k % 4 == 2: add(out, drum_hit("hat", rng), at + k * step, 0.35)
+                    if k % 8 == 4: add(out, drum_hit("snare", rng), at + k * step, 0.35)
+                elif drum == "half":
+                    if k == 0: add(out, drum_hit("kick", rng), at, 0.7)
+                    elif k == 8: add(out, drum_hit("snare", rng), at + k * step, 0.5)
+                    elif k % 4 == 0: add(out, drum_hit("hat", rng), at + k * step, 0.25)
+                elif drum == "march":
+                    if k % 4 == 0: add(out, drum_hit("snare", rng), at + k * step, 0.3 if k % 8 else 0.45)
+                    if k in (0, 10): add(out, drum_hit("kick", rng), at + k * step, 0.6)
+                elif drum == "sparse":
+                    if k in (0, 8): add(out, drum_hit("hat", rng), at + k * step, 0.3)
+                elif drum == "storm":
+                    if k in (0, 3, 8, 11): add(out, drum_hit("kick", rng), at + k * step, 0.75)
+                    if k in (4, 12): add(out, drum_hit("snare", rng), at + k * step, 0.55)
+                    if bar % 4 == 3 and k >= 12: add(out, drum_hit("snare", rng), at + k * step, 0.4)
+                    elif k % 2: add(out, drum_hit("hat", rng), at + k * step, 0.18)
     write(os.path.join(ROOT, "Music", name + ".wav"), out, 0.5)
 
 
@@ -443,14 +494,33 @@ def level_start_sfx():
 
 
 def level_tracks():
-    """T53: one 8-bit tune per curated level 4-10 (levels 1 / generated use music_gameplay, 2 music_autumn, 3 music_rain)."""
-    chip("music_l4", 138, 62, LYDIAN, [(0, "M"), (1, "M"), (4, "M"), (0, "M")], 0.5, True, 41)                      # Skyfall: D lydian, soaring
-    chip("music_l5", 116, 65, MIXOLYDIAN, [(0, "M"), (6, "M"), (3, "M"), (0, "M")], 0.25, True, 52, 0.2, 0.45)       # Stepping Stones: F mixolydian, jaunty
-    chip("music_l6", 92, 64, MAJOR, [(0, "M"), (2, "m"), (5, "m"), (4, "M")], 0.5, False, 63, 0.2, 0.45)             # There and Back: E major, warm, no drums
-    chip("music_l7", 76, 71, MINOR, [(0, "m"), (2, "M"), (5, "M"), (4, "m")], 0.125, False, 74, 0.14, 0.38, 1)       # Snowed In: B minor, high and sparse
-    chip("music_l8", 150, 57, DORIAN, [(0, "m"), (2, "M"), (3, "M"), (4, "m")], 0.5, True, 85, 0.26, 0.5)            # Windy Summit: A dorian, driving
-    chip("music_l9", 66, 60, PHRYGIAN, [(0, "m"), (1, "M"), (0, "m"), (6, "M")], 0.125, False, 96, 0.15, 0.35)       # Into the Mist: C phrygian, slow and eerie
-    chip("music_l10", 144, 55, MINOR, [(0, "m"), (5, "M"), (6, "M"), (0, "m")], 0.25, True, 107, 0.24, 0.5)          # Storm Season: G minor, tense
+    """T53: one 8-bit tune per curated level 4-10 (levels 1 / generated use music_gameplay, 2 music_autumn, 3 music_rain).
+    Each differs in key/mode, tempo, voices (duty, vibrato, echo), bass, arpeggio, drums and lead rhythm, not just the notes."""
+    chip("music_l4", 138, 62, LYDIAN, [(0, "M"), (1, "M"), (4, "M"), (0, "M")], 0.5, True, 41, 0.2, 0.5, 0,
+         bass="octave", arp="up", drum="four", rhythms=RH_LONG, vib=0.012, decay=0.5, echo=0.18, rest=0.05)                    # Skyfall: soaring, long held lead
+    chip("music_l5", 116, 65, MIXOLYDIAN, [(0, "M"), (6, "M"), (3, "M"), (0, "M")], 0.25, True, 52, 0.18, 0.45, 0,
+         bass="offbeat", arp="wide", drum="march", rhythms=RH_STACC, decay=2.2, rest=0.1)                                      # Stepping Stones: plucky, puzzle-like
+    chip("music_l6", 92, 64, MAJOR, [(0, "M"), (2, "m"), (5, "m"), (4, "M")], 0.5, False, 63, 0.2, 0.45, 0,
+         bass="walk", arp="updown", drum="rock", rhythms=RH_SYNC, vib=0.01, decay=0.6, echo=0.12)                              # There and Back: warm, no drums
+    chip("music_l7", 76, 71, MINOR, [(0, "m"), (2, "M"), (5, "M"), (4, "m")], 0.125, False, 74, 0.16, 0.36, 1,
+         bass="drone", arp="slow", drum="rock", rhythms=RH_STACC, decay=2.8, echo=0.3, rest=0.25)                              # Snowed In: icy bells, drone
+    chip("music_l8", 150, 57, DORIAN, [(0, "m"), (2, "M"), (3, "M"), (4, "m")], 0.5, True, 85, 0.26, 0.5, 0,
+         bass="pulse16", arp="down", drum="four", rhythms=RH_DENSE, decay=1.1, rest=0.04)                                      # Windy Summit: driving 16ths
+    chip("music_l9", 66, 60, PHRYGIAN, [(0, "m"), (1, "M"), (0, "m"), (6, "M")], 0.125, False, 96, 0.12, 0.34, 0,
+         bass="drone", arp="none", drum="sparse", rhythms=RH_LONG, vib=0.02, decay=0.4, echo=0.35, rest=0.2)                   # Into the Mist: slow, eerie, echoing
+    chip("music_l10", 144, 55, MINOR, [(0, "m"), (5, "M"), (6, "M"), (0, "m")], 0.25, True, 107, 0.2, 0.5, 0,
+         bass="pulse16", arp="down", drum="storm", rhythms=RH_SYNC, decay=1.8, rest=0.06)                                      # Storm Season: tense, hard drums
+
+
+def base_tracks():
+    """Level 1 / generated (gameplay), title (menu), rain (level 3), autumn (level 2)."""
+    chip("music_gameplay", 132, 60, MAJOR, [(0, "M"), (4, "M"), (5, "m"), (3, "M")], 0.5, True, 7)                                  # sunny: bouncy C major (level 1 + generated)
+    chip("music_menu", 96, 67, MAJOR, [(0, "M"), (5, "m"), (3, "M"), (4, "M")], 0.25, True, 3, 0.2, 0.45, 0,
+         bass="walk", arp="updown", drum="sparse", rhythms=RH_LONG, vib=0.012, decay=0.7, echo=0.15)                            # title: G major, gentle and wide
+    chip("music_rain", 82, 57, MINOR, [(0, "m"), (5, "M"), (2, "M"), (6, "M")], 0.125, False, 21, 0.18, 0.4, 0,
+         bass="drone", arp="slow", drum="rock", rhythms=RH_STACC, decay=2.4, echo=0.22, rest=0.15)                              # rain: A minor, droplets
+    chip("music_autumn", 98, 62, DORIAN, [(0, "m"), (4, "m"), (3, "M"), (6, "M")], 0.25, True, 33, 0.2, 0.45, 0,
+         bass="walk", arp="down", drum="half", rhythms=RH_SYNC, vib=0.008, decay=0.8)                                           # autumn: D dorian, relaxed half-time
 
 
 if __name__ == "__main__":
@@ -458,10 +528,7 @@ if __name__ == "__main__":
     surfaces_extra()
     level_start_sfx()
     # 8-bit tracks: (scale degree of the chord root, quality)
-    chip("music_gameplay", 132, 60, MAJOR, [(0, "M"), (4, "M"), (5, "m"), (3, "M")], 0.5, True, 7)           # sunny: bouncy C major
-    chip("music_menu", 104, 67, MAJOR, [(0, "M"), (5, "m"), (3, "M"), (4, "M")], 0.25, True, 3)              # title: G major, lighter
-    chip("music_rain", 82, 57, MINOR, [(0, "m"), (5, "M"), (2, "M"), (6, "M")], 0.125, False, 21, 0.18, 0.4)  # rain: A minor, no drums
-    chip("music_autumn", 98, 62, DORIAN, [(0, "m"), (4, "m"), (3, "M"), (6, "M")], 0.25, True, 33, 0.2, 0.45) # autumn: D dorian, warm
+    base_tracks()
     level_tracks()
     win_music()
     world_ambience()
