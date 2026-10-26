@@ -40,6 +40,7 @@ namespace PlantGame.UI
         static readonly Color WarnOrange = new Color(1f, 0.72f, 0.3f);   // lighter than the EMPTY label's orange
         GameObject _pausePanel;
         Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _pauseTitle;
+        static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
         GoalFlag _goal;
         GameObject _copyCode;
         static bool _skipMenu;   // set by Restart (and by the title screen) so the run starts without bouncing back to the title screen
@@ -198,7 +199,7 @@ namespace PlantGame.UI
             {
                 bool near = _goal.PlayerNear;
                 _objective.text = near ? "You are at the goal - activate it" : _goal.Objective;
-                _objective.color = near ? Palette.GlowCyan : Palette.CloudWhite;
+                _objective.color = near ? Palette.GlowCyan : GoalGreen;
             }
             var inv = _pi.Inventory;
             for (int i = 0; i < Inventory.Inventory.Slots; i++)
@@ -226,7 +227,7 @@ namespace PlantGame.UI
                 else _drops[i].color = new Color(0.44f, 0.66f, 0.86f, 0.22f);
             }
             _waterLabel.supportRichText = true;
-            _waterLabel.text = empty ? "Water <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
+            _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
             _waterLabel.color = Palette.TextPurple;
             bool nearWater = _pi != null && _pi.NearRefillSource && _pi.CurrentPromptKey != "Water" && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
@@ -255,16 +256,16 @@ namespace PlantGame.UI
             else { _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
-            if (!GameSettings.Hints && (key == "Water" || key == "Frozen")) p = "";   // hints off: no refill / water / frozen-water prompts (attempting still gives feedback)
+            if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) p = "";   // hints off: only the level goal prompt stays (attempting still gives feedback)
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
             else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
+            if (GameSettings.Hints && string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
                 _prompt.text = "Press [" + Key("Use", "E") + "] to glide";
             if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
+            if (GameSettings.Hints && string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
                 switch (_pc.CurrentClimbHint)
                 {
                     case PlayerController.ClimbHint.Climb: _prompt.text = "Press [W] or [Up] to climb"; break;
@@ -321,19 +322,19 @@ namespace PlantGame.UI
             _prompt = Label("Prompt", root, "", 36, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1000, 54), new Vector2(0.5f, 0.2f));
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
-            _objective.color = Palette.TextOrange;
+            _objective.color = GoalGreen;
             _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-140, -38), new Vector2(240, 40), new Vector2(1f, 1f));
             _fps.color = new Color(0.2f, 1f, 0.35f);   // bright green with a dark shadow: readable on sky and scenery
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
             var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 70), new Vector2(0f, 0.5f));
-            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(150, 22), new Vector2(200, 40), new Vector2(0f, 0.5f));
+            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(150, 22), new Vector2(260, 40), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, new Vector2(390, 41), new Vector2(700, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
-                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(40, 40), new Vector2(285 + i * 46, 0));
+                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(40, 40), new Vector2(232 + i * 46, 22));
                 _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, 40);
             }
 

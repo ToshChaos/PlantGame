@@ -29,6 +29,7 @@ namespace PlantGame.Core
         public string CurrentPrompt { get; private set; } = "";
         /// <summary>Key to show next to the prompt: Pickup, Use or Water.</summary>
         public string CurrentPromptKey { get; private set; } = "";
+        public bool CurrentPromptIsGoal { get; private set; }   // the level goal prompt stays visible with hints off
         /// <summary>The player is at (or standing in) a lake / waterfall, or next to a Water Collector with water: F would refill.</summary>
         public bool NearRefillSource { get; private set; }
 
@@ -213,6 +214,7 @@ namespace PlantGame.Core
             NearRefillSource = FindRefillSource();
             string p = "", k = "";
             var target = Sensor.Interactable;
+            CurrentPromptIsGoal = target is GoalFlag && target.CanInteract(gameObject);
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             { p = "Use " + Inventory.SelectedItem.displayName; k = "Use"; }
