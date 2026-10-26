@@ -127,7 +127,7 @@ def build_group():
                                                     'Profile Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.045})}), b.xyz(0, 0, -0.04 - DOME))
     for g_ in (lip2, disc2, under2):
         tree.links.new(g_.outputs[0], cap_dome.inputs[0])
-    dome_sel = b.m('GREATER_THAN', b.m('MODULO', b.m('ADD', idx, seed), 2.0), 0.5)
+    dome_sel = b.m('GREATER_THAN', b.m('ADD', idx, 1.0), 0.5)   # user request: every cap is the convex one (edge pointing down)
     pad_pts = store(store(pad_pts, 'padi', idx, 'POINT'), 'dome', dome_sel, 'POINT')   # per-pad attributes live on the points: instance-domain fields restart their index after a Selection
     dsize = b.m('MULTIPLY', size, 0.86)
     pi = b.make('GeometryNodeInstanceOnPoints', {'Points': pad_pts, 'Selection': b.m('SUBTRACT', 1.0, dome_sel), 'Instance': cap_join, 'Scale': b.xyz(size, size, 1.0)})
@@ -311,8 +311,8 @@ def add_stalks(me, pads, rise):
         # the stalks bunch up: they rise together from the planting spot (control point high over the foot) and only lean out near their caps,
         # so neighbouring stalks touch over most of their length
         L = math.hypot(cx, cy) or 1.0
-        right = mathutils.Vector((cy / L, -cx / L, 0.0))                         # looking outward from the stem, to the right
-        p1 = mathutils.Vector((cx * 0.22, cy * 0.22, max(0.3, (pd['top'] - 0.6) * 0.85))) + right * 0.5   # stalks bow to the right
+        right = mathutils.Vector((-cy / L, cx / L, 0.0))                         # looking outward from the stem, to the left
+        p1 = mathutils.Vector((cx * 0.22, cy * 0.22, max(0.3, (pd['top'] - 0.6) * 0.85))) + right * 0.9   # stalks bow to the left
         rings = []
         for i in range(SEG + 1):
             t = i / SEG
