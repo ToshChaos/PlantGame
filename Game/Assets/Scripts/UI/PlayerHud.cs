@@ -256,22 +256,23 @@ namespace PlantGame.UI
             else { _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
-            if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) p = "";   // hints off: only the level goal prompt stays (attempting still gives feedback)
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
             else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
-            if (GameSettings.Hints && string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
+            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
                 _prompt.text = "Press [" + Key("Use", "E") + "] to glide";
             if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
-            if (GameSettings.Hints && string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
+            if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
                 switch (_pc.CurrentClimbHint)
                 {
                     case PlayerController.ClimbHint.Climb: _prompt.text = "Press [W] or [Up] to climb"; break;
                     case PlayerController.ClimbHint.Descend: _prompt.text = "Press [S] or [Down] to climb down"; break;
                     case PlayerController.ClimbHint.Climbing: _prompt.text = "[W / Up] up    [S / Down] down    [Space] jump off"; break;
                 }
+            // one rule: with Hints off only the level goal and its interaction stay (the objective line above is never gated)
+            if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) _prompt.text = "";
         }
 
         public static Color ItemColor(ItemDefinition it)
