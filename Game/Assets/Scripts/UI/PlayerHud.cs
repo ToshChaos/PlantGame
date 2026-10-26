@@ -343,7 +343,7 @@ namespace PlantGame.UI
             canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 50;
             var scaler = cgo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = UiLayout.MatchHeight;
             cgo.AddComponent<GraphicRaycaster>();
             var root = (RectTransform)cgo.transform;
 
@@ -396,20 +396,23 @@ namespace PlantGame.UI
             var pr = (RectTransform)_pausePanel.transform; pr.SetParent(root, false);
             pr.anchorMin = Vector2.zero; pr.anchorMax = Vector2.one; pr.offsetMin = pr.offsetMax = Vector2.zero;
             var dim = _pausePanel.AddComponent<Image>(); dim.color = new Color(0.04f, 0.09f, 0.14f, 0.72f);
+            // touch (phones are wide): two columns, options and sliders on the left, actions on the right; desktop keeps the centred stack
+            bool two = TouchInput.Active;
+            Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
             _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
-            _hintsButtonLabel = Button("Hints", pr, new Vector2(0, 260), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
-            _musicLabelP = Button("Music", pr, new Vector2(-330, 160), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
-            _soundLabelP = Button("Sound", pr, new Vector2(0, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
-            _followLabelP = Button("Camera", pr, new Vector2(330, 260), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
-            _glowLabelP = Button("Glow", pr, new Vector2(330, 160), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
-            _fpsLabelP = Button("Fps", pr, new Vector2(-330, 260), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
-            UiKit.Slider(pr, _font, "Music volume", new Vector2(-640, 60), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", new Vector2(640, 60), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            Button("Resume", pr, new Vector2(0, 60), () => SetPaused(false));
-            Button("Restart", pr, new Vector2(0, -40), Restart);
-            Button("Menu", pr, new Vector2(0, -140), ToMenu);
-            Button("Quit", pr, new Vector2(0, -240), Quit);
-            _copyCode = Button("Copy seed code", pr, new Vector2(640, -60), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
+            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-620, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
+            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-620, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
+            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-250, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
+            _followLabelP = Button("Camera", pr, V(new Vector2(330, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 300, 30);
+            _glowLabelP = Button("Glow", pr, V(new Vector2(330, 160), new Vector2(-250, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-250, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
+            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
+            Button("Restart", pr, V(new Vector2(0, -40), new Vector2(420, 110)), Restart);
+            Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
+            Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit);
+            _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
             _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f));
             _pauseHint.color = Palette.TextOrange;
             _pausePanel.SetActive(false);

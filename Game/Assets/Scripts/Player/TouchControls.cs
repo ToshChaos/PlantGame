@@ -171,7 +171,7 @@ namespace PlantGame.Player
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay; _canvas.sortingOrder = 40;   // under the HUD (50): menus stay on top
             var scaler = cgo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = UiLayout.MatchHeight;
             var root = (RectTransform)cgo.transform;
 
             _stickBase = Circle("StickBase", root, new Vector2(0f, 0f), new Vector2(260, 260), new Vector2(260, 260), UiSprites.Ring);

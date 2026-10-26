@@ -56,3 +56,6 @@ Today `PlayerController` / the interaction system raycasts from the camera. For 
 - Save / share: `persistentDataPath` works; seed-code copy / paste uses `GUIUtility.systemCopyBuffer` and a soft keyboard text field (TMP_InputField) for "Input seed"; the title menu needs a native keyboard hookup.
 - Audio: interruptions (calls, app pause) pause music and the run; the Exploration clock stops on `OnApplicationPause`.
 - Safe area (notches) for the HUD and the touch layer.
+
+## Menus on wide screens (T60)
+Touch builds keep the canvas height at 1080 reference units (`UiLayout.MatchHeight`) and use the extra width: the title screen and the pause menu are two columns. Desktop keeps the centred single stack.

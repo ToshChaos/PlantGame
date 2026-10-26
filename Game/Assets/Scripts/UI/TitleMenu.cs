@@ -4,6 +4,7 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using PlantGame.Core;
+using PlantGame.Player;
 using PlantGame.Plants;
 using PlantGame.World;
 
@@ -187,12 +188,27 @@ namespace PlantGame.UI
             cgo.transform.SetParent(transform, false);
             var canvas = cgo.AddComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = cgo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = UiLayout.MatchHeight;
             cgo.AddComponent<GraphicRaycaster>();
             var root = (RectTransform)cgo.transform;
 
             var levels = Kit.Asset != null ? Kit.Asset.levels : new LevelDefinition[0];
             _home = Screen("Home", root, 0.15f);
+            if (TouchInput.Active)
+            {
+                // phones are wide and short: the title and mode switch on the left, the six buttons in two columns on the right
+                Title(_home.transform, new Vector2(-470, 150), 0.8f);
+                Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
+                ModeButton(_home.transform, new Vector2(-470, -110));
+                Button(_home.transform, "Play", new Vector2(300, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }, 400);
+                Button(_home.transform, "Select level", new Vector2(700, 140), () => Show(_levels), 400);
+                Button(_home.transform, "Generate level", new Vector2(300, 20), () => Show(_generate), 400);
+                Button(_home.transform, "Input seed", new Vector2(700, 20), () => Show(_seed), 400);
+                Button(_home.transform, "Options", new Vector2(300, -100), () => Show(_options), 400);
+                Button(_home.transform, "Quit", new Vector2(700, -100), Quit, 400);
+            }
+            else
+            {
             Title(_home.transform, new Vector2(0, 340));
             Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
             ModeButton(_home.transform, new Vector2(0, 130));
@@ -202,6 +218,7 @@ namespace PlantGame.UI
             Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
             Button(_home.transform, "Options", new Vector2(0, -350), () => Show(_options));
             Button(_home.transform, "Quit", new Vector2(0, -445), Quit);
+            }
 
             _options = Screen("Options", root, 0.85f);
             Label(_options.transform, "Options", 80, new Vector2(0, 380), 1000, Palette.TextOrange);
@@ -280,10 +297,10 @@ namespace PlantGame.UI
         }
 
         /// <summary>"Overgrown" in leaf green; the O is a ring wrapped in a vine with leaves and a curling tendril.</summary>
-        void Title(Transform parent, Vector2 pos)
+        void Title(Transform parent, Vector2 pos, float scale = 1f)
         {
             const int font = 170; const float oSize = 185f;
-            var holder = Rect("Title", parent, new Vector2(1400, 220), pos);
+            var holder = Rect("Title", parent, new Vector2(1400, 220), pos); holder.localScale = Vector3.one * scale;
             var rest = Label(holder, "vergrown", font, Vector2.zero, 1000, Palette.LeafGreen);
             rest.alignment = TextAnchor.MiddleLeft;
             float pw = rest.preferredWidth + 10f, total = oSize * 0.8f + pw;
