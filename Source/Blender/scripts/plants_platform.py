@@ -271,6 +271,22 @@ def jump_check(pads):
                           worst_rise=round(worst_rise, 2), worst_hop=round(worst_hop, 2), errors=errs)
 
 
+HOLE_R = 0.7
+
+
+def cut_hole(me, radius=HOLE_R):
+    """The first (lowest) cap gets a hole round the planting spot, where the other caps' stalks climb through it."""
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    padl = bm.verts.layers.float['padi']
+    dead = [f for f in bm.faces
+            if all(abs(v[padl]) < 0.5 for v in f.verts)
+            and math.hypot(*(sum((v.co.x for v in f.verts), 0.0) / len(f.verts), sum((v.co.y for v in f.verts), 0.0) / len(f.verts))) < radius]
+    bmesh.ops.delete(bm, geom=dead, context='FACES')
+    bm.to_mesh(me)
+    bm.free()
+
+
 def add_stalks(me, pads, rise):
     """Bake-time stalks: every walkable cap gets a tube that starts at the planting spot (origin), hugs the ground, then rises to the cap's underside,
     so the stalks pass under the lower caps. Plus a swollen root bulb at the origin. growth_t R = z / rise, G = 1.0 (stalk part), B = tint."""
@@ -294,7 +310,9 @@ def add_stalks(me, pads, rise):
         p0 = mathutils.Vector((0.0, 0.0, 0.0))
         # the stalks bunch up: they rise together from the planting spot (control point high over the foot) and only lean out near their caps,
         # so neighbouring stalks touch over most of their length
-        p1 = mathutils.Vector((cx * 0.22, cy * 0.22, max(0.3, (pd['top'] - 0.6) * 0.85)))
+        L = math.hypot(cx, cy) or 1.0
+        right = mathutils.Vector((cy / L, -cx / L, 0.0))                         # looking outward from the stem, to the right
+        p1 = mathutils.Vector((cx * 0.22, cy * 0.22, max(0.3, (pd['top'] - 0.6) * 0.85))) + right * 0.5   # stalks bow to the right
         rings = []
         for i in range(SEG + 1):
             t = i / SEG
@@ -392,6 +410,7 @@ def bake_variant(n, offset_x=0.0):
     for poly in me.polygons:
         poly.use_smooth = False
     pads = pad_info(me)
+    cut_hole(me)
     add_stalks(me, pads, p['RiseTotal'])
     mk = lambda nm, loc: _empty(nm, loc, main, coll)
     last = pads[-1]
