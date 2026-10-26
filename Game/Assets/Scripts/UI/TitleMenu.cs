@@ -200,19 +200,19 @@ namespace PlantGame.UI
                 Title(_home.transform, new Vector2(-470, 150), 0.8f);
                 Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
                 ModeButton(_home.transform, new Vector2(-470, -110));
-                Button(_home.transform, "Play", new Vector2(300, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }, 400);
-                Button(_home.transform, "Select level", new Vector2(700, 140), () => Show(_levels), 400);
-                Button(_home.transform, "Generate level", new Vector2(300, 20), () => Show(_generate), 400);
-                Button(_home.transform, "Input seed", new Vector2(700, 20), () => Show(_seed), 400);
-                Button(_home.transform, "Options", new Vector2(300, -100), () => Show(_options), 400);
-                Button(_home.transform, "Quit", new Vector2(700, -100), Quit, 400);
+                Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }, 380));
+                Button(_home.transform, "Select level", new Vector2(740, 140), () => Show(_levels), 380);
+                Button(_home.transform, "Generate level", new Vector2(150, 20), () => Show(_generate), 380);
+                Button(_home.transform, "Input seed", new Vector2(740, 20), () => Show(_seed), 380);
+                Button(_home.transform, "Options", new Vector2(150, -100), () => Show(_options), 380);
+                Button(_home.transform, "Quit", new Vector2(740, -100), Quit, 380);
             }
             else
             {
             Title(_home.transform, new Vector2(0, 340));
             Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
             ModeButton(_home.transform, new Vector2(0, 130));
-            Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); });
+            Accent(Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }));
             Button(_home.transform, "Select level", new Vector2(0, -65), () => Show(_levels));
             Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
             Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
@@ -413,6 +413,16 @@ namespace PlantGame.UI
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
             var t = Label(rt, label, fontSize, Vector2.zero, width, Palette.TextOrange);
             return t;
+        }
+
+        /// <summary>The main call to action: a purple button with white text (Play on the home screen).</summary>
+        Text Accent(Text label)
+        {
+            var im = label.transform.parent.GetComponent<Image>();
+            im.color = new Color(0.46f, 0.30f, 0.84f, 0.97f);
+            var b = im.GetComponent<UnityEngine.UI.Button>(); var cb = b.colors; cb.highlightedColor = new Color(0.68f, 0.52f, 1f, 1f); cb.pressedColor = new Color(0.33f, 0.2f, 0.62f, 1f); b.colors = cb;
+            label.color = Color.white;
+            return label;
         }
 
         InputField InputBox(Transform parent, Vector2 pos, Vector2 size)
