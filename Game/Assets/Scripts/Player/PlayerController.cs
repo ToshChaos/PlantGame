@@ -222,7 +222,7 @@ namespace PlantGame.Player
                 }
             }
 
-            Vector3 wish = Quaternion.Euler(0f, _backLatched ? _backYaw : _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
+            Vector3 wish = Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
             if (IsGliding)
             {
@@ -385,7 +385,7 @@ namespace PlantGame.Player
             }
         }
         public float orbitDegreesPerSecond = 9f;
-        bool _orbiting, _followFacing, _backLatched; float _backYaw; float _yawSaved, _pitchSaved;
+        bool _orbiting, _followFacing; float _lastFaceYaw; float _yawSaved, _pitchSaved;
 
         void HandleCursorAndLook(float dt)
         {
@@ -402,21 +402,19 @@ namespace PlantGame.Player
             // camera follows the player's turns: A / D while moving forward steer the camera (and so the heading); the mouse overrides
             if (GameSettings.CameraFollow && CurrentState != State.Climbing && look.sqrMagnitude < 0.01f && model != null)
             {
-                // turning the player more than 5 degrees away from the camera makes the camera swing round to follow the facing
+                // the camera follows the player's turns, moving or not: once the facing is turning and is more than 5 degrees off
+                // the camera it swings round to it. Walking backwards (S / Down) keeps both heading and camera.
                 Vector2 mi = Input.Move;
-                float diff = Mathf.DeltaAngle(_yaw, model.eulerAngles.y);
-                // walking backwards (S / Down): movement stays relative to the yaw when S was pressed while the camera swings round
-                // to the new facing; released as soon as S is let go
-                if (mi.y < -0.1f)
-                {
-                    if (!_backLatched && Mathf.Abs(diff) < 90f) { _backLatched = true; _backYaw = _yaw; }
-                }
-                else _backLatched = false;
-                if ((mi.y > 0.1f || _backLatched) && Mathf.Abs(diff) > 5f) _followFacing = true;
+                float faceYaw = model.eulerAngles.y;
+                float diff = Mathf.DeltaAngle(_yaw, faceYaw);
+                bool turning = Mathf.Abs(Mathf.DeltaAngle(_lastFaceYaw, faceYaw)) > 0.01f;
+                _lastFaceYaw = faceYaw;
+                if (mi.y < -0.1f) _followFacing = false;
+                else if (turning && Mathf.Abs(diff) > 5f) _followFacing = true;
                 if (_followFacing)
                 {
-                    if ((mi.y <= 0.1f && !_backLatched) || Mathf.Abs(diff) < 1f) _followFacing = false;
-                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, model.eulerAngles.y, (_backLatched ? cameraFollowSpeed * 3f : cameraFollowSpeed) * dt), 360f);
+                    if (Mathf.Abs(diff) < 1f) _followFacing = false;
+                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, faceYaw, cameraFollowSpeed * dt), 360f);
                 }
             }
             else if (look.sqrMagnitude >= 0.01f) _followFacing = false;
@@ -430,6 +428,7 @@ namespace PlantGame.Player
             Vector3 face;
             if (CurrentState == State.Climbing && _climb != null) face = -_climb.SurfaceNormal;
             else face = new Vector3(_hVel.x, 0f, _hVel.z);
+            if (CurrentState != State.Climbing && Input.Move.y < -0.1f) return;   // walking backwards: the heading stays
             face.y = 0f;
             if (face.sqrMagnitude < 0.04f) return;   // standing still: keep the last facing
             var target = Quaternion.LookRotation(face.normalized, Vector3.up);
