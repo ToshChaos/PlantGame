@@ -17,5 +17,11 @@
 - Bridge: sprout shows two small vines, grows, grown bridge looks right (`t67_play_*`). Beanstalk grows, closed pods visible. Glide leaf held in the right hand, stem beside the body, blade over the head; first version was too high and edge-on to the chase camera, then reworked per feedback: the leaf lies sideways over the head (long axis left hand to right hand), stem and tip vines go down to the hands, front edge lifted 24 degrees; user confirmed "leaf is good now".
 - Not play-tested: walking a grown mushroom patch (colliders unchanged from the verified Blender jump check), a full beanstalk climb.
 
+## Feedback round (2026-10-26)
+- Mushroom patch: every stalk now starts at the planting spot (one root bulb) and runs low along the ground, then rises to its cap (stalks pass under the lower caps); baked in `plants_platform.add_stalks`. Sprout = two small puffball mushrooms (round white, taller oval red) with `growth_t.R <= 0.075`; the rest of the plant is remapped to R 0.085..1.
+- Bridge sprout is 3x bigger: two vines 2.7 m long (`SPROUT_LEN`), thicker, with larger leaves.
+- Water Collector head: pitcher shape with belly, waist, flared ribbed lip and a hood (lid) over the back of the opening; fewer, shorter petals.
+- Checked in play mode (level 4): sprouts, grown patch, collector present. Collector close-up was partly blocked by a cap; not inspected further.
+
 ## Open
 - The platform stalks are cone + foot sphere: if they look too plain, add bark detail via the new triplanar texture strength (`_TexStrength`).

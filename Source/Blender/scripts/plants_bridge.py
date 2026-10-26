@@ -16,6 +16,7 @@ import bpy
 import bmesh
 import mathutils
 
+SPROUT_LEN = 2.7        # user request: the sprout is about 3x the first version (0.9 m)
 GROUP = 'GN_Plant_Bridge'
 MAT = 'M_Bridge_Preview'
 SEGMENTS = 24
@@ -313,19 +314,19 @@ def build_group():
     # ---- user request: the sprout (growth 0.08) reads as two small vines heading in the bridge direction. They sit in the first 0.9 m
     # (growth_t R <= 0.075) and are flagged `spr`; the rest of the bridge starts revealing only after the sprout (R remapped below).
     for side in (-1.0, 1.0):
-        vl = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0.9, 0)})
-        vr = b.make('GeometryNodeResampleCurve', {'Curve': vl, 'Count': 12}, mode='COUNT')
+        vl = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, SPROUT_LEN, 0)})
+        vr = b.make('GeometryNodeResampleCurve', {'Curve': vl, 'Count': 24}, mode='COUNT')
         vt = b.make('GeometryNodeSplineParameter').outputs['Factor']
-        vx = b.m('MULTIPLY', b.m('ADD', 0.15, b.m('MULTIPLY', 0.08, b.m('SINE', b.m('MULTIPLY', vt, 5.0)))), side)
-        vz = b.m('ADD', 0.06, b.m('MULTIPLY', 0.3, b.m('POWER', vt, 1.6)))
+        vx = b.m('MULTIPLY', b.m('ADD', 0.4, b.m('MULTIPLY', 0.22, b.m('SINE', b.m('MULTIPLY', vt, 5.0)))), side)
+        vz = b.m('ADD', 0.12, b.m('MULTIPLY', 0.8, b.m('POWER', vt, 1.6)))
         vm = b.make('GeometryNodeSetPosition', {'Geometry': vr, 'Offset': b.xyz(vx, 0, vz)})
         vprof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 1.0})
-        vmesh = b.make('GeometryNodeCurveToMesh', {'Curve': vm, 'Profile Curve': vprof, 'Scale': b.m('MULTIPLY', 0.035, b.m('SUBTRACT', 1.0, b.m('MULTIPLY', vt, 0.55))), 'Fill Caps': True})
+        vmesh = b.make('GeometryNodeCurveToMesh', {'Curve': vm, 'Profile Curve': vprof, 'Scale': b.m('MULTIPLY', 0.075, b.m('SUBTRACT', 1.0, b.m('MULTIPLY', vt, 0.55))), 'Fill Caps': True})
         sv = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': store_part(vmesh, 0.34), 'Name': 'spr', 'Value': 1.0}, data_type='FLOAT', domain='POINT')
         parts.append(sv.outputs[0])
-        lpts = b.make('GeometryNodeCurveToPoints', {'Curve': vm, 'Count': 3}, mode='COUNT')
+        lpts = b.make('GeometryNodeCurveToPoints', {'Curve': vm, 'Count': 5}, mode='COUNT')
         lrot = b.make('FunctionNodeRandomValue', {'Min': (-0.3, -0.3, 0.0), 'Max': (0.3, 0.3, 6.28), 'Seed': b.m('ADD', seed, 400 + int(side))}, data_type='FLOAT_VECTOR')
-        lins = b.make('GeometryNodeInstanceOnPoints', {'Points': lpts.outputs['Points'], 'Instance': leaf_geo, 'Rotation': b.en(lrot), 'Scale': b.xyz(0.3, 0.3, 0.3)})
+        lins = b.make('GeometryNodeInstanceOnPoints', {'Points': lpts.outputs['Points'], 'Instance': leaf_geo, 'Rotation': b.en(lrot), 'Scale': b.xyz(0.75, 0.75, 0.75)})
         lins = store_part(lins, 0.67, 'INSTANCE')
         lsv = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': lins, 'Name': 'spr', 'Value': 1.0}, data_type='FLOAT', domain='INSTANCE')
         parts.append(lsv.outputs[0])
@@ -337,8 +338,9 @@ def build_group():
     # ---- growth_t vertex colour: R = y / Length, G = part, B = tint
     py = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Y']
     tt0 = b.m('DIVIDE', py, length, clamp=True)
+    tts = b.m('MULTIPLY', b.m('DIVIDE', py, SPROUT_LEN, clamp=True), 0.075)   # sprout vines: R spans 0..0.075 over their own length
     spr = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'spr'}).outputs['Attribute']
-    tt = b.m('ADD', b.m('MULTIPLY', b.m('ADD', 0.085, b.m('MULTIPLY', tt0, 0.915)), b.m('SUBTRACT', 1.0, spr)), b.m('MULTIPLY', tt0, spr))   # sprout vines keep R = y / Length, the bridge starts after them
+    tt = b.m('ADD', b.m('MULTIPLY', b.m('ADD', 0.085, b.m('MULTIPLY', tt0, 0.915)), b.m('SUBTRACT', 1.0, spr)), b.m('MULTIPLY', tts, spr))   # sprout vines have their own R range, the bridge starts after them
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
     tint = b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT')
     tint = b.en(tint)

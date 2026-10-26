@@ -84,20 +84,22 @@ def _build(p):
     m.cap(rings[0], flip=True)
     cx, cy = lean[0], lean[1]
     # ---- bowl: outer wall up to the rim, a rolled lip, then the inner wall down to the floor
-    outer = [(0.14, 0.00), (0.34, 0.04), (0.56, 0.11), (0.74, 0.20), (0.88, 0.33), (0.97, 0.46), (1.00, 0.60), (0.98, 0.76), (0.96, 0.90), (1.03, 0.98), (1.06, 1.01)]
-    inner = [(1.01, 1.04), (0.93, 1.01), (0.88, 0.86), (0.80, 0.62), (0.68, 0.38), (0.48, 0.20), (0.24, 0.14), (0.0, 0.12)]
+    outer = [(0.14, 0.00), (0.34, 0.04), (0.56, 0.11), (0.76, 0.20), (0.92, 0.33), (1.00, 0.46), (0.97, 0.60), (0.88, 0.74), (0.84, 0.85), (0.92, 0.93), (1.12, 0.98), (1.24, 1.01), (1.27, 1.03)]   # T67: pitcher: belly, waist, flared lip
+    inner = [(1.22, 1.06), (1.10, 1.02), (0.90, 0.92), (0.80, 0.80), (0.82, 0.62), (0.70, 0.38), (0.48, 0.20), (0.24, 0.14), (0.0, 0.12)]
     prof = [(R * rr, zb + bowl_h * hh) for rr, hh in outer] + [(R * rr, zb + bowl_h * hh) for rr, hh in inner]
     bowl_rings = []
     for k, (r, z) in enumerate(prof):
-        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92, rib=0.045 if 2 <= k < len(outer) else 0.0))
+        bowl_rings.append(m.ring((cx, cy), max(r, 0.001), z, 0.92, rib=(0.12 if 10 <= k <= 12 else 0.045) if 2 <= k < len(outer) else 0.0))   # ribbed peristome (the lip) 
     for a, b in zip(bowl_rings, bowl_rings[1:]):
         m.bridge(a, b)
     rim_z = zb + bowl_h
     # ---- petals: curled tapered strips around the rim, white
     top = rim_z
+    PC = max(3, PC - 3)
+    petal_scale = 0.75
     for k in range(PC):
         ang = k / PC * math.tau + rnd.uniform(-0.1, 0.1)
-        L = R * rnd.uniform(1.1, 1.5); W = R * 0.62 * (6.0 / PC) ** 0.5
+        L = R * rnd.uniform(0.7, 1.0) * petal_scale; W = R * 0.62 * (6.0 / PC) ** 0.5
         steps = 6
         left, mid, right = [], [], []
         for s_ in range(steps + 1):
@@ -116,6 +118,27 @@ def _build(p):
             for a_, b_ in ((left, mid), (mid, right)):
                 m.f.append((a_[s_], b_[s_], b_[s_ + 1], a_[s_ + 1]))
                 m.f.append((a_[s_ + 1], b_[s_ + 1], b_[s_], a_[s_]))   # two-sided so the shader culling never hides it
+    # ---- the lid (operculum): a hood arching over the back of the opening, two-sided, with a midrib ridge
+    ang_b = rnd.uniform(0, math.tau)
+    LR, LC = 8, 10
+    grid = []
+    for ri in range(LR + 1):
+        v = ri / LR
+        half = 0.95 * (1.0 - 0.4 * v ** 1.5)
+        row = []
+        for ci in range(LC + 1):
+            u = ci / LC * 2.0 - 1.0
+            a = ang_b + u * half
+            rad = R * (1.22 - 0.75 * v * (1.0 - 0.3 * abs(u)))
+            z = rim_z + 0.03 + 0.5 * R * math.sin(v * math.pi * 0.55) * (1.0 - 0.4 * u * u) + 0.03 * R * (1 - abs(u)) * v
+            row.append(m.add((cx + math.cos(a) * max(rad, 0.02), cy + math.sin(a) * max(rad, 0.02), z), 0.92))
+            top = max(top, z)
+        grid.append(row)
+    for ri in range(LR):
+        for ci in range(LC):
+            q = (grid[ri][ci], grid[ri][ci + 1], grid[ri + 1][ci + 1], grid[ri + 1][ci])
+            m.f.append(q)
+            m.f.append(q[::-1])
     # ---- base leaves: broad curved blades lying outward from the stem foot
     for k in range(NL):
         ang = k / NL * math.tau + rnd.uniform(-0.25, 0.25)

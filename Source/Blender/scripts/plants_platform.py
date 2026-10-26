@@ -126,18 +126,7 @@ def build_group():
     px_ = b.m('MULTIPLY', r, b.m('COSINE', theta))
     py_ = b.m('MULTIPLY', r, b.m('SINE', theta))
     slen2 = b.m('MAXIMUM', b.m('SUBTRACT', z, 0.45), 0.3)                                  # stalk top sits inside the cap's underside
-    foot_pts = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(px_, py_, 0)})
-    ring_pts = b.make('GeometryNodeSetPosition', {'Geometry': pts, 'Position': b.xyz(px_, py_, b.m('MULTIPLY', slen2, 0.6))})
-    sw = b.m('ADD', 0.32, b.m('MULTIPLY', stemt, 0.5))                                       # stalk diameter scale
-    cone = xform(b.make('GeometryNodeMeshCone', {'Vertices': 16, 'Radius Top': 0.5, 'Radius Bottom': 0.78, 'Depth': 1.0, 'Side Segments': 6}), b.xyz(0, 0, 0.0))   # the GN cone's base sits at z = 0
-    sti = b.make('GeometryNodeInstanceOnPoints', {'Points': foot_pts, 'Instance': cone, 'Scale': b.xyz(sw, sw, slen2)})
-    parts.append(store(sti, 'part', 1.0, 'INSTANCE').outputs[0])
-    foot = b.make('GeometryNodeMeshUVSphere', {'Segments': 16, 'Rings': 8, 'Radius': 0.5})
-    fti = b.make('GeometryNodeInstanceOnPoints', {'Points': foot_pts, 'Instance': foot, 'Scale': b.xyz(b.m('MULTIPLY', sw, 1.9), b.m('MULTIPLY', sw, 1.9), 0.5)})
-    parts.append(store(fti, 'part', 1.0, 'INSTANCE').outputs[0])
-    ringg = b.make('GeometryNodeMeshUVSphere', {'Segments': 16, 'Rings': 6, 'Radius': 0.5})
-    rgi = b.make('GeometryNodeInstanceOnPoints', {'Points': ring_pts, 'Instance': ringg, 'Scale': b.xyz(b.m('MULTIPLY', sw, 1.45), b.m('MULTIPLY', sw, 1.45), 0.1)})
-    parts.append(store(rgi, 'part', 1.0, 'INSTANCE').outputs[0])
+    cone = xform(b.make('GeometryNodeMeshCone', {'Vertices': 16, 'Radius Top': 0.45, 'Radius Bottom': 0.8, 'Depth': 1.0, 'Side Segments': 6}), b.xyz(0, 0, 0.0))   # the GN cone's base sits at z = 0
     # small decorative mushrooms at the foot of the patch, so there are always three (variants with two walkable caps get one extra); no collider, padi = -1
     bth = b.m('ADD', theta, 2.4)
     br = b.m('ADD', r, 1.7)
@@ -168,7 +157,7 @@ def build_group():
         tree.links.new(p, join.inputs[0])
     real = b.make('GeometryNodeRealizeInstances', {'Geometry': join})
     pz = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
-    tt = b.m('DIVIDE', pz, rise, clamp=True)
+    tt = b.m('ADD', 0.085, b.m('MULTIPLY', b.m('DIVIDE', pz, rise, clamp=True), 0.915))   # T67: the sprout (two small puffballs, baked in bake_variant) owns growth_t R <= 0.075
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
     tint = b.en(b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT'))
     col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': tint}, mode='RGB')
@@ -259,6 +248,79 @@ def jump_check(pads):
                           worst_rise=round(worst_rise, 2), worst_hop=round(worst_hop, 2), errors=errs)
 
 
+def add_stalks(me, pads, rise):
+    """Bake-time stalks: every walkable cap gets a tube that starts at the planting spot (origin), hugs the ground, then rises to the cap's underside,
+    so the stalks pass under the lower caps. Plus a swollen root bulb at the origin. growth_t R = z / rise, G = 1.0 (stalk part), B = tint."""
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    col = bm.verts.layers.float_color['growth_t']
+    padl = bm.verts.layers.float['padi'] if 'padi' in bm.verts.layers.float else None
+    first = len(bm.faces)
+
+    def add_vert(co):
+        v = bm.verts.new(co)
+        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, co[2] / rise)), 1.0, 0.5, 1.0)
+        if padl is not None:
+            v[padl] = -1.0
+        return v
+
+    SEG, AROUND = 14, 12
+    for pd in pads:
+        cx, cy = pd['centre']
+        end = mathutils.Vector((cx, cy, pd['top'] - 0.6))
+        p0 = mathutils.Vector((0.0, 0.0, 0.0))
+        p1 = mathutils.Vector((cx * 0.9, cy * 0.9, 0.08))
+        rings = []
+        for i in range(SEG + 1):
+            t = i / SEG
+            pt = (1 - t) ** 2 * p0 + 2 * (1 - t) * t * p1 + t * t * end
+            tan = (2 * (1 - t) * (p1 - p0) + 2 * t * (end - p1))
+            tan = tan.normalized() if tan.length > 1e-6 else mathutils.Vector((0, 0, 1))
+            side = tan.cross(mathutils.Vector((0, 0, 1)))
+            side = side.normalized() if side.length > 1e-4 else mathutils.Vector((1, 0, 0))
+            up = side.cross(tan).normalized()
+            rad = 0.30 - 0.12 * t + (0.07 if i in (SEG // 2,) else 0.0)          # tapers, one slight collar swelling mid-way
+            rings.append([add_vert(pt + (side * math.cos(a * math.tau / AROUND) + up * math.sin(a * math.tau / AROUND)) * rad) for a in range(AROUND)])
+        for r0, r1 in zip(rings, rings[1:]):
+            for a in range(AROUND):
+                b_ = (a + 1) % AROUND
+                bm.faces.new((r0[a], r0[b_], r1[b_], r1[a]))
+    # root bulb
+    bulb = bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=10, radius=0.5)
+    bmesh.ops.scale(bm, vec=(1.3, 1.3, 0.8), verts=bulb['verts'])
+    for v in bulb['verts']:
+        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, v.co.z / rise)), 1.0, 0.5, 1.0)
+        if padl is not None:
+            v[padl] = -1.0
+    # the sprout: two small puffball mushrooms at the planting spot (one white and round, one taller, oval and red). Visible at growth 0.08
+    def blob(centre, radii, part, segs=14):
+        res = bmesh.ops.create_uvsphere(bm, u_segments=segs, v_segments=10, radius=1.0)
+        bmesh.ops.scale(bm, vec=radii, verts=res['verts'])
+        bmesh.ops.translate(bm, vec=centre, verts=res['verts'])
+        for v in res['verts']:
+            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.5, 1.0)
+            if padl is not None:
+                v[padl] = -1.0
+    def post(centre, radius, height, part):
+        res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=radius * 1.3, radius2=radius, depth=height)
+        bmesh.ops.translate(bm, vec=(centre[0], centre[1], height * 0.5), verts=res['verts'])
+        for v in res['verts']:
+            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.5, 1.0)
+            if padl is not None:
+                v[padl] = -1.0
+    post((-0.45, -0.1), 0.09, 0.4, 1.0)
+    blob((-0.45, -0.1, 0.5), (0.3, 0.3, 0.27), 1.0)             # round white puffball
+    blob((-0.45, -0.1, 0.34), (0.27, 0.27, 0.05), 1.0)
+    post((0.35, 0.15), 0.1, 0.55, 1.0)
+    blob((0.35, 0.15, 0.85), (0.27, 0.27, 0.42), 0.92)            # taller oval red one
+    blob((0.35, 0.15, 0.58), (0.3, 0.3, 0.05), 1.0)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[first:])
+    for f in bm.faces[first:]:
+        f.smooth = True
+    bm.to_mesh(me)
+    bm.free()
+
+
 def _box(name, centre, size, main, coll):
     bm = bmesh.new()
     bmesh.ops.create_cube(bm, size=1.0)
@@ -305,6 +367,7 @@ def bake_variant(n, offset_x=0.0):
     for poly in me.polygons:
         poly.use_smooth = False
     pads = pad_info(me)
+    add_stalks(me, pads, p['RiseTotal'])
     mk = lambda nm, loc: _empty(nm, loc, main, coll)
     last = pads[-1]
     tip = mathutils.Vector((last['centre'][0], last['centre'][1], last['top']))
