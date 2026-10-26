@@ -259,10 +259,10 @@ namespace PlantGame.UI
                 float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (row == 0 ? 135f : -195f) : 110f, h = two ? 310f : 370f;
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? 21 : 23, new Vector2(0, h / 2 - 35), 290, Palette.TextOrange);
-                _cardInfo[i] = Label(card, "", two ? 16 : 19, new Vector2(0, two ? 5 : 10), 280, Color.white);
+                _cardInfo[i] = Label(card, "", two ? 16 : 19, new Vector2(0, two ? 10 : 15), 280, Color.white);
                 _cardInfo[i].alignment = TextAnchor.MiddleCenter;
-                ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(280, h - 90);
-                Button(card, "Play", new Vector2(0, -h / 2 + 41), () => StartRun(l.ToConfig(_mode)), 200, 30);
+                ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(280, h - 100);
+                Button(card, "Play", new Vector2(0, -h / 2 + 32), () => StartRun(l.ToConfig(_mode)), 150, 24, 50f);
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
             float testY = two ? -385f : -170f;
@@ -413,13 +413,14 @@ namespace PlantGame.UI
             return t;
         }
 
-        Text Button(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction click, float width = 360f, int fontSize = 38)
+        Text Button(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction click, float width = 360f, int fontSize = 38, float height = 70f)
         {
-            var rt = Rect(label + "Button", parent, new Vector2(width, 70), pos);
+            var rt = Rect(label + "Button", parent, new Vector2(width, height), pos);
             var im = rt.gameObject.AddComponent<Image>(); im.sprite = Rounded(); im.type = Image.Type.Sliced; im.color = new Color(0.17f, 0.37f, 0.56f, 0.95f);
             var b = rt.gameObject.AddComponent<UnityEngine.UI.Button>(); b.targetGraphic = im; b.onClick.AddListener(click);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
             var t = Label(rt, label, fontSize, Vector2.zero, width, Palette.TextOrange);
+            if (height < 70f) ((RectTransform)t.transform).sizeDelta = new Vector2(width, height);   // compact button: the label box follows it
             return t;
         }
 
