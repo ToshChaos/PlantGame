@@ -26,6 +26,9 @@ namespace PlantGame.Core
         [Tooltip("After a pickup the next target stays yellow this long, so two things never look 'ready' in a row.")]
         public float readyDelayAfterPickup = 0.3f;
 
+        /// <summary>True while a refill marker (lake, waterfall, ready collector) is drawn as the thick circle: the HUD hint turns purple with it.</summary>
+        public static bool RefillRingThick { get; private set; }
+
         PlayerInteraction _pi;
         float _blockReadyUntil;
         Camera _cam;
@@ -42,6 +45,7 @@ namespace PlantGame.Core
         {
             if (_cam == null) _cam = Camera.main;
             int used = 0;
+            bool thickRefill = false;
             _seen.Clear();
             if (_pi != null && _cam != null)
             {
@@ -113,8 +117,10 @@ namespace PlantGame.Core
                     bool slim = waterRing || (soilRing ? !ready : water && !close && !focused);
                     r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : soilRing ? UiSprites.RingSlim : UiSprites.Ring;
                     r.color = focused ? rdy : near;
+                    if (water && !slim && ready) thickRefill = true;
                 }
             }
+            RefillRingThick = thickRefill;
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
         }
 
