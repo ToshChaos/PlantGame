@@ -68,7 +68,7 @@ namespace PlantGame.Core
                     else if (t.interactable != null && t.interactable.Action == InteractAction.Use)
                     {
                         ready = t.interactable.CanInteract(gameObject);
-                        if (!ready && t.interactable is WaterCollector) continue;   // an empty collector (or a full can) offers nothing on F: no marker
+                        if (!ready && (t.interactable is WaterCollector || t.interactable is GoalFlag)) continue;   // an empty collector (or a full can) offers nothing on F, a used goal nothing on E: no marker
                     }
                     else if (t.usable is SandboxTarget soil && !soil.planted && !soil.frozen && (Kit.Item(soil.acceptedItemId) ?? item) != null)
                     {
