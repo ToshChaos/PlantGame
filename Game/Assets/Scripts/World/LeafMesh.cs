@@ -55,19 +55,19 @@ namespace PlantGame.World
 
         /// <summary>
         /// The glide leaf as the player holds it: one big leaf blade arching over the head, its stem (petiole) running down to the hands
-        /// on one side, with the midrib continuing along the leaf. `parent` is the player model; returns the root ("GlideLeaf").
+        /// on one side, the midrib is the blade's centre ridge. `parent` is the player model; returns the root ("GlideLeaf").
         /// </summary>
         public static GameObject CreateHeld(Transform parent, Material blade, Material stem)
         {
             var root = new GameObject("GlideLeaf");
             root.transform.SetParent(parent, false);
-            const float L = 3.4f, W = 2.2f;
-            var hand = new Vector3(0f, 1.45f, 0.05f); var ctrl = new Vector3(0f, 1.75f, -1.35f); var basePt = new Vector3(0f, 2.75f, -1.3f);
-            var tilt = Quaternion.Euler(-14f, 0f, 0f);           // tip a little higher so the chase camera sees the top
+            const float L = 3.0f, W = 2.1f;
+            var hand = new Vector3(0.5f, 1.25f, 0.15f); var ctrl = new Vector3(0.6f, 2.1f, -0.2f); var basePt = new Vector3(0.1f, 2.45f, -1.5f);   // the stem is held in the right hand and runs up beside the body
+            var tilt = Quaternion.Euler(-6f, 0f, 0f);            // nearly level, low enough for the chase camera to see the top
             var b = new GameObject("Blade"); b.transform.SetParent(root.transform, false);
             b.transform.localPosition = basePt + tilt * new Vector3(0f, 0f, L * 0.5f);
             b.transform.localRotation = tilt * Quaternion.Euler(0f, -90f, 0f);   // blade tip (+X) points forward
-            b.AddComponent<MeshFilter>().sharedMesh = Build(L, W, 0.3f, 0.28f, 28);
+            b.AddComponent<MeshFilter>().sharedMesh = Build(L, W, 0.4f, 0.1f, 28);
             var mr = b.AddComponent<MeshRenderer>(); mr.sharedMaterial = blade; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             // petiole: a curved stem from the hands up to the base of the blade
             Vector3 prev = hand;
@@ -76,7 +76,6 @@ namespace PlantGame.World
                 float t = i / 6f; var q = (1 - t) * (1 - t) * hand + 2 * (1 - t) * t * ctrl + t * t * basePt;
                 Segment(root.transform, prev, q, 0.075f - 0.02f * t, stem); prev = q;
             }
-            Segment(root.transform, basePt, basePt + tilt * new Vector3(0f, 0.04f, L * 0.88f), 0.04f, stem);   // midrib under the blade
             return root;
         }
 

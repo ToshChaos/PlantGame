@@ -1,7 +1,7 @@
 # T67 — Plant and seed detail pass (final art pass before shipping)
 
 **Owner:** A3 + A6 · **Depends on:** T49, T48, T33, T56
-**Status:** DONE (not play-tested: no full playthrough of the new platform / glide leaf yet)
+**Status:** DONE
 
 ## What changed
 - **Triangle budget** per plant variant raised 4k -> 10k (`pipeline_common.MAX_TRIS`, AGENTS.md v2.8). Variants now: bridge ~2.6k, ladder ~5-6k, platform ~4k, collector ~2.1k.
@@ -13,7 +13,9 @@
 - **Seed pickups** (`SeedMeshes`): UVs, welded normals, wrinkle / pit displacement, more segments; bamboo with sprouting twigs, bean with hilum and seam, puffball with warts and gill skirt, succulent with five leaf rings, coconut with husk ridges; per-seed textures `T_SeedBamboo/Bean/Puff/Succ/Coconut`.
 - **Parachute is a leaf:** the glide visual (`LeafMesh.CreateHeld`) is one big serrated leaf held overhead by its curved stem with a midrib; the leaf plant on seed sources (`Scenery.LeafPlant`) grows three big leaves on curved stems instead of canopy domes. Still called / used as the parachute.
 
+## Play test (2026-10-26, level 4 Exploration)
+- Bridge: sprout shows two small vines, grows, grown bridge looks right (`t67_play_*`). Beanstalk grows, closed pods visible. Glide leaf held in the right hand, stem beside the body, blade over the head; first version was too high and edge-on to the chase camera, lowered to 2.45 m and levelled; last tweak (less fold, no separate midrib) compiled but was not re-captured.
+- Not play-tested: walking a grown mushroom patch (colliders unchanged from the verified Blender jump check), a full beanstalk climb.
+
 ## Open
-- Run a real glide and a bridge / platform / ladder crossing in play mode; shots in `docs/shots/t67_*.png` are editor renders only.
-- The held leaf's tilt and distance above the head were not tuned against the chase camera.
 - The platform stalks are cone + foot sphere: if they look too plain, add bark detail via the new triplanar texture strength (`_TexStrength`).
