@@ -26,7 +26,7 @@ Target: Android beta (phones first, tablets should work), later iOS. Landscape o
 - **Jump**: big button, right thumb. While climbing it jumps off the vine (same as Space).
 - **Context button** (replaces Q-pickup and E-use): label/icon follows the current focus: Pick up seed, Plant, Raise flag, Thaw, Glide. If nothing is focused and the selected slot has an item it becomes Drop (long-press = drop always).
 - **Water button** (F): small, only visible when it has a use (a sprout in 3 m, or a water source / collector in reach, or the can is dry near a source). Shows the charge droplets.
-- **Hotbar**: four slots top right, tap a slot to select (replaces Tab); tap the selected slot again to drop it. Plus nothing for Shift+Tab.
+- **Hotbar**: four slots top right (built that way since T60; desktop keeps the bottom-centre bar, and on touch the selected item name sits under the row), tap a slot to select (replaces Tab); tap the selected slot again to drop it. Plus nothing for Shift+Tab.
 - **Climbing**: the left stick's vertical axis is climb up/down (same as W / S); the context button shows "Grab" when inside a climbable volume (auto-grab by pushing up still works).
 - **Pause**: small button top left; the pause menu is the same panel with bigger hit targets. **Restart**: inside the pause menu only (no hold-R on touch).
 - Minimum touch target 48 dp (about 9 mm), hit area larger than the drawn icon, 16 dp gap. Opacity 55 percent idle, 90 percent while pressed. Layout scale + left-handed mirror in options.

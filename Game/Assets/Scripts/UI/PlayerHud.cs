@@ -350,7 +350,10 @@ namespace PlantGame.UI
             // hotbar
             int n = Inventory.Inventory.Slots;
             float total = n * SlotSize + (n - 1) * Gap;
-            var bar = Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 54));
+            // touch: the hotbar uses the extra width of a phone screen, in the top right corner, clear of both thumbs (the sticks and buttons own the bottom)
+            bool touch = TouchInput.Active;
+            var bar = touch ? Rect("Hotbar", root, new Vector2(1f, 1f), new Vector2(total, SlotSize), new Vector2(-(total * 0.5f + 40f), -(SlotSize * 0.5f + 30f)))
+                            : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 54));
             _slotBg = new Image[n]; _slotIcon = new Image[n]; _slotNum = new Text[n];
             for (int i = 0; i < n; i++)
             {
@@ -364,7 +367,8 @@ namespace PlantGame.UI
                 _slotIcon[i] = Img("Icon", slot, UiSprites.Disc, Color.white, SlotSize * 0.55f);
                 _slotNum[i] = Label("Num", slot, (i + 1).ToString(), 22, TextAnchor.UpperLeft, new Vector2(8, -4), new Vector2(SlotSize, SlotSize));
             }
-            _selName = Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
+            _selName = touch ? Label("SelectedName", root, "", 28, TextAnchor.MiddleCenter, new Vector2(-(total * 0.5f + 40f), -(SlotSize + 66f)), new Vector2(total, 40), new Vector2(1f, 1f))
+                             : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 74), new Vector2(600, 36), new Vector2(0.5f, 0f));
             _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f));
             _hints.color = Palette.TextOrange;
             _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f));
@@ -372,7 +376,7 @@ namespace PlantGame.UI
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;
-            _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-140, -38), new Vector2(240, 40), new Vector2(1f, 1f));
+            _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-140, touch ? -(SlotSize + 120f) : -38), new Vector2(240, 40), new Vector2(1f, 1f));
             _fps.color = new Color(0.2f, 1f, 0.35f);   // bright green with a dark shadow: readable on sky and scenery
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
