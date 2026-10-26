@@ -118,7 +118,7 @@ namespace PlantGame.Editor
 
             EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Sandbox_Gameplay"));
             ProjectSetup.RegisterScenes();
-            Debug.Log("[PlantGame] Sandbox_Gameplay built. WASD/mouse/Space; 5 m gap ahead (+Z), 7 m gap to the right (+X), tower+ladder to the left (-X).");
+            Debug.Log("[PlantGame] Sandbox_Gameplay built. WASD/mouse/Space; 5 m gap ahead (+Z), tower+ladder to the left (-X).");
         }
 
         static GameObject Box(string name, Vector3 pos, Vector3 size, Material mat)
