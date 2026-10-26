@@ -20,7 +20,7 @@ namespace PlantGame.UI
     {
         static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots (T60)
         const float Gap = 28f;
-        const string PauseTip = "Tip: the seeds for later gaps grow on other islands. Your bag holds only 4, so plan ahead - or walk back.";
+        const string PauseTip = "Tip: the seeds for later gaps grow on other islands.\nYour bag holds only 4, so plan ahead - or walk back.";
 
         PlayerInteraction _pi;
         PlayerInputReader _input;
@@ -414,7 +414,7 @@ namespace PlantGame.UI
             Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
             _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
-            _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 80), new Vector2(0.5f, 0.5f), true, true);
+            _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 110), new Vector2(0.5f, 0.5f), true, true);
             _pauseHint.color = Color.white;
             _pausePanel.SetActive(false);
 
