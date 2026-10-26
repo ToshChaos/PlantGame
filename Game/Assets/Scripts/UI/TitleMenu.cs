@@ -293,7 +293,7 @@ namespace PlantGame.UI
         }
 
         static Sprite _vineO;
-        static Sprite VineO()
+        public static Sprite VineO()
         {
             if (_vineO != null) return _vineO;
             const int S = 384; const float aa = 1.5f / S, ow = 0.009f;
