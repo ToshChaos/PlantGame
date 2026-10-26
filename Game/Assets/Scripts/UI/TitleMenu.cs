@@ -376,7 +376,7 @@ namespace PlantGame.UI
             return new Color(rgb.x, rgb.y, rgb.z, oa);
         }
 
-        void ModeButton(Transform parent, Vector2 pos) { _modeLabels.Add(Button(parent, "Mode", pos, ToggleMode, 620, 32)); }
+        void ModeButton(Transform parent, Vector2 pos) { _modeLabels.Add(Button(parent, "Mode", pos, ToggleMode, 480, 32)); }
 
         GameObject Screen(string name, RectTransform root, float dim)
         {
