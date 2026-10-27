@@ -1,6 +1,6 @@
 # TASKS.md — MVP board (complete)
 
-The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CUT`. Post-MVP work (mobile, bare trees,
+The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CUT`. Post-MVP work (mobile: `TODO-ANDROID.md`; bare trees,
 palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria and handoff notes are in
 `tasks/T<nn>-*.md`; roles in `AGENTS.md` section 4.
 

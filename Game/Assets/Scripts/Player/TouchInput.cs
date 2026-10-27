@@ -14,6 +14,7 @@ namespace PlantGame.Player
 
         public static Vector2 Move;          // tap-to-walk (camera-relative, length 1) or the climb direction (0, +-1)
         public static Vector2 Look;          // this frame's drag, in mouse counts (PlayerController.lookSensitivity scales it)
+        public static Vector3 WorldMove;     // tap-to-walk: walk along this world direction (no camera-yaw round trip, so the camera follow cannot feed back into it)
         public static Vector3 FaceDir;       // tap-to-walk: turn the standing player to this world direction first (zero = none)
         public static bool JumpPressed, PausePressed;
 
@@ -28,6 +29,6 @@ namespace PlantGame.Player
             Tap = default;
         }
 
-        public static void ClearAll() { ClearFrame(); Move = Vector2.zero; FaceDir = Vector3.zero; }
+        public static void ClearAll() { ClearFrame(); Move = Vector2.zero; WorldMove = Vector3.zero; FaceDir = Vector3.zero; }
     }
 }

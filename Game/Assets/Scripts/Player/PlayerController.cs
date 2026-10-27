@@ -215,7 +215,7 @@ namespace PlantGame.Player
                 }
             }
 
-            Vector3 wish = Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
+            Vector3 wish = TouchInput.WorldMove.sqrMagnitude > 0.01f ? TouchInput.WorldMove : Quaternion.Euler(0f, _yaw, 0f) * new Vector3(mi.x, 0f, mi.y);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
             if (IsGliding)
             {
@@ -404,11 +404,11 @@ namespace PlantGame.Player
                 bool turning = Mathf.Abs(Mathf.DeltaAngle(_lastFaceYaw, faceYaw)) > 0.01f;
                 _lastFaceYaw = faceYaw;
                 if (mi.y < -0.1f) _followFacing = false;
-                else if (turning && Mathf.Abs(diff) > (TouchInput.Active ? 3f : 5f)) _followFacing = true;   // touch: the look thumb is often busy, so follow earlier and faster
+                else if (turning && Mathf.Abs(diff) > (TouchInput.Active ? 12f : 5f)) _followFacing = true;   // touch: a wide start threshold (and the stop threshold below) keeps small facing wobbles from nudging the camera
                 if (_followFacing)
                 {
-                    if (Mathf.Abs(diff) < 1f) _followFacing = false;
-                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, faceYaw, cameraFollowSpeed * (TouchInput.Active ? 1.5f : 1f) * dt), 360f);
+                    if (Mathf.Abs(diff) < (TouchInput.Active ? 4f : 1f)) _followFacing = false;
+                    else _yaw = Mathf.Repeat(Mathf.MoveTowardsAngle(_yaw, faceYaw, cameraFollowSpeed * dt), 360f);
                 }
             }
             else if (look.sqrMagnitude >= 0.01f) _followFacing = false;

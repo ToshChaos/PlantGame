@@ -286,7 +286,7 @@ namespace PlantGame.UI
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
             if (string.IsNullOrEmpty(p)) _prompt.text = "";
-            else if (TouchInput.Active && key != "Frozen") _prompt.text = key == "Water" ? (_pi.NearRefillSource ? "Refill water" : "Water the sprout") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "") : p;   // touch: the button says it
+            else if (TouchInput.Active && key != "Frozen") _prompt.text = key == "Water" ? "Tap to " + (_pi.NearRefillSource ? "refill water" : "water the sprout") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "") : "Tap: " + p;   // touch: tapping the circle / diamond does it
             else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill water" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
             else if (key == "Frozen") _prompt.text = p;
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
@@ -342,7 +342,7 @@ namespace PlantGame.UI
             // hotbar
             int n = Inventory.Inventory.Slots;
             float total = n * SlotSize + (n - 1) * Gap;
-            // touch: the hotbar uses the extra width of a phone screen, in the top right corner, clear of both thumbs (the sticks and buttons own the bottom)
+            // touch: the hotbar uses the extra width of a phone screen, in the top right corner, clear of both thumbs (the Jump button owns the bottom right)
             bool touch = TouchInput.Active;
             var bar = touch ? Rect("Hotbar", root, new Vector2(1f, 1f), new Vector2(total, SlotSize), new Vector2(-(total * 0.5f + 40f), -(SlotSize * 0.5f + 30f)))
                             : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 90));
@@ -396,13 +396,13 @@ namespace PlantGame.UI
             bool two = TouchInput.Active;
             Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
             _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
-            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-650, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-650, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-200, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-650, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
+            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-770, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-770, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-230, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-770, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-200, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-200, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });

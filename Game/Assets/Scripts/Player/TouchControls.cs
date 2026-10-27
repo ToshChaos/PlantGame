@@ -216,7 +216,7 @@ namespace PlantGame.Player
         void CancelWalk()
         {
             _walking = false; _walkCol = null; _walkClimb = null;
-            TouchInput.Move = Vector2.zero; TouchInput.FaceDir = Vector3.zero;
+            TouchInput.Move = Vector2.zero; TouchInput.WorldMove = Vector3.zero; TouchInput.FaceDir = Vector3.zero;
             if (_destMarker != null) _destMarker.gameObject.SetActive(false);
         }
 
@@ -229,7 +229,7 @@ namespace PlantGame.Player
 
         void UpdateWalk()
         {
-            TouchInput.Move = Vector2.zero; TouchInput.FaceDir = Vector3.zero;
+            TouchInput.Move = Vector2.zero; TouchInput.WorldMove = Vector3.zero; TouchInput.FaceDir = Vector3.zero;
             if (_pc == null) return;
             if (_pc.IsClimbing) { CancelWalk(); TouchInput.Move = new Vector2(0f, _climbDir); return; }
             _climbDir = 0;
@@ -266,8 +266,7 @@ namespace PlantGame.Player
                 _stuckT = 0f; _lastPos = pos;
             }
 
-            Vector3 local = Quaternion.Euler(0f, -_pc.Yaw, 0f) * dir;
-            TouchInput.Move = new Vector2(local.x, local.z);
+            TouchInput.WorldMove = dir;
             if (_destMarker != null) _destMarker.transform.localScale = Vector3.one * (0.9f + 0.1f * Mathf.Sin(Time.unscaledTime * 6f));
         }
 
