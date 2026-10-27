@@ -25,7 +25,7 @@ namespace PlantGame.Editor
             ("dew_seed", "Dew", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
             ("parachute_leaf", "Parachute Leaf", "Item_ParachuteLeaf", Palette.LeafYellow, ItemKind.Misc),
             ("heart_seed", "Heart", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),
-            ("heat_seed", "Heat", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
+            ("heat_seed", "Heat melon", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
             ("coconut", "Coconut", "Item_Coconut", new Color(0.55f, 0.37f, 0.21f), ItemKind.Misc),   // only palms drop one; nothing can plant it
         };
 
