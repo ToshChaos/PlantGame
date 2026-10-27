@@ -21,7 +21,7 @@ namespace PlantGame.Editor
         {
             ("vine_seed", "Vine", "Item_VineSeed", Palette.SeedBamboo, ItemKind.Seed),
             ("beanstalk_seed", "Beanstalk", "Item_BeanstalkSeed", Palette.SeedBean, ItemKind.Seed),
-            ("shelf_seed", "Shelf", "Item_ShelfSeed", Palette.CloudWhite, ItemKind.Seed),
+            ("shelf_seed", "Mushroom", "Item_ShelfSeed", Palette.CloudWhite, ItemKind.Seed),
             ("dew_seed", "Dew", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
             ("parachute_leaf", "Parachute Leaf", "Item_ParachuteLeaf", Palette.LeafYellow, ItemKind.Misc),
             ("heart_seed", "Heart", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),

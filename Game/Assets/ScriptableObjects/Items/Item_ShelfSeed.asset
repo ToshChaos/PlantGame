@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Item_ShelfSeed
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Inventory.ItemDefinition
   id: shelf_seed
-  displayName: Shelf
+  displayName: Mushroom
   icon: {fileID: 0}
   worldPrefab: {fileID: 4561994874654040429, guid: f3c1fe5514994456fb31892e87910874, type: 3}
   kind: 0
