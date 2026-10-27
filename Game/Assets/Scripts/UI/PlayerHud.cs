@@ -265,7 +265,7 @@ namespace PlantGame.UI
             }
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            _waterLabel.color = new Color(0.44f, 0.66f, 0.86f, 1f);   // same blue as the droplets
+            _waterLabel.color = TouchInput.Active ? new Color(0.06f, 0.33f, 0.16f, 1f) : new Color(0.44f, 0.66f, 0.86f, 1f);   // desktop: same blue as the droplets; touch: dark green, readable on the sky
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
@@ -381,10 +381,11 @@ namespace PlantGame.UI
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
-            var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-40, -(SlotSize + 125f)), new Vector2(1f, 0.5f))   // touch: top right, under the hotbar and the selected item name
+            var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-130, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(460, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
+            if (touch) { var ol = _waterLabel.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(1f, 1f, 1f, 0.85f); ol.effectDistance = new Vector2(2, -2); }
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
