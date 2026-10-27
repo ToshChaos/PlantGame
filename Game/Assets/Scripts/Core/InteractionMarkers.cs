@@ -62,7 +62,7 @@ namespace PlantGame.Core
                     var c = _hits[i];
                     if (!InteractionSensor.TryResolve(c, out var t) || !_seen.Add(t.component)) continue;
 
-                    bool pickup = false, ready, seedColoured = false, soilRing = false, waterRing = false;
+                    bool pickup = false, ready, seedColoured = false, soilRing = false, waterRing = false, wetGoal = false;
                     Inventory.ItemDefinition tint = null;
                     if (t.interactable != null && t.interactable.Action == InteractAction.Pickup)
                     {
@@ -73,7 +73,8 @@ namespace PlantGame.Core
                     else if (t.interactable != null && t.interactable.Action == InteractAction.Use)
                     {
                         ready = t.interactable.CanInteract(gameObject);
-                        if (!ready && (t.interactable is WaterCollector || t.interactable is GoalFlag)) continue;   // an empty collector (or a full can) offers nothing on F, a used goal nothing on E: no marker
+                        if (t.interactable is GoalFlag { TooWet: true }) { ready = false; wetGoal = true; }   // a campfire in the rain: thin, faded ring like unplantable soil
+                        if (!ready && !wetGoal && (t.interactable is WaterCollector || t.interactable is GoalFlag)) continue;   // an empty collector (or a full can) offers nothing on F, a used goal nothing on E: no marker
                     }
                     else if (t.usable is SandboxTarget soil && !soil.planted && !soil.frozen && (Kit.Item(soil.acceptedItemId) ?? item) != null)
                     {
@@ -120,7 +121,7 @@ namespace PlantGame.Core
                     }
                     if (waterRing) { near = WaterNear; rdy = WaterReady; focused = close; }
                     // use circles stay slim: hairline when faded / far, medium when it is the right thing
-                    bool slim = waterRing || (soilRing ? !ready : water && !close && !focused);
+                    bool slim = waterRing || wetGoal || (soilRing ? !ready : water && !close && !focused);
                     r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : soilRing ? UiSprites.RingSlim : UiSprites.Ring;
                     r.color = focused ? rdy : near;
                     if (water && !slim && ready) thickRefill = true;

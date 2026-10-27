@@ -34,8 +34,8 @@ namespace PlantGame.Core
         }
 
         public InteractAction Action => InteractAction.Use;
-        bool TooWet => kind == GoalKind.Fire && WeatherState.Raining;   // a campfire will not light in the rain
-        public string Prompt => TooWet ? "Too wet to light the campfire: wait for the rain to stop" : !string.IsNullOrEmpty(requiresItemId) && HeldSlot() < 0 ? "You need the Heart from the far island" : kind == GoalKind.Fruit ? "Pick the golden fruit" : kind == GoalKind.Gate ? "Open the gate" : kind == GoalKind.Fire ? "Light the campfire" : "Raise the flag";
+        public bool TooWet => kind == GoalKind.Fire && WeatherState.Raining;   // a campfire will not light in the rain
+        public string Prompt => TooWet ? "Too wet to light campfire" : !string.IsNullOrEmpty(requiresItemId) && HeldSlot() < 0 ? "You need the Heart from the far island" : kind == GoalKind.Fruit ? "Pick the golden fruit" : kind == GoalKind.Gate ? "Open the gate" : kind == GoalKind.Fire ? "Light the campfire" : "Raise the flag";
         /// <summary>T42: the vague goal hint (no directions, no distances) shown in the HUD and menus. All wording lives here.</summary>
         public string Objective
         {
@@ -75,7 +75,7 @@ namespace PlantGame.Core
         public void Interact(GameObject actor)
         {
             if (!CanInteract(actor)) return;
-            if (TooWet) { GameEvents.RaiseHint("It is raining: the campfire will not light until the rain stops"); GameEvents.RaiseUseRejected(); return; }
+            if (TooWet) { GameEvents.RaiseHint("Wait for rain to stop"); GameEvents.RaiseUseRejected(); return; }
             if (!string.IsNullOrEmpty(requiresItemId))
             {
                 int slot = HeldSlot();
