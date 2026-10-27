@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.UI;
 using PlantGame.Core;
+using PlantGame.Plants;
 using PlantGame.UI;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -165,15 +166,18 @@ namespace PlantGame.Player
             // a marker (circle / diamond): act on it when in reach, otherwise walk up to it
             if (_pi != null)
             {
-                float radius = Mathf.Max(90f, Screen.dpi * 0.28f), bestD = radius;
+                float radius = Mathf.Max(90f, Screen.dpi * 0.28f), bestScore = 1f;
+                bool canFill = _pi.Can != null && !_pi.Can.IsFull;
                 InteractionMarkers.Tappable best = default; bool found = false;
                 foreach (var m in InteractionMarkers.Tappables)
                 {
                     if (m.collider == null) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
-                    float d = ((Vector2)sp - pos).magnitude;
-                    if (d < bestD) { bestD = d; best = m; found = true; }
+                    // water points are the thing to tap when the can has room: a much wider hit area, and they win against other markers
+                    bool water = canFill && (m.target.interactable is WaterSource || m.target.interactable is WaterCollector);
+                    float score = ((Vector2)sp - pos).magnitude / (radius * (water ? 2.5f : 1f));
+                    if (score < bestScore) { bestScore = score; best = m; found = true; }
                 }
                 if (found)
                 {
