@@ -156,7 +156,7 @@ namespace PlantGame.Core
             if ((item != null && item.kind == ItemKind.Seed) || usable is SandboxTarget { frozen: true })
                 {
                 if (usable is SandboxTarget { frozen: true }) GameEvents.RaiseHint("Frozen soil, needs heat");
-                else if (usable == null) GameEvents.RaiseHint("Seeds need a patch of soil: walk up to one and look at it, then press E");
+                else if (usable == null) GameEvents.RaiseHint("Plants need a patch of soil: walk up to one and look at it, then press E");
                 // wrong seed for this soil: no text, the soil's ring already shows which seed it wants
             }
             GameEvents.RaiseUseRejected();
@@ -190,7 +190,7 @@ namespace PlantGame.Core
             var w = NearbyWaterable();   // F waters the nearest thirsty sprout around the player, no aiming needed
             if (w == null)
             {
-                if (FindFrozenSource() != null) { GameEvents.RaiseHint("The water is frozen: it needs a Heat Seed (use it with E)"); GameEvents.RaiseUseRejected(); }
+                if (FindFrozenSource() != null) { GameEvents.RaiseHint("The water is frozen: it needs Heat (press E to melt it)"); GameEvents.RaiseUseRejected(); }
                 return;
             }
             if (Can == null || !Can.TryConsume()) { GameEvents.RaiseCanEmptyTried(); return; }
@@ -216,7 +216,7 @@ namespace PlantGame.Core
                 ice.Thaw(); Inventory.Remove(Inventory.Selected); Inventory.SelectNextFilled(); GameEvents.RaiseItemUsed(item);
                 GameEvents.RaiseHint("The ice melts: the water is yours again");
             }
-            else { GameEvents.RaiseHint("The water is frozen: melt it with a Heat Seed"); GameEvents.RaiseUseRejected(); }
+            else { GameEvents.RaiseHint("The water is frozen: melt it with Heat"); GameEvents.RaiseUseRejected(); }
             return true;
         }
 
@@ -242,13 +242,13 @@ namespace PlantGame.Core
             CurrentPromptIsGoal = target is GoalFlag && target.CanInteract(gameObject);
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
-            { p = "Use " + Inventory.SelectedItem.displayName; k = "Use"; }
+            { p = "Plant " + Inventory.SelectedItem.displayName; k = "Use"; }
             else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
             else if (FindFrozenSource() != null)   // frozen pond: say so, and what melts it
             {
                 var held = Inventory.SelectedItem;
-                if (held != null && held.id == "heat_seed") { p = "Melt the ice with the Heat Seed"; k = "Use"; }
+                if (held != null && held.id == "heat_seed") { p = "Melt the ice"; k = "Use"; }
                 else { p = "Frozen water, can be melted"; k = "Frozen"; }
             }
             CurrentPromptKey = k;

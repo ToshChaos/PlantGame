@@ -163,7 +163,6 @@ namespace PlantGame.Player
             if (ctx)
             {
                 string l = _pi.ContextLabel;
-                if (l.StartsWith("Use ") && l.EndsWith("Seed", System.StringComparison.OrdinalIgnoreCase)) l = "Use seed";   // the seed name does not fit the button
                 if ((l.StartsWith("Pick up ") || l.StartsWith("Drop ")) && l.EndsWith(" Seed", System.StringComparison.OrdinalIgnoreCase)) l = l.Substring(0, l.Length - 5);   // "Pick up Beanstalk": the word seed does not fit
                 _btnLabel[(int)Btn.Context].text = l;
                 Tint(_btnLabel[(int)Btn.Context], _pi.Context == PlayerInteraction.ContextKind.Drop);   // Drop reads gold

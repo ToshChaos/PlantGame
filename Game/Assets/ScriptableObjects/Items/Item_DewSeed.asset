@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Item_DewSeed
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Inventory.ItemDefinition
   id: dew_seed
-  displayName: Dew Seed
+  displayName: Dew
   icon: {fileID: 0}
   worldPrefab: {fileID: 7234367137218423575, guid: a7eb5f5ff7d2a4f5d9788003d8a00271, type: 3}
   kind: 0

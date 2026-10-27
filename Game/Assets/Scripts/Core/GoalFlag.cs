@@ -34,14 +34,14 @@ namespace PlantGame.Core
         }
 
         public InteractAction Action => InteractAction.Use;
-        public string Prompt => !string.IsNullOrEmpty(requiresItemId) && HeldSlot() < 0 ? "You need the Heart Seed from the far island" : kind == GoalKind.Fruit ? "Pick the golden fruit" : kind == GoalKind.Gate ? "Open the gate" : kind == GoalKind.Fire ? "Light the campfire" : "Raise the flag";
+        public string Prompt => !string.IsNullOrEmpty(requiresItemId) && HeldSlot() < 0 ? "You need the Heart from the far island" : kind == GoalKind.Fruit ? "Pick the golden fruit" : kind == GoalKind.Gate ? "Open the gate" : kind == GoalKind.Fire ? "Light the campfire" : "Raise the flag";
         /// <summary>T42: the vague goal hint (no directions, no distances) shown in the HUD and menus. All wording lives here.</summary>
         public string Objective
         {
             get
             {
                 if (!string.IsNullOrEmpty(requiresItemId))
-                    return HeldSlot() >= 0 ? "Bring the Heart Seed home" : "Find the Heart Seed";
+                    return HeldSlot() >= 0 ? "Bring the Heart home" : "Find the Heart";
                 return kind == GoalKind.Fruit ? "Find the golden fruit" : kind == GoalKind.Gate ? "Open the gate" : kind == GoalKind.Fire ? "Light the campfire" : "Reach the flag";
             }
         }
@@ -50,7 +50,7 @@ namespace PlantGame.Core
         const float IslandRadius = 14f;
         Light _cue;
         Player.PlayerController _pc;
-        /// <summary>False on round-trip levels until the player carries the Heart Seed.</summary>
+        /// <summary>False on round-trip levels until the player carries the Heart.</summary>
         public bool RequirementMet => string.IsNullOrEmpty(requiresItemId) || HeldSlot() >= 0;
         void Update()
         {

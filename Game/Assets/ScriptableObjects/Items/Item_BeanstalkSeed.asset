@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Item_BeanstalkSeed
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Inventory.ItemDefinition
   id: beanstalk_seed
-  displayName: Beanstalk Seed
+  displayName: Beanstalk
   icon: {fileID: 0}
   worldPrefab: {fileID: 1618922113298570363, guid: efeab534122ca44829838336f9c13ff9, type: 3}
   kind: 0

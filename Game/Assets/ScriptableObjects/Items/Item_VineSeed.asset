@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Item_VineSeed
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Inventory.ItemDefinition
   id: vine_seed
-  displayName: Vine Seed
+  displayName: Vine
   icon: {fileID: 0}
   worldPrefab: {fileID: 4209540942379630926, guid: 4c757c31b511646ccab46805418e1f64, type: 3}
   kind: 0

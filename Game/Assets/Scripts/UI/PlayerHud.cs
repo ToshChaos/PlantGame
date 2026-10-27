@@ -20,7 +20,7 @@ namespace PlantGame.UI
     {
         static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots (T60)
         const float Gap = 28f;
-        const string PauseTip = "Tip: the seeds for later gaps grow on other islands.\nYour bag holds only 4, so plan ahead - or walk back.";
+        const string PauseTip = "Tip: the plants for later gaps grow on other islands.\nYour bag holds only 4, so plan ahead - or walk back.";
 
         PlayerInteraction _pi;
         PlayerInputReader _input;
@@ -280,7 +280,7 @@ namespace PlantGame.UI
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
             if (_hints.enabled)
-                _hints.text = Key("Pickup", "Q") + " - pickup / drop\n" + Key("Use", "E") + " - use\n" + Key("Water", "F") + " - use / refill water can\nSpace - Jump" + (_pc != null && (_pc.IsClimbing || _pc.CurrentClimbHint != PlayerController.ClimbHint.None) ? "\nW / S or Up / Down - climb" : "") + "\nTab - next slot";
+                _hints.text = Key("Pickup", "Q") + " - pickup / drop\n" + Key("Use", "E") + " - plant\n" + Key("Water", "F") + " - water / refill can\nSpace - Jump" + (_pc != null && (_pc.IsClimbing || _pc.CurrentClimbHint != PlayerController.ClimbHint.None) ? "\nW / S or Up / Down - climb" : "") + "\nTab - next slot";
 
             var rs = RunSession.Instance;
             if (rs == null || rs.State == RunState.Idle) _timer.text = "";

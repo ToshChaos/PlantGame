@@ -19,13 +19,13 @@ namespace PlantGame.Editor
 
         static readonly (string id, string name, string asset, Color color, ItemKind kind)[] Defs =
         {
-            ("vine_seed", "Vine Seed", "Item_VineSeed", Palette.SeedBamboo, ItemKind.Seed),
-            ("beanstalk_seed", "Beanstalk Seed", "Item_BeanstalkSeed", Palette.SeedBean, ItemKind.Seed),
-            ("shelf_seed", "Shelf Seed", "Item_ShelfSeed", Palette.CloudWhite, ItemKind.Seed),
-            ("dew_seed", "Dew Seed", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
+            ("vine_seed", "Vine", "Item_VineSeed", Palette.SeedBamboo, ItemKind.Seed),
+            ("beanstalk_seed", "Beanstalk", "Item_BeanstalkSeed", Palette.SeedBean, ItemKind.Seed),
+            ("shelf_seed", "Shelf", "Item_ShelfSeed", Palette.CloudWhite, ItemKind.Seed),
+            ("dew_seed", "Dew", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
             ("parachute_leaf", "Parachute Leaf", "Item_ParachuteLeaf", Palette.LeafYellow, ItemKind.Misc),
-            ("heart_seed", "Heart Seed", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),
-            ("heat_seed", "Heat Seed", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
+            ("heart_seed", "Heart", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),
+            ("heat_seed", "Heat", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
             ("coconut", "Coconut", "Item_Coconut", new Color(0.55f, 0.37f, 0.21f), ItemKind.Misc),   // only palms drop one; nothing can plant it
         };
 
