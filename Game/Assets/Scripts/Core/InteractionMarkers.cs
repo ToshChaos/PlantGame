@@ -92,6 +92,8 @@ namespace PlantGame.Core
 
                     var r = Get(used++);
                     var b = c.bounds;
+                    if (t.interactable is WaterSource wsrc)   // a pond / stream is one trigger: the marker sits on the patch next to the player, not the middle of the whole thing
+                    { var pc = wsrc.MarkerCentre(transform.position); b = new Bounds(new Vector3(pc.x, b.center.y, pc.z), new Vector3(1f, b.size.y, 1f)); }
                     bool focused = soilRing ? ready : ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
                     // floating: a slow bob (out of step per target) so the markers catch the eye
                     float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);

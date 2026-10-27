@@ -36,6 +36,14 @@ namespace PlantGame.Plants
             return best;
         }
 
+        /// <summary>Centre of the patch the marker belongs on: the nearest melted (open) patch to pos, else the nearest frozen one.</summary>
+        public Vector3 MarkerCentre(Vector3 pos)
+        {
+            Init(); Patch best = null; float bd = float.MaxValue;
+            foreach (var p in _patches) { float d = Dist(p, pos) + (p.frozen ? 1000f : 0f); if (d < bd) { bd = d; best = p; } }
+            return best != null ? best.t.position : transform.position;
+        }
+
         /// <summary>Some still-frozen patch within reach of pos.</summary>
         public bool FrozenNear(Vector3 pos) => Nearest(pos, true) != null;
         /// <summary>Some open (unfrozen) water within reach of pos: the can can be refilled here.</summary>
