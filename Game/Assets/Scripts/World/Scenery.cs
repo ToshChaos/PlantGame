@@ -377,7 +377,7 @@ namespace PlantGame.World
             var terrain = isle.GetComponent<IslandTerrain>();
             var c2 = new Vector2(centre.x, centre.z);
             float Y(Vector2 p) => terrain != null ? centre.y + terrain.HeightAtWorld(new Vector3(p.x, centre.y, p.y)) : centre.y;
-            var marble = Kit.Mat("M_Marble") ?? _marble; var stone = Kit.Mat("M_Stone"); var crystal = Kit.Mat("M_Crystal");
+            var marble = Kit.Mat("M_Marble") ?? _marble; var stone = Kit.Mat("M_Stone"); var crystal = CrystalMat();
             Material brick = Kit.Mat("M_Brick") ?? Kit.Mat("M_TerrainMud") ?? stone;
             // chips of white marble and chunks of old brick scattered round every ruin
             foreach (var rs in ruinSpots)
@@ -401,7 +401,7 @@ namespace PlantGame.World
                 float sz = 0.12f + (float)rnd.NextDouble() * 0.16f;
                 var gem = MeshPrim("Gem", DebrisMeshes.Crystal(rnd.Next(4)), root.transform, new Vector3(p.x, Y(p) + sz * 0.9f, p.y), new Vector3(sz, sz * 1.4f, sz), crystal, false);
                 gem.transform.rotation = Quaternion.Euler((float)(rnd.NextDouble() - 0.5) * 30f, (float)rnd.NextDouble() * 360f, (float)(rnd.NextDouble() - 0.5) * 30f);
-                var sp = gem.AddComponent<GemSparkle>(); sp.glow = rnd.NextDouble() < 0.3 ? new Color(1f, 0.8f, 0.4f) : new Color(0.49f, 0.95f, 0.9f);
+                var sp = gem.AddComponent<GemSparkle>(); sp.glow = Theme == LevelTheme.Snow || rnd.NextDouble() < 0.3 ? new Color(1f, 0.8f, 0.4f) : new Color(0.49f, 0.95f, 0.9f);
             }
             // fallen logs on the rocky islands (a few on mud ones): bark lathe logs lying on the ground, some with a branch stub
             if (ground != GroundKind.Grass)
@@ -452,6 +452,21 @@ namespace PlantGame.World
         // ------------------------------------------------------------------ imported models (Kenney CC0 kits)
         // The small Kenney rocks have no usable material of their own (they came out orange and green): they are shown as golden-orange jewels instead.
         static bool IsJewelModel(string n) => n == "rock_smallA" || n == "rock_smallB" || n == "stone_smallC";
+        static Material _yellowCrystal;
+        /// <summary>The glowing crystal material; snow levels use a golden-yellow copy (the cyan crystals read as green against the snow).</summary>
+        static Material CrystalMat()
+        {
+            var m = Kit.Mat("M_Crystal");
+            if (Theme != LevelTheme.Snow || m == null) return m;
+            if (_yellowCrystal != null) return _yellowCrystal;
+            _yellowCrystal = new Material(m) { name = "M_Crystal_Snow", hideFlags = HideFlags.DontSave };
+            var yellow = new Color(1f, 0.82f, 0.25f);
+            if (_yellowCrystal.HasProperty("_BaseColor")) _yellowCrystal.SetColor("_BaseColor", yellow);
+            if (_yellowCrystal.HasProperty("_Color")) _yellowCrystal.SetColor("_Color", yellow);
+            if (_yellowCrystal.HasProperty("_EmissionColor")) _yellowCrystal.SetColor("_EmissionColor", yellow * 0.8f);
+            return _yellowCrystal;
+        }
+
         static Material _jewel;
         static Material JewelMat()
         {
@@ -1239,7 +1254,7 @@ namespace PlantGame.World
             var stone = Kit.Mat("M_Stone"); var terrain = Kit.Mat("M_Terrain");
             var rnd = new System.Random(2026);
             var rocks = new GameObject("FloatingRocks"); rocks.transform.SetParent(parent, false);
-            var crystalMat = Kit.Mat("M_Crystal");
+            var crystalMat = CrystalMat();
             for (int i = 0; i < 70; i++)
             {
                 float a = (float)(rnd.NextDouble() * Mathf.PI * 2), r = 22f + (float)rnd.NextDouble() * 150f;
