@@ -38,6 +38,8 @@ namespace PlantGame.Player
         Font _font;
         bool _simulating, _running;
         Vector2 _restPos;
+        float _waterAlpha;
+        static readonly Color LabelGreen = new Color(0.07f, 0.24f, 0.14f);
 
         void Awake()
         {
@@ -131,6 +133,8 @@ namespace PlantGame.Player
             _stickBase.GetComponent<Image>().color = new Color(1f, 1f, 1f, stickHeld ? 0.7f : 0.35f);
         }
 
+        static void Tint(Text t, bool gold) { t.color = gold ? Palette.Gold : LabelGreen; t.GetComponent<Outline>().enabled = gold; }
+
         void Pressed(Btn b)
         {
             switch (b)
@@ -147,7 +151,7 @@ namespace PlantGame.Player
         int HitButton(Vector2 p)
         {
             for (int i = 0; i < _btn.Length; i++)
-                if (_btn[i].gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(_btn[i], p, null)) return i;
+                if (_btn[i].gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(_btn[i], p, null) && (i != (int)Btn.Water || _waterAlpha > 0.5f)) return i;
             return -1;
         }
 
@@ -161,10 +165,14 @@ namespace PlantGame.Player
                 string l = _pi.ContextLabel;
                 if (l.StartsWith("Use ") && l.EndsWith("Seed", System.StringComparison.OrdinalIgnoreCase)) l = "Use seed";   // the seed name does not fit the button
                 _btnLabel[(int)Btn.Context].text = l;
+                Tint(_btnLabel[(int)Btn.Context], _pi.Context == PlayerInteraction.ContextKind.Drop);   // Drop reads gold
             }
             bool water = _pi.WaterUseful;
-            _btn[(int)Btn.Water].gameObject.SetActive(water);
-            if (water) _btnLabel[(int)Btn.Water].text = _pi.WaterLabel;
+            if (water) { _btnLabel[(int)Btn.Water].text = _pi.WaterLabel; _waterAlpha = 1f; }
+            else _waterAlpha = Mathf.MoveTowards(_waterAlpha, 0f, Time.unscaledDeltaTime * 2.5f);   // fades out (e.g. the can is full) instead of vanishing
+            _btn[(int)Btn.Water].gameObject.SetActive(_waterAlpha > 0.001f);
+            _btn[(int)Btn.Water].GetComponent<CanvasGroup>().alpha = _waterAlpha;
+            Tint(_btnLabel[(int)Btn.Water], _btnLabel[(int)Btn.Water].text == "Refill");   // Refill reads gold
         }
 
         // ---------------------------------------------------------------- build
@@ -219,10 +227,12 @@ namespace PlantGame.Player
             var trt = (RectTransform)tgo.transform; trt.SetParent(rt, false);
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(10, 10); trt.offsetMax = new Vector2(-10, -10);
             var t = tgo.GetComponent<Text>();
-            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = new Color(0.07f, 0.24f, 0.14f);
+            t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = LabelGreen;
             bool bold = b == Btn.Jump || b == Btn.Context;   // Jump, pick up and use read bold
             t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
             t.fontSize = b == Btn.Context ? 44 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            var ol = tgo.AddComponent<Outline>(); ol.effectColor = LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = false;   // keeps the gold labels readable on the white disc
+            rt.gameObject.AddComponent<CanvasGroup>();
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
     }
