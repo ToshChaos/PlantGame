@@ -389,7 +389,7 @@ namespace PlantGame.World
             var src = root.AddComponent<SeedTree>();
             if (ambience) root.AddComponent<Audio.SeedAmbience>();
             src.possibleSeeds = new[] { item };
-            src.seedsToDrop = drop; src.maxAlive = maxAlive; src.regrowSeconds = 60f;
+            src.seedsToDrop = drop; src.maxAlive = maxAlive; src.regrowSeconds = item.id == "parachute_leaf" ? 150f : 60f;   // the glide leaf comes back, but slowly
             src.dropRadius = 3f; src.dropHeight = tree ? 2.4f : 0.9f; src.sandboxSeed = index + 1;
             return src;
         }
