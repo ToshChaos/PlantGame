@@ -53,7 +53,7 @@ Every generated level has a code of five dash-joined words, shown on the pause a
 
 ## Getting started
 1. Open `Game/` in Unity Hub with **Unity 6000.6.5f1** (URP).
-2. Open `Assets/Scenes/Title.unity` and press Play. `Sandbox_Gameplay.unity` is a movement course with one of every item.
+2. Open `Assets/Scenes/Title.unity` and press Play. `Sandbox.unity` is a movement course with one of every item.
 
 Every generated asset is committed. After changing a builder, rerun its **PlantGame** menu: **Build All** (project
 settings, materials, items, player, sandbox), **7 / 8 / 10 / 14** (plant prefabs), **14 Build World Kit** (the runtime

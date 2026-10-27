@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Main.unity
     guid: 31f0e8c1e1fdc47bc9f0cf53b9b626d1
   - enabled: 1
-    path: Assets/Scenes/Sandbox_Gameplay.unity
+    path: Assets/Scenes/Sandbox.unity
     guid: 10af3476bd0d143e4806c3be1a8e4b17
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}

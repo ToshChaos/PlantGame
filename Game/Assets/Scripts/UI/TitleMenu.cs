@@ -35,7 +35,7 @@ namespace PlantGame.UI
 
         static readonly (string label, string scene)[] TestScenes =
         {
-            ("Interaction test", "Sandbox_Gameplay"),
+            ("Interaction test", "Sandbox"),
         };
         static readonly Color ExploreGreen = new Color(0.18f, 0.52f, 0.32f, 0.97f);
         static readonly string[] DifficultyNames = { "Easy", "Normal", "Hard" };

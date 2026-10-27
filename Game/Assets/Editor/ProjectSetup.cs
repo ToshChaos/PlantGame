@@ -23,7 +23,7 @@ namespace PlantGame.Editor
         };
 
         public const string ScenesDir = "Assets/Scenes";
-        public static readonly string[] SceneNames = { "Title", "Main", "Sandbox_Gameplay" };
+        public static readonly string[] SceneNames = { "Title", "Main", "Sandbox" };
 
         [MenuItem("PlantGame/1 Setup Project", false, 1)]
         public static void Run()

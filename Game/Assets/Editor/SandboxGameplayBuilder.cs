@@ -9,13 +9,13 @@ using PlantGame.World;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T03: builds Sandbox_Gameplay with the tuning course from the task:
+    /// T03: builds Sandbox with the tuning course from the task:
     /// start floor, 5 m gap (jumpable, +Z), 7 m gap (not jumpable, +X), 1.6 m ledge (-Z), stairs, a 30 degree ramp
-    /// and a 6 m tower with a ladder (W/S climb, Space jumps off). Menu: PlantGame > 5 Build Sandbox_Gameplay.
+    /// and a 6 m tower with a ladder (W/S climb, Space jumps off). Menu: PlantGame > 5 Build Sandbox.
     /// </summary>
     public static class SandboxGameplayBuilder
     {
-        [MenuItem("PlantGame/5 Build Sandbox_Gameplay", false, 5)]
+        [MenuItem("PlantGame/5 Build Sandbox", false, 5)]
         public static void Build()
         {
             if (MaterialBuilder.Load("M_Terrain") == null) MaterialBuilder.Build();
@@ -114,9 +114,9 @@ namespace PlantGame.Editor
             var p = (GameObject)PrefabUtility.InstantiatePrefab(player);
             p.transform.position = new Vector3(0f, 0.05f, 0f);
 
-            EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Sandbox_Gameplay"));
+            EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Sandbox"));
             ProjectSetup.RegisterScenes();
-            Debug.Log("[PlantGame] Sandbox_Gameplay built. WASD/mouse/Space; tower+ladder to the left (-X).");
+            Debug.Log("[PlantGame] Sandbox built. WASD/mouse/Space; tower+ladder to the left (-X).");
         }
 
         static GameObject Box(string name, Vector3 pos, Vector3 size, Material mat)
