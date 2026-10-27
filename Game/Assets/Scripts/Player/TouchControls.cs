@@ -189,7 +189,7 @@ namespace PlantGame.Player
             var gold = Palette.Gold; gold.a = 0.85f; _stickKnob.GetComponent<Image>().color = gold;   // ring white, knob gold: the player's colours
 
             MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
-            MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-400, 140), 150, "");
+            MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-420, 150), 190, "");
             MakeButton(Btn.Water, root, new Vector2(1f, 0f), new Vector2(-150, 410), 125, "Water");
             MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(120, -120), 150, "Pause");
             LayoutNow();

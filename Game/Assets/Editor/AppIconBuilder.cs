@@ -39,8 +39,44 @@ namespace PlantGame.Editor
             imp.SaveAndReimport();
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(Path_);
             PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+            BuildAndroid(o);
             AssetDatabase.SaveAssets();
             Debug.Log("[PlantGame] App icon built: " + Path_);
+        }
+
+        /// <summary>Android needs its own icon slots: adaptive only (background + foreground layers, the O kept inside the 66% safe zone); Unity derives round and legacy from it.</summary>
+        static void BuildAndroid(Texture2D o)
+        {
+            const int S = 512;
+            var top = new Color(0.10f, 0.25f, 0.38f); var bot = new Color(0.04f, 0.10f, 0.17f);
+            var bg = new Color[S * S]; var fg = new Color[S * S];
+            const float oScale = 0.6f;
+            for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
+            {
+                float u = (x + 0.5f) / S, v = (y + 0.5f) / S;
+                bg[y * S + x] = Color.Lerp(bot, top, v);
+                float ou = (u - 0.5f) / oScale + 0.5f, ov = (v - 0.5f) / oScale + 0.5f;
+                fg[y * S + x] = ou < 0f || ou > 1f || ov < 0f || ov > 1f ? Color.clear : o.GetPixelBilinear(ou, ov);
+            }
+            var bgTex = SaveLayer("Assets/Art/Textures/T_AppIcon_Bg.png", bg, S);
+            var fgTex = SaveLayer("Assets/Art/Textures/T_AppIcon_Fg.png", fg, S);
+            var target = UnityEditor.Build.NamedBuildTarget.Android;
+            var adaptive = PlayerSettings.GetPlatformIcons(target, UnityEditor.Android.AndroidPlatformIconKind.Adaptive);
+            foreach (var i in adaptive) i.SetTextures(bgTex, fgTex);
+            PlayerSettings.SetPlatformIcons(target, UnityEditor.Android.AndroidPlatformIconKind.Adaptive, adaptive);
+        }
+
+        static Texture2D SaveLayer(string path, Color[] px, int size)
+        {
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            t.SetPixels(px); t.Apply();
+            File.WriteAllBytes(path, t.EncodeToPNG());
+            Object.DestroyImmediate(t);
+            AssetDatabase.ImportAsset(path);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            imp.textureType = TextureImporterType.Default; imp.alphaIsTransparency = true; imp.mipmapEnabled = false; imp.npotScale = TextureImporterNPOTScale.None;
+            imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
     }
 }
