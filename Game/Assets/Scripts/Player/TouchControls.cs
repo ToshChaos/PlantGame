@@ -207,14 +207,8 @@ namespace PlantGame.Player
             else StartWalk(ClimbSpot(vol), null, default, vol);
         }
 
-        /// <summary>Where the player walks to reach a beanstalk: the nearest point of its volume, kept on the climb side of the stalk.</summary>
-        Vector3 ClimbSpot(ClimbableVolume vol)
-        {
-            var box = vol.GetComponent<BoxCollider>();
-            Vector3 p = box.bounds.ClosestPoint(_pc.transform.position);
-            if (!vol.IsOnClimbSide(p)) p = vol.ClimbLinePoint + vol.SurfaceNormal * 0.35f;
-            return p;
-        }
+        /// <summary>Where the player walks to reach a beanstalk: on its climb line, a little to the player's side.</summary>
+        Vector3 ClimbSpot(ClimbableVolume vol) => vol.ClimbLinePoint + vol.SurfaceNormal * 0.45f;   // well inside the volume, in front of the stalk: stopping short of the box edge would never grab
 
         // ---------------------------------------------------------------- tap-to-walk
 

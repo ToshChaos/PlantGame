@@ -236,7 +236,7 @@ namespace PlantGame.UI
                 var l = levels[i];
                 int row = i / perRow, col = i % perRow, inRow = Mathf.Min(perRow, levels.Length - row * perRow);
                 bool tc = TouchInput.Active;   // phones: taller cards with bigger text (the screen has the vertical room)
-                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (tc ? (row == 0 ? 225f : -130f) : (row == 0 ? 155f : -175f)) : 130f, h = two ? (tc ? 340f : 270f) : 330f;
+                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (tc ? (row == 0 ? 170f : -240f) : (row == 0 ? 155f : -175f)) : 130f, h = two ? (tc ? 360f : 270f) : 330f;
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? (tc ? 24 : 21) : 23, new Vector2(0, h / 2 - 35), 290, Palette.TextOrange);
                 _cardInfo[i] = Label(card, "", two ? (tc ? 19 : 16) : 19, new Vector2(0, two ? 8 : 12), 280, Color.white);
@@ -245,7 +245,7 @@ namespace PlantGame.UI
                 Button(card, "Play", new Vector2(0, -h / 2 + 32), () => StartRun(l.ToConfig()), 150, 24, 50f);
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
-            float testY = two ? (TouchInput.Active ? -365f : -345f) : -150f;
+            float testY = two ? (TouchInput.Active ? -455f : -345f) : -150f;
             for (int i = 0; i < TestScenes.Length; i++)
             {
                 string scene = TestScenes[i].scene;
@@ -258,14 +258,16 @@ namespace PlantGame.UI
             // generate level: random seed, difficulty, shows the code before starting
             _generate = Screen("Generate", root, 0.82f);
             Label(_generate.transform, "Generate level", 70, new Vector2(0, 400), 1200, Palette.TextOrange);
-            var rnd = Panel(_generate.transform, new Vector2(0, 60), new Vector2(900, 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
-            Label(rnd, "Your seed", 34, new Vector2(0, 130), 800, Palette.TextOrange);
-            _randomCode = Label(rnd, "", 40, new Vector2(0, 65), 860, Color.white);
-            _diffLabel = Button(rnd, "Difficulty", new Vector2(-215, -25), () => { _difficulty = (_difficulty + 1) % 3; RefreshRandom(); }, 420, 26);
-            Button(rnd, "New seed", new Vector2(215, -25), NewRandomSeed, 420, 30);
-            Button(rnd, "Play", new Vector2(-215, -115), () => StartRun(RandomConfig()), 420, 34);
-            Button(rnd, "Copy code", new Vector2(215, -115), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(RandomConfig()), 420, 30);
-            Button(_generate.transform, "Back", new Vector2(0, -250), () => Show(_home), 300, 34);
+            bool gt = TouchInput.Active;   // phones: wider buttons (x1.15), so more room between them
+            float gx = gt ? 280f : 215f, gy1 = gt ? -15f : -25f, gy2 = gt ? -125f : -115f;
+            var rnd = Panel(_generate.transform, new Vector2(0, gt ? 40 : 60), new Vector2(gt ? 1200 : 900, gt ? 380 : 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
+            Label(rnd, "Your seed", 34, new Vector2(0, gt ? 150 : 130), 800, Palette.TextOrange);
+            _randomCode = Label(rnd, "", 40, new Vector2(0, gt ? 80 : 65), 860, Color.white);
+            _diffLabel = Button(rnd, "Difficulty", new Vector2(-gx, gy1), () => { _difficulty = (_difficulty + 1) % 3; RefreshRandom(); }, 420, 26);
+            Button(rnd, "New seed", new Vector2(gx, gy1), NewRandomSeed, 420, 30);
+            Button(rnd, "Play", new Vector2(-gx, gy2), () => StartRun(RandomConfig()), 420, 34);
+            Button(rnd, "Copy code", new Vector2(gx, gy2), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(RandomConfig()), 420, 30);
+            Button(_generate.transform, "Back", new Vector2(0, gt ? -330 : -250), () => Show(_home), 300, 34);
 
             // input seed
             _seed = Screen("Seed", root, 0.82f);

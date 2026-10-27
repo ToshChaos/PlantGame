@@ -138,7 +138,7 @@ namespace PlantGame.Core
                     {
                         Vector3 foot = v.ClimbLinePoint + v.SurfaceNormal * 0.5f;
                         bool atTop = transform.position.y >= v.TopY - 2.5f;
-                        float baseY = atTop ? v.TopY + 1.2f : v.GetComponent<BoxCollider>().bounds.min.y + 1.6f;
+                        float baseY = atTop ? v.TopY + 2.1f : v.GetComponent<BoxCollider>().bounds.min.y + 2.1f;
                         var pos = new Vector3(foot.x, baseY, foot.z);
                         float dist = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(transform.position.x, transform.position.z));
                         if (dist > showRadius) continue;
