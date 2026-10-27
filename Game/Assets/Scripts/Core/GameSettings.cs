@@ -16,6 +16,13 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(HintsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
+        /// <summary>Difficulty of the last generated level (0 easy, 1 normal, 2 hard); the Generate screen opens on it.</summary>
+        public static int Difficulty
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt("plantgame.difficulty", 1), 0, 2);
+            set { PlayerPrefs.SetInt("plantgame.difficulty", Mathf.Clamp(value, 0, 2)); PlayerPrefs.Save(); }
+        }
+
         /// <summary>Third-person camera turns with the player (A / D while moving forward steer it). On by default.</summary>
         public static bool CameraFollow
         {
