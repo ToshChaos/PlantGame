@@ -52,7 +52,14 @@ namespace PlantGame.Plants
         public bool ThawNear(Vector3 pos)
         {
             var p = Nearest(pos, true); if (p == null) return false;
-            p.frozen = false; if (p.piece != null && liquid != null) p.piece.sharedMaterial = liquid;
+            // the melted area is twice as wide: neighbouring frozen discs whose centre lies within one radius melt too
+            foreach (var q in _patches)
+            {
+                if (!q.frozen) continue;
+                var d = q.t.position - p.t.position; d.y = 0f;
+                if (q != p && d.magnitude > p.r) continue;
+                q.frozen = false; if (q.piece != null && liquid != null) q.piece.sharedMaterial = liquid;
+            }
             Init(); frozen = _patches.Exists(q => q.frozen);
             return true;
         }
