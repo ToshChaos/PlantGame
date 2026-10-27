@@ -154,7 +154,7 @@ namespace PlantGame.UI
             {
                 _pauseHint.gameObject.SetActive(SeedLine().Length > 0 || (GameSettings.Hints));
                 if (_copyCode != null) _copyCode.SetActive(SeedLine().Length > 0);
-                _pauseHint.text = SeedLine().Length > 0 ? SeedLine() + "   (share it: the same code gives the same world)" : PauseTip;
+                _pauseHint.text = SeedLine().Length > 0 ? SeedLine() : PauseTip;
             }
             Time.timeScale = pause ? 0f : 1f;
             if (_input != null) _input.Enabled = !pause;
@@ -411,7 +411,14 @@ namespace PlantGame.UI
             Button("Restart", pr, V(new Vector2(0, -40), new Vector2(420, 110)), Restart);
             Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
-            _copyCode = Button("Copy seed code", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28).transform.parent.gameObject;
+            var copyText = Button("Copy", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
+            _copyCode = copyText.transform.parent.gameObject;
+            {   // the Jump button's look: white disc, yellow rim, dark green text
+                var cimg = _copyCode.GetComponent<Image>(); cimg.color = new Color(1f, 1f, 1f, 0.95f);
+                var rim = _copyCode.AddComponent<Outline>(); rim.effectColor = Palette.FlowerYellow; rim.effectDistance = new Vector2(5f, -5f);
+                var cb = _copyCode.GetComponent<UnityEngine.UI.Button>().colors; cb.highlightedColor = new Color(0.85f, 0.95f, 0.85f, 1f); cb.pressedColor = new Color(0.8f, 0.9f, 0.8f, 1f); _copyCode.GetComponent<UnityEngine.UI.Button>().colors = cb;
+                copyText.color = new Color(0.07f, 0.24f, 0.14f); copyText.fontStyle = FontStyle.Bold;
+            }
             _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 110), new Vector2(0.5f, 0.5f), true, true);
             _pauseHint.color = Color.white;
             _pausePanel.SetActive(false);
