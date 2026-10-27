@@ -11,11 +11,11 @@ namespace PlantGame.Plants
     /// </summary>
     public class WaterCollector : MonoBehaviour, IInteractable
     {
-        public float secondsPerCharge = 20f;
+        public float secondsPerCharge = 30f;
         public int capacity = 1;
         [Tooltip("A single-use dew patch: holds one charge from the start and never refills.")] public bool oneShot;
         public Transform reservoir;
-        /// <summary>Rain levels: a charge takes 15 s of rain (the progress is kept between showers).</summary>
+        /// <summary>Rain levels: a charge takes 15 s of rain (30 s elsewhere) (the progress is kept between showers).</summary>
         float Seconds => WeatherState.RainLevel ? 15f : secondsPerCharge;
 
         PlantInstance _plant;
