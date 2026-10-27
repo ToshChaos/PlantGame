@@ -10,8 +10,8 @@ Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `CUT`.
 | ID | Task | Owner | Depends on | Status |
 |----|------|-------|-----------|--------|
 | [T21](tasks/T21-level-tuning.md) | Balance pass on the ten curated levels and the generator (gaps, seed supply) | A0 | T14, T15 | TODO |
-| [T65](tasks/T65-leafless-trees.md) | Bare trees: snow-level broadleaf trees leafless except two yellow leaves, rare leafless variant elsewhere | A5+A6 | T36, T39, T45, T56 | TODO |
-| [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | TODO |
+| [T65](tasks/T65-leafless-trees.md) | Bare trees: snow-level broadleaf trees leafless except two yellow leaves, rare leafless variant elsewhere | A5+A6 | T36, T39, T45, T56 | DONE |
+| [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | DONE |
 
 ## Checks the MVP did not cover
 - A full by-hand playthrough of all ten levels (`docs/qa-checklist.md`); the automated pass only loads each level.

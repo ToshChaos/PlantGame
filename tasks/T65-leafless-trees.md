@@ -1,6 +1,6 @@
 # T65 — Bare trees: snow-level leaf trees and a rare leafless variant
 
-**Owner:** A5 Cartographer + A6 Tech Artist · **Status:** TODO (post-MVP, see `TODO.md`) · **Depends on:** T36, T39, T45, T56
+**Owner:** A5 Cartographer + A6 Tech Artist · **Status:** DONE (accepted 2026-10-27) · **Depends on:** T36, T39, T45, T56
 
 ## Goal
 Leafy (non-fir, non-palm) trees look wrong on the snow level. Make them bare, and use the same bare look as a rare variation elsewhere.
