@@ -133,6 +133,16 @@ namespace PlantGame.Core
             SetFocus(best);
         }
 
+        /// <summary>Touch tap on a marker: the collider is close enough to act on (a little more lenient than the focus range) and nothing blocks it.</summary>
+        public bool CanReach(Collider c, Target t)
+        {
+            Vector3 chest = Chest;
+            return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= (range + 0.5f) * (range + 0.5f) && !Blocked(chest, c, t);
+        }
+
+        /// <summary>Makes the tapped target the focus until the next Sense (touch tap on a marker).</summary>
+        public void Override(Target t) { SetFocus(t); }
+
         bool InRange(Collider c, Vector3 chest) => (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= range * range;
 
         bool Blocked(Vector3 chest, Collider c, Target tg)

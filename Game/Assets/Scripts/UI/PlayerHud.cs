@@ -78,9 +78,17 @@ namespace PlantGame.UI
         {
             if (Paused || _ended || _pi == null) return;
             var inv = _pi.Inventory;
-            if (inv.Selected != i) inv.Select(i);
-            else if (inv.SelectedItem != null) _pi.Drop();
+            bool again = i == _lastTapSlot && Time.unscaledTime - _lastTapTime < DoubleTapSeconds;
+            _lastTapSlot = i; _lastTapTime = Time.unscaledTime;
+            if (inv.Selected != i) inv.Select(i);   // a tap selects ...
+            if (again && inv.Get(i) != null) { _pi.Drop(); _lastTapSlot = -1; }   // ... a double tap drops what the slot holds
         }
+
+        const float DoubleTapSeconds = 0.4f;
+        int _lastTapSlot = -1; float _lastTapTime;
+        static RectTransform _hotbarRect;
+        /// <summary>True when the screen point is over the hotbar (the touch layer leaves those touches to the slots).</summary>
+        public static bool OverHotbar(Vector2 screenPos) => _hotbarRect != null && _hotbarRect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(_hotbarRect, screenPos, null);
 
         void OnEnable() { GameEvents.CanEmptyTried += OnCanEmptyTried; GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; }
         void OnDisable() { GameEvents.CanEmptyTried -= OnCanEmptyTried; GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; if (Paused) SetPaused(false); }
@@ -284,14 +292,14 @@ namespace PlantGame.UI
             else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
-                _prompt.text = TouchInput.Active ? "Tap Glide to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
+                _prompt.text = TouchInput.Active ? "Tap Jump to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
             if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && TouchInput.Active)   // touch ladder hints: the stick climbs
+            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && TouchInput.Active)   // touch ladder hints: tap the stalk
                 switch (_pc.CurrentClimbHint)
                 {
-                    case PlayerController.ClimbHint.Climb: _prompt.text = "Push the stick up to climb"; break;
-                    case PlayerController.ClimbHint.Descend: _prompt.text = "Pull the stick down to climb down"; break;
-                    case PlayerController.ClimbHint.Climbing: _prompt.text = "Stick up / down to climb    Jump to let go"; break;
+                    case PlayerController.ClimbHint.Climb: _prompt.text = "Tap the beanstalk to climb"; break;
+                    case PlayerController.ClimbHint.Descend: _prompt.text = "Tap the beanstalk to climb down"; break;
+                    case PlayerController.ClimbHint.Climbing: _prompt.text = "Tap above or below to climb    Jump to let go"; break;
                 }
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
                 switch (_pc.CurrentClimbHint)
@@ -338,6 +346,7 @@ namespace PlantGame.UI
             bool touch = TouchInput.Active;
             var bar = touch ? Rect("Hotbar", root, new Vector2(1f, 1f), new Vector2(total, SlotSize), new Vector2(-(total * 0.5f + 40f), -(SlotSize * 0.5f + 30f)))
                             : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 90));
+            _hotbarRect = bar;
             _slotBg = new Image[n]; _slotIcon = new Image[n]; _slotNum = new Text[n];
             for (int i = 0; i < n; i++)
             {

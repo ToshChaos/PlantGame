@@ -1,4 +1,4 @@
-# Mobile controls (design for T57-T64, not implemented yet)
+# Mobile controls
 
 Target: Android beta (phones first, tablets should work), later iOS. Landscape only. Desktop keeps working unchanged; the mobile layer is additive. This is a design note for the tasks `tasks/T57..T64`; AGENTS.md section 5.8 stays the desktop contract until T57 lands, then gains a mobile column.
 
@@ -9,41 +9,27 @@ Target: Android beta (phones first, tablets should work), later iOS. Landscape o
 - **Everything the HUD says is bound-label aware**: prompts print the touch button name / icon, not "Press Q".
 - Controls auto-show on touch devices (and in the editor with Device Simulator or a toggle), hidden when a keyboard / gamepad is the last used device.
 
-## Layout (landscape, safe-area aware)
-```
-+--------------------------------------------------------------+
-| [II pause]        time / goal hint                 [hotbar 4]|
-|                                                              |
-|                                         look: drag anywhere  |
-|                                          on the right half   |
-|                                                              |
-|  (  floating                     [Jump]   [Context]          |
-|   left stick  )                  [Water]  [Drop]   [Run]     |
-+--------------------------------------------------------------+
-```
-- **Move**: floating virtual stick, left half of the screen, appears where the thumb lands (fixed-position fallback in options). Dead zone 0.15; pushing past ~0.85 = run, so there is no Shift button. Walk below that. Tapping or holding the centre of the stick (inside the dead zone) walks forward; there is no separate tap-to-walk elsewhere on the screen.
-- **Look**: drag on the right half (not over a button). Sensitivity slider in options; separate invert-Y toggle. Touch delta uses the same smoothing as mouse look but scaled by screen DPI, not pixels.
-- **Jump**: big button, right thumb. While climbing it jumps off the vine (same as Space).
-- **Context button** (replaces Q-pickup and E-use): label/icon follows the current focus: Pick up seed, Plant, Raise flag, Thaw, Glide. If nothing is focused and the selected slot has an item it becomes Drop (long-press = drop always).
-- **Water button** (F): small, only visible when it has a use (a sprout in 3 m, or a water source / collector in reach, or the can is dry near a source). Shows the charge droplets.
-- **Hotbar**: four slots top right (built that way since T60; desktop keeps the bottom-centre bar, and on touch the selected item name sits under the row), tap a slot to select (replaces Tab); tap the selected slot again to drop it. Plus nothing for Shift+Tab.
-- **Climbing**: the left stick's vertical axis is climb up/down (same as W / S); the context button shows "Grab" when inside a climbable volume (auto-grab by pushing up still works).
-- **Pause**: small button top left; the pause menu is the same panel with bigger hit targets. **Restart**: inside the pause menu only (no hold-R on touch).
-- Minimum touch target 48 dp (about 9 mm), hit area larger than the drawn icon, 16 dp gap. Opacity 55 percent idle, 90 percent while pressed. Layout scale + left-handed mirror in options.
+## Layout (v3, landscape, safe-area aware)
+No stick and no action buttons. Only **Jump** (bottom right) and **Pause** (top left) are buttons; the hotbar is top right.
+- **Look**: drag anywhere (not over a button or the hotbar).
+- **Walk**: tap the ground. The player turns on the spot towards the tap, then walks there at walking speed (a ring marks the spot). Gives up when stuck, after 25 s, or on respawn.
+- **Act**: tap the circle / diamond marker over a pickup, soil patch, sprout, water source, collector, frozen water or the goal flag. In reach (about 3.5 m) it runs the same checks as the keys (free slot, right seed, water in the can, not frozen, ...); out of reach the player walks up to it first and a second tap acts.
+- **Climb**: tap the beanstalk (walks up, grabs, climbs; at the top edge it starts the descent). While climbing a tap above / below the player sets the direction, a tap on the player stops, Jump jumps off.
+- **Glide**: with a parachute leaf selected, tap Jump again in the air.
+- **Hotbar**: tap selects, double tap on a filled slot drops it.
 
 ## Action map (desktop key -> touch)
 | Desktop | Touch |
 |---------|-------|
-| WASD / arrows | Left floating stick |
-| Shift (run) | Stick pushed to the edge |
-| Mouse look | Right-half drag |
+| WASD / arrows | Tap the ground |
+| Mouse look | Drag |
 | Space | Jump button |
-| Q (pick up / drop) | Context button (pick up) / long-press or tap selected slot (drop) |
-| E (plant, use, thaw, glide, flag) | Context button |
-| F (water, refill) | Water button (contextual) |
+| Q (pick up) / drop | Tap the diamond / double tap the slot |
+| E (plant, use, thaw, flag) | Tap the circle |
+| F (water, refill) | Tap the sprout / water circle |
+| E (glide) | Jump again in the air |
 | Tab / 1-4 | Tap hotbar slot |
 | Esc | Pause button / Android back |
-| hold R | Pause menu: Restart |
 
 ## Auto-focus rule (T58)
 Today `PlayerController` / the interaction system raycasts from the camera. For touch: score candidates (interactables, usable targets, waterables) within 3 m: distance, angle to the player's facing (cone 70 degrees), prefer the one the camera centre points at when tied. Hysteresis so the focus does not flicker. The same focus object feeds the prompt and the context button.

@@ -79,8 +79,11 @@ namespace PlantGame.Player
         /// <summary>Touch context button: the player stands at a climbable stalk, on its climb side and below the top zone, so Grab would start a climb.</summary>
         public bool CanGrab => CurrentState != State.Climbing && _touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position) && transform.position.y < _touching.TopY - topZone;
         public void Grab() { if (CanGrab) StartClimb(_touching); }
-        /// <summary>Touch context button while climbing: let go and drop (the jump button jumps off instead).</summary>
-        public void LetGo() { if (CurrentState == State.Climbing) { ExitClimb(State.Airborne); _vVel = 0f; _hVel = Vector3.zero; } }
+        /// <summary>Touch: standing in a climb volume at its top edge on the climb side: a tap on the stalk starts the descent.</summary>
+        public bool CanDescend => CurrentState == State.Grounded && _touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position) && transform.position.y >= _touching.TopY - topZone;
+        public void Descend() { if (CanDescend) StartClimb(_touching); }
+        /// <summary>The camera yaw the movement input is relative to (touch tap-to-walk converts world directions with it).</summary>
+        public float Yaw => _yaw;
         public bool IsGliding { get; private set; }
         /// <summary>T50: extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
         public Vector3 WindVelocity;
@@ -421,6 +424,7 @@ namespace PlantGame.Player
             else face = new Vector3(_hVel.x, 0f, _hVel.z);
             if (CurrentState != State.Climbing && Input.Move.y < -0.1f) return;   // walking backwards: the heading stays
             face.y = 0f;
+            if (face.sqrMagnitude < 0.04f && CurrentState != State.Climbing) face = TouchInput.FaceDir;   // touch tap-to-walk: turn on the spot before setting off
             if (face.sqrMagnitude < 0.04f) return;   // standing still: keep the last facing
             var target = Quaternion.LookRotation(face.normalized, Vector3.up);
             model.rotation = Quaternion.RotateTowards(model.rotation, target, turnSpeed * dt);

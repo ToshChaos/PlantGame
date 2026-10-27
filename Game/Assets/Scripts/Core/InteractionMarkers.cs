@@ -29,6 +29,10 @@ namespace PlantGame.Core
         /// <summary>True while a refill marker (lake, waterfall, ready collector) is drawn as the thick circle: the HUD hint turns purple with it.</summary>
         public static bool RefillRingThick { get; private set; }
 
+        /// <summary>A marker drawn this frame: what a tap on it would act on (touch).</summary>
+        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; }
+        public static readonly List<Tappable> Tappables = new List<Tappable>();
+
         PlayerInteraction _pi;
         float _blockReadyUntil;
         Camera _cam;
@@ -47,6 +51,7 @@ namespace PlantGame.Core
             int used = 0;
             bool thickRefill = false;
             _seen.Clear();
+            Tappables.Clear();
             if (_pi != null && _cam != null)
             {
                 int n = Physics.OverlapSphereNonAlloc(transform.position, showRadius, _hits, Mask, QueryTriggerInteraction.Collide);
@@ -91,6 +96,7 @@ namespace PlantGame.Core
                     float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);
                     Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob + (waterRing ? 0.9f : 0f));   // the sprout ring floats higher: sprouts are tiny
                     r.transform.position = pos;
+                    Tappables.Add(new Tappable { position = pos, collider = c, target = t });
                     r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
                     r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue

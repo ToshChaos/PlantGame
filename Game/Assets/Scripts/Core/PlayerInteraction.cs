@@ -33,14 +33,6 @@ namespace PlantGame.Core
         /// <summary>The player is at (or standing in) a lake / waterfall, or next to a Water Collector with water: F would refill.</summary>
         public bool NearRefillSource { get; private set; }
 
-        /// <summary>T58: what the touch context button does right now (Pickup = Q, Use = E, Drop = drop the selected item).</summary>
-        public enum ContextKind { None, Pickup, Use, Drop, Grab, LetGo }
-        public ContextKind Context { get; private set; }
-        public string ContextLabel { get; private set; } = "";
-        /// <summary>The touch water button has a use: a thirsty sprout, a refill point in reach, or the can is empty near one.</summary>
-        public bool WaterUseful { get; private set; }
-        public string WaterLabel { get; private set; } = "Water";
-
         void Awake()
         {
             Inventory = GetComponent<Inventory.Inventory>();
@@ -54,7 +46,8 @@ namespace PlantGame.Core
             if (Sensor.facing == null) Sensor.facing = model;
             if (input != null)
             {
-                if (input.ContextPressed) DoContext();
+                if (TouchInput.HasTap) HandleTap(TouchInput.Tap);
+                if (TouchInput.JumpPressed) TryGlideOnTouch();
                 int delta = input.CycleDelta;
                 if (delta != 0) Inventory.Cycle(delta);
                 int slot = input.SlotPressed;
@@ -66,18 +59,36 @@ namespace PlantGame.Core
             UpdatePrompt();
         }
 
-        /// <summary>Touch context button: runs the action the button label announces.</summary>
-        void DoContext()
+        /// <summary>Touch: a second jump tap in the air opens the parachute leaf (there is no E key).</summary>
+        void TryGlideOnTouch()
         {
-            switch (Context)
+            var sel = Inventory.SelectedItem;
+            var pc = GetComponent<PlayerController>();
+            if (sel != null && sel.id == "parachute_leaf" && pc != null && pc.IsAirborne && !pc.IsGliding) Use();
+        }
+
+        /// <summary>
+        /// Touch: the player tapped the circle / diamond over a target that is within reach. The target becomes the focus, then the
+        /// same checks as the keys run (free slot, right seed, water in the can, not frozen, ...).
+        /// </summary>
+        void HandleTap(InteractionSensor.Target t)
+        {
+            Sensor.Override(t);
+            if (t.waterable != null && t.waterable.NeedsWater) { Water(); return; }               // a thirsty sprout (also a planted soil patch)
+            if (t.usable != null && t.interactable == null) { Use(); return; }                      // soil: plant the selected seed
+            var i = t.interactable;
+            if (i == null) return;
+            if (i is WaterSource ws)
             {
-                case ContextKind.Pickup: PickupOrDrop(); break;
-                case ContextKind.Use: Use(); break;
-                case ContextKind.Drop: Drop(); break;
-                case ContextKind.Grab: GetComponent<PlayerController>()?.Grab(); break;
-                case ContextKind.LetGo: GetComponent<PlayerController>()?.LetGo(); break;
-                default: GameEvents.RaiseUseRejected(); break;
+                if (ws.frozen) TryThaw(); else if (i.CanInteract(gameObject)) i.Interact(gameObject); else GameEvents.RaiseUseRejected();
             }
+            else if (IsRefillTarget(i)) { if (i.CanInteract(gameObject)) i.Interact(gameObject); else GameEvents.RaiseUseRejected(); }   // collector
+            else if (i.Action == InteractAction.Pickup)
+            {
+                if (i.CanInteract(gameObject)) i.Interact(gameObject);
+                else { if (i is WorldItem full && Inventory.IsFull) GameEvents.RaiseInventoryFull(full.item); GameEvents.RaiseUseRejected(); }
+            }
+            else Use();   // the goal flag (and the leaf at the goal)
         }
 
         public void PickupOrDrop()
@@ -252,19 +263,6 @@ namespace PlantGame.Core
                 else { p = "Frozen water, can be melted"; k = "Frozen"; }
             }
             CurrentPromptKey = k;
-
-            // touch context button: Q and E collapse into one label that always agrees with what pressing it does
-            var sel = Inventory.SelectedItem;
-            var pc = GetComponent<PlayerController>();
-            if (pc != null && pc.IsClimbing) { Context = ContextKind.LetGo; ContextLabel = "Let go"; }
-            else if (k == "Pickup") { Context = ContextKind.Pickup; ContextLabel = p; }
-            else if (k == "Use") { Context = ContextKind.Use; ContextLabel = p; }
-            else if (sel != null && sel.id == "parachute_leaf" && pc != null && pc.IsAirborne && !pc.IsGliding) { Context = ContextKind.Use; ContextLabel = "Glide"; }
-            else if (pc != null && pc.CanGrab) { Context = ContextKind.Grab; ContextLabel = "Grab"; }
-            else if (sel != null && sel.worldPrefab != null) { Context = ContextKind.Drop; ContextLabel = "Drop " + sel.displayName; }
-            else { Context = ContextKind.None; ContextLabel = ""; }
-            WaterUseful = k == "Water" || NearRefillSource || thirsty != null;
-            WaterLabel = NearRefillSource || (k == "Water" && target != null) ? "Refill" : "Water";
 
             if (p == CurrentPrompt) return;
             CurrentPrompt = p;

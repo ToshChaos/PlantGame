@@ -9,42 +9,52 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T57 / T58: the on-screen layer for phones (docs/mobile-controls.md). A floating stick on the left 40 percent of the
-    /// screen walks (pushed to the edge = run), dragging anywhere else looks, and round buttons in the right thumb's arc jump,
-    /// run the context action (pick up / plant / use / drop, label from PlayerInteraction) and water; the hotbar slots are tappable (PlayerHud).
-    /// Touches are polled (EnhancedTouch) and classified when they begin: a touch that starts on a button never becomes a
-    /// look drag, so stick, look and a button can be held at once. Results go to TouchInput; PlayerInputReader reads them.
+    /// T57 / T58: the on-screen layer for phones (docs/mobile-controls.md). Dragging looks around; a short tap does one of three things:
+    /// a tap on a world marker (the circle / diamond over a pickup, soil, water, the goal) activates it when the player is in reach
+    /// (and walks towards it otherwise), a tap on a beanstalk climbs it (while climbing, a tap above / below the player sets the
+    /// direction), and a tap on the ground turns the player towards the spot and walks there at walking speed. Two round buttons
+    /// remain: Jump and Pause; the hotbar slots are tappable (PlayerHud, double tap drops).
+    /// Touches are polled (EnhancedTouch) and classified when they begin, so a touch that starts on a button or the hotbar never
+    /// looks or taps the world. Results go to TouchInput; PlayerInputReader and PlayerInteraction read them.
     /// In the editor, GameSettings.TouchControls turns the layer on and TouchSimulation lets the mouse act as one finger.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public class TouchControls : MonoBehaviour
     {
-        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 140f, StickZone = 0.4f, AxisSnap = 0.2f;
+        const float LookCountsPerInch = 140f, TapSeconds = 0.3f, TurnFirstDegrees = 18f, ArriveDistance = 0.3f, WalkTimeout = 25f;
 
-        enum Role { None, Stick, Look, Button }
-        enum Btn { Jump, Context, Water, Pause, Count }
+        enum Role { None, Look, Button }
+        enum Btn { Jump, Pause, Count }
 
-        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; }
+        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; public float t0, maxDist; }
 
         PlayerInputReader _input;
         PlayerInteraction _pi;
+        PlayerController _pc;
         Canvas _canvas;
-        RectTransform _stickBase, _stickKnob;
         readonly RectTransform[] _btn = new RectTransform[(int)Btn.Count];
         readonly Image[] _btnImg = new Image[(int)Btn.Count];
         readonly Text[] _btnLabel = new Text[(int)Btn.Count];
         readonly bool[] _btnHeld = new bool[(int)Btn.Count];
         readonly Slot[] _slots = new Slot[16];
         Font _font;
-        bool _simulating, _running;
-        Vector2 _restPos;
-        float _waterAlpha;
+        bool _simulating;
         static readonly Color LabelGreen = new Color(0.07f, 0.24f, 0.14f);
+
+        // tap-to-walk
+        bool _walking, _turning;
+        Vector3 _walkPoint, _lastPos;
+        Collider _walkCol; InteractionSensor.Target _walkTarget;   // walking up to a marker: stop once it is in reach
+        ClimbableVolume _walkClimb;                                // walking up to a beanstalk: grab it as soon as the player stands in its volume
+        float _walkT, _stuckT;
+        int _climbDir;
+        SpriteRenderer _destMarker;
 
         void Awake()
         {
             _input = GetComponent<PlayerInputReader>();
             _pi = GetComponent<PlayerInteraction>();
+            _pc = GetComponent<PlayerController>();
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             Build();
         }
@@ -60,6 +70,7 @@ namespace PlantGame.Player
         {
             if (_simulating) { TouchSimulation.Disable(); _simulating = false; }
             if (EnhancedTouchSupport.enabled && TouchInput.Active) EnhancedTouchSupport.Disable();
+            CancelWalk();
             TouchInput.ClearAll();
         }
 
@@ -71,16 +82,14 @@ namespace PlantGame.Player
             if (!show)
             {
                 for (int i = 0; i < _slots.Length; i++) _slots[i].used = false;
-                TouchInput.Move = Vector2.zero; TouchInput.Run = false;
+                CancelWalk(); _climbDir = 0;
+                TouchInput.Move = Vector2.zero;
                 return;
             }
             if (!EnhancedTouchSupport.enabled) { EnhancedTouchSupport.Enable(); }
 
-            float scale = _canvas.scaleFactor;
-            float radius = StickRadiusRef * scale;
-            UpdateButtonVisibility();
             System.Array.Clear(_btnHeld, 0, _btnHeld.Length);
-            bool stickHeld = false;
+            float slop = Mathf.Max(24f, Screen.dpi * 0.12f);
 
             foreach (var t in Touch.activeTouches)
             {
@@ -90,28 +99,14 @@ namespace PlantGame.Player
                 bool ended = t.phase == UnityEngine.InputSystem.TouchPhase.Ended || t.phase == UnityEngine.InputSystem.TouchPhase.Canceled;
                 if (t.phase == UnityEngine.InputSystem.TouchPhase.Began || !s.used || s.id != t.touchId)
                 {
-                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look };
+                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look, t0 = Time.unscaledTime };
                     int b = HitButton(pos);
                     if (b >= 0) { s.role = Role.Button; s.btn = b; Pressed((Btn)b); }
-                    else if (pos.x < Screen.width * StickZone) { s.role = Role.Stick; PlaceStick(pos); }
+                    else if (PlayerHud.OverHotbar(pos)) s.role = Role.None;   // the slots own these touches
                 }
+                s.maxDist = Mathf.Max(s.maxDist, (pos - s.origin).magnitude);
                 switch (s.role)
                 {
-                    case Role.Stick:
-                        if (!ended)
-                        {
-                            Vector2 d = Vector2.ClampMagnitude((pos - s.origin) / radius, 1f);
-                            float m = d.magnitude;
-                            // tapping or holding the centre of the stick (inside the dead zone) walks forward
-                            Vector2 v = m < Deadzone ? Vector2.up : d / m * Mathf.InverseLerp(Deadzone, 1f, m);
-                            // within ~11 degrees of an axis the stick snaps to it: walking straight along a 1.2 m bridge needs no steady thumb
-                            float ax = Mathf.Abs(v.x), ay = Mathf.Abs(v.y);
-                            if (ax < ay * AxisSnap) v.x = 0f; else if (ay < ax * AxisSnap) v.y = 0f;
-                            _running = m >= (_running ? RunThreshold - 0.06f : RunThreshold + 0.04f);   // hysteresis: no flicker between walk and run at the edge
-                            TouchInput.Move = v; TouchInput.Run = _running;
-                            _stickKnob.position = s.origin + d * radius; stickHeld = true;
-                        }
-                        break;
                     case Role.Look:
                         if (!ended)
                         {
@@ -120,6 +115,7 @@ namespace PlantGame.Player
                             if (GameSettings.TouchInvertY) dl.y = -dl.y;
                             TouchInput.Look += dl;
                         }
+                        else if (t.phase == UnityEngine.InputSystem.TouchPhase.Ended && s.maxDist <= slop && Time.unscaledTime - s.t0 <= TapSeconds) WorldTap(pos);
                         break;
                     case Role.Button:
                         if (!ended) _btnHeld[s.btn] = true;
@@ -128,52 +124,168 @@ namespace PlantGame.Player
                 s.used = !ended;
                 _slots[fi] = s;
             }
-            if (!stickHeld) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; _stickBase.position = _restPos; _stickKnob.position = _restPos; }
             for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = _btnHeld[i] ? new Color(0.85f, 0.95f, 0.85f, 1f) : new Color(1f, 1f, 1f, 0.95f);
-            _stickBase.GetComponent<Image>().color = new Color(1f, 1f, 1f, stickHeld ? 0.7f : 0.35f);
-        }
 
-        static void Tint(Text t, bool gold) { t.color = gold ? Palette.Gold : LabelGreen; t.GetComponent<Outline>().enabled = gold; }
+            UpdateWalk();
+        }
 
         void Pressed(Btn b)
         {
             switch (b)
             {
                 case Btn.Jump: TouchInput.JumpPressed = true; break;
-                case Btn.Context: TouchInput.ContextPressed = true; break;
-                case Btn.Water: TouchInput.WaterPressed = true; break;
                 case Btn.Pause: TouchInput.PausePressed = true; break;
             }
         }
 
-        void PlaceStick(Vector2 p) { _stickBase.position = p; _stickKnob.position = p; }
-
         int HitButton(Vector2 p)
         {
             for (int i = 0; i < _btn.Length; i++)
-                if (_btn[i].gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(_btn[i], p, null) && (i != (int)Btn.Water || _waterAlpha > 0.5f)) return i;
+                if (_btn[i].gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(_btn[i], p, null)) return i;
             return -1;
         }
 
-        void UpdateButtonVisibility()
+        // ---------------------------------------------------------------- taps on the world
+
+        /// <summary>A short tap at a screen position (also callable from editor tests).</summary>
+        public void WorldTap(Vector2 pos)
         {
-            if (_pi == null) return;
-            bool ctx = _pi.Context != PlayerInteraction.ContextKind.None;
-            _btn[(int)Btn.Context].gameObject.SetActive(ctx);
-            if (ctx)
+            var cam = Camera.main;
+            if (cam == null || _pc == null) return;
+
+            // on a beanstalk: a tap above or below the player picks the direction (a tap on the player stops)
+            if (_pc.IsClimbing)
             {
-                string l = _pi.ContextLabel;
-                if ((l.StartsWith("Pick up ") || l.StartsWith("Drop ")) && l.EndsWith(" Seed", System.StringComparison.OrdinalIgnoreCase)) l = l.Substring(0, l.Length - 5);   // "Pick up Beanstalk": the word seed does not fit
-                _btnLabel[(int)Btn.Context].text = l;
-                Tint(_btnLabel[(int)Btn.Context], _pi.Context == PlayerInteraction.ContextKind.Drop);   // Drop reads gold
+                float py = cam.WorldToScreenPoint(_pc.transform.position + Vector3.up * 1f).y;
+                float dy = pos.y - py;
+                _climbDir = Mathf.Abs(dy) < Screen.height * 0.08f ? 0 : dy > 0f ? 1 : -1;
+                return;
             }
-            bool water = _pi.WaterUseful;
-            if (water) { _btnLabel[(int)Btn.Water].text = _pi.WaterLabel; _waterAlpha = 1f; }
-            else _waterAlpha = Mathf.MoveTowards(_waterAlpha, 0f, Time.unscaledDeltaTime * 2.5f);   // fades out (e.g. the can is full) instead of vanishing
-            _btn[(int)Btn.Water].gameObject.SetActive(_waterAlpha > 0.001f);
-            _btn[(int)Btn.Water].GetComponent<CanvasGroup>().alpha = _waterAlpha;
-            Tint(_btnLabel[(int)Btn.Water], _btnLabel[(int)Btn.Water].text == "Refill");   // Refill reads gold
+
+            // a marker (circle / diamond): act on it when in reach, otherwise walk up to it
+            if (_pi != null)
+            {
+                float radius = Mathf.Max(90f, Screen.dpi * 0.28f), bestD = radius;
+                InteractionMarkers.Tappable best = default; bool found = false;
+                foreach (var m in InteractionMarkers.Tappables)
+                {
+                    if (m.collider == null) continue;
+                    var sp = cam.WorldToScreenPoint(m.position);
+                    if (sp.z <= 0f) continue;
+                    float d = ((Vector2)sp - pos).magnitude;
+                    if (d < bestD) { bestD = d; best = m; found = true; }
+                }
+                if (found)
+                {
+                    if (_pi.Sensor.CanReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }
+                    else StartWalk(best.collider.bounds.ClosestPoint(_pc.transform.position), best.collider, best.target, null);
+                    return;
+                }
+            }
+
+            var ray = cam.ScreenPointToRay(pos);
+            bool ground = Physics.Raycast(ray, out var gh, 300f, Layers.WalkableMask, QueryTriggerInteraction.Ignore);
+            if (Physics.Raycast(ray, out var ch, 300f, LayerMask.GetMask(Layers.ClimbableName), QueryTriggerInteraction.Collide) && (!ground || ch.distance < gh.distance + 0.5f))
+            {
+                var vol = ch.collider.GetComponentInParent<ClimbableVolume>();
+                if (vol != null) { StartWalk(ClimbSpot(vol), null, default, vol); return; }
+            }
+            if (ground) StartWalk(gh.point, null, default, null);
         }
+
+        /// <summary>Where the player walks to reach a beanstalk: the nearest point of its volume, kept on the climb side of the stalk.</summary>
+        Vector3 ClimbSpot(ClimbableVolume vol)
+        {
+            var box = vol.GetComponent<BoxCollider>();
+            Vector3 p = box.bounds.ClosestPoint(_pc.transform.position);
+            if (!vol.IsOnClimbSide(p)) p = vol.ClimbLinePoint + vol.SurfaceNormal * 0.35f;
+            return p;
+        }
+
+        // ---------------------------------------------------------------- tap-to-walk
+
+        void StartWalk(Vector3 point, Collider col, InteractionSensor.Target target, ClimbableVolume climb)
+        {
+            _walking = true; _walkPoint = point; _walkCol = col; _walkTarget = target; _walkClimb = climb;
+            _walkT = 0f; _stuckT = 0f; _lastPos = _pc.transform.position; _climbDir = 0;
+            Vector3 to = point - _pc.transform.position; to.y = 0f;
+            _turning = to.sqrMagnitude > 0.01f && FacingError(to.normalized) > TurnFirstDegrees;
+            ShowDestination(point, climb == null);
+        }
+
+        void CancelWalk()
+        {
+            _walking = false; _walkCol = null; _walkClimb = null;
+            TouchInput.Move = Vector2.zero; TouchInput.FaceDir = Vector3.zero;
+            if (_destMarker != null) _destMarker.gameObject.SetActive(false);
+        }
+
+        float FacingError(Vector3 dir)
+        {
+            var m = _pc.model != null ? _pc.model : _pc.transform;
+            Vector3 f = m.forward; f.y = 0f;
+            return f.sqrMagnitude < 1e-4f ? 0f : Vector3.Angle(f, dir);
+        }
+
+        void UpdateWalk()
+        {
+            TouchInput.Move = Vector2.zero; TouchInput.FaceDir = Vector3.zero;
+            if (_pc == null) return;
+            if (_pc.IsClimbing) { CancelWalk(); TouchInput.Move = new Vector2(0f, _climbDir); return; }
+            _climbDir = 0;
+            if (!_walking) return;
+
+            var pos = _pc.transform.position;
+            _walkT += Time.unscaledDeltaTime;
+            if ((pos - _lastPos).sqrMagnitude > 25f) { CancelWalk(); return; }   // respawned / teleported
+
+            if (_walkClimb != null)
+            {
+                if (_pc.CanGrab) { _pc.Grab(); _climbDir = 1; CancelWalk(); return; }
+                if (_pc.CanDescend) { _pc.Descend(); _climbDir = -1; CancelWalk(); return; }
+            }
+            if (_walkCol != null && _pi.Sensor.CanReach(_walkCol, _walkTarget)) { CancelWalk(); return; }
+
+            Vector3 to = _walkPoint - pos; to.y = 0f;
+            float dist = to.magnitude;
+            if (dist < ArriveDistance || _walkT > WalkTimeout) { CancelWalk(); return; }
+            Vector3 dir = to / dist;
+
+            if (_turning)
+            {
+                if (FacingError(dir) < 12f) _turning = false;
+                else { TouchInput.FaceDir = dir; _lastPos = pos; return; }   // turn on the spot first
+            }
+
+            // stuck against a wall or an edge: give up
+            _stuckT += Time.unscaledDeltaTime;
+            if (_stuckT >= 0.6f)
+            {
+                Vector3 moved = pos - _lastPos; moved.y = 0f;
+                if (moved.magnitude < 0.2f) { CancelWalk(); return; }
+                _stuckT = 0f; _lastPos = pos;
+            }
+
+            Vector3 local = Quaternion.Euler(0f, -_pc.Yaw, 0f) * dir;
+            TouchInput.Move = new Vector2(local.x, local.z);
+            if (_destMarker != null) _destMarker.transform.localScale = Vector3.one * (0.9f + 0.1f * Mathf.Sin(Time.unscaledTime * 6f));
+        }
+
+        void ShowDestination(Vector3 p, bool visible)
+        {
+            if (_destMarker == null)
+            {
+                var go = new GameObject("TapDestination") { hideFlags = HideFlags.DontSave };
+                _destMarker = go.AddComponent<SpriteRenderer>();
+                _destMarker.sprite = UiSprites.Ring; _destMarker.sortingOrder = 90;
+                _destMarker.color = new Color(1f, 1f, 1f, 0.8f);
+                go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            }
+            _destMarker.transform.position = p + Vector3.up * 0.06f;
+            _destMarker.gameObject.SetActive(visible);
+        }
+
+        void OnDestroy() { if (_destMarker != null) Destroy(_destMarker.gameObject); }
 
         // ---------------------------------------------------------------- build
 
@@ -188,22 +300,8 @@ namespace PlantGame.Player
             scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = UiLayout.MatchHeight;
             var root = (RectTransform)cgo.transform;
 
-            _stickBase = Circle("StickBase", root, new Vector2(0f, 0f), new Vector2(260, 260), new Vector2(260, 260), UiSprites.Ring);
-            _stickKnob = Circle("StickKnob", root, new Vector2(0f, 0f), new Vector2(110, 110), new Vector2(260, 260), UiSprites.Disc);
-            var gold = Palette.Gold; gold.a = 0.85f; _stickKnob.GetComponent<Image>().color = gold;   // ring white, knob gold: the player's colours
-
             MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
-            MakeButton(Btn.Context, root, new Vector2(1f, 0f), new Vector2(-420, 150), 190, "");
-            MakeButton(Btn.Water, root, new Vector2(1f, 0f), new Vector2(-150, 410), 125, "Water");
             MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(120, -170), 150, "Pause");
-            LayoutNow();
-        }
-
-        void LayoutNow()
-        {
-            Canvas.ForceUpdateCanvases();
-            _restPos = _stickBase.position;
-            _stickKnob.position = _restPos;
         }
 
         RectTransform Circle(string name, Transform parent, Vector2 anchor, Vector2 size, Vector2 pos, Sprite sprite)
@@ -228,9 +326,9 @@ namespace PlantGame.Player
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(10, 10); trt.offsetMax = new Vector2(-10, -10);
             var t = tgo.GetComponent<Text>();
             t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = LabelGreen;
-            bool bold = b == Btn.Jump || b == Btn.Context;   // Jump, pick up and use read bold
+            bool bold = b == Btn.Jump;   // Jump reads bold
             t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            t.fontSize = b == Btn.Pause ? 30 : b == Btn.Context ? 44 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            t.fontSize = b == Btn.Pause ? 30 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
             var ol = tgo.AddComponent<Outline>(); ol.effectColor = b == Btn.Pause ? new Color(0.45f, 0.45f, 0.45f, 0.8f) : LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = b == Btn.Pause;   // Pause reads gold too
             if (b == Btn.Pause) t.color = Palette.Gold;   // keeps the gold labels readable on the white disc
             rt.gameObject.AddComponent<CanvasGroup>();
