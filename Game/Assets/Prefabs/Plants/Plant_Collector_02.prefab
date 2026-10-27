@@ -502,6 +502,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e621c195c324fae86db0fe060aa0ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Plants.WaterCollector
-  secondsPerCharge: 20
+  secondsPerCharge: 30
   capacity: 1
   reservoir: {fileID: 9122431064983759965}
