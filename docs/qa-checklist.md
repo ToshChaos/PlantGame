@@ -6,7 +6,7 @@ Tick what you observed, note the build and date. Controls reference: `docs/contr
 
 ## Menus and flow
 - [ ] Title: Play, Random Level, Enter Seed Code, Options all respond; title world grows its plants
-- [ ] Level select shows ten levels with Exploration and Challenge best times
+- [ ] Level select shows ten levels with best times
 - [ ] Enter Seed Code: valid code builds the world; empty, one word, six words, a mistyped word each show a message; spaces / capitals / underscores accepted; code from another version warns
 - [ ] Copy seed code (pause menu, win panel) then paste it back: same world
 - [ ] Options: reset best times; key hints toggle; volume sliders
@@ -38,9 +38,8 @@ Tick what you observed, note the build and date. Controls reference: `docs/contr
 - [ ] Parachute leaf: Q pick-up, jump, E in the air glides once
 
 ## Modes and scoring
-- [ ] Exploration: no countdown, no fail; time shown or hidden
-- [ ] Challenge: countdown runs; reaching the goal wins; time zero fails with retry / menu; time fruits add seconds
-- [ ] Best time saved per level and mode; a slower run does not overwrite; new best is announced
+- [ ] No countdown, no fail; elapsed time shown
+- [ ] Best time saved per level; a slower run does not overwrite; new best is announced
 - [ ] Goal kinds work: flag, fruit, gate, campfire; level 6 needs the Heart Seed brought home
 
 ## Audio and look

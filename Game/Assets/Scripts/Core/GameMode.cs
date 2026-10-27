@@ -2,8 +2,6 @@ using PlantGame.Plants;
 
 namespace PlantGame.Core
 {
-    public enum GameMode { Exploration, Challenge }
-
     /// <summary>Weather / season of a level: sky, light, music and effects. Random levels derive it from the seed (WorldTheme.Resolve).</summary>
     public enum LevelTheme { Sunny, Rain, Autumn, Snow, Fog, Sunset, Sunrise }
 
@@ -49,11 +47,9 @@ namespace PlantGame.Core
     [System.Serializable]
     public struct RunConfig
     {
-        public GameMode mode;
         public int seed;
         public int islandCount;
         public PlantKind[] allowedKinds;
-        public float timeLimit;
         public string levelId;
         public WaterMode waterMode;
         public LevelTheme theme;

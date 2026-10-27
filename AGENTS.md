@@ -8,9 +8,7 @@ Third-person 3D exploration of **floating islands** (one blocky white/black/gold
 picked from **procedural Blender (Geometry Nodes) variations**. Goal: reach the Heart Tree on the last island.
 Style: fantasy, **white / green / blue**, soft, glowing, stylized.
 
-**Modes:** *Exploration* — no lose condition, no timer pressure (a relaxed elapsed-time clock may be hidden); falling
-just respawns you. *Challenge* — a **countdown** (limit set per level); reach the Heart Tree before it hits zero or
-the run fails (retry/back to menu). **Best times** (time spent to finish) are saved per level/seed and per mode.
+**Run:** no lose condition and no timer pressure; falling just respawns you. The elapsed time is shown, and **best times** (time spent to finish) are saved per level/seed. There is no countdown or "challenge" mode (removed in v3.0).
 **Levels:** MVP ships at least **1 curated level** (fixed seed) and a **level-select menu** with: curated levels
 (1 required, 3 nice), **Random Level**, and **Enter Seed Code**. Any generated level can be re-created from its
 **seed code** (copy/paste shareable).
@@ -224,17 +222,14 @@ namespace PlantGame.Plants {
   public class WaterCollector : MonoBehaviour, IInteractable { public int Stored { get; } } // +1/15 s, cap 2
 }
 namespace PlantGame.Core {
-  public enum GameMode { Exploration, Challenge }
   [CreateAssetMenu] public class LevelDefinition : ScriptableObject {   // curated levels, in ScriptableObjects/World
     public string id; public string title; public string description;
     public int seed; public int islandCount;               // 4–8
     public PlantKind[] allowedKinds;                       // tutorial = Bridge only, later levels add Ladder/Platform
-    public float challengeTimeLimitSeconds;                // countdown in Challenge mode
-    public float parTimeSeconds;                           // shown as a target, optional medal thresholds
   }
   public struct RunConfig {                                // what the menu hands to the game scene
-    public GameMode mode; public int seed; public int islandCount;
-    public PlantKind[] allowedKinds; public float timeLimit; public string levelId; // levelId null for random/code levels
+    public int seed; public int islandCount;
+    public PlantKind[] allowedKinds; public string levelId; // levelId null for random/code levels
   }
   public static class SeedCode {                           // shareable, human-typable, versioned
     // "LEAF-7K3Q-2M" = base32(seed:32b | islandCount:4b | kindsMask:4b | genVersion:4b) + checksum, groups of 4
@@ -242,12 +237,12 @@ namespace PlantGame.Core {
     public const int GeneratorVersion = 1;                 // bump when world-gen output changes; old codes then warn
   }
   public class RunSession : MonoBehaviour {                // owns timer + state; events via GameEvents
-    public RunConfig Config; public float Elapsed, Remaining;   // Remaining = timeLimit - Elapsed (Challenge only)
-    public void StartRun(RunConfig c); public void Win(); public void Fail(); public void Restart();
+    public RunConfig Config; public float Elapsed;
+    public void StartRun(RunConfig c); public void Win(); public void Restart();
   }
   public static class SaveService {                        // JSON in Application.persistentDataPath/save.json
-    public static bool TrySubmitTime(string key, GameMode m, float seconds); // returns true if new best
-    public static float? BestTime(string key, GameMode m); public static void SetLastSeedCode(string c);
+    public static bool TrySubmitTime(string key, float seconds); // returns true if new best
+    public static float? BestTime(string key); public static void SetLastSeedCode(string c);
     // key = levelId for curated levels, or the SeedCode string for random/code levels
   }
 }
@@ -302,11 +297,12 @@ _Final (2026-10-26): the MVP below shipped complete (`TASKS.md`); post-MVP work 
 **MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->
 Platform plant kind (keep Bridge + Ladder) -> ruin variety -> PlantGallery showcase scene (replace with a video).
-**Never cut:** watering can with 2 charges + refill at a lake or waterfall, seeded generation with copyable seed codes, both modes (Exploration + Challenge timer), best-time saving, at least 2 plant kinds with real Blender variants, pickup/drop/use/limited
+**Never cut:** watering can with 2 charges + refill at a lake or waterfall, seeded generation with copyable seed codes, best-time saving, at least 2 plant kinds with real Blender variants, pickup/drop/use/limited
 inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v3.0 (2026-10-27): **Challenge mode removed** (no value): `GameMode`, `RunConfig.mode` / `timeLimit`, `LevelDefinition.challengeTimeLimitSeconds` / `parTimeSeconds`, `RunSession.Fail` / `Remaining` / `AddTime`, `RunState.Failed`, `GameEvents.GameFailed` / `TimeAdded`, `TimeFruit` and the mode toggle on the title screen are gone; `RunStarted` has no argument; `SaveService` best times are per key only (old Challenge records are ignored).
 - v2.9 (2026-10-26, cleanup): `PlantDefinition` (never created) removed, `PlantKind` lives in `Plants/PlantKind.cs`, `ItemDefinition.plant` removed; `GameEvents.PlantStarted` / `PlantGrown` (never raised) and `GlideStarted` / `GlideEnded` (no listeners) removed; `kit.blend` deleted (T10 cut); raw Blender exports and built `.app` folders are git-ignored; post-MVP tasks moved to `TODO.md`.
 - v2.8 (day 3, T67): plant variant tri budget 10k (was 4k); platform plant is a mushroom patch (per-cap stalks from the ground, no central stem; decorative baby mushroom has `padi = -1`); bridge sprout = two small vines (`spr` flag, bridge growth_t starts at 0.085); parachute is a big leaf (`LeafMesh.CreateHeld`, `Scenery.LeafPlant`).
 - v2.7 (day 3): vine bridges tilt up or down by the height difference to the next island (`LevelLayout.MaxBridgeRise` 3.4 m, was 1.5); the plant is stretched along its slope so the horizontal reach stays the same.

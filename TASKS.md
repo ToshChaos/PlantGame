@@ -31,7 +31,7 @@ palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria
 | [T22](tasks/T22-qa-and-test-seeds.md) | QA pass, regression seeds, bug list | A8 | T15 | DONE |
 | [T23](tasks/T23-build-and-performance.md) | Performance pass + standalone build | A8 | T22 | DONE |
 | [T24](tasks/T24-demo-prep.md) | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE |
-| [T25](tasks/T25-game-modes-timer-scores.md) | Game modes (Exploration/Challenge), run timer, best-time save | A1 | T12 | DONE |
+| [T25](tasks/T25-game-modes-timer-scores.md) | Run timer, best-time save (Challenge mode removed later) | A1 | T12 | DONE |
 | [T26](tasks/T26-level-select-and-seed-codes.md) | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
 | [T27](tasks/T27-watering-can.md) | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | DONE |
 | [T28](tasks/T28-gn-water-collector.md) | Geometry Nodes: Water Collector plant | A3 | T06 | DONE |
@@ -58,7 +58,6 @@ palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria
 | [T49](tasks/T49-realistic-textured-plants.md) | All grown plants more realistic and textured (bark, veins, mushroom detail, grow shader texture slot) | A3+A6 | T06-T09, T28, T32, T40, T48 | DONE |
 | [T50](tasks/T50-ten-levels-snow-wind-fog.md) | Ten curated levels: add Snow, Windy summit and Dense Fog levels; snow / wind / fog options in world generation | A5+A6+A1 | T45, T46 | DONE |
 | [T51](tasks/T51-beanstalk-top-platform-fix.md) | Bug: beanstalk still has a top platform (T44 was only specified, never built) | A3+A2 | T44 | DONE |
-| [T52](tasks/T52-time-extension-fruit.md) | Time-extension fruit (Challenge mode): collectible that adds seconds to the countdown | A1+A5+A7 | T25, T14 | DONE |
 | [T53](tasks/T53-more-8bit-music.md) | More 8-bit music: menu tune, one shared tune for level 1 + generated levels, a different themed tune for each other curated level | A7 | T17, T37, T43 | DONE |
 | [T54](tasks/T54-island-dressing.md) | Island dressing: more grass, decals, shrubs, sticks, marble chips, gems, shiny debris, vine-heavy ruins, pond plants, murky ponds | A5+A6 | T39, T35, T36 | DONE |
 | [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
@@ -68,7 +67,6 @@ palm detail, level balance) lives in **`TODO.md`**. Details, acceptance criteria
 ## Final state (2026-10-26)
 - Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 3; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
 - Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island; the source regrows them.
-- Challenge mode: time fruits (`TimeFruit`): ceil(islands / 3) per level, never on the start or goal island, 30 s per island in total. Best times are saved per level and per mode.
 - Audio: surface footsteps with bridge creaks (T47); ten gameplay tunes (T53), a menu tune, win music; a level-start jingle; altitude-scaled wind on windy levels.
 - Plants: vine bridge, beanstalk ladder (no top platform), mushroom-patch platform, Water Collector; textured grow shader (T49, T67); parachute is a big leaf pickup.
 - Title screen: Play, Select level, Generate level, Input seed, Options (volume, reset best times, hints) over a generated showcase world; Select level also lists the Interaction test (one of every item; formerly the Movement course).

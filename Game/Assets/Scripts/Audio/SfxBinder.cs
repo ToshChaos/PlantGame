@@ -8,8 +8,7 @@ namespace PlantGame.Audio
 {
     /// <summary>
     /// T18: listens to GameEvents (and PlantInstance hooks) and plays the matching SFX through AudioManager.
-    /// Footsteps are driven by distance walked (surface from the island material under the feet), climbing by height gained,
-    /// the Challenge timer ticks once a second in the last 10 s.
+    /// Footsteps are driven by distance walked (surface from the island material under the feet), climbing by height gained.
     /// </summary>
     public class SfxBinder : MonoBehaviour
     {
@@ -26,7 +25,7 @@ namespace PlantGame.Audio
             GameEvents.PlayerJumped += OnJump; GameEvents.PlayerLanded += OnLand;
             GameEvents.Watered += OnWatered; GameEvents.CanRefilled += OnRefill; GameEvents.CanEmptyTried += OnDry;
             GameEvents.CollectorReady += OnCollectorReady;
-            GameEvents.TimeAdded += OnTimeAdded; GameEvents.GameWon += OnWin; GameEvents.GameFailed += OnFail; GameEvents.PlayerRespawned += OnRespawn;
+            GameEvents.GameWon += OnWin; GameEvents.PlayerRespawned += OnRespawn;
             PlantInstance.Sprouted += OnSprout; PlantInstance.GrowthStarted += OnGrowStart; PlantInstance.Grown += OnGrown;
         }
 
@@ -37,7 +36,7 @@ namespace PlantGame.Audio
             GameEvents.PlayerJumped -= OnJump; GameEvents.PlayerLanded -= OnLand;
             GameEvents.Watered -= OnWatered; GameEvents.CanRefilled -= OnRefill; GameEvents.CanEmptyTried -= OnDry;
             GameEvents.CollectorReady -= OnCollectorReady;
-            GameEvents.TimeAdded -= OnTimeAdded; GameEvents.GameWon -= OnWin; GameEvents.GameFailed -= OnFail; GameEvents.PlayerRespawned -= OnRespawn;
+            GameEvents.GameWon -= OnWin; GameEvents.PlayerRespawned -= OnRespawn;
             PlantInstance.Sprouted -= OnSprout; PlantInstance.GrowthStarted -= OnGrowStart; PlantInstance.Grown -= OnGrown;
             if (_inv != null) _inv.Changed -= OnInvChanged;
         }
@@ -56,8 +55,6 @@ namespace PlantGame.Audio
         void OnDry() => P("dry_click", 0.8f, 0.3f);
         void OnCollectorReady() => P("water_ready_bell", 0.9f, 0.5f);
         void OnWin() => P("win_fanfare", 1f, 1f);
-        void OnTimeAdded(float s) => P("water_ready_bell", 0.9f, 0.1f);
-        void OnFail() => P("fail_sting", 1f, 1f);
         void OnRespawn() => P("respawn", 0.7f, 0.5f);
         void OnSprout(PlantInstance p) => P("plant_seed", 0.9f, 0.1f, p.transform.position);
         void OnGrowStart(PlantInstance p) => P("grow_loop", 0.8f, 0.1f, p.transform.position);
@@ -105,13 +102,6 @@ namespace PlantGame.Audio
             {
                 _climbDist += Mathf.Abs(d.y);
                 if (_climbDist >= 0.5f) { _climbDist = 0f; P("climb_rustle", 0.6f, 0.15f); }
-            }
-
-            var rs = RunSession.Instance;
-            if (rs != null && rs.State == RunState.Running && rs.Config.mode == GameMode.Challenge && rs.Remaining <= 10f)
-            {
-                int sec = Mathf.CeilToInt(rs.Remaining);
-                if (sec != _lastSecond && sec > 0) { _lastSecond = sec; P("timer_tick", 0.7f, 0.5f); }
             }
         }
 

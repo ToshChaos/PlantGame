@@ -29,9 +29,8 @@ Full table: `docs/controls.md`. Key hints are on by default and can be switched 
 start island's water first. Dew Seeds grow a Water Collector (one charge every 20 s) for levels without ponds.
 
 ## Modes and levels
-- **Exploration:** no lose condition; falling just respawns you.
-- **Challenge:** a countdown per level; reach the goal before it runs out. Time fruits add seconds.
-- Best times are saved per level and per mode.
+- No lose condition; falling just respawns you. The elapsed time is shown.
+- Best times are saved per level.
 - **Ten curated levels:** First Steps, Beanstalk Hill (autumn), Water from the Sky (rain, collector only), Skyfall (leaf
   glide), Stepping Stones, There and Back (sunrise), Snowed In (snow, Heat Seeds), Windy Summit (spiral, gusts), Into the
   Mist (fog), Storm Season (rain and gusts).

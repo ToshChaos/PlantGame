@@ -15,18 +15,17 @@ namespace PlantGame.Core
         public const string Level1Id = "level_1";
         /// <summary>The hand-authored seven-island puzzle (LevelPlanner.HandPlan).</summary>
         public const string HandLevelId = "level_5";
-        public const float Level1ChallengeSeconds = 300f;
 
-        /// <summary>Set by the menu (T26) before loading Main; kept across reloads so Restart and mode toggles stick.</summary>
+        /// <summary>Set by the menu (T26) before loading Main; kept across reloads so Restart sticks.</summary>
         public static RunConfig? PendingRun;
 
-        public static RunConfig DefaultConfig(GameMode mode) => new RunConfig
+        public static RunConfig DefaultConfig() => new RunConfig
         {
-            mode = mode, seed = 1, islandCount = 5, levelId = Level1Id, timeLimit = Level1ChallengeSeconds,
+            seed = 1, islandCount = 5, levelId = Level1Id,
             allowedKinds = new[] { Plants.PlantKind.Bridge, Plants.PlantKind.Ladder, Plants.PlantKind.Platform },
         };
 
-        public static RunConfig Current => PendingRun ?? DefaultConfig(GameMode.Exploration);
+        public static RunConfig Current => PendingRun ?? DefaultConfig();
 
 
         public float killDepth = 30f;

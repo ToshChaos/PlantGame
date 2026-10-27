@@ -13,7 +13,7 @@ namespace PlantGame.UI
     /// <summary>
     /// T26: title screen and level select, built at runtime. Home (Play / Quit), then the level screen: curated level cards with best times,
     /// a Random Level block (difficulty, its seed code is shown before you start and can be copied), an Enter Seed Code field with live
-    /// validation, and the Exploration / Challenge toggle. Start puts the RunConfig in GameBootstrap.PendingRun and loads Main.
+    /// validation. Start puts the RunConfig in GameBootstrap.PendingRun and loads Main.
     /// </summary>
     public class TitleMenu : MonoBehaviour
     {
@@ -23,11 +23,9 @@ namespace PlantGame.UI
         WorldGenerator _showcase;
         GameObject _home, _levels, _options, _generate, _seed;
         Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle;
-        readonly System.Collections.Generic.List<Text> _modeLabels = new System.Collections.Generic.List<Text>();
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
         Text[] _cardInfo;
-        GameMode _mode = GameMode.Exploration;
         int _difficulty = 1;   // 0 easy (4 islands), 1 normal (6), 2 hard (8)
         int _randomSeed;
         RunConfig _codeConfig; bool _codeValid;
@@ -47,7 +45,6 @@ namespace PlantGame.UI
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (FindAnyObjectByType<EventSystem>() == null) { var es = new GameObject("EventSystem"); es.AddComponent<EventSystem>(); es.AddComponent<InputSystemUIInputModule>(); }
-            _mode = GameBootstrap.Current.mode;
             Build();
             _showcase = FindAnyObjectByType<WorldGenerator>();
             if (_showcase != null) StartCoroutine(GrowShowcase());
@@ -110,8 +107,6 @@ namespace PlantGame.UI
             if (screen == _seed) OnCodeChanged(_codeField.text);
         }
 
-        void ToggleMode() { _mode = _mode == GameMode.Exploration ? GameMode.Challenge : GameMode.Exploration; RefreshLevels(); }
-
         void NewRandomSeed() { _randomSeed = (int)(System.DateTime.UtcNow.Ticks & SeedCode.SeedMask); RefreshRandom(); }
 
         RunConfig RandomConfig()
@@ -126,8 +121,6 @@ namespace PlantGame.UI
 
         void StartRun(RunConfig c)
         {
-            c.mode = _mode;
-            if (string.IsNullOrEmpty(c.levelId)) c.timeLimit = c.islandCount * 55f + 60f;
             GameBootstrap.PendingRun = c;
             if (string.IsNullOrEmpty(c.levelId)) SaveService.SetLastSeedCode(SeedCode.Encode(c));
             PlayerHud.SkipMenuOnce();
@@ -158,31 +151,19 @@ namespace PlantGame.UI
 
         void RefreshLevels()
         {
-            foreach (var m in _modeLabels)
-            {
-                bool ch = _mode == GameMode.Challenge;
-                m.text = ch ? "Mode: Time challenge" : "Mode: Exploration";
-                m.color = ch ? Palette.DeepBlue : Palette.TextOrange;                                              // orange on green / deep blue on orange
-                m.transform.parent.GetComponent<Image>().color = ch ? Palette.TextOrange : ExploreGreen;
-            }
             var levels = Kit.Asset != null ? Kit.Asset.levels : null;
             if (levels == null) return;
             for (int i = 0; i < _cardInfo.Length && i < levels.Length; i++)
             {
                 var l = levels[i];
                 _cardInfo[i].text = l.description + "\n\n" + l.islandCount + " islands" + (l.theme != LevelTheme.Sunny ? "  -  " + (l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn") : "") + (l.wind ? "  -  Windy" : "") + "\nGoal: " + GoalName(l.goal) + "\n" +
-                    (_mode == GameMode.Challenge ? "Time limit " + Fmt(l.challengeTimeLimitSeconds) + "\n" : "") +
                     BestLines(l.id);
             }
             RefreshRandom();
         }
 
-        /// <summary>Both records of a level, each its own: relaxed (Exploration) and countdown (Challenge); the selected mode is marked.</summary>
-        string BestLines(string key)
-        {
-            string Line(GameMode m, string label) { var b = SaveService.BestTime(key, m); return (m == _mode ? "> " : "  ") + label + "  " + (b.HasValue ? Fmt(b.Value) : "--"); }
-            return Line(GameMode.Exploration, "Exploration best") + "\n" + Line(GameMode.Challenge, "Challenge best");
-        }
+        /// <summary>The best time of a level, or -- when it was not finished yet.</summary>
+        string BestLines(string key) { var b = SaveService.BestTime(key); return "Best  " + (b.HasValue ? Fmt(b.Value) : "--"); }
 
         static string GoalName(GoalKind g) => g == GoalKind.Fruit ? "golden fruit" : g == GoalKind.Gate ? "gate" : g == GoalKind.Fire ? "campfire" : "flag";
 
@@ -203,11 +184,10 @@ namespace PlantGame.UI
             _home = Screen("Home", root, 0.15f);
             if (TouchInput.Active)
             {
-                // phones are wide and short: the title and mode switch on the left, the six buttons in two columns on the right
+                // phones are wide and short: the title on the left, the six buttons in two columns on the right
                 Title(_home.transform, new Vector2(-470, 150), 0.8f);
                 Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
-                ModeButton(_home.transform, new Vector2(-470, -110));
-                Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }, 380));
+                Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
                 Button(_home.transform, "Select level", new Vector2(150, 20), () => Show(_levels), 380);
                 Button(_home.transform, "Generate level", new Vector2(740, 140), () => Show(_generate), 380);
                 Button(_home.transform, "Input seed", new Vector2(740, 20), () => Show(_seed), 380);
@@ -218,8 +198,7 @@ namespace PlantGame.UI
             {
             Title(_home.transform, new Vector2(0, 340));
             Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
-            ModeButton(_home.transform, new Vector2(0, 130));
-            Accent(Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig(_mode)); }));
+            Accent(Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
             Button(_home.transform, "Select level", new Vector2(0, -65), () => Show(_levels));
             Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
             Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
@@ -248,7 +227,6 @@ namespace PlantGame.UI
             // select level: the curated levels with best times, plus the test scenes
             _levels = Screen("Levels", root, 0.82f);
             Label(_levels.transform, "Select level", 70, new Vector2(0, 450), 1200, Palette.TextOrange);
-            ModeButton(_levels.transform, new Vector2(0, 360));
             _cardInfo = new Text[levels.Length];
             int perRow = levels.Length > 6 ? (levels.Length + 1) / 2 : Mathf.Max(1, levels.Length);   // T50: ten levels go in two rows of five
             bool two = levels.Length > 6;
@@ -256,29 +234,28 @@ namespace PlantGame.UI
             {
                 var l = levels[i];
                 int row = i / perRow, col = i % perRow, inRow = Mathf.Min(perRow, levels.Length - row * perRow);
-                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (row == 0 ? 135f : -195f) : 110f, h = two ? 310f : 370f;
+                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (row == 0 ? 155f : -175f) : 130f, h = two ? 270f : 330f;
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? 21 : 23, new Vector2(0, h / 2 - 35), 290, Palette.TextOrange);
-                _cardInfo[i] = Label(card, "", two ? 16 : 19, new Vector2(0, two ? 10 : 15), 280, Color.white);
+                _cardInfo[i] = Label(card, "", two ? 16 : 19, new Vector2(0, two ? 8 : 12), 280, Color.white);
                 _cardInfo[i].alignment = TextAnchor.MiddleCenter;
                 ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(280, h - 100);
-                Button(card, "Play", new Vector2(0, -h / 2 + 32), () => StartRun(l.ToConfig(_mode)), 150, 24, 50f);
+                Button(card, "Play", new Vector2(0, -h / 2 + 32), () => StartRun(l.ToConfig()), 150, 24, 50f);
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
-            float testY = two ? -385f : -170f;
+            float testY = two ? -345f : -150f;
             for (int i = 0; i < TestScenes.Length; i++)
             {
                 string scene = TestScenes[i].scene;
                 if (!Application.CanStreamedLevelBeLoaded(scene)) continue;
                 var tb = Button(_levels.transform, TestScenes[i].label, new Vector2(i * 360, testY - 20f), () => { Time.timeScale = 1f; SceneManager.LoadScene(scene); }, 340, 26);
-                tb.transform.parent.GetComponent<Image>().color = ExploreGreen;   // same green as the Exploration mode button
+                tb.transform.parent.GetComponent<Image>().color = ExploreGreen;
             }
             Button(_levels.transform, "Back", new Vector2(two ? 760 : 0, two ? 440 : -420), () => Show(_home), 300, 34);
 
             // generate level: random seed, difficulty, shows the code before starting
             _generate = Screen("Generate", root, 0.82f);
             Label(_generate.transform, "Generate level", 70, new Vector2(0, 400), 1200, Palette.TextOrange);
-            ModeButton(_generate.transform, new Vector2(0, 310));
             var rnd = Panel(_generate.transform, new Vector2(0, 60), new Vector2(900, 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
             Label(rnd, "Your seed", 34, new Vector2(0, 130), 800, Palette.TextOrange);
             _randomCode = Label(rnd, "", 40, new Vector2(0, 65), 860, Color.white);
@@ -291,7 +268,6 @@ namespace PlantGame.UI
             // input seed
             _seed = Screen("Seed", root, 0.82f);
             Label(_seed.transform, "Input seed", 70, new Vector2(0, 400), 1200, Palette.TextOrange);
-            ModeButton(_seed.transform, new Vector2(0, 310));
             var code = Panel(_seed.transform, new Vector2(0, 60), new Vector2(1000, 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
             Label(code, "Type or paste a seed code", 34, new Vector2(0, 130), 900, Palette.TextOrange);
             _codeField = InputBox(code, new Vector2(-170, 55), new Vector2(600, 64));
@@ -376,7 +352,6 @@ namespace PlantGame.UI
             return new Color(rgb.x, rgb.y, rgb.z, oa);
         }
 
-        void ModeButton(Transform parent, Vector2 pos) { _modeLabels.Add(Button(parent, "Mode", pos, ToggleMode, 480, 32)); }
 
         GameObject Screen(string name, RectTransform root, float dim)
         {

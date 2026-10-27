@@ -24,7 +24,7 @@ adds a touch column.
 ## Content and polish
 | ID | Task | Owner | Depends on | Status |
 |----|------|-------|-----------|--------|
-| [T21](tasks/T21-level-tuning.md) | Balance pass on the ten curated levels and the generator (gaps, seed supply, Challenge time limits) | A0 | T14, T15 | TODO |
+| [T21](tasks/T21-level-tuning.md) | Balance pass on the ten curated levels and the generator (gaps, seed supply) | A0 | T14, T15 | TODO |
 | [T65](tasks/T65-leafless-trees.md) | Bare trees: snow-level broadleaf trees leafless except two yellow leaves, rare leafless variant elsewhere | A5+A6 | T36, T39, T45, T56 | TODO |
 | [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | TODO |
 
@@ -32,7 +32,7 @@ adds a touch column.
 - A full by-hand playthrough of all ten levels in both modes (`docs/qa-checklist.md`); the automated pass only loads each level.
 - Built-player smoke test (T23): title -> level 1 -> win -> back, random level, pasted seed code, best times kept across launches; a profile in the player, not the editor.
 - Listening pass on the music, ambience, footsteps and bridge sounds (T43, T47, T53).
-- Balance of the snow levels (Heat Seed supply) and the Challenge time fruits (T45, T52); part of T21.
+- Balance of the snow levels (Heat Seed supply) (T45); part of T21.
 - Known editor quirk B1 (`docs/bugs.md`): `PlayFromTitle` resets the editor start scene after a domain reload.
 
 ## Ideas (not planned yet)

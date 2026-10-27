@@ -9,7 +9,7 @@ using PlantGame.Player;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T22: PlantGame > Smoke Test Levels. Plays each curated level (Exploration, then Challenge for level 1) in the Main scene for a few seconds
+    /// T22: PlantGame > Smoke Test Levels. Plays each curated level in the Main scene for a few seconds
     /// and checks that a player, a goal and a run exist and the console stays free of errors. Result lines go to Logs/smoke.txt.
     /// State lives in EditorPrefs so it survives the domain reloads of entering play mode (SessionState was lost mid-run).
     /// </summary>
@@ -39,13 +39,11 @@ namespace PlantGame.Editor
             EditorApplication.isPlaying = true;
         }
 
-        static GameMode ModeOf(int i) => i == 10 ? GameMode.Challenge : GameMode.Exploration;   // index 10 = level 1 again, Challenge
-
         static void Arm()
         {
             int i = EditorPrefs.GetInt(K, -1); if (i < 0) return;
-            var d = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"Assets/ScriptableObjects/World/level_{(i == 10 ? 1 : i + 1)}.asset");
-            GameBootstrap.PendingRun = d.ToConfig(ModeOf(i));
+            var d = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"Assets/ScriptableObjects/World/level_{i + 1}.asset");
+            GameBootstrap.PendingRun = d.ToConfig();
             PlantGame.UI.PlayerHud.SkipMenuOnce();   // otherwise Main bounces to the title screen
             _errors = 0; _reported = false; _t0 = -1; _firstError = "";
         }
@@ -70,7 +68,7 @@ namespace PlantGame.Editor
             int i = EditorPrefs.GetInt(K, -1);
             var player = Object.FindAnyObjectByType<PlayerController>();
             var run = Object.FindAnyObjectByType<RunSession>();
-            string lvl = $"level {(i == 10 ? 1 : i + 1)} {ModeOf(i)}";
+            string lvl = $"level {i + 1}";
             float ms = (Time.realtimeSinceStartup - _t0) * 1000f / Mathf.Max(1, Time.frameCount - _f0);
             string perf = $" avg {ms:0.0} ms/frame, {UnityStats.drawCalls} draw calls, {UnityStats.setPassCalls} setpass, {UnityStats.triangles / 1000} k tris, {UnityStats.shadowCasters} shadow casters";
             _reported = true;
@@ -82,7 +80,7 @@ namespace PlantGame.Editor
         static void Next()
         {
             int i = EditorPrefs.GetInt(K, -1); if (i < 0) return;
-            if (i >= 10) { EditorPrefs.SetInt(K, -1); EditorPrefs.SetBool("PlantGame.PlayFromTitle", true); EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Title.unity"); File.AppendAllText(ReportPath, "DONE\n"); return; }
+            if (i >= 9) { EditorPrefs.SetInt(K, -1); EditorPrefs.SetBool("PlantGame.PlayFromTitle", true); EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Title.unity"); File.AppendAllText(ReportPath, "DONE\n"); return; }
             EditorPrefs.SetInt(K, i + 1);
             EditorApplication.delayCall += () => EditorApplication.isPlaying = true;   // lost if a reload comes first: Tick below restarts it
         }

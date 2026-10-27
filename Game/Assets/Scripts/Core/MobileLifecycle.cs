@@ -5,7 +5,7 @@ namespace PlantGame.Core
 {
     /// <summary>
     /// T62: phone behaviour that has no desktop equivalent. Landscape only, screen never sleeps, 60 fps target, and the run
-    /// auto-pauses when the app loses focus (home button, call, task switch) so the Challenge countdown stops and the player
+    /// auto-pauses when the app loses focus (home button, call, task switch) so the run clock stops and the player
     /// returns to the pause menu. Created once at startup; does nothing on desktop.
     /// </summary>
     public class MobileLifecycle : MonoBehaviour

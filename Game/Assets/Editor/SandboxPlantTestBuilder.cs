@@ -23,12 +23,12 @@ namespace PlantGame.Editor
             ProjectSetup.AddSun();
             var runGo = new GameObject("RunSession");
             var run = runGo.AddComponent<RunSession>();
-            run.mode = GameMode.Exploration; run.levelId = main ? GameBootstrap.Level1Id : "sandbox_plants";
+            run.levelId = main ? GameBootstrap.Level1Id : "sandbox_plants";
             var gen = new GameObject("World").AddComponent<WorldGenerator>();
             if (!main)
             {
                 gen.useBootstrapConfig = false;
-                gen.sandboxConfig = GameBootstrap.DefaultConfig(GameMode.Exploration);
+                gen.sandboxConfig = GameBootstrap.DefaultConfig();
                 gen.sandboxConfig.waterMode = WaterMode.CollectorOnly;
                 gen.sandboxConfig.levelId = GameBootstrap.HandLevelId;
             }

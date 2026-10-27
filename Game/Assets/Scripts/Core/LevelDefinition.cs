@@ -24,13 +24,11 @@ namespace PlantGame.Core
         public PlantKind[] sequence;
         [Tooltip("Optional dead-end islands off the main chain (not needed to finish, with a bonus). Random levels add their own.")]
         [Range(0, 3)] public int sideIslands;
-        public float challengeTimeLimitSeconds = 300f;
-        public float parTimeSeconds;
 
-        public RunConfig ToConfig(GameMode mode) => new RunConfig
+        public RunConfig ToConfig() => new RunConfig
         {
-            mode = mode, seed = seed, islandCount = islandCount, allowedKinds = allowedKinds, levelId = id,
-            timeLimit = challengeTimeLimitSeconds, waterMode = waterMode, theme = theme, wind = wind, goal = goal, roundTrip = roundTrip, spiral = spiral, sideIslands = sideIslands, sequence = sequence != null && sequence.Length > 0 ? sequence : null,
+            seed = seed, islandCount = islandCount, allowedKinds = allowedKinds, levelId = id,
+            waterMode = waterMode, theme = theme, wind = wind, goal = goal, roundTrip = roundTrip, spiral = spiral, sideIslands = sideIslands, sequence = sequence != null && sequence.Length > 0 ? sequence : null,
         };
     }
 }

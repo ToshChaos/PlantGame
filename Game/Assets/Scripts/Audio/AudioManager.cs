@@ -78,29 +78,28 @@ namespace PlantGame.Audio
         {
             GameSettings.Changed += ApplyVolumes;
             GameEvents.RunStarted += OnRunStarted;
-            GameEvents.GameWon += OnWon; GameEvents.GameFailed += OnEnd;
+            GameEvents.GameWon += OnWon;
         }
 
         void OnDisable()
         {
             GameSettings.Changed -= ApplyVolumes;
             GameEvents.RunStarted -= OnRunStarted;
-            GameEvents.GameWon -= OnWon; GameEvents.GameFailed -= OnEnd;
+            GameEvents.GameWon -= OnWon;
         }
 
         void Start() { PlayMusic(menuMusic); ApplyVolumes(); }
         void OnDestroy() { if (Instance == this) Instance = null; }
 
         float _holdUntil; bool _holding;
-        void OnRunStarted(GameMode m)
+        void OnRunStarted()
         {
             ApplyThemeAmbience(); PlayMusic(GameplayTrack());
             if (OnTitle || !GameSettings.Sound || !_lib.TryGetValue("level_start", out var jingle)) return;
             Play("level_start", 0.9f, 0f, 0f);   // the level-start jingle: the music pauses until it has played
             _holdUntil = Time.unscaledTime + jingle[0].length; _holding = true;
         }
-        void OnEnd() { _musicDuck = 0.45f; }
-        void OnWon() { if (winMusic != null) PlayMusic(winMusic, false); else OnEnd(); }
+        void OnWon() { if (winMusic != null) PlayMusic(winMusic, false); else _musicDuck = 0.45f; }
         float _musicDuck = 1f;
 
         AudioSource NewSource(string n, bool loop)

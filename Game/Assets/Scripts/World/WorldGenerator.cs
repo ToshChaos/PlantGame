@@ -28,7 +28,7 @@ namespace PlantGame.World
 
         void Awake() { Generate(useBootstrapConfig ? GameBootstrap.Current : sandboxConfig); }
 
-        public void Generate(int seed) { var c = GameBootstrap.DefaultConfig(GameMode.Exploration); c.seed = seed; c.levelId = null; Generate(c); }
+        public void Generate(int seed) { var c = GameBootstrap.DefaultConfig(); c.seed = seed; c.levelId = null; Generate(c); }
 
         public static LevelPlan MakePlan(RunConfig c, out LevelLayout layout, out System.Random rnd)
         {
@@ -228,19 +228,6 @@ namespace PlantGame.World
                     warm.transform.position = hp + Vector3.up * 0.06f; warm.transform.localScale = new Vector3(4.6f, 0.02f, 4.6f);
                     warm.GetComponent<Renderer>().sharedMaterial = Scenery.Mat("M_Terrain");
                     isles[0].keep.Add(new Vector4(hp.x, hp.z, 3f, 3f));
-                }
-            }
-            if (config.mode == GameMode.Challenge && !showcaseWater && isles.Count >= 3)   // T52: ceil(islands / 3) time fruits worth 30 s per island in total on islands past the start, own random so the rest of the world is unchanged
-            {
-                var fr2 = new System.Random(unchecked(plan.layoutSeed * 17 + 991));
-                int fruits = Mathf.CeilToInt(isles.Count / 3f);   // one per three islands, rounded up; together they add 30 s per island
-                float each = 30f * isles.Count / fruits;
-                var cand = new List<int>(); for (int i = 1; i < isles.Count; i++) if (i != goalIsle) cand.Add(i);
-                for (int k = 0; k < fruits && cand.Count > 0; k++)
-                {
-                    int pick = fr2.Next(cand.Count); int ii = cand[pick]; cand.RemoveAt(pick);
-                    var fp = Spot(isles[ii], fr2, 0.3f, 0.7f, 3f, heads);
-                    TimeFruit.Build(isles[ii].go.transform, fp, each);
                 }
             }
             if (showcaseWater && isles.Count >= 3) AddShowcaseIslet(isles, terrain, stone);

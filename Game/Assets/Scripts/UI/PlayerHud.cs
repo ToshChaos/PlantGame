@@ -74,7 +74,6 @@ namespace PlantGame.UI
             var rs0 = RunSession.Instance; if (rs0 != null) rs0.StartRun(rs0.Config);
         }
 
-        float _timeFlash;
         void OnSlotTapped(int i)
         {
             if (Paused || _ended || _pi == null) return;
@@ -83,28 +82,19 @@ namespace PlantGame.UI
             else if (inv.SelectedItem != null) _pi.Drop();
         }
 
-        void OnTimeAdded(float s) { _timeFlash = 1.2f; GameEvents.RaiseHint("+" + Mathf.RoundToInt(s) + " s"); }
-        void OnEnable() { GameEvents.TimeAdded += OnTimeAdded; GameEvents.CanEmptyTried += OnCanEmptyTried; GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; GameEvents.GameFailed += OnRunFailed; }
-        void OnDisable() { GameEvents.TimeAdded -= OnTimeAdded; GameEvents.CanEmptyTried -= OnCanEmptyTried; GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; GameEvents.GameFailed -= OnRunFailed; if (Paused) SetPaused(false); }
+        void OnEnable() { GameEvents.CanEmptyTried += OnCanEmptyTried; GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; }
+        void OnDisable() { GameEvents.CanEmptyTried -= OnCanEmptyTried; GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; if (Paused) SetPaused(false); }
 
         // the end panel appears shortly after the event so the flag can rise first
         void OnRunFinished(float seconds, bool newBest)
         {
             var rs = RunSession.Instance;
-            float? best = rs != null ? SaveService.BestTime(rs.SaveKey, rs.Config.mode) : null;
+            float? best = rs != null ? SaveService.BestTime(rs.SaveKey) : null;
             _endTitle.text = "Goal reached!"; _retryLabel.text = "Play again";
             _endBody.text = "Time  " + Fmt(seconds) + "\n" + (newBest ? "New best!" : best.HasValue ? "Best  " + Fmt(best.Value) : "");
             if (SeedLine().Length > 0) _endBody.text += "\n" + SeedLine();
             _endAt = Time.unscaledTime + 1.8f;
             LayoutEndButtons(NextCuratedLevel() != null);
-        }
-
-        void OnRunFailed()
-        {
-            _endTitle.text = "Time's up"; _retryLabel.text = "Retry";
-            _endBody.text = "The goal was not reached in time.";
-            _endAt = Time.unscaledTime + 0.5f;
-            LayoutEndButtons(false);
         }
 
         void ShowEnd()
@@ -154,7 +144,7 @@ namespace PlantGame.UI
             if (pause) RefreshOptionLabels();
             if (pause && _pauseHint != null)
             {
-                _pauseHint.gameObject.SetActive(SeedLine().Length > 0 || (GameBootstrap.Current.mode == GameMode.Exploration && GameSettings.Hints));
+                _pauseHint.gameObject.SetActive(SeedLine().Length > 0 || (GameSettings.Hints));
                 if (_copyCode != null) _copyCode.SetActive(SeedLine().Length > 0);
                 _pauseHint.text = SeedLine().Length > 0 ? SeedLine() + "   (share it: the same code gives the same world)" : PauseTip;
             }
@@ -180,7 +170,7 @@ namespace PlantGame.UI
         {
             var next = NextCuratedLevel();
             if (next == null) return;
-            GameBootstrap.PendingRun = next.ToConfig(GameBootstrap.Current.mode);
+            GameBootstrap.PendingRun = next.ToConfig();
             RestartRun();
         }
 
@@ -284,12 +274,6 @@ namespace PlantGame.UI
 
             var rs = RunSession.Instance;
             if (rs == null || rs.State == RunState.Idle) _timer.text = "";
-            else if (rs.Config.mode == GameMode.Challenge)
-            {
-                _timer.text = Fmt(Mathf.Ceil(rs.Remaining));
-                _timer.color = rs.Remaining < 10f && rs.State == RunState.Running ? new Color(1f, 0.3f, 0.2f) : Palette.TextOrange;
-                if (_timeFlash > 0f) { _timeFlash -= Time.unscaledDeltaTime; _timer.color = Color.Lerp(Palette.TextOrange, new Color(0.5f, 1f, 0.6f), Mathf.Clamp01(_timeFlash)); }   // T52: green flash after a time fruit
-            }
             else { _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
@@ -483,7 +467,7 @@ namespace PlantGame.UI
         void RefreshOptionLabels()
         {
             foreach (var t in new[] { _hintsButtonLabel }) if (t != null) t.text = OnOff("Hints", GameSettings.Hints);
-            if (_pauseHint != null && _pausePanel.activeSelf && SeedLine().Length == 0) _pauseHint.gameObject.SetActive(GameBootstrap.Current.mode == GameMode.Exploration && GameSettings.Hints);   // the tip follows the Hints toggle
+            if (_pauseHint != null && _pausePanel.activeSelf && SeedLine().Length == 0) _pauseHint.gameObject.SetActive(GameSettings.Hints);   // the tip follows the Hints toggle
             if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints && !TouchInput.Active ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Bloom);

@@ -49,20 +49,20 @@ namespace PlantGame.Editor
 
             var levels = new List<LevelDefinition>();
             var B = PlantKind.Bridge; var L = PlantKind.Ladder; var P = PlantKind.Platform; var G = PlantKind.Glider;
-            levels.Add(Level("level_1", "1: First Steps", "Plant, water, cross. A bridge and a bridge: that is all you need.", 1101, 3, 240f, 120f, LevelTheme.Sunny, GoalKind.Gate, WaterMode.Sources, new[] { B, B }));
-            levels.Add(Level("level_2", "2: Beanstalk Hill", "An autumn afternoon: golden trees and falling leaves. Add a beanstalk.", 2207, 4, 240f, 150f, LevelTheme.Autumn, GoalKind.Fruit, WaterMode.Sources, new[] { B, L, B }));
-            levels.Add(Level("level_3", "3: Water from the Sky", "Rain, but no water to carry: a dew patch on the first island holds one drop; grow a Water Collector from the second island's dew seed and wait for every charge.", 3357, 4, 600f, 420f, LevelTheme.Rain, GoalKind.Fire, WaterMode.CollectorOnly, new[] { B, P, L }));
-            levels.Add(Level("level_4", "4: Skyfall", "Climb the beanstalk. At the top, pick a leaf from the glowing leaf plant (Q), jump off the edge and press E in the air to glide.", 4413, 5, 420f, 300f, LevelTheme.Sunset, GoalKind.Gate, WaterMode.Sources, new[] { B, L, G, B }));
-            levels.Add(Level("level_5", "5: Stepping Stones", "Seven islands, six gaps and only four seed slots. Plan what you carry.", 20261, 7, 300f, 240f, LevelTheme.Sunny, GoalKind.Gate, WaterMode.Sources, null));
-            var back = Level("level_6", "6: There and Back", "Something precious waits far away. Bring it home.", 6619, 3, 360f, 240f, LevelTheme.Sunrise, GoalKind.Gate, WaterMode.Sources, new[] { B, L });
+            levels.Add(Level("level_1", "1: First Steps", "Plant, water, cross. A bridge and a bridge: that is all you need.", 1101, 3, LevelTheme.Sunny, GoalKind.Gate, WaterMode.Sources, new[] { B, B }));
+            levels.Add(Level("level_2", "2: Beanstalk Hill", "An autumn afternoon: golden trees and falling leaves. Add a beanstalk.", 2207, 4, LevelTheme.Autumn, GoalKind.Fruit, WaterMode.Sources, new[] { B, L, B }));
+            levels.Add(Level("level_3", "3: Water from the Sky", "Rain, but no water to carry: a dew patch on the first island holds one drop; grow a Water Collector from the second island's dew seed and wait for every charge.", 3357, 4, LevelTheme.Rain, GoalKind.Fire, WaterMode.CollectorOnly, new[] { B, P, L }));
+            levels.Add(Level("level_4", "4: Skyfall", "Climb the beanstalk. At the top, pick a leaf from the glowing leaf plant (Q), jump off the edge and press E in the air to glide.", 4413, 5, LevelTheme.Sunset, GoalKind.Gate, WaterMode.Sources, new[] { B, L, G, B }));
+            levels.Add(Level("level_5", "5: Stepping Stones", "Seven islands, six gaps and only four seed slots. Plan what you carry.", 20261, 7, LevelTheme.Sunny, GoalKind.Gate, WaterMode.Sources, null));
+            var back = Level("level_6", "6: There and Back", "Something precious waits far away. Bring it home.", 6619, 3, LevelTheme.Sunrise, GoalKind.Gate, WaterMode.Sources, new[] { B, L });
             back.roundTrip = true; EditorUtility.SetDirty(back);
             levels.Add(back);
             // T50: ten levels
-            var snowy = Level("level_7", "7: Snowed In", "Snow on every ledge. The campfire waits at the end of the white.", 7719, 5, 420f, 300f, LevelTheme.Snow, GoalKind.Fire, WaterMode.Sources, new[] { B, L, P, B });
-            var windy = Level("level_8", "8: Windy Summit", "Climb to the top. The wind pushes harder the higher you go.", 8843, 6, 480f, 340f, LevelTheme.Sunny, GoalKind.Flag, WaterMode.Sources, new[] { B, L, L, B, L });
+            var snowy = Level("level_7", "7: Snowed In", "Snow on every ledge. The campfire waits at the end of the white.", 7719, 5, LevelTheme.Snow, GoalKind.Fire, WaterMode.Sources, new[] { B, L, P, B });
+            var windy = Level("level_8", "8: Windy Summit", "Climb to the top. The wind pushes harder the higher you go.", 8843, 6, LevelTheme.Sunny, GoalKind.Flag, WaterMode.Sources, new[] { B, L, L, B, L });
             windy.wind = true; windy.spiral = true; EditorUtility.SetDirty(windy);
-            var fog = Level("level_9", "9: Into the Mist", "Dense fog. Look for the warm glow, listen for water.", 9967, 5, 480f, 340f, LevelTheme.Fog, GoalKind.Gate, WaterMode.Sources, new[] { B, P, B, L });
-            var storm = Level("level_10", "10: Storm Season", "Eight islands, rain and gusts. Everything you have learned.", 10303, 8, 720f, 520f, LevelTheme.Rain, GoalKind.Fruit, WaterMode.Sources, new[] { B, L, B, P, L, B, P });
+            var fog = Level("level_9", "9: Into the Mist", "Dense fog. Look for the warm glow, listen for water.", 9967, 5, LevelTheme.Fog, GoalKind.Gate, WaterMode.Sources, new[] { B, P, B, L });
+            var storm = Level("level_10", "10: Storm Season", "Eight islands, rain and gusts. Everything you have learned.", 10303, 8, LevelTheme.Rain, GoalKind.Fruit, WaterMode.Sources, new[] { B, L, B, P, L, B, P });
             storm.wind = true; EditorUtility.SetDirty(storm);
             levels.Add(snowy); levels.Add(windy); levels.Add(fog); levels.Add(storm);
             kit.levels = levels.ToArray();
@@ -102,7 +102,7 @@ namespace PlantGame.Editor
             return list.ToArray();
         }
 
-        static LevelDefinition Level(string id, string title, string desc, int seed, int islands, float limit, float par, LevelTheme theme, GoalKind goal, WaterMode water, PlantKind[] sequence)
+        static LevelDefinition Level(string id, string title, string desc, int seed, int islands, LevelTheme theme, GoalKind goal, WaterMode water, PlantKind[] sequence)
         {
             string path = $"{LevelDir}/{id}.asset";
             var d = AssetDatabase.LoadAssetAtPath<LevelDefinition>(path);
@@ -111,7 +111,7 @@ namespace PlantGame.Editor
             d.sideIslands = id == "level_2" || id == "level_4" ? 1 : 0;   // an optional dead-end island off the main chain
             d.sequence = sequence; d.goal = goal; d.waterMode = water; d.roundTrip = false; d.spiral = false;
             d.allowedKinds = new[] { PlantKind.Bridge, PlantKind.Ladder, PlantKind.Platform };
-            d.challengeTimeLimitSeconds = limit; d.parTimeSeconds = par; d.theme = theme; d.wind = false;
+            d.theme = theme; d.wind = false;
             EditorUtility.SetDirty(d);
             return d;
         }

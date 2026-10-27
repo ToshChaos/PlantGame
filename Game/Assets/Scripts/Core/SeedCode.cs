@@ -120,7 +120,7 @@ namespace PlantGame.Core
             c = default; error = "";
             if (islands < 4 || islands > 8) { error = "Island count out of range."; return false; }
             if ((mask & 7) == 0) { error = "This code allows no plants."; return false; }
-            c = new RunConfig { seed = seed, islandCount = islands, allowedKinds = KindsFromMask(mask & 7), levelId = null, mode = GameMode.Exploration, waterMode = WaterMode.Sources };
+            c = new RunConfig { seed = seed, islandCount = islands, allowedKinds = KindsFromMask(mask & 7), levelId = null, waterMode = WaterMode.Sources };
             if (version != GeneratorVersion) error = "This code is from another game version (" + version + "); the world may differ.";
             return true;
         }
