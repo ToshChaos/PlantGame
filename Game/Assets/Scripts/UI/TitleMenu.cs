@@ -217,6 +217,7 @@ namespace PlantGame.UI
             UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 140), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             _fpsToggle = Button(o, "FPS", new Vector2(-330, 20), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
             _followToggle = Button(o, "Camera", new Vector2(330, 20), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
+            if (PlantGame.Player.TouchInput.Active) _followToggle.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _hintsToggle = Button(o, "Hints", new Vector2(-330, -100), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
             _glowToggle = Button(o, "Postprocessing", new Vector2(330, -100), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 520, 34);
             Button(o, "Reset all best times", new Vector2(0, -215), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);

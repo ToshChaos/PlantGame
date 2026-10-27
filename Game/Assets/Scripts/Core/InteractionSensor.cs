@@ -137,7 +137,7 @@ namespace PlantGame.Core
         public bool CanReach(Collider c, Target t)
         {
             Vector3 chest = Chest;
-            return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= (range + 0.5f) * (range + 0.5f) && !Blocked(chest, c, t);
+            return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= (range + 0.5f) * (range + 0.5f);   // no line-of-sight test: a sprout sits in a soil patch whose own collider would block it
         }
 
         /// <summary>Makes the tapped target the focus until the next Sense (touch tap on a marker).</summary>

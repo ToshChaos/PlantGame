@@ -400,6 +400,7 @@ namespace PlantGame.UI
             _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-650, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-200, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-650, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
+            if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-200, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
             _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-200, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works

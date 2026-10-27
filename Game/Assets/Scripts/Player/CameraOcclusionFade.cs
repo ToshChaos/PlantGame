@@ -12,7 +12,7 @@ namespace PlantGame.Player
     public class CameraOcclusionFade : MonoBehaviour
     {
         public Transform target;                  // the player's head / chest
-        public float fadedAlpha = 0.22f, fadeSpeed = 6f, checkInterval = 0.1f, margin = 0.2f, maxBoundsSize = 14f;
+        public float fadedAlpha = 0.22f, fadeSpeed = 6f, checkInterval = 0.1f, margin = 0.4f, maxBoundsSize = 22f;
 
         class State { public Material[] original; public Material[] clones; public float alpha = 1f; public bool wanted; }
         readonly Dictionary<Renderer, State> _active = new Dictionary<Renderer, State>();
@@ -63,7 +63,8 @@ namespace PlantGame.Player
                         var b = r.bounds; b.Expand(margin);
                         // only things on the camera's side of the player: the ray must enter the bounds well before the player, and the middle of the object must lie nearer the camera than the player (anything beside or beyond the player stays solid)
                         float centreAlong = Vector3.Dot(b.center - from, ray.direction);
-                        if (!b.IntersectRay(ray, out float d) || d > len - 0.3f || centreAlong > len - 0.2f) { if (_active.TryGetValue(r, out var st0)) st0.wanted = false; continue; }
+                        bool camInside = b.Contains(from);   // the camera sits inside the crown / ruin: always see-through, whatever side its middle is on
+                        if (!camInside && (!b.IntersectRay(ray, out float d) || d > len - 0.3f || centreAlong > len - 0.2f)) { if (_active.TryGetValue(r, out var st0)) st0.wanted = false; continue; }
                         if (!_active.TryGetValue(r, out var st)) { st = Begin(r); if (st == null) continue; _active[r] = st; }
                         st.wanted = true;
                     }

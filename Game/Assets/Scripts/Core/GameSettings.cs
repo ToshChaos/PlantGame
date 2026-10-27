@@ -19,7 +19,7 @@ namespace PlantGame.Core
         /// <summary>Third-person camera turns with the player (A / D while moving forward steer it). On by default.</summary>
         public static bool CameraFollow
         {
-            get => PlayerPrefs.GetInt(FollowKey, 1) == 1;
+            get => Application.isMobilePlatform || TouchControls || PlayerPrefs.GetInt(FollowKey, 1) == 1;   // touch: always on
             set { PlayerPrefs.SetInt(FollowKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
