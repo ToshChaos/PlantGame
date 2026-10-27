@@ -174,9 +174,9 @@ namespace PlantGame.Player
                     if (m.collider == null && m.climb == null) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
-                    // water points are the thing to tap when the can has room: a much wider hit area, and they win against other markers
+                    // water points (when the can has room) and beanstalk circles: a much wider hit area, and they win against other markers and the ground
                     bool water = canFill && (m.target.interactable is WaterSource || m.target.interactable is WaterCollector);
-                    float score = ((Vector2)sp - pos).magnitude / (radius * (water ? 2.5f : 1f));
+                    float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null ? 2.5f : 1f));   // beanstalk circles get the wide area too
                     if (score < bestScore) { bestScore = score; best = m; found = true; }
                 }
                 if (found)
@@ -195,12 +195,14 @@ namespace PlantGame.Player
                 var vol = ch.collider.GetComponentInParent<ClimbableVolume>();
                 if (vol != null) { ClimbTap(vol); return; }
             }
-            if (ground) StartWalk(gh.point, null, default, null);
+            if (ground && !(_walkClimb != null && Time.unscaledTime - _climbTapTime < 1f)) StartWalk(gh.point, null, default, null);   // a stray ground tap right after a beanstalk tap does not cancel the climb walk
         }
 
         /// <summary>A tap on a beanstalk (its circle or the stalk): climb it all the way, walking up to it first when needed.</summary>
+        float _climbTapTime;
         void ClimbTap(ClimbableVolume vol)
         {
+            _climbTapTime = Time.unscaledTime;
             CancelWalk();
             if (_pc.CanGrab) { _pc.Grab(); _climbDir = 1; }
             else if (_pc.CanDescend) { _pc.Descend(); _climbDir = -1; }
