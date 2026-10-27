@@ -376,14 +376,15 @@ namespace PlantGame.UI
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;
-            _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-140, touch ? -(SlotSize + 120f) : -38), new Vector2(240, 40), new Vector2(1f, 1f));
+            _fps = Label("Fps", root, "", 28, TextAnchor.UpperRight, new Vector2(-140, touch ? -(SlotSize + 180f) : -38), new Vector2(240, 40), new Vector2(1f, 1f));
             _fps.color = new Color(0.2f, 1f, 0.35f);   // bright green with a dark shadow: readable on sky and scenery
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
-            var water = Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, touch ? 200 : 150), new Vector2(0f, 0.5f));   // touch: one line higher
+            var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-40, -(SlotSize + 125f)), new Vector2(1f, 0.5f))   // touch: top right, under the hotbar and the selected item name
+                              : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
-            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, new Vector2(370, touch ? 136 : 86), new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
+            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(460, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
