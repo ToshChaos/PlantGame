@@ -16,7 +16,7 @@ namespace PlantGame.Plants
         [System.NonSerialized] public Renderer surface; [System.NonSerialized] public Material liquid;
 
         /// <summary>One disc of the pond / stream (a child BoxCollider): frozen patches wear an ice cap.</summary>
-        class Patch { public Transform t; public float r; public bool frozen; public GameObject ice; }
+        class Patch { public Transform t; public float r; public bool frozen; public MeshRenderer piece; }
         System.Collections.Generic.List<Patch> _patches;
         const float Reach = 2.0f;
 
@@ -44,7 +44,7 @@ namespace PlantGame.Plants
         public bool ThawNear(Vector3 pos)
         {
             var p = Nearest(pos, true); if (p == null) return false;
-            p.frozen = false; if (p.ice != null) Destroy(p.ice);
+            p.frozen = false; if (p.piece != null && liquid != null) p.piece.sharedMaterial = liquid;
             Init(); frozen = _patches.Exists(q => q.frozen);
             return true;
         }
@@ -57,36 +57,40 @@ namespace PlantGame.Plants
             _ice.EnableKeyword("_EMISSION"); _ice.SetColor("_EmissionColor", new Color(0.45f, 0.75f, 1f) * 0.45f);   // a cold glow marks frozen water from a distance
             return _ice;
         }
-        /// <summary>Ices over every patch (call once the water surface exists).</summary>
+        /// <summary>Ices over every patch (call once the water surface exists). The surface mesh is split into one piece per patch
+        /// (each triangle goes to the nearest patch); a frozen piece wears the ice material, a melted one the water again.</summary>
         public void Freeze()
         {
             Init(); frozen = true;
-            float y = surface != null ? surface.bounds.max.y + 0.03f : transform.position.y;
-            foreach (var p in _patches)
-            {
-                p.frozen = true;
-                if (p.ice != null) continue;
-                p.ice = new GameObject("Ice"); p.ice.transform.SetParent(transform, false);
-                p.ice.transform.position = new Vector3(p.t.position.x, y, p.t.position.z);
-                p.ice.AddComponent<MeshFilter>().sharedMesh = DiscMesh(p.r);
-                var r = p.ice.AddComponent<MeshRenderer>(); r.sharedMaterial = IceMat(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
+            if (surface != null && _patches.Count > 0 && _patches[0].piece == null) SplitSurface();
+            foreach (var p in _patches) { p.frozen = true; if (p.piece != null) p.piece.sharedMaterial = IceMat(); }
+            if (_patches.Count == 0 && surface != null) surface.sharedMaterial = IceMat();
         }
 
-        static Mesh DiscMesh(float radius)
+        void SplitSurface()
         {
-            const int N = 28;
-            var v = new Vector3[N + 1]; var nrm = new Vector3[N + 1]; var uv = new Vector2[N + 1]; var t = new int[N * 3];
-            nrm[0] = Vector3.up; uv[0] = new Vector2(0.5f, 0.5f);
-            for (int i = 0; i < N; i++)
+            var mf = surface.GetComponent<MeshFilter>(); var src = mf != null ? mf.sharedMesh : null; if (src == null) return;
+            var verts = src.vertices; var tris = src.triangles;
+            var lists = new System.Collections.Generic.List<int>[_patches.Count];
+            for (int i = 0; i < lists.Length; i++) lists[i] = new System.Collections.Generic.List<int>();
+            for (int i = 0; i + 2 < tris.Length; i += 3)
             {
-                float a = i * Mathf.PI * 2f / N; var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
-                v[i + 1] = d * radius; nrm[i + 1] = Vector3.up; uv[i + 1] = new Vector2(d.x, d.z) * 0.5f + new Vector2(0.5f, 0.5f);
-                t[i * 3] = 0; t[i * 3 + 1] = (i + 1) % N + 1; t[i * 3 + 2] = i + 1;
+                var c = surface.transform.TransformPoint((verts[tris[i]] + verts[tris[i + 1]] + verts[tris[i + 2]]) / 3f);
+                int best = 0; float bd = float.MaxValue;
+                for (int k = 0; k < _patches.Count; k++) { float d = Dist(_patches[k], c); if (d < bd) { bd = d; best = k; } }
+                lists[best].Add(tris[i]); lists[best].Add(tris[i + 1]); lists[best].Add(tris[i + 2]);
             }
-            var m = new Mesh { name = "IceDisc", hideFlags = HideFlags.DontSave, vertices = v, normals = nrm, uv = uv, triangles = t };
-            m.RecalculateBounds();
-            return m;
+            for (int k = 0; k < _patches.Count; k++)
+            {
+                var go = new GameObject("WaterPiece"); go.layer = surface.gameObject.layer;
+                go.transform.SetParent(surface.transform, false);
+                var m = Instantiate(src); m.name = "WaterPiece"; m.hideFlags = HideFlags.DontSave; m.triangles = lists[k].ToArray();
+                go.AddComponent<MeshFilter>().sharedMesh = m;
+                var r = go.AddComponent<MeshRenderer>(); r.sharedMaterial = surface.sharedMaterial;
+                r.shadowCastingMode = surface.shadowCastingMode; r.receiveShadows = surface.receiveShadows;
+                _patches[k].piece = r;
+            }
+            surface.enabled = false;
         }
 
         public InteractAction Action => InteractAction.Use;
