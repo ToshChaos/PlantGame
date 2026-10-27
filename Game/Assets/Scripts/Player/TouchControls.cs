@@ -231,8 +231,9 @@ namespace PlantGame.Player
             t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = LabelGreen;
             bool bold = b == Btn.Jump || b == Btn.Context;   // Jump, pick up and use read bold
             t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            t.fontSize = b == Btn.Context ? 44 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
-            var ol = tgo.AddComponent<Outline>(); ol.effectColor = LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = false;   // keeps the gold labels readable on the white disc
+            t.fontSize = b == Btn.Pause ? 30 : b == Btn.Context ? 44 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            var ol = tgo.AddComponent<Outline>(); ol.effectColor = LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = b == Btn.Pause;   // Pause reads gold too
+            if (b == Btn.Pause) t.color = Palette.Gold;   // keeps the gold labels readable on the white disc
             rt.gameObject.AddComponent<CanvasGroup>();
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
