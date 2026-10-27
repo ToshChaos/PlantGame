@@ -456,7 +456,7 @@ namespace PlantGame.World
         static Material JewelMat()
         {
             if (_jewel != null) return _jewel;
-            var m = RuntimeMats.NewLit("M_Jewel", new Color(1f, 0.62f, 0.12f, 0.62f));
+            var m = RuntimeMats.NewLit("M_Jewel", new Color(1f, 0.62f, 0.12f, 0.3f));
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.92f);
             if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0.1f);
             RuntimeMats.SetTransparent(m);
