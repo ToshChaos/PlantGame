@@ -376,7 +376,7 @@ namespace PlantGame.UI
             _prompt.color = Palette.TextOrange;
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
             _objective.color = GoalGreen;
-            _fps = Label("Fps", root, "", 28, TextAnchor.UpperLeft, new Vector2(160, touch ? -235f : -38), new Vector2(240, 40), new Vector2(0f, 1f));   // top left (touch: under the Pause button)
+            _fps = Label("Fps", root, "", 28, TextAnchor.UpperLeft, new Vector2(160, -38), new Vector2(240, 40), new Vector2(0f, 1f));   // top left (touch: the Pause button sits under it)
             _fps.color = new Color(0.2f, 1f, 0.35f);   // bright green with a dark shadow: readable on sky and scenery
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
