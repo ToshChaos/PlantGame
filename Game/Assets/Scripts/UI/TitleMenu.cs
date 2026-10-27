@@ -156,7 +156,7 @@ namespace PlantGame.UI
             for (int i = 0; i < _cardInfo.Length && i < levels.Length; i++)
             {
                 var l = levels[i];
-                _cardInfo[i].text = l.description + "\n\n" + l.islandCount + " islands" + (l.theme != LevelTheme.Sunny ? "  -  " + (l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn") : "") + (l.wind ? "  -  Windy" : "") + "\nGoal: " + GoalName(l.goal) + "\n" +
+                _cardInfo[i].text = l.islandCount + " islands" + (l.theme != LevelTheme.Sunny ? "  -  " + (l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn") : "") + (l.wind ? "  -  Windy" : "") + "\nGoal: " + GoalName(l.goal) + "\n" +
                     BestLines(l.id);
             }
             RefreshRandom();
