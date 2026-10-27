@@ -19,12 +19,12 @@ namespace PlantGame.Player
     [DefaultExecutionOrder(-100)]
     public class TouchControls : MonoBehaviour
     {
-        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 140f, StickZone = 0.4f, AxisSnap = 0.2f, HoldSeconds = 0.25f, HoldSlop = 30f;
+        const float StickRadiusRef = 120f, Deadzone = 0.15f, RunThreshold = 0.85f, LookCountsPerInch = 140f, StickZone = 0.4f, AxisSnap = 0.2f;
 
         enum Role { None, Stick, Look, Button }
         enum Btn { Jump, Context, Water, Pause, Count }
 
-        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; public float t0, travel; public bool fwd; }
+        struct Slot { public bool used; public Role role; public int btn; public Vector2 origin; public int id; }
 
         PlayerInputReader _input;
         PlayerInteraction _pi;
@@ -78,7 +78,7 @@ namespace PlantGame.Player
             float radius = StickRadiusRef * scale;
             UpdateButtonVisibility();
             System.Array.Clear(_btnHeld, 0, _btnHeld.Length);
-            bool stickHeld = false, holdForward = false;
+            bool stickHeld = false;
 
             foreach (var t in Touch.activeTouches)
             {
@@ -88,7 +88,7 @@ namespace PlantGame.Player
                 bool ended = t.phase == UnityEngine.InputSystem.TouchPhase.Ended || t.phase == UnityEngine.InputSystem.TouchPhase.Canceled;
                 if (t.phase == UnityEngine.InputSystem.TouchPhase.Began || !s.used || s.id != t.touchId)
                 {
-                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look, t0 = Time.unscaledTime };
+                    s = new Slot { used = true, id = t.touchId, origin = pos, role = Role.Look };
                     int b = HitButton(pos);
                     if (b >= 0) { s.role = Role.Button; s.btn = b; Pressed((Btn)b); }
                     else if (pos.x < Screen.width * StickZone) { s.role = Role.Stick; PlaceStick(pos); }
@@ -100,7 +100,8 @@ namespace PlantGame.Player
                         {
                             Vector2 d = Vector2.ClampMagnitude((pos - s.origin) / radius, 1f);
                             float m = d.magnitude;
-                            Vector2 v = m < Deadzone ? Vector2.zero : d / m * Mathf.InverseLerp(Deadzone, 1f, m);
+                            // tapping or holding the centre of the stick (inside the dead zone) walks forward
+                            Vector2 v = m < Deadzone ? Vector2.up : d / m * Mathf.InverseLerp(Deadzone, 1f, m);
                             // within ~11 degrees of an axis the stick snaps to it: walking straight along a 1.2 m bridge needs no steady thumb
                             float ax = Mathf.Abs(v.x), ay = Mathf.Abs(v.y);
                             if (ax < ay * AxisSnap) v.x = 0f; else if (ay < ax * AxisSnap) v.y = 0f;
@@ -113,10 +114,6 @@ namespace PlantGame.Player
                         if (!ended)
                         {
                             float k = LookCountsPerInch / Mathf.Max(Screen.dpi, 96f) * GameSettings.TouchLookSensitivity;
-                            // press and hold on the spot (a finger that has barely moved) walks forward; dragging while holding still looks
-                            s.travel += t.delta.magnitude;
-                            if (!s.fwd && s.travel < HoldSlop * _canvas.scaleFactor && Time.unscaledTime - s.t0 >= HoldSeconds) s.fwd = true;
-                            if (s.fwd) holdForward = true;
                             Vector2 dl = t.delta * k;
                             if (GameSettings.TouchInvertY) dl.y = -dl.y;
                             TouchInput.Look += dl;
@@ -129,8 +126,7 @@ namespace PlantGame.Player
                 s.used = !ended;
                 _slots[fi] = s;
             }
-            if (!stickHeld && holdForward) { TouchInput.Move = Vector2.up; TouchInput.Run = false; }
-            if (!stickHeld) { if (!holdForward) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; } _stickBase.position = _restPos; _stickKnob.position = _restPos; }
+            if (!stickHeld) { TouchInput.Move = Vector2.zero; TouchInput.Run = false; _stickBase.position = _restPos; _stickKnob.position = _restPos; }
             for (int i = 0; i < _btnImg.Length; i++) if (_btnImg[i] != null) _btnImg[i].color = _btnHeld[i] ? new Color(0.85f, 0.95f, 0.85f, 1f) : new Color(1f, 1f, 1f, 0.95f);
             _stickBase.GetComponent<Image>().color = new Color(1f, 1f, 1f, stickHeld ? 0.7f : 0.35f);
         }

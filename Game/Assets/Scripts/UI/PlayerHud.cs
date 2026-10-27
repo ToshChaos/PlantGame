@@ -387,7 +387,7 @@ namespace PlantGame.UI
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
-                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(40, 40), new Vector2(140 + i * 46, 22));
+                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(40, 40), new Vector2((touch ? 190 : 140) + i * 46, 22));
                 _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, 40);
             }
 

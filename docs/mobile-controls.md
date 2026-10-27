@@ -21,7 +21,7 @@ Target: Android beta (phones first, tablets should work), later iOS. Landscape o
 |   left stick  )                  [Water]  [Drop]   [Run]     |
 +--------------------------------------------------------------+
 ```
-- **Move**: floating virtual stick, left half of the screen, appears where the thumb lands (fixed-position fallback in options). Dead zone 0.15; pushing past ~0.85 = run, so there is no Shift button. Walk below that.
+- **Move**: floating virtual stick, left half of the screen, appears where the thumb lands (fixed-position fallback in options). Dead zone 0.15; pushing past ~0.85 = run, so there is no Shift button. Walk below that. Tapping or holding the centre of the stick (inside the dead zone) walks forward; there is no separate tap-to-walk elsewhere on the screen.
 - **Look**: drag on the right half (not over a button). Sensitivity slider in options; separate invert-Y toggle. Touch delta uses the same smoothing as mouse look but scaled by screen DPI, not pixels.
 - **Jump**: big button, right thumb. While climbing it jumps off the vine (same as Space).
 - **Context button** (replaces Q-pickup and E-use): label/icon follows the current focus: Pick up seed, Plant, Raise flag, Thaw, Glide. If nothing is focused and the selected slot has an item it becomes Drop (long-press = drop always).
