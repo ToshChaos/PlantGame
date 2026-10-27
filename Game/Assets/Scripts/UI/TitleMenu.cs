@@ -62,7 +62,7 @@ namespace PlantGame.UI
             _hintsToggle.text = "Hints: " + (GameSettings.Hints ? "On" : "Off");
             _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
-            _glowToggle.text = "Glow: " + (GameSettings.Bloom ? "On" : "Off");
+            _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
         }
 
         void Update()
@@ -239,7 +239,7 @@ namespace PlantGame.UI
             _fpsToggle = Button(o, "FPS", new Vector2(-330, 20), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
             _followToggle = Button(o, "Camera", new Vector2(330, 20), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
             _hintsToggle = Button(o, "Hints", new Vector2(-330, -100), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
-            _glowToggle = Button(o, "Glow", new Vector2(330, -100), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
+            _glowToggle = Button(o, "Postprocessing", new Vector2(330, -100), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
             Button(o, "Reset all best times", new Vector2(0, -215), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
             _resetNote = Label(o, "", 26, new Vector2(0, -280), 800, Palette.TextOrange);
             Button(o, "Back", new Vector2(0, -360), () => { _resetNote.text = ""; Show(_home); }, 300, 34);

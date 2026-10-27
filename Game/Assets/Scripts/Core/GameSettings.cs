@@ -65,10 +65,13 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(MusicKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
-        /// <summary>Glow (bloom) post effect; turn on for a softer look. Off by default. The Atmosphere (T16) reads it.</summary>
+        /// <summary>
+        /// Post-processing effects (glow, anti-aliasing, distance blur, vignette); the menus label it "Postprocessing". On by default on desktop,
+        /// off on phones and tablets. The Atmosphere (T16) reads it. The property keeps its old name (and PlayerPrefs key) so saved choices survive.
+        /// </summary>
         public static bool Bloom
         {
-            get => PlayerPrefs.GetInt(BloomKey, 0) == 1;
+            get => PlayerPrefs.GetInt(BloomKey, Application.isMobilePlatform ? 0 : 1) == 1;
             set { PlayerPrefs.SetInt(BloomKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
