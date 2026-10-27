@@ -556,8 +556,8 @@ namespace PlantGame.World
                 var s = new GameObject("Water_Surface"); s.transform.SetParent(I.waterRoot, false);
                 s.transform.position = I.go.transform.position;
                 s.AddComponent<MeshFilter>().sharedMesh = terrain.BuildWaterSurface();
-                var sr = s.AddComponent<MeshRenderer>(); sr.sharedMaterial = I.frozen ? WaterSource.IceMat() : I.waterMat;
-                var wsrc = I.waterRoot.GetComponentInChildren<WaterSource>(); if (wsrc != null) { wsrc.surface = sr; wsrc.liquid = I.waterMat; }
+                var sr = s.AddComponent<MeshRenderer>(); sr.sharedMaterial = I.waterMat;
+                var wsrc = I.waterRoot.GetComponentInChildren<WaterSource>(); if (wsrc != null) { wsrc.surface = sr; wsrc.liquid = I.waterMat; if (I.frozen) wsrc.Freeze(); }
                 int water = LayerMask.NameToLayer(Layers.WaterName); if (water >= 0) s.layer = water;
             }
             void Lift(Transform t)

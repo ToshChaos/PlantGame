@@ -80,7 +80,7 @@ namespace PlantGame.Core
             if (i == null) return;
             if (i is WaterSource ws)
             {
-                if (ws.frozen) TryThaw(); else if (i.CanInteract(gameObject)) i.Interact(gameObject); else GameEvents.RaiseUseRejected();
+                if (!ws.WaterNear(Sensor.Chest)) TryThaw(); else if (i.CanInteract(gameObject)) i.Interact(gameObject); else GameEvents.RaiseUseRejected();
             }
             else if (IsRefillTarget(i)) { if (i.CanInteract(gameObject)) i.Interact(gameObject); else GameEvents.RaiseUseRejected(); }   // collector
             else if (i.Action == InteractAction.Pickup)
@@ -213,7 +213,7 @@ namespace PlantGame.Core
         WaterSource FindFrozenSource()
         {
             int n = Physics.OverlapSphereNonAlloc(Sensor.Chest, 2.5f, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.WaterName), QueryTriggerInteraction.Collide);
-            for (int i = 0; i < n; i++) { var ws = _waterHits[i].GetComponentInParent<WaterSource>(); if (ws != null && ws.frozen) return ws; }
+            for (int i = 0; i < n; i++) { var ws = _waterHits[i].GetComponentInParent<WaterSource>(); if (ws != null && ws.frozen && ws.FrozenNear(Sensor.Chest)) return ws; }
             return null;
         }
 
@@ -224,8 +224,8 @@ namespace PlantGame.Core
             var item = Inventory.SelectedItem;
             if (item != null && item.id == "heat_seed")
             {
-                ice.Thaw(); Inventory.Remove(Inventory.Selected); Inventory.SelectNextFilled(); GameEvents.RaiseItemUsed(item);
-                GameEvents.RaiseHint("The ice melts: the water is yours again");
+                ice.ThawNear(Sensor.Chest); Inventory.Remove(Inventory.Selected); Inventory.SelectNextFilled(); GameEvents.RaiseItemUsed(item);
+                GameEvents.RaiseHint("The ice melts: this patch of water is yours");
             }
             else { GameEvents.RaiseHint("The water is frozen: melt it with Heat"); GameEvents.RaiseUseRejected(); }
             return true;
@@ -237,7 +237,7 @@ namespace PlantGame.Core
             for (int i = 0; i < n; i++)
             {
                 var ws = _waterHits[i].GetComponentInParent<WaterSource>();
-                if (ws != null && !ws.frozen) return true;   // frozen water offers no refill hint
+                if (ws != null && ws.WaterNear(Sensor.Chest)) return true;   // frozen water offers no refill hint
                 var c = _waterHits[i].GetComponentInParent<WaterCollector>();
                 if (c != null && c.Stored > 0) return true;
             }

@@ -12,8 +12,42 @@ namespace PlantGame.Plants
     public class WaterSource : MonoBehaviour, IInteractable
     {
         public WaterKind kind;
-        [Tooltip("T45/T50: frozen water cannot refill the can and gives no refill hint until a Heat Seed melts it.")] public bool frozen;
+        [Tooltip("T45/T50: frozen water cannot refill the can and gives no refill hint until a Heat Seed melts it. A Heat Seed melts one patch (one disc of the pond or stream) only.")] public bool frozen;
         [System.NonSerialized] public Renderer surface; [System.NonSerialized] public Material liquid;
+
+        /// <summary>One disc of the pond / stream (a child BoxCollider): frozen patches wear an ice cap.</summary>
+        class Patch { public Transform t; public float r; public bool frozen; public GameObject ice; }
+        System.Collections.Generic.List<Patch> _patches;
+        const float Reach = 2.0f;
+
+        void Init()
+        {
+            if (_patches != null) return;
+            _patches = new System.Collections.Generic.List<Patch>();
+            foreach (var b in GetComponentsInChildren<BoxCollider>()) _patches.Add(new Patch { t = b.transform, r = b.size.x * 0.5f });
+        }
+
+        static float Dist(Patch p, Vector3 pos) { var d = p.t.position - pos; d.y = 0f; return d.magnitude - p.r; }
+
+        Patch Nearest(Vector3 pos, bool wantFrozen)
+        {
+            Init(); Patch best = null; float bd = Reach;
+            foreach (var p in _patches) { if (p.frozen != wantFrozen) continue; float d = Dist(p, pos); if (d <= bd) { bd = d; best = p; } }
+            return best;
+        }
+
+        /// <summary>Some still-frozen patch within reach of pos.</summary>
+        public bool FrozenNear(Vector3 pos) => Nearest(pos, true) != null;
+        /// <summary>Some open (unfrozen) water within reach of pos: the can can be refilled here.</summary>
+        public bool WaterNear(Vector3 pos) => Nearest(pos, false) != null;
+        /// <summary>Melts the frozen patch nearest to pos (only that one).</summary>
+        public bool ThawNear(Vector3 pos)
+        {
+            var p = Nearest(pos, true); if (p == null) return false;
+            p.frozen = false; if (p.ice != null) Destroy(p.ice);
+            Init(); frozen = _patches.Exists(q => q.frozen);
+            return true;
+        }
         static Material _ice;
         public static Material IceMat()
         {
@@ -23,17 +57,45 @@ namespace PlantGame.Plants
             _ice.EnableKeyword("_EMISSION"); _ice.SetColor("_EmissionColor", new Color(0.45f, 0.75f, 1f) * 0.45f);   // a cold glow marks frozen water from a distance
             return _ice;
         }
-        public void Freeze() { frozen = true; if (surface != null) surface.sharedMaterial = IceMat(); }
-        /// <summary>Melts the ice: the pond shows its water again and can refill the can.</summary>
-        public void Thaw() { frozen = false; if (surface != null && liquid != null) surface.sharedMaterial = liquid; }
+        /// <summary>Ices over every patch (call once the water surface exists).</summary>
+        public void Freeze()
+        {
+            Init(); frozen = true;
+            float y = surface != null ? surface.bounds.max.y + 0.03f : transform.position.y;
+            foreach (var p in _patches)
+            {
+                p.frozen = true;
+                if (p.ice != null) continue;
+                p.ice = new GameObject("Ice"); p.ice.transform.SetParent(transform, false);
+                p.ice.transform.position = new Vector3(p.t.position.x, y, p.t.position.z);
+                p.ice.AddComponent<MeshFilter>().sharedMesh = DiscMesh(p.r);
+                var r = p.ice.AddComponent<MeshRenderer>(); r.sharedMaterial = IceMat(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+        }
+
+        static Mesh DiscMesh(float radius)
+        {
+            const int N = 28;
+            var v = new Vector3[N + 1]; var t = new int[N * 6];
+            for (int i = 0; i < N; i++) { float a = i * Mathf.PI * 2f / N; v[i + 1] = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius; }
+            for (int i = 0; i < N; i++)
+            {
+                int a = i + 1, b = (i + 1) % N + 1;
+                t[i * 6] = 0; t[i * 6 + 1] = b; t[i * 6 + 2] = a;
+                t[i * 6 + 3] = 0; t[i * 6 + 4] = a; t[i * 6 + 5] = b;   // both sides
+            }
+            var m = new Mesh { name = "IceDisc", hideFlags = HideFlags.DontSave, vertices = v, triangles = t };
+            m.RecalculateNormals(); m.RecalculateBounds();
+            return m;
+        }
 
         public InteractAction Action => InteractAction.Use;
-        public string Prompt => frozen ? "Frozen" : "Refill watering can";
+        public string Prompt => "Refill watering can";
 
         public bool CanInteract(GameObject actor)
         {
             var can = actor != null ? actor.GetComponent<WateringCan>() : null;
-            return !frozen && can != null && !can.IsFull;
+            return can != null && !can.IsFull && WaterNear(actor.transform.position + Vector3.up);
         }
 
         public void Interact(GameObject actor)
