@@ -171,7 +171,7 @@ namespace PlantGame.Player
                 InteractionMarkers.Tappable best = default; bool found = false;
                 foreach (var m in InteractionMarkers.Tappables)
                 {
-                    if (m.collider == null) continue;
+                    if (m.collider == null && m.climb == null) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
                     // water points are the thing to tap when the can has room: a much wider hit area, and they win against other markers
@@ -181,6 +181,7 @@ namespace PlantGame.Player
                 }
                 if (found)
                 {
+                    if (best.climb != null) { ClimbTap(best.climb); return; }
                     if (_pi.Sensor.CanReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }
                     else StartWalk(best.collider.bounds.ClosestPoint(_pc.transform.position), best.collider, best.target, null);
                     return;
@@ -192,9 +193,18 @@ namespace PlantGame.Player
             if (Physics.Raycast(ray, out var ch, 300f, LayerMask.GetMask(Layers.ClimbableName), QueryTriggerInteraction.Collide) && (!ground || ch.distance < gh.distance + 0.5f))
             {
                 var vol = ch.collider.GetComponentInParent<ClimbableVolume>();
-                if (vol != null) { StartWalk(ClimbSpot(vol), null, default, vol); return; }
+                if (vol != null) { ClimbTap(vol); return; }
             }
             if (ground) StartWalk(gh.point, null, default, null);
+        }
+
+        /// <summary>A tap on a beanstalk (its circle or the stalk): climb it all the way, walking up to it first when needed.</summary>
+        void ClimbTap(ClimbableVolume vol)
+        {
+            CancelWalk();
+            if (_pc.CanGrab) { _pc.Grab(); _climbDir = 1; }
+            else if (_pc.CanDescend) { _pc.Descend(); _climbDir = -1; }
+            else StartWalk(ClimbSpot(vol), null, default, vol);
         }
 
         /// <summary>Where the player walks to reach a beanstalk: the nearest point of its volume, kept on the climb side of the stalk.</summary>

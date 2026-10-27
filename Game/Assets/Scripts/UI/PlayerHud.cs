@@ -297,8 +297,8 @@ namespace PlantGame.UI
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null && TouchInput.Active)   // touch ladder hints: tap the stalk
                 switch (_pc.CurrentClimbHint)
                 {
-                    case PlayerController.ClimbHint.Climb: _prompt.text = "Tap the beanstalk to climb"; break;
-                    case PlayerController.ClimbHint.Descend: _prompt.text = "Tap the beanstalk to climb down"; break;
+                    case PlayerController.ClimbHint.Climb: _prompt.text = "Tap the circle to climb the beanstalk"; break;
+                    case PlayerController.ClimbHint.Descend: _prompt.text = "Tap the circle to climb down"; break;
                     case PlayerController.ClimbHint.Climbing: _prompt.text = "Tap above or below to climb    Jump to let go"; break;
                 }
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)

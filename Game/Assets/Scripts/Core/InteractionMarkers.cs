@@ -30,7 +30,7 @@ namespace PlantGame.Core
         public static bool RefillRingThick { get; private set; }
 
         /// <summary>A marker drawn this frame: what a tap on it would act on (touch).</summary>
-        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; }
+        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; }
         public static readonly List<Tappable> Tappables = new List<Tappable>();
 
         PlayerInteraction _pi;
@@ -128,6 +128,30 @@ namespace PlantGame.Core
                     r.color = focused ? rdy : near;
                     if (water && !slim && ready) thickRefill = true;
                 }
+            }
+            if (_pi != null && _cam != null)
+            {
+                // grown beanstalks: a circle at the foot (and at the top, to climb back down); tapping it climbs the whole stalk (touch)
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing)
+                    foreach (var v in PlantGame.Player.ClimbableVolume.All)
+                    {
+                        Vector3 foot = v.ClimbLinePoint + v.SurfaceNormal * 0.5f;
+                        bool atTop = transform.position.y >= v.TopY - 2.5f;
+                        float baseY = atTop ? v.TopY + 1.2f : v.GetComponent<BoxCollider>().bounds.min.y + 1.6f;
+                        var pos = new Vector3(foot.x, baseY, foot.z);
+                        float dist = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(transform.position.x, transform.position.z));
+                        if (dist > showRadius) continue;
+                        var r = Get(used++);
+                        bool ready = dist <= 3.5f;
+                        pos.y += 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + pos.x * 1.7f);
+                        r.transform.position = pos;
+                        r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                        r.transform.localScale = Vector3.one * (size * (ready ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                        r.sprite = ready ? UiSprites.Ring : UiSprites.RingSlim;
+                        r.color = ready ? readyColor : nearColor;
+                        Tappables.Add(new Tappable { position = pos, climb = v });
+                    }
             }
             RefillRingThick = thickRefill;
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
