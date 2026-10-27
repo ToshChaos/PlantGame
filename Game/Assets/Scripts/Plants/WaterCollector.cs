@@ -40,9 +40,9 @@ namespace PlantGame.Plants
         }
 
         /// <summary>Single-use patch: one charge now, no dew afterwards.</summary>
-        public void MakeOneShot()
+        public void MakeOneShot(bool refills = false)
         {
-            oneShot = true; capacity = Mathf.Max(1, capacity); Stored = 1; _progress = 0f;
+            oneShot = !refills; capacity = Mathf.Max(1, capacity); Stored = 1; _progress = 0f;
             ApplyFill();
         }
 
@@ -57,6 +57,7 @@ namespace PlantGame.Plants
         void Update()
         {
             if (oneShot || (_plant != null && !_plant.IsGrown)) { ApplyFill(); return; }
+            if (!WeatherState.DewFalls) { ApplyFill(); return; }   // rain levels: dew only gathers while it rains
             if (Stored < capacity)
             {
                 _progress += Time.deltaTime;

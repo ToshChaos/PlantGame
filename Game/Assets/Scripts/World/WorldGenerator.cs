@@ -133,7 +133,7 @@ namespace PlantGame.World
                     }
                 }
                 var spawnPos = spawn.transform.position;
-                if (collectorOnly && i == 0) CollectorSpot(I, rnd, heads, spawnPos, true);   // one charge in a single-use dew patch: enough for the first plant
+                if (collectorOnly && i == 0) CollectorSpot(I, rnd, heads, spawnPos, true, Theme == LevelTheme.Rain);   // one charge in a single-use dew patch: enough for the first plant
                 if (collectorOnly && i == 1) CollectorSpot(I, rnd, heads, spawnPos, false);   // the dew seed and its soil: the water that refills
                 foreach (var s in plan.sources)
                 {
@@ -395,10 +395,10 @@ namespace PlantGame.World
         }
 
         /// <summary>
-        /// Collector-only levels. singleUse (first island): a Water Collector already grown with one charge that never refills.
+        /// Collector-only levels. singleUse (first island): a Water Collector already grown with one charge (never refills, except in the rain where it fills like any dew plant).
         /// Otherwise (second island): a soil patch for the Water Collector plus the dew seed lying next to it.
         /// </summary>
-        static void CollectorSpot(Isle I, System.Random rnd, float[] heads, Vector3 spawnPos, bool singleUse)
+        static void CollectorSpot(Isle I, System.Random rnd, float[] heads, Vector3 spawnPos, bool singleUse, bool refills = false)
         {
             var terrain = Scenery.Mat("M_Terrain");
             var pos = Spot(I, rnd, 0.3f, 0.75f, 4.5f, heads, spawnPos, SeedFromSpawn);
@@ -412,7 +412,7 @@ namespace PlantGame.World
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);
             if (interactable >= 0) soil.layer = interactable;
             var item = Kit.Item("dew_seed");
-            if (singleUse) { target.PlantSingleUse(); return; }
+            if (singleUse) { target.PlantSingleUse(refills); return; }   // in the rain the first collector keeps filling
             if (item != null && item.worldPrefab != null) SeedSource(I.go.transform, Spot(I, rnd, 0.3f, 0.75f, 4f, heads, spawnPos, SeedFromSpawn), item, false, 9, 1, 1, I);
         }
 

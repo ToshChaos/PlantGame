@@ -151,7 +151,7 @@ namespace PlantGame.Audio
             if (_fade >= 1f && old.isPlaying) old.Stop();
             if (OnTitle) { if (_amb.isPlaying) _amb.Stop(); _amb.clip = null; }
             else if (_amb.clip == null) ApplyThemeAmbience();
-            _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * masterVolume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f);
+            _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f);
             _amb.pitch = AmbiencePitch;
         }
         float _duckSmooth = 1f;

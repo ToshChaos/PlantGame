@@ -63,10 +63,16 @@ namespace PlantGame.Core
             if (plantPrefabs != null && plantPrefabs.Length > 0)
                 _plant = Spawn(plantPrefabs[(variantIndex >= 0 ? variantIndex : useCount - 1) % plantPrefabs.Length]);
             if (kind == PlantKind.Collector) { watered = true; if (_plant != null) _plant.StartGrowing(); DisableCollider(); }
+            else if (kind == PlantKind.Platform && WeatherState.RainWaters) Water(actor);   // the rain waters mushrooms
+        }
+
+        void Update()
+        {
+            if (planted && !watered && kind == PlantKind.Platform && WeatherState.RainWaters) Water(null);   // rain starts after planting
         }
 
         /// <summary>Level-authored dew patch: the Water Collector stands grown at once and holds one charge it never refills.</summary>
-        public void PlantSingleUse()
+        public void PlantSingleUse(bool refills = false)
         {
             if (planted || plantPrefabs == null || plantPrefabs.Length == 0) return;
             planted = true; watered = true; useCount++;
@@ -74,10 +80,10 @@ namespace PlantGame.Core
             DisableCollider();
             if (_plant == null) return;   // the soil patch stays as the plant's base, like the planter on the next island
             _plant.GrowInstantly();
-            var wc = _plant.GetComponent<WaterCollector>(); if (wc != null) wc.MakeOneShot();
+            var wc = _plant.GetComponent<WaterCollector>(); if (wc != null) wc.MakeOneShot(refills);
         }
 
-        public bool NeedsWater => planted && !watered && kind != PlantKind.Collector;   // collectors grow without water
+        public bool NeedsWater => planted && !watered && kind != PlantKind.Collector && !(kind == PlantKind.Platform && WeatherState.RainWaters);   // collectors grow without water
 
         public void Water(GameObject actor)
         {

@@ -23,8 +23,13 @@ namespace PlantGame.World
         public void Apply(LevelTheme t, bool wind = false) { _theme = t; _wind = wind; if (_started) Setup(); }
         void Start() { _started = true; Setup(); }
 
+        ParticleSystem _rain;
+        bool _showering; float _intensity, _switchAt;
+        const float RainMin = 35f, RainMax = 80f, DryMin = 15f, DryMax = 35f;
+
         void Setup()
         {
+            _rain = null; WeatherState.Set(false, false, 0f);
             if (_fxRoot != null) Destroy(_fxRoot.gameObject);
             var atm = FindAnyObjectByType<Atmosphere>();
             var bf = FindAnyObjectByType<GoldenButterflies>();
@@ -112,8 +117,19 @@ namespace PlantGame.World
 
             _fxRoot = new GameObject("WeatherFx").transform;
             _fxRoot.SetParent(transform, false);
-            if (rain) Rain(); else if (snow) Snow(); else if (fog || sunset || sunrise) { } else Leaves();
+            if (rain) { Rain(); _showering = true; _intensity = 1f; _switchAt = Time.time + Random.Range(RainMin, RainMax); WeatherState.Set(true, true, 1f); } else if (snow) Snow(); else if (fog || sunset || sunrise) { } else Leaves();
             if (_wind && WindLeaves == null) Leaves();
+        }
+
+        void OnDestroy() { WeatherState.Set(false, false, 0f); }
+
+        void Update()
+        {
+            if (_rain == null) return;
+            if (Time.time >= _switchAt) { _showering = !_showering; _switchAt = Time.time + (_showering ? Random.Range(RainMin, RainMax) : Random.Range(DryMin, DryMax)); }
+            _intensity = Mathf.MoveTowards(_intensity, _showering ? 1f : 0f, Time.deltaTime / 3f);
+            var em = _rain.emission; em.rateOverTime = 1800f * _intensity;
+            WeatherState.Set(true, _showering, _intensity);
         }
 
         void LateUpdate()
@@ -138,6 +154,7 @@ namespace PlantGame.World
             vel.x = 2.5f; vel.y = -32f; vel.z = 0f;
             var r = ps.GetComponent<ParticleSystemRenderer>(); r.lengthScale = 1f; r.velocityScale = 0.03f;
             ps.Play();
+            _rain = ps;
         }
 
         // ------------------------------------------------------------------ snow
