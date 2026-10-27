@@ -269,13 +269,13 @@ namespace PlantGame.UI
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
             {   // at the water with room in the can: purple refill hint
-                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)"; _waterWarn.color = Palette.TextPurple;
+                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)"; _waterWarn.color = Color.white;
             }
             else
             {
                 _waterWarn.enabled = empty && GameSettings.Hints;
                 _waterWarn.text = "Refill water at source (pond, stream, plant)";
-                _waterWarn.color = flashing ? Color.Lerp(WarnOrange, Color.white, pulse) : WarnOrange;
+                _waterWarn.color = Color.white;
             }
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
@@ -384,7 +384,7 @@ namespace PlantGame.UI
             var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-130, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
-            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(460, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
+            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(620, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             if (touch) { var ol = _waterLabel.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(1f, 1f, 1f, 0.85f); ol.effectDistance = new Vector2(2, -2); }
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
