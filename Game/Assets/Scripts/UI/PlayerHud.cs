@@ -406,7 +406,7 @@ namespace PlantGame.UI
             _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-620, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
             _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-250, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
             _followLabelP = Button("Camera", pr, V(new Vector2(360, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(330, 160), new Vector2(-250, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 300, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
             _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-250, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
