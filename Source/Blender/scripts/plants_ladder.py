@@ -26,8 +26,8 @@ MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Ladder'
 SEGMENTS = 64
-VINE_EXT = 1.4         # the stalk keeps going this far above the top as a thin vine
-TAPER_LEN = 3.0        # the trunk starts narrowing this far below the top
+VINE_EXT = 0.5         # the stalk keeps going this far above the top as a thin vine
+TAPER_LEN = 5.0        # the trunk starts narrowing this far below the top
 VINE_R = 0.035         # vine radius at the very tip
 LAND_Y = 1.9           # Land: where the climber steps off, in front of the stalk top (on the target island)
 
