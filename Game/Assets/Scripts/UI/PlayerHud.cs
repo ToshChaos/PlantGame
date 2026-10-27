@@ -381,7 +381,7 @@ namespace PlantGame.UI
             _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
-            var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-130, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
+            var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-150, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(620, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
@@ -389,8 +389,9 @@ namespace PlantGame.UI
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
-                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(40, 40), new Vector2((touch ? 190 : 140) + i * 46, 22));
-                _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, 40);
+                float ds = touch ? 48f : 40f;   // touch droplets are 20% bigger
+                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(ds, ds), new Vector2((touch ? 190 : 140) + i * (touch ? 55 : 46), 22));
+                _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, ds);
             }
 
             // pause menu
