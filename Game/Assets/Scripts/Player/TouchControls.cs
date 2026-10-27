@@ -226,7 +226,7 @@ namespace PlantGame.Player
             t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = new Color(0.07f, 0.24f, 0.14f);
             bool bold = b == Btn.Jump || b == Btn.Context;   // Jump, pick up and use read bold
             t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            t.fontSize = size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            t.fontSize = b == Btn.Context ? 44 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
     }
