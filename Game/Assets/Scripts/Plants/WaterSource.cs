@@ -76,16 +76,16 @@ namespace PlantGame.Plants
         static Mesh DiscMesh(float radius)
         {
             const int N = 28;
-            var v = new Vector3[N + 1]; var t = new int[N * 6];
-            for (int i = 0; i < N; i++) { float a = i * Mathf.PI * 2f / N; v[i + 1] = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius; }
+            var v = new Vector3[N + 1]; var nrm = new Vector3[N + 1]; var uv = new Vector2[N + 1]; var t = new int[N * 3];
+            nrm[0] = Vector3.up; uv[0] = new Vector2(0.5f, 0.5f);
             for (int i = 0; i < N; i++)
             {
-                int a = i + 1, b = (i + 1) % N + 1;
-                t[i * 6] = 0; t[i * 6 + 1] = b; t[i * 6 + 2] = a;
-                t[i * 6 + 3] = 0; t[i * 6 + 4] = a; t[i * 6 + 5] = b;   // both sides
+                float a = i * Mathf.PI * 2f / N; var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                v[i + 1] = d * radius; nrm[i + 1] = Vector3.up; uv[i + 1] = new Vector2(d.x, d.z) * 0.5f + new Vector2(0.5f, 0.5f);
+                t[i * 3] = 0; t[i * 3 + 1] = (i + 1) % N + 1; t[i * 3 + 2] = i + 1;
             }
-            var m = new Mesh { name = "IceDisc", hideFlags = HideFlags.DontSave, vertices = v, triangles = t };
-            m.RecalculateNormals(); m.RecalculateBounds();
+            var m = new Mesh { name = "IceDisc", hideFlags = HideFlags.DontSave, vertices = v, normals = nrm, uv = uv, triangles = t };
+            m.RecalculateBounds();
             return m;
         }
 
