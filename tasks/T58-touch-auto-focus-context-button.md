@@ -24,4 +24,4 @@ Test: menu `PlantGame > Touch Controls (editor test)` then play (mouse acts as a
 Known: no long-press drop; items cycle with the Next item button.
 
 ## v3 rework (2026-10-27)
-The stick, context button and water button were replaced: tap the ground to walk (turn first, then walk), tap the circle / diamond marker to act (`InteractionMarkers.Tappables`, `PlayerInteraction.HandleTap`), tap a beanstalk to climb, double-tap a hotbar slot to drop, jump again in the air to glide. Camera follow is always on for touch. See `docs/mobile-controls.md`; backlog in `TODO-ANDROID.md`.
+The stick, context button and water button were replaced: tap the ground to walk (turn first, then walk), tap the circle / diamond marker to act (`InteractionMarkers.Tappables`, `PlayerInteraction.HandleTap`), tap a beanstalk to climb, double-tap a hotbar slot to drop, jump again in the air to glide. Camera follow is always on for touch. See `docs/mobile-controls.md`; backlog in `TASKS-ANDROID.md`.

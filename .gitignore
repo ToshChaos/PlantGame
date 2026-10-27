@@ -20,3 +20,6 @@ Builds/
 *.app/
 *_BackUpThisFolder_ButDontShipItWithYourGame/
 *_BurstDebugInformation_DoNotShip/
+
+# Unity per-session tool cache
+Game/.utmp/

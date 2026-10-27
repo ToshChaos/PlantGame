@@ -1,13 +1,10 @@
 # TODO.md — post-MVP backlog
 
 The hackathon MVP is finished: every task on `TASKS.md` is `DONE` (or `CUT`). This file holds the work planned for
-after the MVP. Nothing here has been started. Details, acceptance criteria and handoff notes stay in `tasks/T<nn>-*.md`;
+after the MVP. Open work only; the Android beta tasks are on `TASKS-ANDROID.md`. Details, acceptance criteria and handoff notes stay in `tasks/T<nn>-*.md`;
 roles are in `AGENTS.md` section 4. When a task here starts, set its status in the task file and in the table below.
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `CUT`.
-
-## Mobile (Android beta)
-Moved to [`TODO-ANDROID.md`](TODO-ANDROID.md).
 
 ## Content and polish
 | ID | Task | Owner | Depends on | Status |
@@ -17,7 +14,7 @@ Moved to [`TODO-ANDROID.md`](TODO-ANDROID.md).
 | [T66](tasks/T66-palm-detail.md) | More polygons in the palm trunks and fronds | A5+A3 | T56 | TODO |
 
 ## Checks the MVP did not cover
-- A full by-hand playthrough of all ten levels in both modes (`docs/qa-checklist.md`); the automated pass only loads each level.
+- A full by-hand playthrough of all ten levels (`docs/qa-checklist.md`); the automated pass only loads each level.
 - Built-player smoke test (T23): title -> level 1 -> win -> back, random level, pasted seed code, best times kept across launches; a profile in the player, not the editor.
 - Listening pass on the music, ambience, footsteps and bridge sounds (T43, T47, T53).
 - Balance of the snow levels (Heat Seed supply) (T45); part of T21.
