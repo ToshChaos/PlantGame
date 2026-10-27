@@ -1120,6 +1120,11 @@ namespace PlantGame.World
             {
                 var scr = ShapeMeshes.Obj("Disc", ShapeMeshes.OpeningPanel(), PortalDiscMat(), go.transform, Vector3.zero, Vector3.zero, Vector3.one);
                 scr.transform.SetPositionAndRotation(P(0, 0, 0.0f), rot);
+                // the transparent window is solid: an invisible wall fills the opening between the pillars and under the lintel
+                var wall = new GameObject("WindowCollider"); wall.transform.SetParent(go.transform, true);
+                wall.transform.SetPositionAndRotation(P(0, 2.03f, 0), rot);
+                var wc = wall.AddComponent<BoxCollider>(); wc.size = new Vector3(3.4f, 4.1f, 0.5f);
+                int wl = LayerMask.NameToLayer(Layers.GroundName); if (wl >= 0) wall.layer = wl;
             }
             foreach (float tz in new[] { 0.2f, -0.4f })   // gold trim inlaid along the opening on both faces
             {

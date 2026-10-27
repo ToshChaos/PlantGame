@@ -7,7 +7,7 @@ In Blender (via MCP execute_blender_code):
 
 The ladder grows along Blender +Z (= Unity +Y). The climbable face is Blender +Y (Unity +Z); leaves stay on the back (-Y),
 so the front column has >= 0.8 m clearance. T51: no top platform; the stalk ends at z = Height right beside the target island's rim and `Land` is 1.9 m in front of the stalk top.
-growth_t: R = z / Height (0..1), G = part id (0 stalk, .34 vines + bean pods, .67 rungs/leaves, ~.8 beans (yellow in the shader)), B = random tint.
+growth_t: R = z / (Height + VINE_EXT) (0..1; the stalk tapers into a thin vine above Height), G = part id (0 stalk, .34 vines + bean pods, .67 rungs/leaves, ~.8 beans (yellow in the shader)), B = random tint.
 Reuses the node helpers and preview material of plants_bridge.py.
 """
 import math
@@ -26,6 +26,9 @@ MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Ladder'
 SEGMENTS = 64
+VINE_EXT = 1.4         # the stalk keeps going this far above the top as a thin vine
+TAPER_LEN = 3.0        # the trunk starts narrowing this far below the top
+VINE_R = 0.035         # vine radius at the very tip
 LAND_Y = 1.9           # Land: where the climber steps off, in front of the stalk top (on the target island)
 
 
@@ -70,26 +73,36 @@ def build_group():
         return b.make('GeometryNodeTransform', {'Geometry': geo, 'Translation': trans})
 
     # ---- stalk path: vertical, lateral sway fading to 0 at both ends (top stays above the anchor)
-    line = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0, height)})
-    res = b.make('GeometryNodeResampleCurve', {'Curve': line, 'Count': SEGMENTS}, mode='COUNT')
-    t = b.make('GeometryNodeSplineParameter').outputs['Factor']
-    s = b.m('SINE', b.m('MULTIPLY', t, math.pi))
-    pos = b.make('GeometryNodeInputPosition').outputs[0]
-    nx = b.make('ShaderNodeTexNoise', {'Vector': pos, 'W': b.m('MULTIPLY', seed, 3.7), 'Scale': 0.25}, noise_dimensions='4D')
-    ny = b.make('ShaderNodeTexNoise', {'Vector': pos, 'W': b.m('MULTIPLY', seed, 5.3), 'Scale': 0.25}, noise_dimensions='4D')
-    ox = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', nx.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, s))
-    oy = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', ny.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, s))
-    moved = b.make('GeometryNodeSetPosition', {'Geometry': res, 'Offset': b.xyz(ox, oy, 0)})
-    zz_ = b.m('MULTIPLY', t, height)
+    def sway_curve(top, count):
+        ln = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0, top)})
+        rs = b.make('GeometryNodeResampleCurve', {'Curve': ln, 'Count': count}, mode='COUNT')
+        tt_ = b.make('GeometryNodeSplineParameter').outputs['Factor']
+        zc = b.m('MULTIPLY', tt_, top)
+        sn = b.m('SINE', b.m('MULTIPLY', b.m('MINIMUM', b.m('DIVIDE', zc, height), 1.0), math.pi))
+        ps = b.make('GeometryNodeInputPosition').outputs[0]
+        nx = b.make('ShaderNodeTexNoise', {'Vector': ps, 'W': b.m('MULTIPLY', seed, 3.7), 'Scale': 0.25}, noise_dimensions='4D')
+        ny = b.make('ShaderNodeTexNoise', {'Vector': ps, 'W': b.m('MULTIPLY', seed, 5.3), 'Scale': 0.25}, noise_dimensions='4D')
+        ox = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', nx.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, sn))
+        oy = b.m('MULTIPLY', b.m('MULTIPLY', b.m('SUBTRACT', ny.outputs['Fac'], 0.5), 2.0), b.m('MULTIPLY', sway, sn))
+        return b.make('GeometryNodeSetPosition', {'Geometry': rs, 'Offset': b.xyz(ox, oy, 0)}), zc
+
+    base, _ = sway_curve(height, SEGMENTS)
+    # the stalk itself runs VINE_EXT above the top and tapers to a thin vine (climbing, rungs and pods use `base`)
+    top2 = b.m('ADD', height, VINE_EXT)
+    stalk_path, zz_ = sway_curve(top2, b.m('ROUND', b.m('MULTIPLY', b.m('DIVIDE', top2, height), SEGMENTS)))
     knots = b.m('ADD', 1.0, b.m('MULTIPLY', 0.22, b.m('MAXIMUM', b.m('SINE', b.m('ADD', b.m('MULTIPLY', zz_, 4.2), b.m('MULTIPLY', seed, 0.7))), 0.0)))   # T67: knobbly nodes
-    flare = b.m('ADD', 1.0, b.m('MULTIPLY', 0.7, b.m('POWER', b.m('MAXIMUM', b.m('SUBTRACT', 1.0, b.m('MULTIPLY', t, 9.0)), 0.0), 2.0)))   # swollen root
-    taper = b.m('MULTIPLY', b.m('MULTIPLY', rad, b.m('SUBTRACT', 1.15, b.m('MULTIPLY', t, 0.35))), b.m('MULTIPLY', knots, flare))
-    base = moved
+    zf = b.m('DIVIDE', zz_, height)
+    flare = b.m('ADD', 1.0, b.m('MULTIPLY', 0.7, b.m('POWER', b.m('MAXIMUM', b.m('SUBTRACT', 1.0, b.m('MULTIPLY', zf, 9.0)), 0.0), 2.0)))   # swollen root
+    body = b.m('MULTIPLY', b.m('MULTIPLY', rad, b.m('SUBTRACT', 1.15, b.m('MULTIPLY', zf, 0.35))), b.m('MULTIPLY', knots, flare))
+    # smoothstep from the trunk into the vine: starts TAPER_LEN below the top, thin vine at the very tip
+    u = b.m('DIVIDE', b.m('SUBTRACT', zz_, b.m('SUBTRACT', height, TAPER_LEN)), TAPER_LEN + VINE_EXT, clamp=True)
+    sm = b.m('MULTIPLY', b.m('MULTIPLY', u, u), b.m('SUBTRACT', 3.0, b.m('MULTIPLY', u, 2.0)))
+    taper = b.m('ADD', b.m('MULTIPLY', body, b.m('SUBTRACT', 1.0, sm)), b.m('MULTIPLY', VINE_R, sm))
 
     parts = []
     # ---- stalk
     prof = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 10, 'Radius': 1.0})
-    stalk = b.make('GeometryNodeCurveToMesh', {'Curve': base, 'Profile Curve': prof, 'Scale': taper, 'Fill Caps': True})
+    stalk = b.make('GeometryNodeCurveToMesh', {'Curve': stalk_path, 'Profile Curve': prof, 'Scale': taper, 'Fill Caps': True})
     parts.append(store_part(stalk, 0.0).outputs[0])
 
     # ---- two guide vines spiralling round the stalk
@@ -196,7 +209,7 @@ def build_group():
         tree.links.new(p, join.inputs[0])
     real = b.make('GeometryNodeRealizeInstances', {'Geometry': join})
     pz2 = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
-    tt = b.m('DIVIDE', pz2, height, clamp=True)
+    tt = b.m('DIVIDE', pz2, b.m('ADD', height, VINE_EXT), clamp=True)
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
     tint = b.en(b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT'))
     col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': tint}, mode='RGB')
