@@ -411,7 +411,8 @@ namespace PlantGame.UI
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
+            var resumeText = Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
+            resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
             Button("Restart", pr, V(new Vector2(0, -40), new Vector2(420, 110)), Restart);
             Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
@@ -482,7 +483,7 @@ namespace PlantGame.UI
         {
             foreach (var t in new[] { _hintsButtonLabel }) if (t != null) t.text = OnOff("Hints", GameSettings.Hints);
             if (_pauseHint != null && _pausePanel.activeSelf && SeedLine().Length == 0) _pauseHint.gameObject.SetActive(GameBootstrap.Current.mode == GameMode.Exploration && GameSettings.Hints);   // the tip follows the Hints toggle
-            if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
+            if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints && !TouchInput.Active ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Bloom);
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
