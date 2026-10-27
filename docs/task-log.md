@@ -169,3 +169,6 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Repo: `Source/Blender/exports/` and built `.app` / Unity backup folders are git-ignored; local `docs/shots/` (134 MB) and `.blend1` backups deleted. `Source/ThirdParty-raw/` (532 MB, git-ignored) is kept as the source for re-importing models.
 - Docs: post-MVP tasks (T21, T57-T66) moved to `TODO.md`; `TASKS.md` is the finished MVP board; README rewritten; AGENTS.md layout, contract 5.5 and change log v2.9 updated.
 - Verified: compile clean, 37/37 EditMode tests (golden seeds unchanged), `Smoke Test Levels` 11/11 OK with no console errors (2.1-3.0 ms per frame in the editor). Fixed on the way: the smoke test's first level always started in Title (`playModeStartScene` kept by PlayFromTitle), so level 1 Exploration reported "no player"; `LevelSmokeTest.Start` now clears it.
+
+## Player rework (v3.1)
+- `char_player.py` rewritten: ~10.5k tris, 1.9 m with hat; roles instead of colours; can modelled in the same FBX. Pitfall: a MonoBehaviour must live in a file named like the class (`PlayerOutfitApplier.cs`), else the prefab gets a missing script. `RunCommand` blocks `AssetDatabase.DeleteAsset` ("user interactions" error); delete assets from the shell instead.

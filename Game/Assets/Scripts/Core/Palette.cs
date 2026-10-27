@@ -30,9 +30,14 @@ namespace PlantGame.Core
         public static readonly Color TextPurple = Hex("B58CFF");
         /// <summary>Magic / accent only: glow, rim, water edge.</summary>
         public static readonly Color GlowCyan   = Hex("7CF2E6");
-        /// <summary>Player character only (T31): white / black / gold.</summary>
-        public static readonly Color PlayerWhite = Hex("F2F2EE");
-        public static readonly Color PlayerBlack = Hex("17181C");
+        /// <summary>Player character, default "Explorer" outfit: one colour per PlayerRole (Gold is also used by the can and UI).</summary>
+        public static readonly Color PlayerSkin  = Hex("CC9473");
+        public static readonly Color PlayerHair  = Hex("3E2212");
+        public static readonly Color PlayerCloth = Hex("EDEBD6");
+        public static readonly Color PlayerCloak = Hex("2C5E8F");
+        public static readonly Color PlayerGear  = Hex("5C3A1E");
+        public static readonly Color PlayerLeaf  = LeafGreen;
+        public static readonly Color PlayerDark  = Hex("15161A");
         public static readonly Color Gold        = Hex("D9A441");
 
         public static Color Hex(string hex)

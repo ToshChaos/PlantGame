@@ -42,3 +42,7 @@ A simple, readable "Roblox-style" blocky character the camera orbits behind, in 
 - **Verified:** W+Shift runs 6 m/s along camera forward; D moves +X with the model facing 90°; airborne pose; console clean.
 - **Known issues:** climb pose and camera pull-in were not eyeballed in play (code paths only); no head-look; the camera can
   still clip through thin Plant colliders it is inside of.
+
+
+## Rework (v3.1, 2026-10-27)
+Blocky white/black/gold figure replaced by a rounded explorer-mage (see AGENTS.md v3.1). Parts are named by material role; `PlayerOutfit` assets reskin it. The can is modelled in the same FBX. Verified in Sandbox play mode: model, outfit applier, can shown with charges, walk swing with the can, console clean. Not eyeballed: climb pose, the pour tilt.
