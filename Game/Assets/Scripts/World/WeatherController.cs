@@ -23,13 +23,14 @@ namespace PlantGame.World
         public void Apply(LevelTheme t, bool wind = false) { _theme = t; _wind = wind; if (_started) Setup(); }
         void Start() { _started = true; Setup(); }
 
-        ParticleSystem _rain;
+        ParticleSystem _rain, _snowPs;
+        bool _snowing; float _snowAmount, _snowSwitchAt;   // snow levels: 30-60 s of snowfall, then 15-30 s without (looks only)
         bool _showering; float _intensity, _switchAt;
         const float RainSeconds = 30f, DrySeconds = 30f;   // the cycle always starts with rain
 
         void Setup()
         {
-            _rain = null; WeatherState.Set(false, false, 0f);
+            _rain = null; _snowPs = null; WeatherState.Set(false, false, 0f);
             if (_fxRoot != null) Destroy(_fxRoot.gameObject);
             var atm = FindAnyObjectByType<Atmosphere>();
             var bf = FindAnyObjectByType<GoldenButterflies>();
@@ -117,7 +118,7 @@ namespace PlantGame.World
 
             _fxRoot = new GameObject("WeatherFx").transform;
             _fxRoot.SetParent(transform, false);
-            if (rain) { Rain(); _showering = true; _intensity = 1f; _switchAt = Time.time + RainSeconds; WeatherState.Set(true, true, 1f); } else if (snow) Snow(); else if (fog || sunset || sunrise) { } else Leaves();
+            if (rain) { Rain(); _showering = true; _intensity = 1f; _switchAt = Time.time + RainSeconds; WeatherState.Set(true, true, 1f); } else if (snow) { Snow(); _snowing = true; _snowAmount = 1f; _snowSwitchAt = Time.time + Random.Range(30f, 60f); } else if (fog || sunset || sunrise) { } else Leaves();
             if (_wind && WindLeaves == null) Leaves();
         }
 
@@ -125,6 +126,12 @@ namespace PlantGame.World
 
         void Update()
         {
+            if (_snowPs != null)
+            {
+                if (Time.time >= _snowSwitchAt) { _snowing = !_snowing; _snowSwitchAt = Time.time + (_snowing ? Random.Range(30f, 60f) : Random.Range(15f, 30f)); }
+                _snowAmount = Mathf.MoveTowards(_snowAmount, _snowing ? 1f : 0f, Time.deltaTime / 4f);
+                var se = _snowPs.emission; se.rateOverTime = 260f * _snowAmount;
+            }
             if (_rain == null) return;
             if (Time.time >= _switchAt) { _showering = !_showering; _switchAt = Time.time + (_showering ? RainSeconds : DrySeconds); }
             _intensity = Mathf.MoveTowards(_intensity, _showering ? 1f : 0f, Time.deltaTime / 3f);
@@ -170,6 +177,7 @@ namespace PlantGame.World
             vel.x = 0.9f; vel.y = -1.4f; vel.z = 0.3f;
             var noise = ps.noise; noise.enabled = true; noise.strength = 0.9f; noise.frequency = 0.3f; noise.scrollSpeed = 0.3f;
             ps.Play();
+            _snowPs = ps;
         }
 
         // ------------------------------------------------------------------ autumn leaves
