@@ -402,12 +402,12 @@ namespace PlantGame.UI
             bool two = TouchInput.Active;
             Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
             _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
-            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-620, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, 300, 30);
-            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-620, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, 300, 30);
-            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-250, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, 300, 30);
-            _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-620, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-250, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 300, 30);
+            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-650, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-650, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-200, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-650, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-200, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-200, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
