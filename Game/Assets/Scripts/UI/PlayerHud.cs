@@ -26,7 +26,6 @@ namespace PlantGame.UI
         PlayerInputReader _input;
         PlayerController _pc;
         WateringCan _can;
-        float _warnAlpha;
         Font _font;
 
         Image[] _slotBg, _slotIcon;
@@ -39,6 +38,7 @@ namespace PlantGame.UI
         float _endAt = -1f;
         bool _ended;
         Image[] _drops;
+        static readonly Color WarnOrange = new Color(1f, 0.72f, 0.3f);   // lighter than the EMPTY label's orange
         GameObject _pausePanel;
         Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _pauseTitle;
         static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
@@ -265,15 +265,18 @@ namespace PlantGame.UI
             }
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            _waterLabel.color = Palette.Gold;   // same gold as the refill hint
+            _waterLabel.color = new Color(0.44f, 0.66f, 0.86f, 1f);   // same blue as the droplets
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
-            bool showWarn = nearWater || (empty && GameSettings.Hints);
-            _warnAlpha = Mathf.MoveTowards(_warnAlpha, showWarn ? 1f : 0f, Time.unscaledDeltaTime * 2f);   // fades out once the can is full
-            _waterWarn.enabled = _warnAlpha > 0.001f;
-            _waterWarn.text = "Refill water at source (pond, stream, plant)";
-            var warn = flashing && !nearWater ? Color.Lerp(Palette.Gold, Color.white, pulse) : Palette.Gold;
-            warn.a = _warnAlpha;
-            _waterWarn.color = warn;
+            if (nearWater)
+            {   // at the water with room in the can: purple refill hint
+                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)"; _waterWarn.color = Palette.TextPurple;
+            }
+            else
+            {
+                _waterWarn.enabled = empty && GameSettings.Hints;
+                _waterWarn.text = "Refill water at source (pond, stream, plant)";
+                _waterWarn.color = flashing ? Color.Lerp(WarnOrange, Color.white, pulse) : WarnOrange;
+            }
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
             if (_hints.enabled)
