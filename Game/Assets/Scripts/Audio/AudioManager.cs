@@ -63,14 +63,27 @@ namespace PlantGame.Audio
             _amb.clip = clip; _amb.Play();
         }
 
+        AudioClip LevelTune(string id)
+        {
+            foreach (var e in levelMusic) if (e.name == id && e.clips != null && e.clips.Length > 0) return e.clips[0];
+            return null;
+        }
+
         AudioClip GameplayTrack()
         {
             var t = Theme;
             string id = GameBootstrap.Current.levelId;
             if (!string.IsNullOrEmpty(id)) foreach (var e in levelMusic) if (e.name == id && e.clips != null && e.clips.Length > 0 && e.clips[0] != null) return e.clips[0];   // T53
-            if ((t == LevelTheme.Rain || t == LevelTheme.Fog) && rainMusic != null) return rainMusic;   // fog: the slow, quiet track
-            if (t == LevelTheme.Snow && menuMusic != null) return menuMusic;                            // snow: the light title track
-            if (t == LevelTheme.Autumn && autumnMusic != null) return autumnMusic;
+            // random / seed-code levels: match the tune to the theme (reusing the curated level tunes)
+            switch (t)
+            {
+                case LevelTheme.Rain: if (rainMusic != null) return rainMusic; break;
+                case LevelTheme.Autumn: if (autumnMusic != null) return autumnMusic; break;
+                case LevelTheme.Snow: return LevelTune("level_7") ?? menuMusic ?? gameplayMusic;
+                case LevelTheme.Fog: return LevelTune("level_9") ?? rainMusic ?? gameplayMusic;
+                case LevelTheme.Sunrise: return LevelTune("level_6") ?? gameplayMusic;
+                case LevelTheme.Sunset: return LevelTune("level_5") ?? gameplayMusic;
+            }
             return gameplayMusic;
         }
 
