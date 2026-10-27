@@ -15,6 +15,8 @@ namespace PlantGame.Plants
         public int capacity = 1;
         [Tooltip("A single-use dew patch: holds one charge from the start and never refills.")] public bool oneShot;
         public Transform reservoir;
+        /// <summary>Rain levels: a charge takes 15 s of rain (the progress is kept between showers).</summary>
+        float Seconds => WeatherState.RainLevel ? 15f : secondsPerCharge;
 
         PlantInstance _plant;
         float _progress;
@@ -22,7 +24,7 @@ namespace PlantGame.Plants
 
         public int Stored { get; private set; }
         /// <summary>0..1 toward the next charge (1 = full).</summary>
-        public float Fill => Stored >= capacity ? 1f : (Stored + _progress / Mathf.Max(0.01f, secondsPerCharge)) / capacity;
+        public float Fill => Stored >= capacity ? 1f : (Stored + _progress / Mathf.Max(0.01f, Seconds)) / capacity;
 
         public InteractAction Action => InteractAction.Use;
         public string Prompt => "Collect water";
@@ -61,7 +63,7 @@ namespace PlantGame.Plants
             if (Stored < capacity)
             {
                 _progress += Time.deltaTime;
-                if (_progress >= secondsPerCharge) { _progress = 0f; Stored++; GameEvents.RaiseCollectorReady(); }
+                if (_progress >= Seconds) { _progress = 0f; Stored++; GameEvents.RaiseCollectorReady(); }
             }
             else _progress = 0f;
             ApplyFill();

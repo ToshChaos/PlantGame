@@ -25,7 +25,7 @@ namespace PlantGame.World
 
         ParticleSystem _rain;
         bool _showering; float _intensity, _switchAt;
-        const float RainMin = 35f, RainMax = 80f, DryMin = 15f, DryMax = 35f;
+        const float RainSeconds = 30f, DrySeconds = 30f;   // the cycle always starts with rain
 
         void Setup()
         {
@@ -117,7 +117,7 @@ namespace PlantGame.World
 
             _fxRoot = new GameObject("WeatherFx").transform;
             _fxRoot.SetParent(transform, false);
-            if (rain) { Rain(); _showering = true; _intensity = 1f; _switchAt = Time.time + Random.Range(RainMin, RainMax); WeatherState.Set(true, true, 1f); } else if (snow) Snow(); else if (fog || sunset || sunrise) { } else Leaves();
+            if (rain) { Rain(); _showering = true; _intensity = 1f; _switchAt = Time.time + RainSeconds; WeatherState.Set(true, true, 1f); } else if (snow) Snow(); else if (fog || sunset || sunrise) { } else Leaves();
             if (_wind && WindLeaves == null) Leaves();
         }
 
@@ -126,7 +126,7 @@ namespace PlantGame.World
         void Update()
         {
             if (_rain == null) return;
-            if (Time.time >= _switchAt) { _showering = !_showering; _switchAt = Time.time + (_showering ? Random.Range(RainMin, RainMax) : Random.Range(DryMin, DryMax)); }
+            if (Time.time >= _switchAt) { _showering = !_showering; _switchAt = Time.time + (_showering ? RainSeconds : DrySeconds); }
             _intensity = Mathf.MoveTowards(_intensity, _showering ? 1f : 0f, Time.deltaTime / 3f);
             var em = _rain.emission; em.rateOverTime = 1800f * _intensity;
             WeatherState.Set(true, _showering, _intensity);
