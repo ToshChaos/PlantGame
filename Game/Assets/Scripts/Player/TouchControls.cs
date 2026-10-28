@@ -171,17 +171,18 @@ namespace PlantGame.Player
                 InteractionMarkers.Tappable best = default; bool found = false;
                 foreach (var m in InteractionMarkers.Tappables)
                 {
-                    if (m.collider == null && m.climb == null) continue;
+                    if (m.collider == null && m.climb == null && !m.bridge) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
                     // water points (when the can has room) and beanstalk circles: a much wider hit area, and they win against other markers and the ground
                     bool water = canFill && (m.target.interactable is WaterSource || m.target.interactable is WaterCollector);
-                    float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null ? 2.5f : 1f));   // beanstalk circles get the wide area too
+                    float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null || m.bridge ? 2.5f : 1f));   // beanstalk circles get the wide area too
                     if (score < bestScore) { bestScore = score; best = m; found = true; }
                 }
                 if (found)
                 {
                     if (best.climb != null) { ClimbTap(best.climb); return; }
+                    if (best.bridge) { CancelWalk(); StartWalk(best.bridgeFrom, null, default, null); _walkThen = best.bridgeTo; _hasThen = true; return; }   // to this end, then across
                     if (_pi.Sensor.CanReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }
                     else StartWalk(best.collider.bounds.ClosestPoint(_pc.transform.position), best.collider, best.target, null);
                     return;
@@ -223,8 +224,11 @@ namespace PlantGame.Player
             ShowDestination(point, climb == null);
         }
 
+        Vector3 _walkThen; bool _hasThen;   // a second leg queued after the walk point (crossing a bridge)
+
         void CancelWalk()
         {
+            _hasThen = false;
             _walking = false; _walkCol = null; _walkClimb = null;
             TouchInput.Move = Vector2.zero; TouchInput.WorldMove = Vector3.zero; TouchInput.FaceDir = Vector3.zero;
             if (_destMarker != null) _destMarker.gameObject.SetActive(false);
@@ -258,6 +262,15 @@ namespace PlantGame.Player
 
             Vector3 to = _walkPoint - pos; to.y = 0f;
             float dist = to.magnitude;
+            if (_hasThen && (dist < ArriveDistance || _walkT > WalkTimeout))
+            {
+                // first leg done: set off along the bridge
+                _walkPoint = _walkThen; _hasThen = false; _walkT = 0f; _stuckT = 0f; _lastPos = pos;
+                Vector3 nt = _walkPoint - pos; nt.y = 0f;
+                _turning = nt.sqrMagnitude > 0.01f && FacingError(nt.normalized) > TurnFirstDegrees;
+                ShowDestination(_walkPoint, true);
+                return;
+            }
             if (dist < ArriveDistance || _walkT > WalkTimeout) { CancelWalk(); return; }
             Vector3 dir = to / dist;
 

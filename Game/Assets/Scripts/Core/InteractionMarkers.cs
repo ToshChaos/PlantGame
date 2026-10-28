@@ -30,7 +30,7 @@ namespace PlantGame.Core
         public static bool RefillRingThick { get; private set; }
 
         /// <summary>A marker drawn this frame: what a tap on it would act on (touch).</summary>
-        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; }
+        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; public Vector3 bridgeFrom, bridgeTo; public bool bridge; }
         public static readonly List<Tappable> Tappables = new List<Tappable>();
 
         PlayerInteraction _pi;
@@ -151,6 +151,32 @@ namespace PlantGame.Core
                         r.sprite = ready ? UiSprites.Ring : UiSprites.RingSlim;
                         r.color = ready ? readyColor : nearColor;
                         Tappables.Add(new Tappable { position = pos, climb = v });
+                    }
+            }
+            if (_pi != null && _cam != null)
+            {
+                // grown vine bridges: a circle at each end; tapping one walks to that end and then across to the other (touch)
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing)
+                    foreach (var pl in PlantInstance.All)
+                    {
+                        if (pl.kind != PlantKind.Bridge || !pl.IsGrown || !pl.TryGetEnds(out var a, out var t)) continue;
+                        for (int e = 0; e < 2; e++)
+                        {
+                            Vector3 from = e == 0 ? a : t, to = e == 0 ? t : a;
+                            Vector3 along = to - from; along.y = 0f; along.Normalize();
+                            float dist = Vector2.Distance(new Vector2(from.x, from.z), new Vector2(transform.position.x, transform.position.z));
+                            if (dist > showRadius) continue;
+                            var r = Get(used++);
+                            bool ready = dist <= 3.5f;
+                            var pos = from + along * 0.8f + Vector3.up * (1.6f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + from.x * 1.7f));
+                            r.transform.position = pos;
+                            r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                            r.transform.localScale = Vector3.one * (size * (ready ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                            r.sprite = ready ? UiSprites.Ring : UiSprites.RingSlim;
+                            r.color = ready ? readyColor : nearColor;
+                            Tappables.Add(new Tappable { position = pos, bridge = true, bridgeFrom = from - along * 0.3f, bridgeTo = to + along * 1.0f });
+                        }
                     }
             }
             RefillRingThick = thickRefill;

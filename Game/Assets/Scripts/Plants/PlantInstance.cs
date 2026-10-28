@@ -24,6 +24,22 @@ namespace PlantGame.Plants
         public bool IsGrown { get; private set; }
         public bool IsGrowing { get; private set; }
 
+        static readonly List<PlantInstance> _all = new List<PlantInstance>();
+        /// <summary>All active plants (touch: grown bridges get a circle at each end).</summary>
+        public static IReadOnlyList<PlantInstance> All => _all;
+        void OnEnable() { _all.Add(this); }
+        void OnDisable() { _all.Remove(this); }
+
+        Transform _anchor, _tip;
+        /// <summary>Bridge ends (world space) once looked up: Anchor at the planting island, Tip at the far one.</summary>
+        public bool TryGetEnds(out Vector3 anchor, out Vector3 tip)
+        {
+            if (_anchor == null || _tip == null)
+                foreach (var t in GetComponentsInChildren<Transform>(true)) { if (t.name == "Anchor") _anchor = t; else if (t.name == "Tip") _tip = t; }
+            anchor = _anchor != null ? _anchor.position : default; tip = _tip != null ? _tip.position : default;
+            return _anchor != null && _tip != null;
+        }
+
         Renderer[] _renderers;
         readonly List<Collider> _cols = new List<Collider>();
         PlantGame.Player.ClimbableVolume[] _climbVolumes;   // ladders: only climbable once fully grown
