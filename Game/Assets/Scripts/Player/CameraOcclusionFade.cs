@@ -64,7 +64,8 @@ namespace PlantGame.Player
                         // only things on the camera's side of the player: the ray must enter the bounds well before the player, and the middle of the object must lie nearer the camera than the player (anything beside or beyond the player stays solid)
                         float centreAlong = Vector3.Dot(b.center - from, ray.direction);
                         bool camInside = b.Contains(from);   // the camera sits inside the crown / ruin: always see-through, whatever side its middle is on
-                        if (!camInside && (!b.IntersectRay(ray, out float d) || d > len - 0.3f || centreAlong > len - 0.2f)) { if (_active.TryGetValue(r, out var st0)) st0.wanted = false; continue; }
+                        bool playerOutside = !r.bounds.Contains(to);   // the segment then crosses the whole box (a thick trunk whose middle is level with the player still blocks the view)
+                        if (!camInside && (!b.IntersectRay(ray, out float d) || d > len - 0.3f || (centreAlong > len - 0.2f && !playerOutside))) { if (_active.TryGetValue(r, out var st0)) st0.wanted = false; continue; }
                         if (!_active.TryGetValue(r, out var st)) { st = Begin(r); if (st == null) continue; _active[r] = st; }
                         st.wanted = true;
                     }
