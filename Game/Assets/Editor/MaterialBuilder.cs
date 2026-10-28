@@ -112,11 +112,13 @@ namespace PlantGame.Editor
         static void BuildKeepers(Shader lit)
         {
             var particles = Shader.Find(RuntimeMats.ParticlesShader);
+            foreach (var cutout in new[] { false, true })   // cutout = leaf cards that keep their alpha clip while they fade
             foreach (var emission in new[] { false, true })
                 foreach (var normal in new[] { false, true })
-                    Make("M_Keep_LitFade" + (emission ? "Emission" : "") + (normal ? "Normal" : ""), lit, m =>
+                    Make("M_Keep_LitFade" + (cutout ? "Cutout" : "") + (emission ? "Emission" : "") + (normal ? "Normal" : ""), lit, m =>
                     {
                         RuntimeMats.SetTransparent(m);
+                        m.SetFloat("_AlphaClip", cutout ? 1f : 0f); if (cutout) m.EnableKeyword("_ALPHATEST_ON"); else m.DisableKeyword("_ALPHATEST_ON");
                         if (emission) m.EnableKeyword("_EMISSION"); else m.DisableKeyword("_EMISSION");
                         if (normal) m.EnableKeyword("_NORMALMAP"); else m.DisableKeyword("_NORMALMAP");
                     });
