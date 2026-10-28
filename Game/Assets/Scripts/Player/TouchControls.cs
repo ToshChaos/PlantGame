@@ -183,8 +183,8 @@ namespace PlantGame.Player
                 {
                     if (best.climb != null) { ClimbTap(best.climb); return; }
                     if (best.bridge) { CancelWalk(); StartWalk(best.bridgeFrom, null, default, null); _walkThen = best.bridgeTo; _hasThen = true; return; }   // to this end, then across
-                    if (_pi.Sensor.CanReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }
-                    else StartWalk(best.collider.bounds.ClosestPoint(_pc.transform.position), best.collider, best.target, null);
+                    if (InReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }
+                    else StartWalk(best.target.interactable is WaterSource ? best.position : best.collider.bounds.ClosestPoint(_pc.transform.position), best.collider, best.target, null);
                     return;
                 }
             }
@@ -197,6 +197,13 @@ namespace PlantGame.Player
                 if (vol != null) { ClimbTap(vol); return; }
             }
             if (ground && !(_walkClimb != null && Time.unscaledTime - _climbTapTime < 1f)) StartWalk(gh.point, null, default, null);   // a stray ground tap right after a beanstalk tap does not cancel the climb walk
+        }
+
+        /// <summary>Close enough to act on a marker's target. Ponds and streams are many patches under one trigger, so they use the same patch test as the refill itself.</summary>
+        bool InReach(Collider c, InteractionSensor.Target t)
+        {
+            if (t.interactable is WaterSource ws) { Vector3 chest = _pi.Sensor.Chest; return ws.WaterNear(chest) || ws.FrozenNear(chest); }
+            return _pi.Sensor.CanReach(c, t);
         }
 
         /// <summary>A tap on a beanstalk (its circle or the stalk): climb it all the way, walking up to it first when needed.</summary>
@@ -258,7 +265,13 @@ namespace PlantGame.Player
                 if (_pc.CanGrab) { _pc.Grab(); _climbDir = 1; CancelWalk(); return; }
                 if (_pc.CanDescend) { _pc.Descend(); _climbDir = -1; CancelWalk(); return; }
             }
-            if (_walkCol != null && _pi.Sensor.CanReach(_walkCol, _walkTarget)) { CancelWalk(); return; }
+            if (_walkCol != null && InReach(_walkCol, _walkTarget))
+            {
+                bool water = _walkTarget.interactable is WaterSource || _walkTarget.interactable is WaterCollector;
+                var arrived = _walkTarget; CancelWalk();
+                if (water) { TouchInput.HasTap = true; TouchInput.Tap = arrived; }   // walked up to water: refill on arrival, no second tap
+                return;
+            }
 
             Vector3 to = _walkPoint - pos; to.y = 0f;
             float dist = to.magnitude;
