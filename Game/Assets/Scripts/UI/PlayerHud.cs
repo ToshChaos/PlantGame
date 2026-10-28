@@ -425,16 +425,16 @@ namespace PlantGame.UI
             _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-770, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
-            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            var resumeText = Button("Resume", pr, V(new Vector2(0, 60), new Vector2(420, 220)), () => SetPaused(false));
+            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 50), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 50), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(420, 220)), () => SetPaused(false));
             resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
-            Button("Restart", pr, V(new Vector2(0, -40), new Vector2(420, 110)), Restart);
-            Button("Menu", pr, V(new Vector2(0, -140), new Vector2(420, 0)), ToMenu);
-            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -240), new Vector2(420, -110)), Quit));
-            var copyText = Button("Copy", pr, V(new Vector2(640, -60), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
+            Button("Restart", pr, V(new Vector2(0, -50), new Vector2(420, 110)), Restart);
+            Button("Menu", pr, V(new Vector2(0, -150), new Vector2(420, 0)), ToMenu);
+            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(420, -110)), Quit));
+            var copyText = Button("Copy", pr, V(new Vector2(640, -70), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
             _copyCode = copyText.transform.parent.gameObject;
             {   // the Jump button's look: white disc, yellow rim, dark green text
                 var cimg = _copyCode.GetComponent<Image>(); cimg.color = new Color(1f, 1f, 1f, 0.95f);
