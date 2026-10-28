@@ -146,6 +146,16 @@ namespace PlantGame.World
                 }
         }
 
+        /// <summary>The rock-island flagstone material (texture and normal map) tinted for a stone patch.</summary>
+        internal static Material StoneMat(Color c)
+        {
+            var baseMat = PlantGame.World.Kit.Mat("M_TerrainRock"); if (baseMat == null) return ColourMat(c);
+            string key = "stone" + ColorUtility.ToHtmlStringRGB(c);
+            if (Mats.TryGetValue(key, out var m) && m != null) return m;
+            m = new Material(baseMat) { name = "M_Stone_" + key, hideFlags = HideFlags.None }; m.SetColor("_BaseColor", c);
+            Mats[key] = m; return m;
+        }
+
         internal static Material ColourMat(Color c)
         {
             string key = ColorUtility.ToHtmlStringRGB(c);
@@ -420,7 +430,7 @@ namespace PlantGame.World
             Color[] patchCols; int patchN;
             if (ground == GroundKind.Mud) { patchCols = new[] { H("46301F"), H("5C4330"), H("3A2A1C") }; patchN = 16; }
             // rock: close to the flagstone tone, darker patches read as black holes
-            else if (ground == GroundKind.Rock) { patchCols = new[] { H("8A8D96"), H("857462"), H("737680") }; patchN = 8; }
+            else if (ground == GroundKind.Rock) { patchCols = new[] { H("8A8D96"), H("857462"), H("737680") }; patchN = 22; }
             else { patchCols = new[] { H("6B5238"), H("594330") }; patchN = 5; }
             var patches = new Batch[patchCols.Length]; for (int i = 0; i < patches.Length; i++) patches[i] = new Batch();
             var moss2 = new[] { new Batch(), new Batch() };
@@ -432,7 +442,9 @@ namespace PlantGame.World
                 for (int s = 0; s < segs; s++)
                 {
                     float a0 = s * 6.283f / segs, a1 = (s + 1) * 6.283f / segs;
-                    b.Tri(new Vector3(p.x, Y(p) + lift + 0.005f, p.y), P(a0, 0.72f + 0.28f * Mathf.Sin(a0 * 3f + ph)), P(a1, 0.72f + 0.28f * Mathf.Sin(a1 * 3f + ph)), Vector3.up);
+                    var c0 = new Vector3(p.x, Y(p) + lift + 0.005f, p.y); var c1 = P(a0, 0.72f + 0.28f * Mathf.Sin(a0 * 3f + ph)); var c2 = P(a1, 0.72f + 0.28f * Mathf.Sin(a1 * 3f + ph));
+                    b.Tri(c0, c1, c2, Vector3.up);
+                    foreach (var q in new[] { c0, c1, c2 }) b.uv.Add(new Vector2(q.x, q.z) * 0.3f);   // world-space UVs: stone patches carry the flagstone texture
                 }
             }
             for (int k = 0, n = Mathf.RoundToInt(patchN * area); k < n; k++)
@@ -447,7 +459,7 @@ namespace PlantGame.World
                 float r = 0.4f + (float)rnd.NextDouble() * 0.8f;
                 Patch(moss2[rnd.Next(2)], p, r, r * 0.8f, 0.05f);
             }
-            for (int i = 0; i < patches.Length; i++) Emit(root, "Decal" + i, patches[i], ColourMat(patchCols[i]));
+            for (int i = 0; i < patches.Length; i++) Emit(root, "Decal" + i, patches[i], ground == GroundKind.Rock ? StoneMat(patchCols[i]) : ColourMat(patchCols[i]));
             Emit(root, "MossMoreA", moss2[0], ColourMat(autumn ? H("4F6B2C") : H("3C7A3A")));
             Emit(root, "MossMoreB", moss2[1], ColourMat(autumn ? H("6A7A30") : H("55903F")));
 
