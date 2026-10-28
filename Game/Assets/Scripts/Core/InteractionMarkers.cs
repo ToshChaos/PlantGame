@@ -127,7 +127,7 @@ namespace PlantGame.Core
                     if (water && !slim && ready) thickRefill = true;
                 }
             }
-            if (_pi != null && _cam != null)
+            if (PlantGame.Player.TouchInput.Active && _pi != null && _cam != null)
             {
                 // grown beanstalks: a circle at the foot (and at the top, to climb back down); tapping it climbs the whole stalk (touch)
                 var pc = GetComponent<PlantGame.Player.PlayerController>();
@@ -151,7 +151,7 @@ namespace PlantGame.Core
                         Tappables.Add(new Tappable { position = pos, climb = v });
                     }
             }
-            if (_pi != null && _cam != null)
+            if (PlantGame.Player.TouchInput.Active && _pi != null && _cam != null)
             {
                 // grown vine bridges: a circle at each end; tapping one walks to that end and then across to the other (touch)
                 var pc = GetComponent<PlantGame.Player.PlayerController>();
