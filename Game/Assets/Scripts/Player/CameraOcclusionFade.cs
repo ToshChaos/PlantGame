@@ -102,7 +102,7 @@ namespace PlantGame.Player
         {
             var m = new Material(src) { name = src.name + "_Fade", hideFlags = HideFlags.HideAndDontSave };
             RuntimeMats.SetTransparent(m);   // build variants: MaterialBuilder's M_Keep_LitFade* materials
-            m.SetFloat("_AlphaClip", 0f); m.DisableKeyword("_ALPHATEST_ON");
+            // cutout cards (leaves, flowers) keep their clip: without it the dark, half-transparent texture fringe around each card blends in as black edges
             m.SetFloat("_AlphaToMask", 0f);   // leaf cards carry alpha-to-coverage: on Metal without MSAA it dithers into a noisy pattern under alpha blending
             m.SetShaderPassEnabled("ShadowCaster", true);
             return m;
@@ -110,6 +110,7 @@ namespace PlantGame.Player
 
         static void SetAlpha(Material m, float a)
         {
+            if (m.IsKeywordEnabled("_ALPHATEST_ON")) m.SetFloat("_Cutoff", 0.5f * a);   // the clip tests alpha * fade: scaling the cutoff keeps the card's shape
             if (m.HasProperty(BaseColor)) { var c = m.GetColor(BaseColor); c.a = a; m.SetColor(BaseColor, c); }
             else if (m.HasProperty(Color_)) { var c = m.GetColor(Color_); c.a = a; m.SetColor(Color_, c); }
         }
