@@ -133,11 +133,11 @@ namespace PlantGame.Core
             SetFocus(best);
         }
 
-        /// <summary>Touch tap on a marker: the collider is close enough to act on (a little more lenient than the focus range) and nothing blocks it.</summary>
+        /// <summary>Touch tap on a marker: the collider is close enough to act on (the same range as the focus) and nothing blocks it.</summary>
         public bool CanReach(Collider c, Target t)
         {
             Vector3 chest = Chest;
-            return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= (range + 0.5f) * (range + 0.5f);   // no line-of-sight test: a sprout sits in a soil patch whose own collider would block it
+            return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= range * range;   // no line-of-sight test: a sprout sits in a soil patch whose own collider would block it
         }
 
         /// <summary>Makes the tapped target the focus until the next Sense (touch tap on a marker).</summary>

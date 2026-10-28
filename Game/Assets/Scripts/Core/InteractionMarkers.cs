@@ -141,7 +141,7 @@ namespace PlantGame.Core
                         float dist = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(transform.position.x, transform.position.z));
                         if (dist > showRadius) continue;
                         var r = Get(used++);
-                        bool ready = dist <= 3.5f;
+                        bool ready = dist <= _pi.Sensor.range;
                         pos.y += 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + pos.x * 1.7f);
                         r.transform.position = pos;
                         r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
@@ -166,7 +166,7 @@ namespace PlantGame.Core
                             float dist = Vector2.Distance(new Vector2(from.x, from.z), new Vector2(transform.position.x, transform.position.z));
                             if (dist > showRadius) continue;
                             var r = Get(used++);
-                            bool ready = dist <= 3.5f;
+                            bool ready = dist <= _pi.Sensor.range;
                             var pos = from + along * 0.8f + Vector3.up * (1.6f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + from.x * 1.7f));
                             r.transform.position = pos;
                             r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);

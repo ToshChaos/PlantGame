@@ -212,7 +212,7 @@ namespace PlantGame.Core
         /// <summary>T50: a frozen pond within reach (null when none).</summary>
         WaterSource FindFrozenSource()
         {
-            int n = Physics.OverlapSphereNonAlloc(Sensor.Chest, 2.5f, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.WaterName), QueryTriggerInteraction.Collide);
+            int n = Physics.OverlapSphereNonAlloc(Sensor.Chest, Sensor.range, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.WaterName), QueryTriggerInteraction.Collide);
             for (int i = 0; i < n; i++) { var ws = _waterHits[i].GetComponentInParent<WaterSource>(); if (ws != null && ws.frozen && ws.FrozenNear(Sensor.Chest)) return ws; }
             return null;
         }
@@ -233,7 +233,7 @@ namespace PlantGame.Core
 
         bool FindRefillSource()
         {
-            int n = Physics.OverlapSphereNonAlloc(Sensor.Chest, 2.5f, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.WaterName), QueryTriggerInteraction.Collide);
+            int n = Physics.OverlapSphereNonAlloc(Sensor.Chest, Sensor.range, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.WaterName), QueryTriggerInteraction.Collide);
             for (int i = 0; i < n; i++)
             {
                 var ws = _waterHits[i].GetComponentInParent<WaterSource>();
