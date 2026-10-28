@@ -419,7 +419,7 @@ namespace PlantGame.World
             // flat irregular patches (decals): moss everywhere, bare mud and stone on the bare islands, dirt scuffs on grass
             Color[] patchCols; int patchN;
             if (ground == GroundKind.Mud) { patchCols = new[] { H("46301F"), H("5C4330"), H("3A2A1C") }; patchN = 16; }
-            else if (ground == GroundKind.Rock) { patchCols = new[] { H("3E4047"), H("5A4A3C"), H("34363C") }; patchN = 18; }
+            else if (ground == GroundKind.Rock) { patchCols = new[] { H("8A8D96"), H("857462"), H("737680") }; patchN = 8;   // close to the flagstone tone: darker patches read as black holes }
             else { patchCols = new[] { H("6B5238"), H("594330") }; patchN = 5; }
             var patches = new Batch[patchCols.Length]; for (int i = 0; i < patches.Length; i++) patches[i] = new Batch();
             var moss2 = new[] { new Batch(), new Batch() };
