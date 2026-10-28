@@ -25,6 +25,9 @@ namespace PlantGame.UI
             t.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
-        public static float MatchHeight => TouchInput.Active && Screen.width >= Screen.height * 1.77f ? 1f : 0.5f;
+        /// <summary>A touch screen at least 16:9 (phones); tablets are narrower and get the centred desktop layouts where a wide one would not fit.</summary>
+        public static bool WideTouch => TouchInput.Active && Screen.width >= Screen.height * 1.77f;
+
+        public static float MatchHeight => WideTouch ? 1f : 0.5f;
     }
 }

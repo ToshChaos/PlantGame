@@ -413,28 +413,28 @@ namespace PlantGame.UI
             var pr = (RectTransform)_pausePanel.transform; pr.SetParent(root, false);
             pr.anchorMin = Vector2.zero; pr.anchorMax = Vector2.one; pr.offsetMin = pr.offsetMax = Vector2.zero;
             var dim = _pausePanel.AddComponent<Image>(); dim.color = new Color(0.04f, 0.09f, 0.14f, 0.72f);
-            // touch (phones are wide): two columns, options and sliders on the left, actions on the right; desktop keeps the centred stack
+            // touch (phones are wide): two columns, options and sliders on the left, actions on the right, centred and kept close so a 16:9 phone or a 4:3 tablet (~1660 wide) fits it; desktop keeps the centred stack
             bool two = TouchInput.Active;
             Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
             _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
             // desktop: Music, Sound, Auto water down the left, Hints centred on top, Camera, Postprocessing, FPS down the right
-            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 300), new Vector2(-770, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 300), new Vector2(-770, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _soundLabelP = Button("Sound", pr, V(new Vector2(-330, 215), new Vector2(-230, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _autoWaterLabelP = Button("AutoWater", pr, V(new Vector2(-330, 130), new Vector2(-770, 50)), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // touch: the Camera slot (hidden there)
-            _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-770, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
+            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 300), new Vector2(-530, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 300), new Vector2(-530, 140)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _soundLabelP = Button("Sound", pr, V(new Vector2(-330, 215), new Vector2(10, 140)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _autoWaterLabelP = Button("AutoWater", pr, V(new Vector2(-330, 130), new Vector2(-530, 30)), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // touch: the Camera slot (hidden there)
+            _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-530, 30)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
-            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 50), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 50), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(420, 220)), () => SetPaused(false));
+            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 50), new Vector2(-235, -80)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 50), new Vector2(-235, -200)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(550, 250)), () => SetPaused(false));
             resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
-            Button("Restart", pr, V(new Vector2(0, -50), new Vector2(420, 110)), Restart);
-            Button("Menu", pr, V(new Vector2(0, -150), new Vector2(420, 0)), ToMenu);
-            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(420, -110)), Quit));
-            var copyText = Button("Copy", pr, V(new Vector2(640, -70), new Vector2(420, -230)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
+            Button("Restart", pr, V(new Vector2(0, -50), new Vector2(550, 140)), Restart);
+            Button("Menu", pr, V(new Vector2(0, -150), new Vector2(550, 30)), ToMenu);
+            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(550, -80)), Quit));
+            var copyText = Button("Copy", pr, V(new Vector2(640, -70), new Vector2(550, -200)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
             _copyCode = copyText.transform.parent.gameObject;
             {   // the Jump button's look: white disc, yellow rim, dark green text
                 var cimg = _copyCode.GetComponent<Image>(); cimg.color = new Color(1f, 1f, 1f, 0.95f);

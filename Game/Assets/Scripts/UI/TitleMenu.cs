@@ -183,9 +183,9 @@ namespace PlantGame.UI
 
             var levels = Kit.Asset != null ? Kit.Asset.levels : new LevelDefinition[0];
             _home = Screen("Home", root, 0.15f);
-            if (TouchInput.Active)
+            if (UiLayout.WideTouch)
             {
-                // phones are wide and short: the title on the left, the six buttons in two columns on the right
+                // phones are wide and short: the title on the left, the six buttons in two columns on the right (tablets use the centred stack below)
                 Title(_home.transform, new Vector2(-470, 150), 0.8f);
                 Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
                 Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
@@ -199,7 +199,7 @@ namespace PlantGame.UI
             {
             Title(_home.transform, new Vector2(0, 340));
             Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
-            Accent(Button(_home.transform, "Play", new Vector2(0, 30), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
+            Accent(Button(_home.transform, "Play", new Vector2(0, 50), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
             Button(_home.transform, "Select level", new Vector2(0, -65), () => Show(_levels));
             Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
             Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
@@ -209,22 +209,24 @@ namespace PlantGame.UI
 
             _options = Screen("Options", root, 0.85f);
             Label(_options.transform, "Options", 80, new Vector2(0, 380), 1000, Palette.TextOrange);
-            // two columns: toggles on the left, sliders on the right; camera follow, glow and the FPS counter sit below the sliders
+            // two columns: toggles on the left, sliders on the right; camera follow, glow and the FPS counter sit below the sliders.
+            // Touch has no music slider and no camera toggle, so the right column moves up into their rows and Reset / Back follow
             var o = _options.transform;
+            bool tc = TouchInput.Active;
             _musicToggle = Button(o, "Music", new Vector2(-330, 270), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(o, _font, "Music volume", new Vector2(330, 270), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             _soundToggle = Button(o, "Sound", new Vector2(-330, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
-            UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 160), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            UiKit.Slider(o, _font, "Sound volume", new Vector2(330, tc ? 270 : 160), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             _autoWaterToggle = Button(o, "Auto water", new Vector2(-330, 50), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptions(); }, 420, 34);
             _followToggle = Button(o, "Camera", new Vector2(330, 50), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
-            if (PlantGame.Player.TouchInput.Active) _followToggle.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
+            if (tc) _followToggle.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _hintsToggle = Button(o, "Hints", new Vector2(-330, -60), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
-            _glowToggle = Button(o, "Postprocessing", new Vector2(330, -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 520, 34);
-            _fpsToggle = Button(o, "FPS", new Vector2(330, -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
-            Button(o, "Reset all best times", new Vector2(0, -270), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
-            _resetNote = Label(o, "", 26, new Vector2(0, -330), 800, Palette.TextOrange);
-            Button(o, "Back", new Vector2(0, -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
+            _glowToggle = Button(o, "Postprocessing", new Vector2(330, tc ? 160 : -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
+            _fpsToggle = Button(o, "FPS", new Vector2(330, tc ? 50 : -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
+            Button(o, "Reset all best times", new Vector2(0, tc ? -170 : -270), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
+            _resetNote = Label(o, "", 26, new Vector2(0, tc ? -230 : -330), 800, Palette.TextOrange);
+            Button(o, "Back", new Vector2(0, tc ? -300 : -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
             RefreshOptions();
 
             // select level: the curated levels with best times, plus the test scenes
@@ -237,7 +239,7 @@ namespace PlantGame.UI
             {
                 var l = levels[i];
                 int row = i / perRow, col = i % perRow, inRow = Mathf.Min(perRow, levels.Length - row * perRow);
-                bool tc = TouchInput.Active;   // phones: taller cards with bigger text (the screen has the vertical room)
+                // tc (touch): taller cards with bigger text (the screen has the vertical room)
                 float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (tc ? (row == 0 ? 185f : -235f) : (row == 0 ? 155f : -175f)) : 130f, h = two ? (tc ? 380f : 270f) : 330f;
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? (tc ? 24 : 21) : 23, new Vector2(0, h / 2 - (tc ? 55 : 35)), 290, Palette.TextOrange);
@@ -255,7 +257,7 @@ namespace PlantGame.UI
                 var tb = Button(_levels.transform, TestScenes[i].label, new Vector2(i * 360, testY - 20f), () => { Time.timeScale = 1f; SceneManager.LoadScene(scene); }, 340, 26);
                 tb.transform.parent.GetComponent<Image>().color = ExploreGreen;
             }
-            Button(_levels.transform, "Back", new Vector2(two ? 760 : 0, two ? 440 : -420), () => Show(_home), 300, 34);
+            Button(_levels.transform, "Back", new Vector2(two ? 630 : 0, two ? 440 : -420), () => Show(_home), 300, 34);   // right edge in line with the cards (a 4:3 tablet is only ~1660 wide)
 
             // generate level: random seed, difficulty, shows the code before starting
             _generate = Screen("Generate", root, 0.82f);
