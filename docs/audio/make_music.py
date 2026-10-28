@@ -13,6 +13,7 @@ from make_audio import SR, TAU, ROOT, hz, buf, add, write
 
 MAJOR = (0, 2, 4, 5, 7, 9, 11); MINOR = (0, 2, 3, 5, 7, 8, 10); DORIAN = (0, 2, 3, 5, 7, 9, 10)
 LYDIAN = (0, 2, 4, 6, 7, 9, 11); MIXO = (0, 2, 4, 5, 7, 9, 10)
+TEMPO = 1.1   # global speed-up (playtest: a touch faster)
 PENT = {MAJOR: (0, 1, 2, 4, 5), LYDIAN: (0, 1, 2, 4, 5), MIXO: (0, 1, 2, 4, 5), MINOR: (0, 2, 3, 4, 6), DORIAN: (0, 2, 3, 4, 5)}
 
 
@@ -140,6 +141,7 @@ def compose(name, bpm, tonic, scale, prog, seed, lead="harp", accomp="arp", pad_
             melody_oct=0, density=1.0, drops=0.0, wet=0.3, rev=1.0, rests=0.12):
     """prog: 4 scale degrees (chord roots, diatonic triads) of 2 bars each, played twice = 16 bars."""
     rng = random.Random(seed)
+    bpm = round(bpm * TEMPO)
     beat = 60.0 / bpm; step = beat / 2                    # eighth note
     bars = 16; loop = bars * 4 * beat
     out = buf(loop)
