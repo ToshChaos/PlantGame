@@ -249,8 +249,8 @@ namespace PlantGame.World
                 var p = c2 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
                 if (free(p, 0.8f)) Moss(p, 0.7f + (float)rnd.NextDouble() * 1.1f);
             }
-            Emit(root.transform, "MossA", moss[0], ColourMat(theme == LevelTheme.Autumn ? H("4F6B2C") : H("3C7A3A")));
-            Emit(root.transform, "MossB", moss[1], ColourMat(theme == LevelTheme.Autumn ? H("6A7A30") : H("55903F")));
+            Emit(root.transform, "MossA", moss[0], ColourMat(theme == LevelTheme.Snow ? H("A8A58A") : theme == LevelTheme.Autumn ? H("4F6B2C") : H("3C7A3A")));
+            Emit(root.transform, "MossB", moss[1], ColourMat(theme == LevelTheme.Snow ? H("C4C1A4") : theme == LevelTheme.Autumn ? H("6A7A30") : H("55903F")));
 
             // ---- grass blades: tufts of blade sprites over grassy ground (not on mud, rock or snow)
             if (grassy)
@@ -460,11 +460,11 @@ namespace PlantGame.World
                 Patch(moss2[rnd.Next(2)], p, r, r * 0.8f, 0.05f);
             }
             for (int i = 0; i < patches.Length; i++) Emit(root, "Decal" + i, patches[i], ground == GroundKind.Rock ? StoneMat(patchCols[i]) : ColourMat(patchCols[i]));
-            Emit(root, "MossMoreA", moss2[0], ColourMat(autumn ? H("4F6B2C") : H("3C7A3A")));
-            Emit(root, "MossMoreB", moss2[1], ColourMat(autumn ? H("6A7A30") : H("55903F")));
+            Emit(root, "MossMoreA", moss2[0], ColourMat(snow ? H("A8A58A") : autumn ? H("4F6B2C") : H("3C7A3A")));
+            Emit(root, "MossMoreB", moss2[1], ColourMat(snow ? H("C4C1A4") : autumn ? H("6A7A30") : H("55903F")));
 
             // low shrubs (also gathered round trees), sticks and pebbles
-            Color[] shrubCols = autumn ? new[] { H("A6642A"), H("8A5A2E"), H("6A7A30") } : new[] { H("3F8A47"), H("5DA24F"), H("2F6B3A") };
+            Color[] shrubCols = snow ? new[] { H("EEF3F5"), H("B8B293"), H("D9DDD6") } : autumn ? new[] { H("A6642A"), H("8A5A2E"), H("6A7A30") } : new[] { H("3F8A47"), H("5DA24F"), H("2F6B3A") };
             var shrubs = new Batch[shrubCols.Length]; for (int i = 0; i < shrubs.Length; i++) shrubs[i] = new Batch();
             float shrubScale = ground == GroundKind.Grass ? 1f : ground == GroundKind.Mud ? 0.5f : 0.25f;
             for (int k = 0, n = Mathf.RoundToInt(40 * shrubScale * area); k < n; k++)
