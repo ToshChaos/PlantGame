@@ -16,8 +16,6 @@ namespace PlantGame.Core
     {
         public float showRadius = 9f;
         public float size = 0.85f;
-        [Tooltip("Pickups closer than this wear their seed colour and a thick outline; further ones are thin and orange.")]
-        public float closeRadius = 4.5f;
         public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
         [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
 
@@ -104,7 +102,7 @@ namespace PlantGame.Core
                     r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
-                    bool close = Vector3.Distance(transform.position, b.center) <= closeRadius;
+                    bool close = (c.bounds.ClosestPoint(_pi.Sensor.Chest) - _pi.Sensor.Chest).sqrMagnitude <= _pi.Sensor.range * _pi.Sensor.range;   // the same reach as the sensor / F: marker and action agree
                     bool thick = pickup && (close || focused);
                     if (soilRing)
                     {

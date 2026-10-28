@@ -21,7 +21,7 @@ namespace PlantGame.Core
         public Transform model;                 // facing for drops; falls back to this transform
         public float dropDistance = 1.2f;
         public float dropImpulse = 0.6f;
-        public float waterRange = 3f;
+        public float waterRange = 3f;   // unused: watering uses InteractionSensor.range, like the marker circles
 
         public Inventory.Inventory Inventory { get; private set; }
         public InteractionSensor Sensor { get; private set; }
@@ -182,7 +182,7 @@ namespace PlantGame.Core
         IWaterable NearbyWaterable()
         {
             var chest = Sensor.Chest;
-            int n = Physics.OverlapSphereNonAlloc(chest, Mathf.Max(waterRange, 3.5f), _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.PlantName), QueryTriggerInteraction.Collide);
+            int n = Physics.OverlapSphereNonAlloc(chest, Sensor.range, _waterHits, LayerMask.GetMask(Layers.InteractableName, Layers.PlantName), QueryTriggerInteraction.Collide);
             IWaterable best = null; float bestD = float.MaxValue;
             for (int i = 0; i < n; i++)
             {
