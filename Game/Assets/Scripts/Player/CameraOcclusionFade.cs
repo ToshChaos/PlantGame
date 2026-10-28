@@ -103,6 +103,7 @@ namespace PlantGame.Player
             var m = new Material(src) { name = src.name + "_Fade", hideFlags = HideFlags.HideAndDontSave };
             RuntimeMats.SetTransparent(m);   // build variants: MaterialBuilder's M_Keep_LitFade* materials
             m.SetFloat("_AlphaClip", 0f); m.DisableKeyword("_ALPHATEST_ON");
+            m.SetFloat("_AlphaToMask", 0f);   // leaf cards carry alpha-to-coverage: on Metal without MSAA it dithers into a noisy pattern under alpha blending
             m.SetShaderPassEnabled("ShadowCaster", true);
             return m;
         }
