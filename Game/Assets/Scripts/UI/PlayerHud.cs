@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -31,14 +32,12 @@ namespace PlantGame.UI
         Image[] _slotBg, _slotIcon;
         Text[] _slotNum;
         Text _selName, _prompt, _waterLabel, _waterWarn, _hints, _hintsButtonLabel;
-        float _flashUntil;
         Text _timer, _endTitle, _endBody;
         GameObject _endPanel, _nextButton;
         Transform[] _endButtons;
         float _endAt = -1f;
         bool _ended;
         Image[] _drops;
-        static readonly Color WarnOrange = new Color(1f, 0.72f, 0.3f);   // lighter than the EMPTY label's orange
         GameObject _pausePanel;
         Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _pauseTitle;
         static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
@@ -90,8 +89,8 @@ namespace PlantGame.UI
         /// <summary>True when the screen point is over the hotbar (the touch layer leaves those touches to the slots).</summary>
         public static bool OverHotbar(Vector2 screenPos) => _hotbarRect != null && _hotbarRect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(_hotbarRect, screenPos, null);
 
-        void OnEnable() { GameEvents.CanEmptyTried += OnCanEmptyTried; GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; }
-        void OnDisable() { GameEvents.CanEmptyTried -= OnCanEmptyTried; GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; if (Paused) SetPaused(false); }
+        void OnEnable() { GameEvents.HintRequested += OnHint; GameEvents.RunFinished += OnRunFinished; }
+        void OnDisable() { GameEvents.HintRequested -= OnHint; GameEvents.RunFinished -= OnRunFinished; if (Paused) SetPaused(false); }
 
         // the end panel appears shortly after the event so the flag can rise first
         void OnRunFinished(float seconds, bool newBest)
@@ -119,7 +118,6 @@ namespace PlantGame.UI
         static string Fmt(float t) { int s = (int)t; return (s / 60).ToString("00") + ":" + (s % 60).ToString("00"); }
         string _hint; float _hintUntil;
         void OnHint(string t) { _hint = t; _hintUntil = Time.unscaledTime + 3.5f; }
-        void OnCanEmptyTried() { _flashUntil = Time.unscaledTime + 1.5f; }
 
         Text _fps;
         float _fpsAcc; int _fpsFrames;
@@ -253,8 +251,7 @@ namespace PlantGame.UI
             _selName.text = s != null ? s.displayName : "";
 
             int charges = _can != null ? _can.Charges : 0;
-            bool empty = charges <= 0, flashing = Time.unscaledTime < _flashUntil;
-            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * (flashing ? 18f : 5f));
+            bool empty = charges <= 0;
             for (int i = 0; i < _drops.Length; i++)
             {
                 _drops[i].enabled = !empty;   // no droplets on an empty can
@@ -262,7 +259,7 @@ namespace PlantGame.UI
                 else _drops[i].color = new Color(0.44f, 0.66f, 0.86f, 0.22f);
             }
             _waterLabel.supportRichText = true;
-            _waterLabel.text = empty ? "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
+            _waterLabel.text = empty ? _emptyLabel ??= "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
             _waterLabel.color = TouchInput.Active ? new Color(0.06f, 0.33f, 0.16f, 1f) : new Color(0.44f, 0.66f, 0.86f, 1f);   // desktop: same blue as the droplets; touch: dark green, readable on the sky
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
@@ -278,18 +275,19 @@ namespace PlantGame.UI
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
             if (_hints.enabled)
-                _hints.text = Key("Pickup", "Q") + " - pickup / drop\n" + Key("Use", "E") + " - plant\n" + Key("Water", "F") + " - water / refill can\nSpace - Jump" + (_pc != null && (_pc.IsClimbing || _pc.CurrentClimbHint != PlayerController.ClimbHint.None) ? "\nW / S or Up / Down - climb" : "") + "\nTab - next slot";
+            {
+                bool climb = _pc != null && (_pc.IsClimbing || _pc.CurrentClimbHint != PlayerController.ClimbHint.None);
+                ref string hints = ref climb ? ref _hintsClimb : ref _hintsWalk;   // two fixed texts, built once (the bindings never change in a run)
+                hints ??= Key("Pickup", "Q") + " - pickup / drop\n" + Key("Use", "E") + " - plant\n" + Key("Water", "F") + " - water / refill can\nSpace - Jump" + (climb ? "\nW / S or Up / Down - climb" : "") + "\nTab - next slot";
+                _hints.text = hints;
+            }
 
             var rs = RunSession.Instance;
-            if (rs == null || rs.State == RunState.Idle) _timer.text = "";
-            else { _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
+            if (rs == null || rs.State == RunState.Idle) { _timer.text = ""; _timerSecond = -1; }
+            else if ((int)rs.Elapsed != _timerSecond) { _timerSecond = (int)rs.Elapsed; _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
-            if (string.IsNullOrEmpty(p)) _prompt.text = "";
-            else if (TouchInput.Active && key != "Frozen") _prompt.text = key == "Water" ? "Tap to " + (_pi.NearRefillSource ? "refill water" : "water the sprout") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "") : "Tap: " + p;   // touch: tapping the circle / diamond does it
-            else if (key == "Water") _prompt.text = "Press [" + (_input != null ? _input.KeyLabel("Water") : "F") + "] to " + (_pi.NearRefillSource ? "refill water" : "water") + (empty && !_pi.NearRefillSource ? "  (can is empty!)" : "");
-            else if (key == "Frozen") _prompt.text = p;
-            else _prompt.text = "[" + (_input != null ? _input.KeyLabel(key) : "E") + "]  " + p;
+            _prompt.text = PromptText(p, key, empty);
             _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
                 _prompt.text = TouchInput.Active ? "Tap Jump to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
@@ -312,7 +310,30 @@ namespace PlantGame.UI
             if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) _prompt.text = "";
         }
 
+        /// <summary>The interaction prompt line for the sensor's prompt and key; rebuilt only when one of its inputs changes.</summary>
+        string PromptText(string p, string key, bool empty)
+        {
+            bool refill = _pi.NearRefillSource, touch = TouchInput.Active;
+            if (p == _memoP && key == _memoKey && empty == _memoEmpty && refill == _memoRefill && touch == _memoTouch) return _memoText;
+            _memoP = p; _memoKey = key; _memoEmpty = empty; _memoRefill = refill; _memoTouch = touch;
+            if (string.IsNullOrEmpty(p)) return _memoText = "";
+            if (touch && key != "Frozen") return _memoText = key == "Water" ? "Tap to " + (refill ? "refill water" : "water the sprout") + (empty && !refill ? "  (can is empty!)" : "") : "Tap: " + p;   // touch: tapping the circle / diamond does it
+            if (key == "Water") return _memoText = "Press [" + Key("Water", "F") + "] to " + (refill ? "refill water" : "water") + (empty && !refill ? "  (can is empty!)" : "");
+            if (key == "Frozen") return _memoText = p;
+            return _memoText = "[" + Key(key, "E") + "]  " + p;
+        }
+        string _memoP, _memoKey, _memoText, _emptyLabel, _hintsWalk, _hintsClimb; bool _memoEmpty, _memoRefill, _memoTouch; int _timerSecond = -1;
+
+        static readonly Dictionary<ItemDefinition, Color> ItemColors = new Dictionary<ItemDefinition, Color>();
+
+        /// <summary>The hotbar / marker colour of an item (cached: the HUD and the marker circles ask every frame).</summary>
         public static Color ItemColor(ItemDefinition it)
+        {
+            if (!ItemColors.TryGetValue(it, out var c)) ItemColors[it] = c = ComputeItemColor(it);
+            return c;
+        }
+
+        static Color ComputeItemColor(ItemDefinition it)
         {
             if (it.id == "parachute_leaf") return Palette.LeafYellow;   // the glide leaf is yellow in the hotbar as well as in the world
             if (it.id == "heat_seed") return new Color(1f, 0.66f, 0.14f);   // golden melon
@@ -493,7 +514,16 @@ namespace PlantGame.UI
             foreach (var t in new[] { _soundLabelP }) if (t != null) t.text = OnOff("Sound", GameSettings.Sound);
         }
 
-        string Key(string action, string fallback) => _input != null ? _input.KeyLabel(action) : fallback;
+        readonly Dictionary<string, string> _keyLabels = new Dictionary<string, string>();
+        /// <summary>The bound key's display label (cached: GetBindingDisplayString allocates and the bindings never change in a run).</summary>
+        string Key(string action, string fallback)
+        {
+            if (_input == null) return fallback;
+            if (_keyLabels.TryGetValue(action, out var label)) return label;
+            label = _input.KeyLabel(action);
+            if (label != "?") _keyLabels[action] = label;   // "?" = the action map is not up yet: ask again next time
+            return label;
+        }
 
         Text Button(string label, Transform parent, Vector2 pos, UnityEngine.Events.UnityAction click, float width = 360f, int fontSize = 36)
         {

@@ -82,8 +82,6 @@ namespace PlantGame.Player
         /// <summary>Touch: standing in a climb volume at its top edge on the climb side: a tap on the stalk starts the descent.</summary>
         public bool CanDescend => CurrentState == State.Grounded && _touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position) && transform.position.y >= _touching.TopY - topZone;
         public void Descend() { if (CanDescend) StartClimb(_touching); }
-        /// <summary>The camera yaw the movement input is relative to (touch tap-to-walk converts world directions with it).</summary>
-        public float Yaw => _yaw;
         public bool IsGliding { get; private set; }
         /// <summary>T50: extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
         public Vector3 WindVelocity;

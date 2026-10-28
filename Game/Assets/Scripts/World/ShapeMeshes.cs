@@ -116,43 +116,6 @@ namespace PlantGame.World
             return m;
         }
 
-        /// <summary>A flat two-sided half disc in the XY plane (flat side down on y = 0), the arch's infill.</summary>
-        public static Mesh HalfDisc(float radius, int segs = 24)
-        {
-            var v = new List<Vector3>(); var t = new List<int>();
-            v.Add(Vector3.zero);
-            for (int i = 0; i <= segs; i++) { float a = Mathf.PI * i / segs; v.Add(new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0)); }
-            for (int i = 0; i < segs; i++) { t.Add(0); t.Add(i + 2); t.Add(i + 1); t.Add(0); t.Add(i + 1); t.Add(i + 2); }
-            var m = new Mesh { name = "HalfDisc" };
-            m.SetVertices(v); m.SetTriangles(t, 0); m.RecalculateNormals(); m.RecalculateBounds();
-            return m;
-        }
-
-        /// <summary>One half of a round door: a half disc slab in the XY plane (centre at the origin), `thick` deep along Z; `left` = the x &lt;= 0 half.</summary>
-        public static Mesh HalfSlab(float radius, float thick, int segs = 24, bool left = true)
-        {
-            var v = new List<Vector3>(); var t = new List<int>();
-            void Tri(Vector3 a, Vector3 b, Vector3 c, Vector3 outward)
-            {
-                int i = v.Count; v.Add(a); v.Add(b); v.Add(c);
-                if (Vector3.Dot(Vector3.Cross(b - a, c - a), outward) >= 0f) { t.Add(i); t.Add(i + 1); t.Add(i + 2); } else { t.Add(i); t.Add(i + 2); t.Add(i + 1); }
-            }
-            float hz = thick / 2f, a0 = left ? Mathf.PI / 2f : -Mathf.PI / 2f;
-            Vector3 P(int k, float z) { float a = a0 + Mathf.PI * k / segs; return new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, z); }
-            for (int k = 0; k < segs; k++)
-            {
-                Tri(new Vector3(0, 0, -hz), P(k, -hz), P(k + 1, -hz), Vector3.back);
-                Tri(new Vector3(0, 0, hz), P(k, hz), P(k + 1, hz), Vector3.forward);
-                var mid = (P(k, 0) + P(k + 1, 0)) * 0.5f;
-                Tri(P(k, -hz), P(k + 1, -hz), P(k, hz), mid); Tri(P(k + 1, -hz), P(k + 1, hz), P(k, hz), mid);
-            }
-            var top = new Vector3(0, radius, 0); var bot = new Vector3(0, -radius, 0); var edge = left ? Vector3.right : Vector3.left;
-            Tri(top + Vector3.back * hz, bot + Vector3.back * hz, top + Vector3.forward * hz, edge); Tri(bot + Vector3.back * hz, bot + Vector3.forward * hz, top + Vector3.forward * hz, edge);
-            var m = new Mesh { name = "HalfSlab" };
-            m.SetVertices(v); m.SetTriangles(t, 0); m.RecalculateNormals(); m.RecalculateBounds();
-            return m;
-        }
-
         /// <summary>A two-sided rectangle in the XY plane, bottom centre at the origin.</summary>
         public static Mesh Panel(float w, float h)
         {
@@ -161,37 +124,6 @@ namespace PlantGame.World
             m.SetUVs(0, new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) });
             m.SetTriangles(new[] { 0, 2, 1, 1, 2, 3, 0, 1, 2, 1, 3, 2 }, 0);
             m.RecalculateNormals(); m.RecalculateBounds();
-            return m;
-        }
-
-        /// <summary>
-        /// A band swept along the upper half circle (angle a0..a1 in the XY plane, centre at the origin): a rectangular section from
-        /// innerR to outerR, `depth` deep along Z. Flat faces, so the block edges stay crisp.
-        /// </summary>
-        public static Mesh ArcBand(float innerR, float outerR, float depth, int segs = 24, float a0 = 0f, float a1 = Mathf.PI)
-        {
-            var v = new List<Vector3>(); var t = new List<int>();
-            void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 outward)
-            {
-                int i = v.Count; v.Add(a); v.Add(b); v.Add(c); v.Add(d);
-                var n = Vector3.Cross(b - a, c - a);
-                if (Vector3.Dot(n, outward) >= 0f) { t.Add(i); t.Add(i + 1); t.Add(i + 2); t.Add(i); t.Add(i + 2); t.Add(i + 3); }
-                else { t.Add(i); t.Add(i + 2); t.Add(i + 1); t.Add(i); t.Add(i + 3); t.Add(i + 2); }
-            }
-            float hz = depth / 2f;
-            for (int s = 0; s < segs; s++)
-            {
-                float u0 = Mathf.Lerp(a0, a1, s / (float)segs), u1 = Mathf.Lerp(a0, a1, (s + 1) / (float)segs), um = (u0 + u1) / 2f;
-                Vector3 D(float a) => new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0);
-                Vector3 oi0 = D(u0) * innerR, oi1 = D(u1) * innerR, oo0 = D(u0) * outerR, oo1 = D(u1) * outerR;
-                Vector3 zf = new Vector3(0, 0, -hz), zb = new Vector3(0, 0, hz);
-                Quad(oo0 + zf, oo1 + zf, oo1 + zb, oo0 + zb, D(um));                 // outer face
-                Quad(oi0 + zf, oi1 + zf, oi1 + zb, oi0 + zb, -D(um));                // inner face
-                Quad(oi0 + zf, oi1 + zf, oo1 + zf, oo0 + zf, Vector3.back);          // front
-                Quad(oi0 + zb, oi1 + zb, oo1 + zb, oo0 + zb, Vector3.forward);       // back
-            }
-            var m = new Mesh { name = "ArcBand" };
-            m.SetVertices(v); m.SetTriangles(t, 0); m.RecalculateNormals(); m.RecalculateBounds();
             return m;
         }
 

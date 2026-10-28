@@ -467,6 +467,16 @@ namespace PlantGame.World
             return _yellowCrystal;
         }
 
+        static Material _flowerBlue;
+        static readonly Dictionary<(Material, string), Material> _derived = new Dictionary<(Material, string), Material>();
+        /// <summary>A copy of `src` named `name`, set up once by `tint` and then shared (seed-source groves reuse their fruit's tinted variants).</summary>
+        static Material Derived(Material src, string name, System.Action<Material> tint)
+        {
+            if (_derived.TryGetValue((src, name), out var m) && m != null) return m;
+            m = new Material(src) { name = name }; tint(m);
+            return _derived[(src, name)] = m;
+        }
+
         static Material _jewel;
         static Material JewelMat()
         {
@@ -701,6 +711,7 @@ namespace PlantGame.World
                 var g = ShapeMeshes.Obj(n, m, mat, parent, Vector3.zero, euler, sc); g.transform.position = pos + off; return g;
             }
             const int vines = 6;
+            var petalMesh = ShapeMeshes.Ellipsoid(0.1f, 0.02f, 8, 5); var centreMesh = ShapeMeshes.Ellipsoid(0.04f, 0.035f, 8, 6);   // shared by every vine-tip flower
             for (int v = 0; v < vines; v++)
             {
                 float a0 = v * 6.283f / vines + (float)rnd.NextDouble() * 0.4f, len = 1.7f + (float)rnd.NextDouble() * 0.5f, wig = 0.3f + (float)rnd.NextDouble() * 0.3f, ph = (float)rnd.NextDouble() * 6f;
@@ -731,13 +742,12 @@ namespace PlantGame.World
                 for (int pt = 0; pt < 5; pt++)
                 {
                     float pa = pt * 1.257f;
-                    At("Petal", ShapeMeshes.Ellipsoid(0.1f, 0.02f, 8, 5), _yellow, tip + new Vector3(Mathf.Cos(pa) * 0.1f, 0f, Mathf.Sin(pa) * 0.1f), new Vector3(0, -pa * Mathf.Rad2Deg, 20f), new Vector3(1.2f, 1f, 0.7f));
+                    At("Petal", petalMesh, _yellow, tip + new Vector3(Mathf.Cos(pa) * 0.1f, 0f, Mathf.Sin(pa) * 0.1f), new Vector3(0, -pa * Mathf.Rad2Deg, 20f), new Vector3(1.2f, 1f, 0.7f));
                 }
-                At("FlowerCentre", ShapeMeshes.Ellipsoid(0.04f, 0.035f, 8, 6), _gold, tip + Vector3.up * 0.02f, Vector3.zero, Vector3.one);
+                At("FlowerCentre", centreMesh, _gold, tip + Vector3.up * 0.02f, Vector3.zero, Vector3.one);
             }
             // the melons: ribbed ovals in the seed's warm orange, two paler green-gold ones, resting on little leaf pads
-            var pale = new Material(fruit) { name = "M_MelonPale" };
-            if (pale.HasProperty("_BaseColor")) pale.SetColor("_BaseColor", Color.Lerp(fruit.GetColor("_BaseColor"), new Color(0.55f, 0.75f, 0.25f), 0.65f));
+            var pale = Derived(fruit, "M_MelonPale", m => { if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", Color.Lerp(fruit.GetColor("_BaseColor"), new Color(0.55f, 0.75f, 0.25f), 0.65f)); });
             var melon = ShapeMeshes.Melon();
             for (int m = 0; m < 5; m++)
             {
@@ -753,8 +763,7 @@ namespace PlantGame.World
         {
             EnsureMaterials();
             var foliage = Mat("M_Foliage"); var light = Mat("M_FoliageLight");
-            var culmMat = fruit != null ? new Material(fruit) { name = "M_BambooCulm" } : light;
-            if (fruit != null) { culmMat.SetColor("_BaseColor", fruit.GetColor("_BaseColor") * 0.82f); culmMat.SetColor("_EmissionColor", fruit.GetColor("_BaseColor") * 0.12f); }
+            var culmMat = fruit != null ? Derived(fruit, "M_BambooCulm", m => { m.SetColor("_BaseColor", fruit.GetColor("_BaseColor") * 0.82f); m.SetColor("_EmissionColor", fruit.GetColor("_BaseColor") * 0.12f); }) : light;
             int n = 6; var culms = new List<(Transform t, float h)>();
             for (int i = 0; i < n; i++)
             {
@@ -782,7 +791,7 @@ namespace PlantGame.World
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
             // T67: two flowers grow on the culms like the ones on the vine bridges (one white with mist-blue inner petals, one yellow), facing outwards
-            var blue = RuntimeMats.NewLit("M_FlowerBlue", new Color(0.75f, 0.85f, 0.95f));
+            var blue = _flowerBlue != null ? _flowerBlue : _flowerBlue = RuntimeMats.NewLit("M_FlowerBlue", new Color(0.75f, 0.85f, 0.95f));
             var tall = new List<(Transform t, float h)>(culms); tall.Sort((x, y) => y.h.CompareTo(x.h));
             for (int fl = 0; fl < 2 && fl < tall.Count; fl++)
             {

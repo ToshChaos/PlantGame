@@ -20,7 +20,6 @@ namespace PlantGame.Plants
         {
             if (charges <= 0) return false;
             charges--;
-            GameEvents.RaiseCanChanged(charges);
             return true;
         }
 
@@ -30,7 +29,6 @@ namespace PlantGame.Plants
             int added = Mathf.Clamp(amount, 0, MaxCharges - charges);
             if (added <= 0) return 0;
             charges += added;
-            GameEvents.RaiseCanChanged(charges);
             GameEvents.RaiseCanRefilled();
             return added;
         }

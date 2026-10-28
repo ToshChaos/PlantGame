@@ -44,8 +44,8 @@ namespace PlantGame.Core
         public IUsableTarget Usable => Focus.usable;
         public Vector3 Chest => transform.position + Vector3.up * chestHeight;
 
-        static int Mask => LayerMask.GetMask(Layers.InteractableName, Layers.WaterName, Layers.PlantName);
-        static int BlockMask => LayerMask.GetMask("Default", Layers.GroundName);
+        static int Mask => Layers.InteractMask;
+        static int BlockMask => Layers.SolidMask;
 
         readonly RaycastHit[] _hits = new RaycastHit[16];
         readonly Collider[] _overlaps = new Collider[32];

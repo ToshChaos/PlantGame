@@ -130,11 +130,5 @@ namespace PlantGame.Editor
             if (ground >= 0) go.layer = ground;
             return go;
         }
-
-        static void Marker(string name, Vector3 pos, Material mat)
-        {
-            var m = Box(name, pos, new Vector3(0.3f, 1f, 0.3f), mat);
-            Object.DestroyImmediate(m.GetComponent<Collider>());
-        }
     }
 }

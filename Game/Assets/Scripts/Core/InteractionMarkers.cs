@@ -37,7 +37,7 @@ namespace PlantGame.Core
         readonly Collider[] _hits = new Collider[64];
         readonly List<SpriteRenderer> _pool = new List<SpriteRenderer>();
         readonly HashSet<Component> _seen = new HashSet<Component>();
-        static int Mask => LayerMask.GetMask(Layers.InteractableName, Layers.WaterName, Layers.PlantName);
+        static int Mask => Layers.InteractMask;
 
         void Awake() { _pi = GetComponent<PlayerInteraction>(); }
         void OnEnable() { GameEvents.ItemPickedUp += OnPicked; }

@@ -188,9 +188,9 @@ namespace PlantGame.Core {
   public static class GameEvents {            // static C# events, no hard references between systems
     public static event System.Action<ItemDefinition> ItemPickedUp, ItemDropped, ItemUsed;
     public static event System.Action<int> WorldGenerated;         // seed
-    public static event System.Action GameWon, GameFailed, PlayerRespawned, PlayerJumped, PlayerLanded;
-    public static event System.Action<GameMode> RunStarted; public static event System.Action<float, bool> RunFinished; // seconds, newBest
-    public static event System.Action<int> CanChanged;                       // charges left
+    public static event System.Action<ItemDefinition> InventoryFull; public static event System.Action<string> HintRequested; public static event System.Action UseRejected;
+    public static event System.Action GameWon, PlayerRespawned, PlayerJumped, PlayerLanded;
+    public static event System.Action RunStarted; public static event System.Action<float, bool> RunFinished; // seconds, newBest
     public static event System.Action Watered, CanRefilled, CanEmptyTried, CollectorReady;
     // Raise<...> helpers live in GameEvents too.
   }
@@ -302,6 +302,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v3.2 (2026-10-28, cleanup): `GameEvents.FocusChanged` and `CanChanged` removed (raised, never subscribed: the HUD reads `PlayerInteraction.CurrentPrompt` and `WateringCan.Charges`); `PlayerInteraction.waterRange` removed (watering uses `InteractionSensor.range`); `RunConfig` / `WorldTheme` / `LevelTheme` / `GoalKind` / `WaterMode` live in `Core/RunConfig.cs` (was `GameMode.cs`); cached `Layers.InteractMask` / `SolidMask`.
 - v3.1 (2026-10-27): **Player model reworked**: rounded explorer-mage of the ruined magic civilisation (`char_player.py`: hat with leaf sprig, glowing-glyph cloak, satchel, vine on the left arm, boots). Joint names unchanged. Mesh suffix is now a material ROLE (`_Skin _Hair _Cloth _Cloak _Gear _Trim _Glow _Leaf _Dark`), mapped by a `PlayerOutfit` asset (`ScriptableObjects/Player/Outfit_Explorer`, `PlayerOutfitApplier` on `Model`) so reskins are a new outfit asset; materials `M_Player<Role>` replace `M_PlayerWhite/Black/Gold`. The watering can is part of the model (`Hold_Can` / `Can_Tilt` / `CanWater_Glow` under `Joint_ArmR`); `WateringCanVisual` only shows, tips and fills it.
 - v3.0 (2026-10-27): **Challenge mode removed** (no value): `GameMode`, `RunConfig.mode` / `timeLimit`, `LevelDefinition.challengeTimeLimitSeconds` / `parTimeSeconds`, `RunSession.Fail` / `Remaining` / `AddTime`, `RunState.Failed`, `GameEvents.GameFailed` / `TimeAdded`, `TimeFruit` and the mode toggle on the title screen are gone; `RunStarted` has no argument; `SaveService` best times are per key only (old Challenge records are ignored).
 - v2.9 (2026-10-26, cleanup): `PlantDefinition` (never created) removed, `PlantKind` lives in `Plants/PlantKind.cs`, `ItemDefinition.plant` removed; `GameEvents.PlantStarted` / `PlantGrown` (never raised) and `GlideStarted` / `GlideEnded` (no listeners) removed; `kit.blend` deleted (T10 cut); raw Blender exports and built `.app` folders are git-ignored; post-MVP tasks moved to `TODO.md`.

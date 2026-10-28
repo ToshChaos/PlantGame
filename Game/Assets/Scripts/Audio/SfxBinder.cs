@@ -16,7 +16,7 @@ namespace PlantGame.Audio
         Inventory.Inventory _inv;
         Vector3 _lastPos;
         float _stepDist, _climbDist, _creakTimer; int _bridgeSteps;
-        int _lastSecond = -1, _lastSelected;
+        int _lastSelected;
 
         void OnEnable()
         {
