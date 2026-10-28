@@ -224,6 +224,7 @@ namespace PlantGame.Player
 
         void StartWalk(Vector3 point, Collider col, InteractionSensor.Target target, ClimbableVolume climb)
         {
+            AutoWalking = true;
             _walking = true; _walkPoint = point; _walkCol = col; _walkTarget = target; _walkClimb = climb;
             _walkT = 0f; _stuckT = 0f; _lastPos = _pc.transform.position; _climbDir = 0;
             Vector3 to = point - _pc.transform.position; to.y = 0f;
@@ -231,11 +232,13 @@ namespace PlantGame.Player
             ShowDestination(point, climb == null);
         }
 
+        /// <summary>True while a tap-to-walk (or the bridge / beanstalk walk) is under way: the tappable circles hide meanwhile.</summary>
+        public static bool AutoWalking { get; private set; }
         Vector3 _walkThen; bool _hasThen;   // a second leg queued after the walk point (crossing a bridge)
 
         void CancelWalk()
         {
-            _hasThen = false;
+            _hasThen = false; AutoWalking = false;
             _walking = false; _walkCol = null; _walkClimb = null;
             TouchInput.Move = Vector2.zero; TouchInput.WorldMove = Vector3.zero; TouchInput.FaceDir = Vector3.zero;
             if (_destMarker != null) _destMarker.gameObject.SetActive(false);

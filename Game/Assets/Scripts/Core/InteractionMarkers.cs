@@ -127,7 +127,7 @@ namespace PlantGame.Core
                     if (water && !slim && ready) thickRefill = true;
                 }
             }
-            if (PlantGame.Player.TouchInput.Active && _pi != null && _cam != null)
+            if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
             {
                 // grown beanstalks: a circle at the foot (and at the top, to climb back down); tapping it climbs the whole stalk (touch)
                 var pc = GetComponent<PlantGame.Player.PlayerController>();
@@ -151,7 +151,7 @@ namespace PlantGame.Core
                         Tappables.Add(new Tappable { position = pos, climb = v });
                     }
             }
-            if (PlantGame.Player.TouchInput.Active && _pi != null && _cam != null)
+            if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
             {
                 // grown vine bridges: a circle at each end; tapping one walks to that end and then across to the other (touch)
                 var pc = GetComponent<PlantGame.Player.PlayerController>();
@@ -159,6 +159,7 @@ namespace PlantGame.Core
                     foreach (var pl in PlantInstance.All)
                     {
                         if (pl.kind != PlantKind.Bridge || !pl.IsGrown || !pl.TryGetEnds(out var a, out var t)) continue;
+                        if (OnBridge(a, t, transform.position)) continue;   // already on the vine: no circles
                         for (int e = 0; e < 2; e++)
                         {
                             Vector3 from = e == 0 ? a : t, to = e == 0 ? t : a;
@@ -179,6 +180,18 @@ namespace PlantGame.Core
             }
             RefillRingThick = thickRefill;
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
+        }
+
+        /// <summary>True when the point stands on the bridge between its two ends (along it, near its width, near its height).</summary>
+        static bool OnBridge(Vector3 a, Vector3 t, Vector3 p)
+        {
+            Vector2 a2 = new Vector2(a.x, a.z), d = new Vector2(t.x, t.z) - a2, q = new Vector2(p.x, p.z) - a2;
+            float len2 = d.sqrMagnitude;
+            if (len2 < 0.01f) return false;
+            float k = Vector2.Dot(q, d) / len2;
+            if (k < 0f || k > 1f) return false;
+            if ((q - d * k).magnitude > 1.6f) return false;
+            return Mathf.Abs(p.y - Mathf.Lerp(a.y, t.y, k)) < 2f;
         }
 
         SpriteRenderer Get(int i)
