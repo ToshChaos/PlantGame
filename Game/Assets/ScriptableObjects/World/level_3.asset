@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.LevelDefinition
   id: level_3
   title: '3: Water from the Sky'
-  description: 'Rain, but no water to carry: grow a Water Collector first and wait for every charge.'
+  description: 'Rain, but no water to carry: a dew patch on the first island holds one drop; grow a Water Collector from the second island''s dew seed and wait for every charge.'
   seed: 3357
   islandCount: 4
   allowedKinds: 000000000100000002000000i
@@ -26,5 +26,3 @@ MonoBehaviour:
   spiral: 0
   sequence: 000000000200000001000000i
   sideIslands: 0
-  challengeTimeLimitSeconds: 600
-  parTimeSeconds: 420
