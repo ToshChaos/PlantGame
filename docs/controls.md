@@ -20,6 +20,8 @@ Mirrors `AGENTS.md` section 5.8 (that file wins on conflict). Bindings live in
 ## Options
 On-screen key hints (Q pick up / drop, E use, F water, Tab slot) are on by default. The pause menu has a `Hints: On/Off` button (`GameSettings.Hints`, saved in PlayerPrefs). Water warnings and the "Press F to water" sign are always shown.
 
+**Auto water** (title Options and pause menu, `GameSettings.AutoWater`, off by default): the can refills by itself at a lake, waterfall or Water Collector within F reach, and a thirsty sprout within reach is watered by itself (one charge, as with F). F still works as usual.
+
 ## Climbing
 Stand in a `ClimbableVolume` and press **W** to start (below the top zone). At the top edge, standing on the ladder's `Land`, press **S** to start going down.
 Reaching the top steps you onto `Land`; reaching the floor while holding S lets go.

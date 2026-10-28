@@ -39,7 +39,7 @@ namespace PlantGame.UI
         bool _ended;
         Image[] _drops;
         GameObject _pausePanel;
-        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _pauseTitle;
+        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _autoWaterLabelP, _pauseTitle;
         static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
         GoalFlag _goal;
         GameObject _copyCode;
@@ -417,13 +417,15 @@ namespace PlantGame.UI
             bool two = TouchInput.Active;
             Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
             _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
-            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 260), new Vector2(-770, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 160), new Vector2(-770, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _soundLabelP = Button("Sound", pr, V(new Vector2(0, 160), new Vector2(-230, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
-            _followLabelP = Button("Camera", pr, V(new Vector2(380, 260), new Vector2(-770, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
+            // desktop: Music, Sound, Auto water down the left, Hints centred on top, Camera, Postprocessing, FPS down the right
+            _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 300), new Vector2(-770, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _musicLabelP = Button("Music", pr, V(new Vector2(-330, 300), new Vector2(-770, 150)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _soundLabelP = Button("Sound", pr, V(new Vector2(-330, 215), new Vector2(-230, 150)), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _autoWaterLabelP = Button("AutoWater", pr, V(new Vector2(-330, 130), new Vector2(-770, 50)), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // touch: the Camera slot (hidden there)
+            _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-770, 50)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 160), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _fpsLabelP = Button("Fps", pr, V(new Vector2(-330, 260), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(-230, 50)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(-230, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 60), new Vector2(-435, -70)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
             UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 60), new Vector2(-435, -190)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
@@ -508,6 +510,7 @@ namespace PlantGame.UI
             if (_pauseHint != null && _pausePanel.activeSelf && SeedLine().Length == 0) _pauseHint.gameObject.SetActive(GameSettings.Hints);   // the tip follows the Hints toggle
             if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints && !TouchInput.Active ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
+            if (_autoWaterLabelP != null) _autoWaterLabelP.text = OnOff("Auto water", GameSettings.AutoWater);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Bloom);
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             foreach (var t in new[] { _musicLabelP }) if (t != null) t.text = OnOff("Music", GameSettings.Music);

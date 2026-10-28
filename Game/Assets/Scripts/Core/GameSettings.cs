@@ -6,7 +6,7 @@ namespace PlantGame.Core
     /// <summary>Player options persisted in PlayerPrefs (the pause menu toggles them). Minimal until the T19/T26 options screen.</summary>
     public static class GameSettings
     {
-        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps";
+        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps", AutoWaterKey = "plantgame.autowater";
         public static event Action Changed;
 
         /// <summary>On-screen key hints ("Q pick up / drop, E use, F water"). On by default.</summary>
@@ -87,6 +87,13 @@ namespace PlantGame.Core
         {
             get => PlayerPrefs.GetInt(FpsKey, 0) == 1;
             set { PlayerPrefs.SetInt(FpsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
+        /// <summary>Auto water: the can refills at water within reach and waters thirsty sprouts within reach without F. Off by default.</summary>
+        public static bool AutoWater
+        {
+            get => PlayerPrefs.GetInt(AutoWaterKey, 0) == 1;
+            set { PlayerPrefs.SetInt(AutoWaterKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
         /// <summary>Sound effects. On by default.</summary>

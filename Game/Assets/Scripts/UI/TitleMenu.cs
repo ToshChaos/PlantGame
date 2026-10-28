@@ -22,7 +22,7 @@ namespace PlantGame.UI
         Font _font;
         WorldGenerator _showcase;
         GameObject _home, _levels, _options, _generate, _seed;
-        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle;
+        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
         Text[] _cardInfo;
@@ -58,6 +58,7 @@ namespace PlantGame.UI
             _soundToggle.text = "Sound: " + (GameSettings.Sound ? "On" : "Off");
             _hintsToggle.text = "Hints: " + (GameSettings.Hints ? "On" : "Off");
             _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
+            _autoWaterToggle.text = "Auto water: " + (GameSettings.AutoWater ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
         }
@@ -208,21 +209,22 @@ namespace PlantGame.UI
 
             _options = Screen("Options", root, 0.85f);
             Label(_options.transform, "Options", 80, new Vector2(0, 380), 1000, Palette.TextOrange);
-            // two columns: toggles on the left, sliders on the right; camera follow and glow sit below the sliders
+            // two columns: toggles on the left, sliders on the right; camera follow, glow and the FPS counter sit below the sliders
             var o = _options.transform;
-            _musicToggle = Button(o, "Music", new Vector2(-330, 260), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
+            _musicToggle = Button(o, "Music", new Vector2(-330, 270), () => { GameSettings.Music = !GameSettings.Music; RefreshOptions(); }, 420, 34);
             if (!TouchInput.Active)   // phones: only the system volume works
-            UiKit.Slider(o, _font, "Music volume", new Vector2(330, 260), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            _soundToggle = Button(o, "Sound", new Vector2(-330, 140), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
-            UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 140), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
-            _fpsToggle = Button(o, "FPS", new Vector2(-330, 20), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
-            _followToggle = Button(o, "Camera", new Vector2(330, 20), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
+            UiKit.Slider(o, _font, "Music volume", new Vector2(330, 270), 420, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            _soundToggle = Button(o, "Sound", new Vector2(-330, 160), () => { GameSettings.Sound = !GameSettings.Sound; RefreshOptions(); }, 420, 34);
+            UiKit.Slider(o, _font, "Sound volume", new Vector2(330, 160), 420, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            _autoWaterToggle = Button(o, "Auto water", new Vector2(-330, 50), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptions(); }, 420, 34);
+            _followToggle = Button(o, "Camera", new Vector2(330, 50), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
             if (PlantGame.Player.TouchInput.Active) _followToggle.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
-            _hintsToggle = Button(o, "Hints", new Vector2(-330, -100), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
-            _glowToggle = Button(o, "Postprocessing", new Vector2(330, -100), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 520, 34);
-            Button(o, "Reset all best times", new Vector2(0, -215), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
-            _resetNote = Label(o, "", 26, new Vector2(0, -280), 800, Palette.TextOrange);
-            Button(o, "Back", new Vector2(0, -360), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
+            _hintsToggle = Button(o, "Hints", new Vector2(-330, -60), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
+            _glowToggle = Button(o, "Postprocessing", new Vector2(330, -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 520, 34);
+            _fpsToggle = Button(o, "FPS", new Vector2(330, -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
+            Button(o, "Reset all best times", new Vector2(0, -270), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
+            _resetNote = Label(o, "", 26, new Vector2(0, -330), 800, Palette.TextOrange);
+            Button(o, "Back", new Vector2(0, -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
             RefreshOptions();
 
             // select level: the curated levels with best times, plus the test scenes

@@ -10,6 +10,7 @@ namespace PlantGame.Core
     /// Q: focused Pickup interactable + free slot -> pick up; otherwise drop the selected item.
     /// E: selected item + focused IUsableTarget -> UseItem; otherwise focused Use interactable; otherwise UseRejected.
     /// F: focused IWaterable within 3 m that NeedsWater -> spend a charge and Water; empty can -> CanEmptyTried.
+    /// Auto water option (GameSettings.AutoWater): the same F actions run by themselves when water or a thirsty sprout is within reach.
     /// CurrentPrompt / CurrentPromptKey hold the prompt the HUD shows (T19).
     /// </summary>
     [RequireComponent(typeof(Inventory.Inventory))]
@@ -55,7 +56,22 @@ namespace PlantGame.Core
                 if (input.UsePressed) Use();
                 if (input.WaterPressed) Water();
             }
-            UpdatePrompt();
+            int n = OverlapNear();
+            AutoWater(n);
+            UpdatePrompt(n);
+        }
+
+        const float AutoWaterPause = 0.6f;   // between two automatic waterings / refills, so the can tip and the sounds do not overlap
+        float _autoWaterAt;
+
+        /// <summary>Auto water option: waters the nearest thirsty sprout within reach (if the can holds water), else refills the can at water within reach.</summary>
+        void AutoWater(int n)
+        {
+            if (!GameSettings.AutoWater || Can == null || Time.timeScale <= 0f || Time.time < _autoWaterAt) return;
+            var w = Can.Charges > 0 ? NearbyWaterable(n) : null;
+            if (w != null && Can.TryConsume()) { w.Water(gameObject); GameEvents.RaiseWatered(); _autoWaterAt = Time.time + AutoWaterPause; return; }
+            var refill = Can.IsFull ? null : FindRefillSource(n);
+            if (refill != null && refill.CanInteract(gameObject)) { refill.Interact(gameObject); _autoWaterAt = Time.time + AutoWaterPause; }
         }
 
         /// <summary>Touch: a second jump tap in the air opens the parachute leaf (there is no E key).</summary>
@@ -237,23 +253,23 @@ namespace PlantGame.Core
             return true;
         }
 
-        bool FindRefillSource(int n)
+        /// <summary>Open water or a Water Collector holding a charge among the first n _waterHits (null when none).</summary>
+        IInteractable FindRefillSource(int n)
         {
             for (int i = 0; i < n; i++)
             {
                 if (!OnLayers(_waterHits[i], WaterLayers)) continue;
                 var ws = _waterHits[i].GetComponentInParent<WaterSource>();
-                if (ws != null && ws.WaterNear(Sensor.Chest)) return true;   // frozen water offers no refill hint
+                if (ws != null && ws.WaterNear(Sensor.Chest)) return ws;   // frozen water offers no refill hint
                 var c = _waterHits[i].GetComponentInParent<WaterCollector>();
-                if (c != null && c.Stored > 0) return true;
+                if (c != null && c.Stored > 0) return c;
             }
-            return false;
+            return null;
         }
 
-        void UpdatePrompt()
+        void UpdatePrompt(int n)
         {
-            int n = OverlapNear();
-            NearRefillSource = FindRefillSource(n);
+            NearRefillSource = FindRefillSource(n) != null;
             string p = "", k = "";
             var thirsty = NearbyWaterable(n);
             var target = Sensor.Interactable;
