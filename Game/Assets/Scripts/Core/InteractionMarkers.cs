@@ -16,6 +16,8 @@ namespace PlantGame.Core
     {
         public float showRadius = 9f;
         public float size = 0.85f;
+        [Tooltip("A pickup this much beyond reach shows its seed colour (thin) when the player faces it.")] public float earlyColourExtra = 2f;
+        public float earlyColourAngle = 40f;
         public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
         [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
 
@@ -112,7 +114,7 @@ namespace PlantGame.Core
                     else if (pickup)
                     {   // yellow from afar; seed colour and thin once in reach; seed colour and thick when it is the one Q takes (never purple)
                         near = nearColor; rdy = nearColor;
-                        if (tint != null && (close || focused))
+                        if (tint != null && (close || focused || FacingEarly(c)))
                         {
                             var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
                             rdy = Color.Lerp(near, Color.white, 0.3f);
@@ -184,6 +186,17 @@ namespace PlantGame.Core
             }
             RefillRingThick = thickRefill;
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
+        }
+
+        /// <summary>A pickup a little beyond reach already shows its seed colour (thin) while the player faces it.</summary>
+        bool FacingEarly(Collider c)
+        {
+            Vector3 to = c.bounds.center - transform.position; to.y = 0f;
+            float reach = _pi.Sensor.range + earlyColourExtra;
+            if (to.sqrMagnitude > reach * reach || to.sqrMagnitude < 1e-4f) return false;
+            var f = PlantGame.Player.TouchInput.Active && _pi.Sensor.facing != null ? _pi.Sensor.facing : _cam.transform;
+            Vector3 fwd = f.forward; fwd.y = 0f;
+            return fwd.sqrMagnitude > 1e-4f && Vector3.Angle(fwd, to) <= earlyColourAngle;
         }
 
         /// <summary>True when the point stands on the bridge between its two ends (along it, near its width, near its height).</summary>
