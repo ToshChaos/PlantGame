@@ -25,7 +25,7 @@ namespace PlantGame.Audio
 
         void OnEnable() => GameSettings.Changed += Apply;   // applied at once, also while the game is paused
         void OnDisable() => GameSettings.Changed -= Apply;
-        void Apply() { if (_src != null) _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
+        void Apply() { if (_src == null) return; _src.mute = !GameSettings.Sound; _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
 
         void Update()
         {

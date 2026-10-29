@@ -160,7 +160,10 @@ namespace PlantGame.Audio
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
             old.volume = Mathf.Sqrt(1f - _fade) * level;
             if (_fade >= 1f && old.isPlaying) old.Stop();
-            _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f);
+            float amb = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain;
+            _amb.volume = GameSettings.Sound && !float.IsNaN(amb) ? amb : 0f;   // a NaN would be ignored by the source and leave the old volume playing
+            _amb.mute = !GameSettings.Sound;
+            _music[0].mute = _music[1].mute = !GameSettings.Music;
             if (!GameSettings.Sound) foreach (var v in _pool) if (v.isPlaying) v.Stop();   // switching sound off cuts what is playing
         }
 
