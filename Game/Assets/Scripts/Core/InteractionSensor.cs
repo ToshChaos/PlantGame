@@ -49,6 +49,7 @@ namespace PlantGame.Core
 
         readonly RaycastHit[] _hits = new RaycastHit[16];
         readonly Collider[] _overlaps = new Collider[32];
+        readonly System.Collections.Generic.HashSet<Component> _seen = new System.Collections.Generic.HashSet<Component>();
 
         void Update() { Sense(); }
 
@@ -64,11 +65,10 @@ namespace PlantGame.Core
             // 1) SphereCast along the camera ray, starting 1 m before the point nearest the chest.
             float t0 = Mathf.Max(0f, Vector3.Dot(chest - origin, dir) - 1f);
             Vector3 start = origin + dir * t0;
-            int n = Physics.SphereCastNonAlloc(start, castRadius, dir, _hits, range + 1.5f, Mask, QueryTriggerInteraction.Collide);
             // Every candidate in reach competes in one score: distance to the chest plus how far it is off the aim
             // (30 degrees count as 1 m), so the thing you face wins and the closest breaks ties. The current focus gets a
             // small bonus so two seeds side by side do not flicker. Only one target is ever focused (and highlighted).
-            var seen = new System.Collections.Generic.HashSet<Component>();
+            var seen = _seen; seen.Clear();
             Target best = default; float bestScore = float.MaxValue;
             int n = Physics.SphereCastNonAlloc(start, castRadius, dir, _hits, range + 1.5f, Mask, QueryTriggerInteraction.Collide);
             for (int i = 0; i < n; i++) Consider(_hits[i].collider, true, chest, origin, dir, seen, ref best, ref bestScore);
