@@ -143,7 +143,7 @@ namespace PlantGame.World
                 for (int i = 0; i < Segments; i++)
                 {
                     int a = s0 + r * (Segments + 1) + i, b = a + 1, c = a + Segments + 1, d = c + 1;
-                    sideTris.AddRange(new[] { a, c, b, b, c, d });
+                    sideTris.AddRange(new[] { a, b, c, b, d, c });   // outward winding for the whole wall: a per-triangle flip left holes where the rugged noise tilted a face
                 }
 
             if (_mesh == null) _mesh = new Mesh { name = name + "_Mesh", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
@@ -152,7 +152,6 @@ namespace PlantGame.World
             _mesh.subMeshCount = 2;
             _mesh.SetTriangles(topTris, 0); _mesh.SetTriangles(sideTris, 1);
             Orient(_mesh, 0, v => Vector3.up);
-            Orient(_mesh, 1, v => new Vector3(v.x, -0.15f, v.z));
             _mesh.RecalculateNormals(); _mesh.RecalculateBounds(); _mesh.RecalculateTangents();
             GetComponent<MeshFilter>().sharedMesh = _mesh;
             var mc = GetComponent<MeshCollider>(); mc.sharedMesh = null; mc.sharedMesh = _mesh;
