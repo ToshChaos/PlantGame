@@ -429,8 +429,8 @@ namespace PlantGame.UI
             _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
             _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
-            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-640, 50), new Vector2(-235, -80)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(640, 50), new Vector2(-235, -200)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-560, 0), new Vector2(-235, -130)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(560, 0), new Vector2(-235, -250)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(550, 250)), () => SetPaused(false));
             resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
             Button("Restart", pr, V(new Vector2(0, -50), new Vector2(550, 140)), Restart);
