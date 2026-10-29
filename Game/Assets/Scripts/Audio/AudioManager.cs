@@ -152,6 +152,9 @@ namespace PlantGame.Audio
         float _duckSmooth = 1f;
 
         /// <summary>Music / ambience volumes from the settings; also runs the moment an option changes (the pause menu is open with the game frozen).</summary>
+        /// <summary>The wind bed is 30% quieter on calm levels; windy levels (gusts) keep the full level, rain keeps its own bed.</summary>
+        float WindLevelScale => Theme == LevelTheme.Rain || WorldTheme.ResolveWind(GameBootstrap.Current) ? 1f : 0.7f;
+
         void ApplyVolumes()
         {
             float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicGain * musicVolume * masterVolume;
@@ -160,7 +163,7 @@ namespace PlantGame.Audio
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
             old.volume = Mathf.Sqrt(1f - _fade) * level;
             if (_fade >= 1f && old.isPlaying) old.Stop();
-            float amb = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain;
+            float amb = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain * WindLevelScale;
             _amb.volume = GameSettings.Sound && !float.IsNaN(amb) ? amb : 0f;   // a NaN would be ignored by the source and leave the old volume playing
             _amb.mute = !GameSettings.Sound;
             _music[0].mute = _music[1].mute = !GameSettings.Music;
