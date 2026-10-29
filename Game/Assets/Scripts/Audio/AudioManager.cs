@@ -143,20 +143,25 @@ namespace PlantGame.Audio
                 else { _holding = false; _music[0].UnPause(); _music[1].UnPause(); }
             }
             if (_fade < 1f && !(_holding && Time.unscaledTime < _holdUntil)) _fade = Mathf.Min(1f, _fade + Time.unscaledDeltaTime / Mathf.Max(0.1f, crossfadeSeconds));
+            if (OnTitle) { if (_amb.isPlaying) _amb.Stop(); _amb.clip = null; }
+            else if (_amb.clip == null) ApplyThemeAmbience();
+            ApplyVolumes();
+            _amb.pitch = AmbiencePitch;
+        }
+        float _duckSmooth = 1f;
+
+        /// <summary>Music / ambience volumes from the settings; also runs the moment an option changes (the pause menu is open with the game frozen).</summary>
+        void ApplyVolumes()
+        {
             float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicVolume * 0.8f * musicVolume * masterVolume;
             _duckSmooth = Mathf.MoveTowards(_duckSmooth, _musicDuck, Time.unscaledDeltaTime * 0.5f);
             var cur = _music[_active]; var old = _music[1 - _active];
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
             old.volume = Mathf.Sqrt(1f - _fade) * level;
             if (_fade >= 1f && old.isPlaying) old.Stop();
-            if (OnTitle) { if (_amb.isPlaying) _amb.Stop(); _amb.clip = null; }
-            else if (_amb.clip == null) ApplyThemeAmbience();
             _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f);
-            _amb.pitch = AmbiencePitch;
+            if (!GameSettings.Sound) foreach (var v in _pool) if (v.isPlaying) v.Stop();   // switching sound off cuts what is playing
         }
-        float _duckSmooth = 1f;
-
-        void ApplyVolumes() { /* volumes are applied every frame in Update; hook kept for future mixer params */ }
 
         // ---------------------------------------------------------------- sfx
         /// <summary>Plays a named one-shot (random variant, pitch +/-5%). minInterval rate-limits repeats of the same name.</summary>
