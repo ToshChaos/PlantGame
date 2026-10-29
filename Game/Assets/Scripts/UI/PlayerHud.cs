@@ -403,9 +403,11 @@ namespace PlantGame.UI
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
-                float ds = touch ? 48f : 40f;   // touch droplets are 20% bigger
-                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(ds, ds), new Vector2((touch ? 190 : 140) + i * (touch ? 55 : 46), 22));
+                float ds = touch ? 72f : 60f;   // big enough to notice at a glance
+                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(ds, ds), new Vector2((touch ? 120 : 100) + i * (touch ? 78 : 66), 22));
                 _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, ds);
+                var dol = _drops[i].gameObject.AddComponent<Outline>();   // a solid dark outline, also round the faded (spent) charges
+                dol.effectColor = new Color(0.04f, 0.14f, 0.3f, 1f); dol.effectDistance = new Vector2(3f, -3f); dol.useGraphicAlpha = false;
             }
 
             // pause menu
