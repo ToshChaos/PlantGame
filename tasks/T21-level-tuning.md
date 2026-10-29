@@ -1,7 +1,7 @@
 # T21 — Seed & difficulty tuning, pick curated levels
 
 **Owner:** A0 Director · **Depends on:** T14, T15
-**Status:** TODO (post-MVP, see `TODO.md`; the ten curated levels shipped with T50)
+**Status:** TODO (post-MVP, see `TASKS.md`; the ten curated levels shipped with T50)
 
 > Read `AGENTS.md` first (contracts in section 5). Update your row in `TASKS.md` when status changes.
 

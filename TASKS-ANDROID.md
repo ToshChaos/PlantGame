@@ -1,6 +1,6 @@
 # TASKS-ANDROID.md — Android beta backlog
 
-Android board, split out of `TODO.md`. Controls design and action map: `docs/mobile-controls.md` (v3: no stick; tap the ground to walk,
+Android board, split out of `TASKS.md`. Controls design and action map: `docs/mobile-controls.md` (v3: no stick; tap the ground to walk,
 tap the circle / diamond markers to act, double-tap a hotbar slot to drop, Jump and Pause buttons only).
 Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW` · `DONE` · `CUT`.
 

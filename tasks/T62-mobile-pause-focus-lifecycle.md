@@ -1,6 +1,6 @@
 # T62 — App lifecycle, orientation and screen behaviour on Android
 
-**Owner:** A0 Director · **Status:** DOING (post-MVP, see `TODO.md`) · **Depends on:** —
+**Owner:** A0 Director · **Status:** DOING (post-MVP, see `TASKS.md`) · **Depends on:** —
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

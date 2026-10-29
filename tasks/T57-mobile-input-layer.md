@@ -1,6 +1,6 @@
 # T57 — Touch input layer: virtual stick, look drag, buttons feed PlayerInputReader
 
-**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TODO.md`) · **Depends on:** —
+**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TASKS.md`) · **Depends on:** —
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 

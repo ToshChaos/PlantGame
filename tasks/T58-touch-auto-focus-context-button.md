@@ -1,6 +1,6 @@
 # T58 — Touch interaction: auto-focus and the context button
 
-**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TODO.md`) · **Depends on:** T57
+**Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TASKS.md`) · **Depends on:** T57
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
