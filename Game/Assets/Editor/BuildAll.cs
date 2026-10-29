@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace PlantGame.Editor
 {
-    /// <summary>One-click rebuild of everything T00–T03 generate. Menu: PlantGame > Build All.</summary>
+    /// <summary>One-click rebuild of everything T00–T03 generate. Menu: PlantGame > Rebuild Core Assets.</summary>
     public static class BuildAll
     {
-        [MenuItem("PlantGame/Build All", false, 100)]
+        [MenuItem("PlantGame/Rebuild Core Assets", false, 100)]
         public static void Run()
         {
             ProjectSetup.Run();
@@ -16,7 +16,7 @@ namespace PlantGame.Editor
             SandboxGameplayBuilder.Build();
             ProjectSetup.RegisterScenes();
             AssetDatabase.SaveAssets();
-            Debug.Log("[PlantGame] Build All finished (T00–T03 assets).");
+            Debug.Log("[PlantGame] Rebuild Core Assets finished (T00–T03 assets).");
         }
     }
 }

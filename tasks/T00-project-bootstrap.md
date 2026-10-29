@@ -41,4 +41,4 @@ _none yet_
 
 ## Handoff
 _Files created · prefab/scene names · public API · 30-second test · known issues_
-Packages (InputSystem 1.20.1, URP 17.6.0, uGUI 2.6.0), folder tree, layers (Ground 8, Plant 9, Climbable 10, Interactable 11, Player 13; Water = built-in 4), URP asset, Linear, scenes Main/Sandbox_*. Rebuild: menu PlantGame/Build All. Known: git NOT yet initialised (device shell unavailable); activeInputHandler change needs editor restart.
+Packages (InputSystem 1.20.1, URP 17.6.0, uGUI 2.6.0), folder tree, layers (Ground 8, Plant 9, Climbable 10, Interactable 11, Player 13; Water = built-in 4), URP asset, Linear, scenes Main/Sandbox_*. Rebuild: menu PlantGame/Rebuild Core Assets. Known: git NOT yet initialised (device shell unavailable); activeInputHandler change needs editor restart.
