@@ -23,10 +23,14 @@ namespace PlantGame.Audio
             _next = Time.time + Random.Range(3f, 9f);
         }
 
+        void OnEnable() => GameSettings.Changed += Apply;   // applied at once, also while the game is paused
+        void OnDisable() => GameSettings.Changed -= Apply;
+        void Apply() { if (_src != null) _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
+
         void Update()
         {
             if (_src == null) return;
-            _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f);
+            Apply();
             if (Time.time < _next || _src.isPlaying) return;
             if (_player == null) { var pc = Player.PlayerController.Instance; if (pc != null) _player = pc.transform; else return; }
             if ((_player.position - transform.position).sqrMagnitude > radius * radius) { _next = Time.time + 2f; return; }

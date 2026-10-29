@@ -22,6 +22,9 @@ namespace PlantGame.Audio
             _src.Play();
         }
 
-        void Update() { if (_src != null) _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
+        void Update() => Apply();
+        void OnEnable() => GameSettings.Changed += Apply;   // the pause menu changes the option with the game frozen: apply at once
+        void OnDisable() => GameSettings.Changed -= Apply;
+        void Apply() { if (_src != null) _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
     }
 }
