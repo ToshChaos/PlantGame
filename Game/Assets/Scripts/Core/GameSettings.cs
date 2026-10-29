@@ -54,14 +54,14 @@ namespace PlantGame.Core
         /// <summary>Music volume 0..1 (the slider in the menus).</summary>
         public static float MusicVolume
         {
-            get => PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
+            get => PlayerPrefs.GetFloat(MusicVolKey, 0.4f);
             set { PlayerPrefs.SetFloat(MusicVolKey, Mathf.Clamp01(value)); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
         /// <summary>Sound effects + ambience volume 0..1.</summary>
         public static float SoundVolume
         {
-            get => PlayerPrefs.GetFloat(SoundVolKey, 1f);
+            get => PlayerPrefs.GetFloat(SoundVolKey, 0.5f);
             set { PlayerPrefs.SetFloat(SoundVolKey, Mathf.Clamp01(value)); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
