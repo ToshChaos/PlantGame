@@ -65,42 +65,22 @@ namespace PlantGame.Core
             float t0 = Mathf.Max(0f, Vector3.Dot(chest - origin, dir) - 1f);
             Vector3 start = origin + dir * t0;
             int n = Physics.SphereCastNonAlloc(start, castRadius, dir, _hits, range + 1.5f, Mask, QueryTriggerInteraction.Collide);
-            Target best = default; float bestDist = float.MaxValue;
-            for (int i = 0; i < n; i++)
-            {
-                var c = _hits[i].collider;
-                if (!InRange(c, chest) || !TryResolve(c, out var tg) || Blocked(chest, c, tg)) continue;
-                // Third person: the camera ray runs through the player, so "first hit along the ray" favours far things.
-                // Among everything the ray touches, take the one nearest the player's chest.
-                float d = (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude;
-                if (d < bestDist) { bestDist = d; best = tg; }
-            }
+            // Every candidate in reach competes in one score: distance to the chest plus how far it is off the aim
+            // (30 degrees count as 1 m), so the thing you face wins and the closest breaks ties. The current focus gets a
+            // small bonus so two seeds side by side do not flicker. Only one target is ever focused (and highlighted).
+            var seen = new System.Collections.Generic.HashSet<Component>();
+            Target best = default; float bestScore = float.MaxValue;
+            int n = Physics.SphereCastNonAlloc(start, castRadius, dir, _hits, range + 1.5f, Mask, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < n; i++) Consider(_hits[i].collider, true, chest, origin, dir, seen, ref best, ref bestScore);
 
-            // 2) Aim assist: smallest angle to the camera ray among targets within range.
-            if (!best.IsValid)
+            int m = Physics.OverlapSphereNonAlloc(chest, range, _overlaps, Mask, QueryTriggerInteraction.Collide);
+            Vector3 feet = transform.position + Vector3.up * 0.5f;
+            for (int i = 0; i < m; i++)
             {
-                int m = Physics.OverlapSphereNonAlloc(chest, range, _overlaps, Mask, QueryTriggerInteraction.Collide);
-                float bestAngle = assistAngle;
-                for (int i = 0; i < m; i++)
-                {
-                    var c = _overlaps[i];
-                    if (!InRange(c, chest) || !TryResolve(c, out var tg) || Blocked(chest, c, tg)) continue;
-                    float a = Vector3.Angle(dir, c.bounds.center - origin);
-                    if (a < bestAngle) { bestAngle = a; best = tg; }
-                }
-            }
-
-            // 3) Proximity: targets right next to the player compete with the aimed one; the nearest to the chest wins
-            //    (in third person the camera ray often runs past the thing at your feet and hits something far behind it).
-            {
-                int m = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up * 0.5f, proximityRadius, _overlaps, Mask, QueryTriggerInteraction.Collide);
-                for (int i = 0; i < m; i++)
-                {
-                    var c = _overlaps[i];
-                    if (!TryResolve(c, out var tg) || Blocked(chest, c, tg)) continue;
-                    float d = (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude;
-                    if (d < bestDist) { bestDist = d; best = tg; }
-                }
+                var c = _overlaps[i];
+                bool near = (c.bounds.ClosestPoint(feet) - feet).sqrMagnitude <= proximityRadius * proximityRadius;   // items at your feet
+                bool aimed = Vector3.Angle(dir, c.bounds.center - origin) < assistAngle;
+                Consider(c, near || aimed, chest, origin, dir, seen, ref best, ref bestScore);
             }
 
             SetFocus(best);
@@ -131,6 +111,15 @@ namespace PlantGame.Core
                 if (score < bestScore) { bestScore = score; best = tg; }
             }
             SetFocus(best);
+        }
+
+        void Consider(Collider c, bool eligible, Vector3 chest, Vector3 origin, Vector3 dir, System.Collections.Generic.HashSet<Component> seen, ref Target best, ref float bestScore)
+        {
+            if (!eligible || !InRange(c, chest) || !TryResolve(c, out var tg) || !seen.Add(tg.component) || Blocked(chest, c, tg)) return;
+            float d = (c.bounds.ClosestPoint(chest) - chest).magnitude;
+            float score = d + Vector3.Angle(dir, c.bounds.center - origin) / 30f;
+            if (tg.component == Focus.component) score -= 0.3f;
+            if (score < bestScore) { bestScore = score; best = tg; }
         }
 
         /// <summary>Touch tap on a marker: the collider is close enough to act on (the same range as the focus) and nothing blocks it.</summary>

@@ -103,7 +103,7 @@ namespace PlantGame.Core
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
                     bool close = (c.bounds.ClosestPoint(_pi.Sensor.Chest) - _pi.Sensor.Chest).sqrMagnitude <= _pi.Sensor.range * _pi.Sensor.range;   // the same reach as the sensor / F: marker and action agree
-                    bool thick = pickup && (close || focused);
+                    bool thick = pickup && focused;   // only the one pickup that F/Q would act on is thick
                     if (soilRing)
                     {
                         var ic = PlayerHud.ItemColor(tint);
