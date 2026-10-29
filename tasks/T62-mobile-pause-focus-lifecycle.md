@@ -16,3 +16,5 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 ## Handoff
 Done: `Core/MobileLifecycle.cs` (mobile only): landscape left / right auto-rotation, screen never sleeps, 60 fps target, auto-pause of the run on app pause plus `PlayerPrefs.Save()`. Player settings landscape only (`AndroidBuild.Configure`).
 Not done: Back button behaviour on a real device, 30 fps option, audio focus, `Screen.safeArea` layout (T59). Not verified on a device.
+
+Update 2026-10-29: 30 fps battery-saver toggle (`GameSettings.Fps30`, touch Options right column). Android Back arrives as Escape (pause toggle). Audio focus left to Unity's default handling.

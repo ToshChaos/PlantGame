@@ -38,7 +38,29 @@ namespace PlantGame.Editor
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
             PlayerSettings.Android.renderOutsideSafeArea = false;   // notches stay clear of the HUD until T59 adds safe-area layout
 
+            ApplySigning();
             Debug.Log("[PlantGame] Android player settings applied (IL2CPP, ARM64, API 26+, Vulkan + GLES3, landscape only).");
+        }
+
+        /// <summary>
+        /// Release signing without keeping secrets in the repo: set OVERGROWN_KEYSTORE (path), OVERGROWN_KEYSTORE_PASS, OVERGROWN_KEY_ALIAS and
+        /// OVERGROWN_KEY_PASS (defaults to the keystore password) in the environment. OVERGROWN_VERSION_CODE sets the Play version code
+        /// (must grow with every upload). Without the variables the debug keystore is used. See docs/release-android.md.
+        /// </summary>
+        static void ApplySigning()
+        {
+            var vc = System.Environment.GetEnvironmentVariable("OVERGROWN_VERSION_CODE");
+            if (int.TryParse(vc, out var code) && code > 0) PlayerSettings.Android.bundleVersionCode = code;
+            var path = System.Environment.GetEnvironmentVariable("OVERGROWN_KEYSTORE");
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) { PlayerSettings.Android.useCustomKeystore = false; return; }
+            var pass = System.Environment.GetEnvironmentVariable("OVERGROWN_KEYSTORE_PASS") ?? "";
+            var alias = System.Environment.GetEnvironmentVariable("OVERGROWN_KEY_ALIAS") ?? "overgrown";
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = path;
+            PlayerSettings.Android.keystorePass = pass;
+            PlayerSettings.Android.keyaliasName = alias;
+            PlayerSettings.Android.keyaliasPass = System.Environment.GetEnvironmentVariable("OVERGROWN_KEY_PASS") ?? pass;
+            Debug.Log("[PlantGame] Android release keystore in use (" + alias + ").");
         }
 
         [MenuItem("PlantGame/Build Android APK", false, 111)]

@@ -18,3 +18,5 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 Done (groundwork): `Editor/AndroidBuild.cs`, menu `PlantGame > Configure Android / Build Android APK / Build Android AAB (Play)`, CLI `-executeMethod PlantGame.Editor.AndroidBuild.BuildApk`. Applies IL2CPP, ARM64, min API 26, target API auto, Vulkan + GLES3, package id `com.overgrown.game`, landscape only. Output: `Builds/Overgrown-android/` (git-ignored), log `Game/Logs/build-android.txt`.
 Blocked: the Unity 6000.6.5f1 install has no Android Build Support module (only macOS and WebGL), so no APK has been built yet. Install it in Unity Hub (Android Build Support, OpenJDK, Android SDK & NDK Tools), then run the menu item.
 Not done: release keystore (debug keystore until then; keep the real one outside the repo), icons check, LICENSES.md review, beta track, test matrix.
+
+Update 2026-10-29: Android module installed, `Overgrown.apk` builds. Release signing via env vars, privacy policy, store listing and a Play checklist added (`docs/release-android.md`). Still open: keystore creation, AAB upload to internal testing, device matrix.

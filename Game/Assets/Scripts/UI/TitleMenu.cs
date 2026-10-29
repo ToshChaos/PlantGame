@@ -22,7 +22,7 @@ namespace PlantGame.UI
         Font _font;
         WorldGenerator _showcase;
         GameObject _home, _levels, _options, _generate, _seed;
-        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle;
+        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
         Text[] _cardInfo;
@@ -58,6 +58,7 @@ namespace PlantGame.UI
             _soundToggle.text = "Sound: " + (GameSettings.Sound ? "On" : "Off");
             _hintsToggle.text = "Hints: " + (GameSettings.Hints ? "On" : "Off");
             _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
+            if (_fps30Toggle != null) _fps30Toggle.text = "Battery saver (30 fps): " + (GameSettings.Fps30 ? "On" : "Off");
             _autoWaterToggle.text = "Auto water: " + (GameSettings.AutoWater ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
@@ -224,6 +225,7 @@ namespace PlantGame.UI
             _hintsToggle = Button(o, "Hints", new Vector2(-330, -60), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
             _glowToggle = Button(o, "Postprocessing", new Vector2(330, tc ? 160 : -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
             _fpsToggle = Button(o, "FPS", new Vector2(330, tc ? 50 : -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
+            if (tc) _fps30Toggle = Button(o, "Fps30", new Vector2(330, -60), () => { GameSettings.Fps30 = !GameSettings.Fps30; RefreshOptions(); }, 420, 34);
             Button(o, "Reset all best times", new Vector2(0, tc ? -170 : -270), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
             _resetNote = Label(o, "", 26, new Vector2(0, tc ? -230 : -330), 800, Palette.TextOrange);
             Button(o, "Back", new Vector2(0, tc ? -300 : -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);

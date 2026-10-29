@@ -15,7 +15,8 @@ namespace PlantGame.Core
         {
             if (!Application.isMobilePlatform) return;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
-            Application.targetFrameRate = 60;
+            Application.targetFrameRate = GameSettings.Fps30 ? 30 : 60;
+            GameSettings.Changed += () => Application.targetFrameRate = GameSettings.Fps30 ? 30 : 60;
             Screen.autorotateToPortrait = Screen.autorotateToPortraitUpsideDown = false;
             Screen.autorotateToLandscapeLeft = Screen.autorotateToLandscapeRight = true;
             Screen.orientation = ScreenOrientation.AutoRotation;   // landscape left / right only (the allowed set above)

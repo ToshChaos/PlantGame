@@ -6,7 +6,7 @@ namespace PlantGame.Core
     /// <summary>Player options persisted in PlayerPrefs (the pause menu toggles them). Minimal until the T19/T26 options screen.</summary>
     public static class GameSettings
     {
-        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps", AutoWaterKey = "plantgame.autowater";
+        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps", AutoWaterKey = "plantgame.autowater", Fps30Key = "plantgame.fps30";
         public static event Action Changed;
 
         /// <summary>On-screen key hints ("Q pick up / drop, E use, F water"). On by default.</summary>
@@ -87,6 +87,13 @@ namespace PlantGame.Core
         {
             get => PlayerPrefs.GetInt(FpsKey, 0) == 1;
             set { PlayerPrefs.SetInt(FpsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
+        /// <summary>Battery saver: caps the frame rate at 30 (phones; the default is 60). Applied by MobileLifecycle.</summary>
+        public static bool Fps30
+        {
+            get => PlayerPrefs.GetInt(Fps30Key, 0) == 1;
+            set { PlayerPrefs.SetInt(Fps30Key, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
         /// <summary>Auto water: the can refills at water within reach and waters thirsty sprouts within reach without F. Off by default.</summary>
