@@ -152,6 +152,17 @@ namespace PlantGame.World
                             Obj("Stud", doorStud, gold, new Vector3(0.7f * s, 0.9f + (r < 3 ? r * 1.0f : 3.0f) + (r == 3 ? 0.0f : 0f), 0.1f), new Vector3(90, 0, 0), Vector3.one, hinge.transform);
                         Obj("SealRing", sealRing, gold, new Vector3(0.5f * s, 2.0f, 0.11f), new Vector3(90, 0, 0), Vector3.one, hinge.transform);
                         Obj("SealGem", sealGem, crystal, new Vector3(0.5f * s, 2.0f, 0.12f), new Vector3(90, 0, 0), new Vector3(1f, 0.5f, 1f), hinge.transform);
+                        {   // the back of the leaf carries the same gold seam, bands, studs and seal (it was bare grey stone)
+                        {
+                            Obj("SeamBack", ShapeMeshes.Tube(new List<Vector3> { new Vector3(0, 0.1f, -0.09f), new Vector3(0, 2.3f, -0.09f), new Vector3(0, 4.1f, -0.09f) }, q => 0.04f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, hinge.transform);
+                            for (int r = 0; r < 3; r++)
+                                Obj("BandBack", ShapeMeshes.Tube(new List<Vector3> { new Vector3(0, 0.9f + r * 1.0f, -0.09f), new Vector3(0.7f * s, 0.9f + r * 1.0f, -0.09f), new Vector3(1.38f * s, 0.9f + r * 1.0f, -0.09f) }, q => 0.025f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, hinge.transform);
+                            for (int r = 0; r < 4; r++)
+                                Obj("StudBack", doorStud, gold, new Vector3(0.7f * s, 0.9f + (r < 3 ? r * 1.0f : 3.0f), -0.1f), new Vector3(90, 0, 0), Vector3.one, hinge.transform);
+                            Obj("SealRingBack", sealRing, gold, new Vector3(0.5f * s, 2.0f, -0.11f), new Vector3(90, 0, 0), Vector3.one, hinge.transform);
+                            Obj("SealGemBack", sealGem, crystal, new Vector3(0.5f * s, 2.0f, -0.12f), new Vector3(90, 0, 0), new Vector3(1f, 0.5f, 1f), hinge.transform);
+                            Obj("RimBack", ShapeMeshes.Tube(ShapeMeshes.OpeningTrim(-0.06f, -0.09f, true, left), q => 0.03f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, hinge.transform);
+                        }
                         doors[left ? 0 : 1] = door;
                     }
                     var portal = Obj("Portal", ShapeMeshes.OpeningPanel(), PortalMat(), new Vector3(0, -Scenery.ArchSink, 0.0f), Vector3.zero, Vector3.one);

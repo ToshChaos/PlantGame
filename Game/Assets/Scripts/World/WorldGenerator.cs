@@ -151,7 +151,12 @@ namespace PlantGame.World
                     var goal = GoalBuilder.Build(I.go.transform, gpos, WorldTheme.ResolveGoal(config), Theme);
                     if (summitSnow) { goal.transform.localScale *= 0.8f; goal.transform.position += Vector3.down * 0.35f; }   // windy summit: a smaller flag, its base sunk into the snow
                     if (Theme == LevelTheme.Fog) { var bl = new GameObject("FogBeacon"); bl.transform.SetParent(goal.transform, false); bl.transform.localPosition = Vector3.up * 3f; var lt = bl.AddComponent<Light>(); lt.type = LightType.Point; lt.color = new Color(1f, 0.85f, 0.5f); lt.range = 26f; lt.intensity = 4f; }   // T50: a warm glow you can find in the mist
-                    if (plan.roundTrip) goal.requiresItemId = "heart_seed";
+                    if (plan.roundTrip)
+                    {
+                        goal.requiresItemId = "heart_seed";
+                        var toCentre = I.centre - gpos; toCentre.y = 0f;
+                        if (toCentre.sqrMagnitude > 0.01f) goal.transform.rotation = Quaternion.LookRotation(toCentre.normalized, Vector3.up);   // the gate (and its steps) face into the island
+                    }
                     I.keep.Add(new Vector4(gpos.x, gpos.z, 4.5f, 8f));
                 }
                 if (plan.roundTrip && i == goalIsle)
