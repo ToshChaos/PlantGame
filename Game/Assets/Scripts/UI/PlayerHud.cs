@@ -397,14 +397,14 @@ namespace PlantGame.UI
             // water charges, bottom left
             var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-150, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
-            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
+            _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(touch ? -100 : 230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(270, 206) : new Vector2(370, 86), touch ? new Vector2(620, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             if (touch) { var ol = _waterLabel.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(1f, 1f, 1f, 0.85f); ol.effectDistance = new Vector2(2, -2); }
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
                 float ds = touch ? 72f : 60f;   // big enough to notice at a glance
-                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(ds, ds), new Vector2((touch ? 120 : 100) + i * (touch ? 78 : 66), 22));
+                var d = Rect("Drop" + i, water, new Vector2(0f, 0.5f), new Vector2(ds, ds), new Vector2((touch ? 140 : 100) + i * (touch ? 78 : 66), 22));
                 _drops[i] = Img("Fill", d, UiSprites.Drop, Color.white, ds);
                 var dol = _drops[i].gameObject.AddComponent<Outline>();   // a solid dark outline, also round the faded (spent) charges
                 dol.effectColor = new Color(0.04f, 0.14f, 0.3f, 1f); dol.effectDistance = new Vector2(3f, -3f); dol.useGraphicAlpha = false;
