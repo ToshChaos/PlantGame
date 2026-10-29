@@ -109,10 +109,14 @@ namespace PlantGame.Core
                         var ic = PlayerHud.ItemColor(tint);
                         near = new Color(ic.r, ic.g, ic.b, 0.4f); rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
                     }
-                    else if (pickup && tint != null && close)   // a close pickup wears its own colour; the focused one turns purple
-                    {
-                        var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
-                        rdy = Color.Lerp(near, Color.white, 0.3f);   // aimed at: the same seed colour, brighter (and bigger)
+                    else if (pickup)
+                    {   // yellow from afar; seed colour and thin once in reach; seed colour and thick when it is the one Q takes (never purple)
+                        near = nearColor; rdy = nearColor;
+                        if (tint != null && close)
+                        {
+                            var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
+                            rdy = Color.Lerp(near, Color.white, 0.3f);
+                        }
                     }
                     else if (seedColoured)
                     {
