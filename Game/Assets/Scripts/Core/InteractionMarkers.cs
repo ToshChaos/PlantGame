@@ -103,7 +103,7 @@ namespace PlantGame.Core
                     bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
                     var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
                     bool close = (c.bounds.ClosestPoint(_pi.Sensor.Chest) - _pi.Sensor.Chest).sqrMagnitude <= _pi.Sensor.range * _pi.Sensor.range;   // the same reach as the sensor / F: marker and action agree
-                    bool thick = pickup && focused;   // only the one pickup that F/Q would act on is thick
+                    bool thick = pickup && focused && tint != null;   // only the one pickup that F/Q would act on is thick
                     if (soilRing)
                     {
                         var ic = PlayerHud.ItemColor(tint);
@@ -112,7 +112,7 @@ namespace PlantGame.Core
                     else if (pickup)
                     {   // yellow from afar; seed colour and thin once in reach; seed colour and thick when it is the one Q takes (never purple)
                         near = nearColor; rdy = nearColor;
-                        if (tint != null && close)
+                        if (tint != null && (close || focused))
                         {
                             var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
                             rdy = Color.Lerp(near, Color.white, 0.3f);
