@@ -1240,7 +1240,7 @@ namespace PlantGame.World
 
         // ------------------------------------------------------------------ sky debris from the imported kits
         static readonly string[] DebrisRocks = { "Rock_Medium_1", "Rock_Medium_2", "Rock_Medium_3", "rock_smallA", "rock_smallB", "rock_tallA", "stone_largeB", "stone_smallC" };
-        static readonly string[] DebrisRuins = { "AP4_A1_StoneWall3", "AP4_A1_StoneWall5", "AP4_A2_StoneWall4", "AP4_A2_StoneWall6", "AP4_A3_DoorStone1", "AP4_A3_DoorStone2", "AP4_A3_LongStone1", "AP4_A2_Stone1", "AP4_A2_Stone2", "AP4_A3_StoneRing1" };
+        static readonly string[] DebrisRuins = { "AP4_A1_StoneWall3", "AP4_A1_StoneWall5", "AP4_A2_StoneWall4", "AP4_A2_StoneWall6", "AP4_A3_DoorStone1", "AP4_A3_DoorStone2", "AP4_A3_LongStone1", "AP4_A2_Stone1", "AP4_A2_Stone2" };
 
         /// <summary>A floating imported rock / ruin chunk scaled by `s`, centred on `pos` and tumbled; null if the kit lacks the models.</summary>
         static GameObject ImportedDebris(Transform parent, System.Random rnd, Vector3 pos, float s, string[] names, float scale)
@@ -1343,7 +1343,12 @@ namespace PlantGame.World
                     else Model(isl.transform, FirstAvailable(rnd, DebrisRocks), dp, da * 57f, 0.5f + (float)rnd.NextDouble() * 0.5f, false);
                 }
                 if (i % 3 == 0) Model(isl.transform, "AP4_A2_StoneWall4", pos + new Vector3(-1.4f, 0, -1.2f), (float)rnd.NextDouble() * 360f, 0f, false);
-                if (i % 5 == 0) Model(isl.transform, "AP4_A3_Door1", pos + new Vector3(-0.2f, 0, 1.6f), (float)rnd.NextDouble() * 360f, 2.6f, false);
+                if (i % 5 == 0)   // a large grey rock with a green moss cap where the arch used to stand
+                {
+                    float rs2 = 1.8f + (float)rnd.NextDouble() * 0.6f; var rp = pos + new Vector3(-0.2f, rs2 * 0.3f, 1.6f);
+                    MeshPrim("BigRock", DebrisMeshes.Rock(rnd.Next(8)), isl.transform, rp, new Vector3(rs2 * 1.3f, rs2 * 0.9f, rs2 * 1.1f), stone, false);
+                    MeshPrim("MossCap", DebrisMeshes.Rock(rnd.Next(8)), isl.transform, rp + Vector3.up * rs2 * 0.5f, new Vector3(rs2 * 0.95f, rs2 * 0.4f, rs2 * 0.85f), Mat("M_Foliage"), false);
+                }
                 foreach (var c in isl.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);   // islets stay out of reach
                 var b = isl.AddComponent<FloatBob>(); b.amplitude = 0.8f; b.period = 8f + i; b.spin = 1.5f;
             }
