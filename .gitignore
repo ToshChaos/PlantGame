@@ -23,3 +23,6 @@ Builds/
 
 # Unity per-session tool cache
 Game/.utmp/
+
+# private publishing notes (keystore locations, accounts, listing drafts)
+docs/private/
