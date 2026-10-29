@@ -174,6 +174,13 @@ namespace PlantGame.Player
                     if (m.collider == null && m.climb == null && !m.bridge) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
+                    // walking wins over water that offers nothing: a full can, or ice with no open water in reach (unless a Heat Seed could melt it)
+                    if (m.target.interactable is WaterSource ice)
+                    {
+                        var chest = _pi.Sensor.Chest;
+                        bool melt = _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "heat_seed" && ice.FrozenNear(chest);
+                        if (!melt && (!canFill || (ice.frozen && !ice.WaterNear(chest)))) continue;
+                    }
                     // water points (when the can has room) and beanstalk circles: a much wider hit area, and they win against other markers and the ground
                     bool water = canFill && (m.target.interactable is WaterSource || m.target.interactable is WaterCollector);
                     float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null || m.bridge ? 2.5f : 1f));   // beanstalk circles get the wide area too
