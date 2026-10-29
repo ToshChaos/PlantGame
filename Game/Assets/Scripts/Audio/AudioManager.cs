@@ -25,7 +25,7 @@ namespace PlantGame.Audio
         [Tooltip("T53: one tune per curated level (Entry.name = levelId, first clip). Level 1, random and seed-code levels use gameplayMusic.")]
         public List<Entry> levelMusic = new List<Entry>();
         public List<Entry> sfx = new List<Entry>();
-        [Range(0, 1)] public float masterVolume = 1f, musicVolume = 0.55f, sfxVolume = 0.8f, ambienceVolume = 0.35f;
+        [Range(0, 1)] public float masterVolume = 1f, musicVolume = 0.55f, sfxVolume = 0.8f, ambienceVolume = 0.175f;
         public float crossfadeSeconds = 2.5f;
         public int voices = 12;
 
