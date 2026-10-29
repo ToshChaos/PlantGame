@@ -6,7 +6,7 @@ namespace PlantGame.Core
 {
     /// <summary>
     /// Mushroom patches: from the ground (or the neighbouring cap) the player can hop onto the next cap with E (or a tap on its circle).
-    /// Cap 1 from the ground near the patch or from cap 2, cap 2 from cap 1 or 3, cap 3 from cap 2.
+    /// Cap 1 from the ground near the patch or from cap 2, cap 2 from cap 1 or 3, cap 3 from cap 2 or from the next island.
     /// </summary>
     public static class CapHops
     {
@@ -39,6 +39,11 @@ namespace PlantGame.Core
                     Vector2 d = new Vector2(pos.x - _tops[0].x, pos.z - _tops[0].z);
                     if (d.magnitude <= GroundReach && pos.y < _tops[0].y - 0.3f && pos.y > _tops[0].y - 4f)
                         into.Add(new Option { point = _tops[0], plant = pl, index = 0 });
+                    // standing on the next island (above the first cap, near the last): the last cap is a hop away too
+                    int last = _tops.Count - 1;
+                    Vector2 dl = new Vector2(pos.x - _tops[last].x, pos.z - _tops[last].z);
+                    if (dl.magnitude <= GroundReach && pos.y > _tops[0].y + 0.3f && pos.y < _tops[last].y - 0.3f && pos.y > _tops[last].y - 4f)
+                        into.Add(new Option { point = _tops[last], plant = pl, index = last });
                 }
             }
         }
