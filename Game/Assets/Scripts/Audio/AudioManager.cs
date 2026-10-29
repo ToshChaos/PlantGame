@@ -143,7 +143,7 @@ namespace PlantGame.Audio
                 else { _holding = false; _music[0].UnPause(); _music[1].UnPause(); }
             }
             if (_fade < 1f && !(_holding && Time.unscaledTime < _holdUntil)) _fade = Mathf.Min(1f, _fade + Time.unscaledDeltaTime / Mathf.Max(0.1f, crossfadeSeconds));
-            float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicVolume * musicVolume * masterVolume;
+            float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicVolume * 0.8f * musicVolume * masterVolume;
             _duckSmooth = Mathf.MoveTowards(_duckSmooth, _musicDuck, Time.unscaledDeltaTime * 0.5f);
             var cur = _music[_active]; var old = _music[1 - _active];
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
