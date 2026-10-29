@@ -22,6 +22,6 @@ namespace PlantGame.Audio
             _src.Play();
         }
 
-        void Update() { if (_src != null) _src.volume = volume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f); }
+        void Update() { if (_src != null) _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f); }
     }
 }

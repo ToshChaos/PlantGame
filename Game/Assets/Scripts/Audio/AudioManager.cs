@@ -153,13 +153,13 @@ namespace PlantGame.Audio
         /// <summary>Music / ambience volumes from the settings; also runs the moment an option changes (the pause menu is open with the game frozen).</summary>
         void ApplyVolumes()
         {
-            float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicVolume * 0.8f * musicVolume * masterVolume;
+            float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicGain * musicVolume * masterVolume;
             _duckSmooth = Mathf.MoveTowards(_duckSmooth, _musicDuck, Time.unscaledDeltaTime * 0.5f);
             var cur = _music[_active]; var old = _music[1 - _active];
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
             old.volume = Mathf.Sqrt(1f - _fade) * level;
             if (_fade >= 1f && old.isPlaying) old.Stop();
-            _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f);
+            _amb.volume = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f);
             if (!GameSettings.Sound) foreach (var v in _pool) if (v.isPlaying) v.Stop();   // switching sound off cuts what is playing
         }
 
@@ -179,7 +179,7 @@ namespace PlantGame.Audio
             var s = _pool[_poolNext]; _poolNext = (_poolNext + 1) % _pool.Length;
             s.clip = clips[UnityEngine.Random.Range(0, clips.Length)];   // audio variation is cosmetic, not world generation
             s.pitch = 1f + UnityEngine.Random.Range(-pitchJitter, pitchJitter);
-            s.volume = volume * sfxVolume * masterVolume * GameSettings.SoundVolume;
+            s.volume = volume * sfxVolume * masterVolume * GameSettings.SoundGain;
             if (at.HasValue) { s.transform.position = at.Value; s.spatialBlend = 0.6f; } else s.spatialBlend = 0f;
             s.Play();
         }

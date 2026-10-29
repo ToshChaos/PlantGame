@@ -26,7 +26,7 @@ namespace PlantGame.Audio
         void Update()
         {
             if (_src == null) return;
-            _src.volume = volume * GameSettings.SoundVolume * (GameSettings.Sound ? 1f : 0f);
+            _src.volume = volume * GameSettings.SoundGain * (GameSettings.Sound ? 1f : 0f);
             if (Time.time < _next || _src.isPlaying) return;
             if (_player == null) { var pc = Player.PlayerController.Instance; if (pc != null) _player = pc.transform; else return; }
             if ((_player.position - transform.position).sqrMagnitude > radius * radius) { _next = Time.time + 2f; return; }

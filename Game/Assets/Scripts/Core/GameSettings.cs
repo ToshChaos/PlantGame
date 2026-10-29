@@ -65,6 +65,11 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetFloat(SoundVolKey, Mathf.Clamp01(value)); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
+        /// <summary>What the audio systems multiply by: the slider on a squared curve (so the slider has a big audible range) scaled so the 50% default is 20% quieter than before.</summary>
+        public static float MusicGain => Mathf.Min(1f, 1.28f * MusicVolume * MusicVolume);
+        /// <summary>Sound effects + ambience gain (see MusicGain).</summary>
+        public static float SoundGain => Mathf.Min(1f, 1.6f * SoundVolume * SoundVolume);
+
         /// <summary>Background music. On by default. The audio systems (T17/T18) read this and listen to Changed.</summary>
         public static bool Music
         {

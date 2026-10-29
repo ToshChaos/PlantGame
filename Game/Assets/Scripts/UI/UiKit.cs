@@ -15,6 +15,8 @@ namespace PlantGame.UI
             var label = Rect("Caption", root, new Vector2(width, 36), new Vector2(0, 34)).gameObject.AddComponent<Text>();
             label.font = font; UiLayout.Fit(label, 28, true); label.alignment = TextAnchor.MiddleCenter; label.color = Palette.TextOrange; label.raycastTarget = false;
 
+            var pad = Rect("HitPad", root, new Vector2(width + 20, 72), new Vector2(0, -8));   // a roomy touch target around the thin track
+            pad.gameObject.AddComponent<Image>().color = Color.clear;
             var track = Rect("Track", root, new Vector2(width, 14), new Vector2(0, -16));
             var trackImg = track.gameObject.AddComponent<Image>(); trackImg.color = new Color(0.04f, 0.14f, 0.08f, 0.95f);
 
