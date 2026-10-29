@@ -293,7 +293,7 @@ how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `D
 Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`).
 
 ## 8. Scope & cut line
-_Final (2026-10-26): the MVP below shipped complete (`TASKS-MVP.md`); later work is in `TASKS.md`. The cut order is kept for reference._
+_Final (2026-10-25): the MVP below shipped complete (`TASKS-MVP.md`); later work is in `TASKS.md`. The cut order is kept for reference._
 
 **MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->

@@ -63,7 +63,7 @@ The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CU
 | [T55](tasks/T55-overgrown-rename-and-play-fixes.md) | Rename to Overgrown, camera see-through fade, soil patches, Heat Seed on E, bridge spacing, decoy soils, test scene cleanup | A0+A1+A5 | T14, T26, T45, T54 | DONE |
 | [T56](tasks/T56-palms-and-parachute.md) | Palm trees (Kenney CC0 models, generated bark / frond textures, one coconut pickup each), all trees vary in size, rare purple grass; glide visual is now a real parachute (green/yellow dome + cords) | A5+A1 | T36, T32 | DONE |
 
-## Final state (2026-10-26)
+## Final state (2026-10-25)
 - Levels: ten curated (`WorldKitBuilder`, menu 14): 1 First Steps, 2 Beanstalk Hill (autumn), 3 Water from the Sky (rain, collector only), 4 Skyfall (beanstalk then a leaf glide), 5 Stepping Stones (hand plan, one huge tree on island 3), 6 There and Back (sunrise, round trip with the Heart Seed), 7 Snowed In (snow), 8 Windy Summit (spiral, gusts, snow-capped goal island), 9 Into the Mist (fog), 10 Storm Season (rain + gusts). Themes Sunny / Rain / Autumn / Snow / Fog / Sunset / Sunrise with their own sky and weather; goals flag / fruit / gate / campfire. Generated levels use `SeedCode.GeneratorVersion` 3; seed codes are five dash-joined words (old `LEAF-XXXX-XXXX-XX` codes still decode).
 - Snow levels: every pond and waterfall is frozen (no refill), soil patches are frozen too; a Heat Seed (E on soil, E near water) thaws one. Exactly two Heat Seeds on the start island; the source regrows them.
 - Audio: surface footsteps with bridge creaks (T47); ten gameplay tunes (T53), a menu tune, win music; a level-start jingle; altitude-scaled wind on windy levels.
