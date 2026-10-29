@@ -58,7 +58,7 @@ namespace PlantGame.UI
             _soundToggle.text = "Sound: " + (GameSettings.Sound ? "On" : "Off");
             _hintsToggle.text = "Hints: " + (GameSettings.Hints ? "On" : "Off");
             _fpsToggle.text = "FPS counter: " + (GameSettings.Fps ? "On" : "Off");
-            if (_fps30Toggle != null) _fps30Toggle.text = "Battery saver (30 fps): " + (GameSettings.Fps30 ? "On" : "Off");
+            if (_fps30Toggle != null) _fps30Toggle.text = "Battery saver: " + (GameSettings.Fps30 ? "On" : "Off");
             _autoWaterToggle.text = "Auto water: " + (GameSettings.AutoWater ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
