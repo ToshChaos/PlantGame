@@ -171,7 +171,7 @@ namespace PlantGame.Player
                 InteractionMarkers.Tappable best = default; bool found = false;
                 foreach (var m in InteractionMarkers.Tappables)
                 {
-                    if (m.collider == null && m.climb == null && !m.bridge) continue;
+                    if (m.collider == null && m.climb == null && !m.bridge && !m.cap) continue;
                     var sp = cam.WorldToScreenPoint(m.position);
                     if (sp.z <= 0f) continue;
                     // walking wins over water that offers nothing: a full can, or ice with no open water in reach (unless a Heat Seed could melt it)
@@ -183,11 +183,12 @@ namespace PlantGame.Player
                     }
                     // water points (when the can has room) and beanstalk circles: a much wider hit area, and they win against other markers and the ground
                     bool water = canFill && (m.target.interactable is WaterSource || m.target.interactable is WaterCollector);
-                    float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null || m.bridge ? 2.5f : 1f));   // beanstalk circles get the wide area too
+                    float score = ((Vector2)sp - pos).magnitude / (radius * (water || m.climb != null || m.bridge || m.cap ? 2.5f : 1f));   // beanstalk circles get the wide area too
                     if (score < bestScore) { bestScore = score; best = m; found = true; }
                 }
                 if (found)
                 {
+                    if (best.cap) { CancelWalk(); _pc.HopTo(best.capPoint); return; }
                     if (best.climb != null) { ClimbTap(best.climb); return; }
                     if (best.bridge) { CancelWalk(); StartWalk(best.bridgeFrom, null, default, null); _walkThen = best.bridgeTo; _hasThen = true; return; }   // to this end, then across
                     if (InReach(best.collider, best.target)) { CancelWalk(); TouchInput.HasTap = true; TouchInput.Tap = best.target; }

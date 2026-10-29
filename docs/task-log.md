@@ -191,3 +191,6 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Title home: `UiLayout.WideTouch` (touch and at least 16:9); narrower touch screens (tablets) use the centred desktop stack, the wide phone layout ran off a 4:3 screen. Play sits 20 higher (it crowded Select level). Level select: Back at x 630 (was 760, cut off on 4:3), its right edge in line with the cards.
 - Pause (touch): option rows 110 apart like Resume / Restart / Menu / Quit, Resume level with the top row, the columns closed up and centred (-530 / 10 / 550) so the layout fits a 4:3 tablet as well as a 16:9 phone. Pause (desktop): FPS button 400 wide, sliders and action buttons 10 lower.
 - Generate and Input seed screens are centred panels up to 1200 wide: they fit every case by size (screenshots of them did not take).
+
+## Mushroom cap hops (2026-10-29)
+- Grown platform (mushroom) patches show a circle over each cap the player can hop to: cap 1 from the ground within 4.5 m (or from cap 2), cap 2 from cap 1 / 3, cap 3 from cap 2 (`Core/CapHops.cs`). E hops to the option best in line with the view; on touch a tap on the circle hops (`PlayerController.HopTo`, scripted arc, grounded on landing). Circles hide during the hop (`IsHopping`) and tap walks. Not compiled or play-tested: Unity was closed in this session.

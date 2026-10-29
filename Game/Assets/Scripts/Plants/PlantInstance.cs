@@ -40,6 +40,20 @@ namespace PlantGame.Plants
             return _anchor != null && _tip != null;
         }
 
+        /// <summary>Platform plants: the standing point on top of each walkable cap, base to tip (world space), once fully grown.</summary>
+        public int CapTops(List<Vector3> into, List<float> radii = null)
+        {
+            into.Clear(); radii?.Clear();
+            if (kind != PlantKind.Platform || !IsGrown) return 0;
+            foreach (var c in _cols)
+            {
+                var b = c.bounds;
+                into.Add(new Vector3(b.center.x, b.max.y, b.center.z));
+                radii?.Add(Mathf.Max(b.extents.x, b.extents.z));
+            }
+            return into.Count;
+        }
+
         Renderer[] _renderers;
         readonly List<Collider> _cols = new List<Collider>();
         PlantGame.Player.ClimbableVolume[] _climbVolumes;   // ladders: only climbable once fully grown

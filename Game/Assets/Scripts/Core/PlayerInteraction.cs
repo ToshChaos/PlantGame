@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using PlantGame.Inventory;
 using PlantGame.Plants;
@@ -149,6 +150,20 @@ namespace PlantGame.Core
             return true;
         }
 
+        readonly List<CapHops.Option> _hops = new List<CapHops.Option>();
+        /// <summary>E near a grown mushroom patch: hop onto the cap best in line with the view.</summary>
+        bool TryCapHop()
+        {
+            var pc = GetComponent<PlayerController>();
+            if (pc == null || pc.IsHopping || pc.IsClimbing) return false;
+            CapHops.Find(transform.position, _hops);
+            var f = Sensor.facing != null ? Sensor.facing : (Camera.main != null ? Camera.main.transform : transform);
+            var view = Camera.main != null && !TouchInput.Active ? Camera.main.transform.forward : f.forward;
+            if (!CapHops.Pick(_hops, transform.position, view, out var o)) return false;
+            pc.HopTo(o.point);
+            return true;
+        }
+
         public void Use()
         {
             var item = Inventory.SelectedItem;
@@ -178,6 +193,7 @@ namespace PlantGame.Core
                 target.Interact(gameObject);
                 return;
             }
+            if (TryCapHop()) return;
             if (TryThaw()) return;   // E next to frozen water: a Heat Seed melts it
             if ((item != null && item.kind == ItemKind.Seed) || usable is SandboxTarget { frozen: true })
                 {

@@ -183,13 +183,49 @@ namespace PlantGame.Player
             _regrab = Mathf.Max(0f, _regrab - dt);
             if (Input.JumpPressed) _jumpBuffer = jumpBufferTime; else _jumpBuffer = Mathf.Max(0f, _jumpBuffer - dt);
 
-            if (CurrentState == State.Climbing) UpdateClimb(dt);
+            if (IsHopping) UpdateHop(dt);
+            else if (CurrentState == State.Climbing) UpdateClimb(dt);
             else UpdateMove(dt);
 
             if (transform.position.y < killPlaneY) Respawn();
 
             UpdateModelFacing(dt);
             UpdateCamera();
+        }
+
+        // ---------------------------------------------------------------- mushroom cap hop
+
+        Vector3 _hopFrom, _hopTo; float _hopT, _hopDur;
+        /// <summary>True during a scripted hop to a mushroom cap (circles hide meanwhile).</summary>
+        public bool IsHopping { get; private set; }
+
+        /// <summary>Jump along an arc to a point (the top of a mushroom cap); the player lands grounded there.</summary>
+        public void HopTo(Vector3 target)
+        {
+            if (IsHopping || CurrentState == State.Climbing) return;
+            EndGlide();
+            _hopFrom = transform.position; _hopTo = target; _hopT = 0f;
+            _hopDur = Mathf.Clamp(0.45f + Vector3.Distance(_hopFrom, _hopTo) * 0.08f, 0.5f, 0.9f);
+            IsHopping = true; _hVel = Vector3.zero; _vVel = 0f;
+            CurrentState = State.Airborne; _airTime = 0f;
+            Vector3 d = target - _hopFrom; d.y = 0f;
+            if (d.sqrMagnitude > 0.01f && model != null) model.rotation = Quaternion.LookRotation(d.normalized);
+            GameEvents.RaisePlayerJumped();
+        }
+
+        void UpdateHop(float dt)
+        {
+            _hopT += dt / _hopDur;
+            float k = Mathf.Clamp01(_hopT);
+            float arc = 4f * k * (1f - k) * (1.2f + 0.25f * Mathf.Max(0f, _hopTo.y - _hopFrom.y));
+            Vector3 want = Vector3.Lerp(_hopFrom, _hopTo, k) + Vector3.up * arc;
+            _cc.Move(want - transform.position);
+            if (k >= 1f)
+            {
+                IsHopping = false; _hVel = Vector3.zero; _vVel = -2f;
+                CurrentState = State.Grounded; _airTime = 0f;
+                GameEvents.RaisePlayerLanded();
+            }
         }
 
         // ---------------------------------------------------------------- ground + air
@@ -349,7 +385,7 @@ namespace PlantGame.Player
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             _yaw = yaw; _pitch = 15f;
             if (model != null) model.rotation = Quaternion.Euler(0f, yaw, 0f);
-            _hVel = Vector3.zero; _vVel = 0f; _airTime = 0f; _climb = null; _touching = null;
+            _hVel = Vector3.zero; _vVel = 0f; _airTime = 0f; _climb = null; _touching = null; IsHopping = false;
             CurrentState = State.Airborne;
             GameEvents.RaisePlayerRespawned();
         }

@@ -30,9 +30,10 @@ namespace PlantGame.Core
         public static bool RefillRingThick { get; private set; }
 
         /// <summary>A marker drawn this frame: what a tap on it would act on (touch).</summary>
-        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; public Vector3 bridgeFrom, bridgeTo; public bool bridge; }
+        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; public Vector3 bridgeFrom, bridgeTo; public bool bridge; public bool cap; public Vector3 capPoint; }
         public static readonly List<Tappable> Tappables = new List<Tappable>();
 
+        readonly List<CapHops.Option> _hops = new List<CapHops.Option>();
         PlayerInteraction _pi;
         float _blockReadyUntil;
         Camera _cam;
@@ -183,6 +184,25 @@ namespace PlantGame.Core
                             Tappables.Add(new Tappable { position = pos, bridge = true, bridgeFrom = from - along * 0.3f, bridgeTo = to + along * 1.0f });
                         }
                     }
+            }
+            if (_pi != null && _cam != null)
+            {
+                // mushroom caps: a circle over each cap the player can hop to from here; hidden during the hop and tap walks
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing && !pc.IsHopping && !PlantGame.Player.TouchControls.AutoWalking)
+                {
+                    CapHops.Find(transform.position, _hops);
+                    foreach (var o in _hops)
+                    {
+                        var r = Get(used++);
+                        var pos = o.point + Vector3.up * (1.5f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + o.point.x * 1.7f));
+                        r.transform.position = pos;
+                        r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                        r.transform.localScale = Vector3.one * (size * 1.25f * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                        r.sprite = UiSprites.Ring; r.color = readyColor;
+                        Tappables.Add(new Tappable { position = pos, cap = true, capPoint = o.point });
+                    }
+                }
             }
             RefillRingThick = thickRefill;
             for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
