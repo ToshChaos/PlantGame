@@ -22,7 +22,7 @@ namespace PlantGame.UI
         Font _font;
         WorldGenerator _showcase;
         GameObject _home, _levels, _options, _generate, _seed;
-        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle;
+        Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle, _qualityToggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
         Text[] _cardInfo;
@@ -62,6 +62,7 @@ namespace PlantGame.UI
             _autoWaterToggle.text = "Auto water: " + (GameSettings.AutoWater ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
+            _qualityToggle.text = "Quality: " + QualityTier.Names[GameSettings.Quality];
         }
 
         void Update()
@@ -226,9 +227,10 @@ namespace PlantGame.UI
             _glowToggle = Button(o, "Postprocessing", new Vector2(330, tc ? 160 : -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
             _fpsToggle = Button(o, "FPS", new Vector2(330, tc ? 50 : -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
             if (tc) _fps30Toggle = Button(o, "Fps30", new Vector2(330, -60), () => { GameSettings.Fps30 = !GameSettings.Fps30; RefreshOptions(); }, 420, 34);
-            Button(o, "Reset all best times", new Vector2(0, tc ? -170 : -270), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
-            _resetNote = Label(o, "", 26, new Vector2(0, tc ? -230 : -330), 800, Palette.TextOrange);
-            Button(o, "Back", new Vector2(0, tc ? -300 : -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
+            _qualityToggle = Button(o, "Quality", new Vector2(-330, -170), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptions(); }, 420, 34);   // T63: Low / Medium / High
+            Button(o, "Reset all best times", new Vector2(0, -280), () => { SaveService.ResetTimes(); RefreshLevels(); _resetNote.text = "All best times cleared."; }, 520, 30);
+            _resetNote = Label(o, "", 26, new Vector2(0, -335), 800, Palette.TextOrange);
+            Button(o, "Back", new Vector2(0, -400), () => { _resetNote.text = ""; Show(_home); }, 300, 34);
             RefreshOptions();
 
             // select level: the curated levels with best times, plus the test scenes

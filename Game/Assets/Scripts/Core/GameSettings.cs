@@ -6,7 +6,7 @@ namespace PlantGame.Core
     /// <summary>Player options persisted in PlayerPrefs (the pause menu toggles them). Minimal until the T19/T26 options screen.</summary>
     public static class GameSettings
     {
-        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps", AutoWaterKey = "plantgame.autowater", Fps30Key = "plantgame.fps30";
+        const string HintsKey = "plantgame.hints", MusicKey = "plantgame.music", FollowKey = "plantgame.camfollow", SoundKey = "plantgame.sound", MusicVolKey = "plantgame.musicvol", SoundVolKey = "plantgame.soundvol", BloomKey = "plantgame.bloom", FpsKey = "plantgame.fps", AutoWaterKey = "plantgame.autowater", Fps30Key = "plantgame.fps30", QualityKey = "plantgame.quality";
         public static event Action Changed;
 
         /// <summary>On-screen key hints ("Q pick up / drop, E use, F water"). On by default.</summary>
@@ -94,11 +94,21 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(FpsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
-        /// <summary>Battery saver: caps the frame rate at 30 (phones; the default is 60). Applied by MobileLifecycle.</summary>
+        /// <summary>Battery saver: caps the frame rate at 30 (phones; QualityTier's first-run preset turns it on for all but 12 GB devices). Applied by MobileLifecycle.</summary>
         public static bool Fps30
         {
             get => PlayerPrefs.GetInt(Fps30Key, 0) == 1;
             set { PlayerPrefs.SetInt(Fps30Key, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
+        }
+
+        /// <summary>
+        /// Graphics quality: 0 Low, 1 Medium, 2 High. Phones default to Medium (tuned for a 2022 phone at 1080 x 2340), desktop to High.
+        /// Applied by QualityTier: the quality level (render scale, HDR, shadows) at once, the world pass (batching, decoration) on the next level.
+        /// </summary>
+        public static int Quality
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt(QualityKey, Application.isMobilePlatform ? 1 : 2), 0, 2);
+            set { PlayerPrefs.SetInt(QualityKey, Mathf.Clamp(value, 0, 2)); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
         /// <summary>Auto water: the can refills at water within reach and waters thirsty sprouts within reach without F. Off by default.</summary>

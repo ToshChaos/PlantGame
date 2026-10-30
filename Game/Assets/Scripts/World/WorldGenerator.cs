@@ -245,7 +245,11 @@ namespace PlantGame.World
             var cs = new List<Vector3>(); var rs = new List<float>(); var ls = new List<Vector2Int>();
             for (int i = 0; i < isles.Count; i++) { cs.Add(isles[i].centre); rs.Add(isles[i].shape.MaxEdge); if (isles[i].parent >= 0) ls.Add(new Vector2Int(isles[i].parent, i)); }
             Scenery.KeepDebrisClear(cs, rs, ls);
+            if (QualityTier.Lite && Application.isPlaying) StartCoroutine(OptimizeNextFrame());
         }
+
+        /// <summary>T63: the world pass waits a frame so the goal, seed trees and plants have set up the objects they move.</summary>
+        System.Collections.IEnumerator OptimizeNextFrame() { yield return null; WorldOptimizer.Apply(transform); }
 
         /// <summary>Title screen only: a small island that is not connected to the chain, off to the right of the central island.</summary>
         void AddShowcaseIslet(List<Isle> isles, Material top, Material stone)
@@ -341,6 +345,7 @@ namespace PlantGame.World
             }
             var rnd = new System.Random(index * 31 + 5);
             Mesh fruitMesh = SeedMeshes.For(item.id) != null ? item.worldPrefab.GetComponentInChildren<MeshFilter>()?.sharedMesh : null;   // T33: the seed's own shape
+            if (fruitMesh != null && QualityTier.Lite) fruitMesh = SeedMeshes.Lite(item.id);   // T63: decoration only, the pickups keep the full mesh
             if (tree && item.id == "vine_seed")
             {
                 // bamboo grove: bright green culms around a solid core, bamboo pieces hanging in the middle

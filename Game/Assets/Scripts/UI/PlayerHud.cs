@@ -39,7 +39,7 @@ namespace PlantGame.UI
         bool _ended;
         Image[] _drops;
         GameObject _pausePanel;
-        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _autoWaterLabelP, _pauseTitle;
+        Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _autoWaterLabelP, _pauseTitle, _qualityLabelP;
         static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
         GoalFlag _goal;
         GameObject _copyCode;
@@ -147,6 +147,7 @@ namespace PlantGame.UI
             Paused = pause;
             if (_pc != null) _pc.PauseOrbit = pause;
             _pausePanel.SetActive(pause);
+            if (_objective != null) _objective.enabled = !pause;   // T63: on 1080-high phones the goal line sits under the "Paused" title
             if (pause) RefreshOptionLabels();
             if (pause && _pauseHint != null)
             {
@@ -427,6 +428,7 @@ namespace PlantGame.UI
             _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-530, 30)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _qualityLabelP = Button("Quality", pr, V(new Vector2(380, 45), new Vector2(-235, -130)), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptionLabels(); }, two ? 400 : 360, 30);   // T63; touch: the Music volume slot (hidden there)
             _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-560, 0), new Vector2(-235, -130)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
@@ -514,6 +516,7 @@ namespace PlantGame.UI
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_autoWaterLabelP != null) _autoWaterLabelP.text = OnOff("Auto water", GameSettings.AutoWater);
             if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Bloom);
+            if (_qualityLabelP != null) _qualityLabelP.text = "Quality: " + QualityTier.Names[GameSettings.Quality];
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             foreach (var t in new[] { _musicLabelP }) if (t != null) t.text = OnOff("Music", GameSettings.Music);
             foreach (var t in new[] { _soundLabelP }) if (t != null) t.text = OnOff("Sound", GameSettings.Sound);

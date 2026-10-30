@@ -27,7 +27,7 @@ namespace PlantGame.Editor
             foreach (var p in paths)   // pass 1: embedded materials so textures can be read
             {
                 var imp = (ModelImporter)AssetImporter.GetAtPath(p);
-                imp.globalScale = 1f; imp.useFileScale = true; imp.bakeAxisConversion = false; imp.isReadable = false;
+                imp.globalScale = 1f; imp.useFileScale = true; imp.bakeAxisConversion = false; imp.isReadable = QualityTierBuilder.Batchable(p);   // T63: scatter props are static-batched at runtime
                 imp.meshCompression = ModelImporterMeshCompression.Off; imp.importCameras = false; imp.importLights = false;
                 imp.importAnimation = false; imp.animationType = ModelImporterAnimationType.None; imp.addCollider = false;
                 imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; imp.materialLocation = ModelImporterMaterialLocation.InPrefab;

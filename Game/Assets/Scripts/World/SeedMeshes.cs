@@ -24,6 +24,19 @@ namespace PlantGame.World
             }
         }
 
+        static float _detail = 1f;
+        static readonly Dictionary<string, Mesh> LiteCache = new Dictionary<string, Mesh>();
+
+        /// <summary>T63: the same seed shape at about a third of the triangles, for the decorative seeds on seed patches on the Medium / Low tiers.</summary>
+        public static Mesh Lite(string itemId)
+        {
+            if (LiteCache.TryGetValue(itemId, out var m) && m != null) return m;
+            _detail = 0.4f;
+            try { m = For(itemId); } finally { _detail = 1f; }
+            if (m != null) m.name += "_Lite";
+            return LiteCache[itemId] = m;
+        }
+
         /// <summary>Radius of the solid collider that lets the pickup rest on the ground.</summary>
         public static float RestRadius(string itemId)
         {
@@ -219,6 +232,7 @@ namespace PlantGame.World
             /// <summary>UV-sphere stretched to `radii` (local axes), rotated and moved.</summary>
             public void Ellipsoid(Vector3 centre, Quaternion rot, Vector3 radii, int around, int rings)
             {
+                if (_detail < 1f) { around = Mathf.Max(6, Mathf.RoundToInt(around * _detail)); rings = Mathf.Max(4, Mathf.RoundToInt(rings * _detail)); }
                 int start = _v.Count;
                 for (int r = 0; r <= rings; r++)
                 {

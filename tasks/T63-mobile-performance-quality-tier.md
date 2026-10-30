@@ -1,6 +1,6 @@
 # T63 — Mobile quality tier and performance budget
 
-**Owner:** A6 Tech Artist · **Status:** TODO (post-MVP, see `TASKS.md`) · **Depends on:** T23 (build baseline)
+**Owner:** A6 Tech Artist · **Status:** DOING (tiers, first-run preset, world pass done; device profiling open) · **Depends on:** T23 (build baseline)
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -15,4 +15,8 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - Level 1 and the largest curated island hold the target frame rate on the reference device; a quality option (Low / Medium / High) exists in Options.
 
 ## Handoff
-_(fill in when done)_
+- Reference target: a 2022 phone at 1080 x 2340 (Galaxy S22 / A53, Pixel 6a class); phones get Medium, 30 fps, postprocessing off on first run.
+- Code: `Core/QualityTier.cs` (tiers, first-run preset), `GameSettings.Quality`, `World/WorldOptimizer.cs` (merge, shadows, spheres, thinning), `SeedMeshes.Lite`.
+- Editor: PlantGame > Configure Quality Tiers (`QualityTierBuilder`: quality levels, `PlantGame_URP_Medium` / `_Low`, read/write scatter models); PlantGame > Tools > Game View: Phone 2340x1080.
+- Test in 30 s: set Options > Quality to Medium, start Level 1, Console shows "World pass (Medium): N renderers merged"; the Stats window drops from ~1,600 to ~640 draw calls.
+- Numbers and what is still open: `docs/task-log.md` (T63, 2026-10-30). Open: real-device profile, ASTC texture overrides, Atmosphere backdrop thinning if needed.

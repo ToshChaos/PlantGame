@@ -75,7 +75,7 @@ namespace PlantGame.Editor
         static void Configure(ModelImporter m)
         {
             m.globalScale = 1f; m.useFileScale = true; m.bakeAxisConversion = false;
-            m.meshCompression = ModelImporterMeshCompression.Off; m.isReadable = false;
+            m.meshCompression = ModelImporterMeshCompression.Off; m.isReadable = QualityTierBuilder.Batchable(m.assetPath);   // T63: runtime static batching
             m.importBlendShapes = false; m.importCameras = false; m.importLights = false; m.importAnimation = false;
             m.animationType = ModelImporterAnimationType.None; m.addCollider = false;
         }
