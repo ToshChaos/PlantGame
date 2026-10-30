@@ -227,7 +227,7 @@ namespace PlantGame.World
             void Moss(Vector2 p, float r)
             {
                 if (!Dry(p)) return;
-                var b = moss[rnd.Next(2)]; int segs = 9; float ph = (float)(rnd.NextDouble() * 6.283);
+                var b = moss[rnd.Next(2)]; int segs = 20; float ph = (float)(rnd.NextDouble() * 6.283);   // 20 segments: a round, soft outline (was 9 corners)
                 var o = new Vector3(p.x, 0, p.y);
                 for (int s = 0; s < segs; s++)
                 {
@@ -450,7 +450,7 @@ namespace PlantGame.World
             void Patch(Batch b, Vector2 p, float rx, float rz, float lift)
             {
                 if (!Dry(p)) return;
-                int segs = 10; float ph = (float)(rnd.NextDouble() * 6.283), yaw = (float)(rnd.NextDouble() * 3.1416);
+                int segs = 20; float ph = (float)(rnd.NextDouble() * 6.283), yaw = (float)(rnd.NextDouble() * 3.1416);
                 Vector3 P(float a, float f) { var o = new Vector2(Mathf.Cos(a) * rx * f, Mathf.Sin(a) * rz * f); var q = p + new Vector2(o.x * Mathf.Cos(yaw) - o.y * Mathf.Sin(yaw), o.x * Mathf.Sin(yaw) + o.y * Mathf.Cos(yaw)); return new Vector3(q.x, Y(q) + lift, q.y); }
                 for (int s = 0; s < segs; s++)
                 {

@@ -206,6 +206,7 @@ namespace PlantGame.World
             var oldWind = GetComponent<WindGusts>(); if (oldWind != null) Destroy(oldWind);
             if (windy) gameObject.AddComponent<WindGusts>();   // T50
 
+            Isle extra = showcaseWater && isles.Count >= 3 ? PlanShowcaseIslet(isles, terrain) : null;   // before the scenery: its bridge lane stays clear
             // scenery goes in last so it keeps clear of everything else
             for (int i = 0; i < isles.Count; i++)
             {
@@ -245,7 +246,7 @@ namespace PlantGame.World
                     isles[0].keep.Add(new Vector4(hp.x, hp.z, 3f, 3f));
                 }
             }
-            if (showcaseWater && isles.Count >= 3) AddShowcaseIslet(isles, terrain, stone);
+            if (extra != null) AddShowcaseIslet(isles, extra, terrain, stone);
             foreach (var I in isles) FinishTerrain(I);
             // tilted islands lean as a whole (soils, trees and spawn included); the layout already measured the gaps from the tilted surface
             foreach (var I in isles)
@@ -260,21 +261,41 @@ namespace PlantGame.World
         /// <summary>T63: the world pass waits a frame so the goal, seed trees and plants have set up the objects they move.</summary>
         System.Collections.IEnumerator OptimizeNextFrame() { yield return null; WorldOptimizer.Apply(transform); }
 
-        /// <summary>Title screen only: a small island that is not connected to the chain, off to the right of the central island.</summary>
-        void AddShowcaseIslet(List<Isle> isles, Material top, Material stone)
+        /// <summary>
+        /// Title screen only: a small island off to the side of the central one, a vine-bridge gap away (the title grows the bridge with the
+        /// rest). Places it and the bridge soil on the central island; the island itself is built after the scenery (AddShowcaseIslet).
+        /// </summary>
+        Isle PlanShowcaseIslet(List<Isle> isles, Material terrain)
         {
-            var c1 = isles[1].centre; var chain = isles[2].centre - isles[0].centre; chain.y = 0;
+            var hub = isles[1]; var chain = isles[2].centre - isles[0].centre; chain.y = 0;
             if (chain.sqrMagnitude < 0.01f) chain = Vector3.right;
             var right = Vector3.Cross(Vector3.up, chain.normalized);
-            float r = 5f, dist = isles[1].shape.MaxEdge + r + 9.5f;
-            Vector3 Pos(float sign) => c1 + right * sign * dist + Vector3.up * 1.5f;
-            bool Clear(Vector3 p) { foreach (var o in isles) { var d = p - o.centre; d.y = 0; if (d.magnitude < o.shape.MaxEdge + r + 8.5f) return false; } return true; }
-            var pos = Pos(1f); if (!Clear(pos)) pos = Pos(-1f);
-            var X = new Isle { centre = pos, radius = r, shape = IslandShape.Random(new System.Random(Seed * 3 + 11), r, 0.3f), parent = -1, entryAngle = 0f };
-            X.go = RoundIsland.Create("Island_Extra", pos, X.shape, 5.5f, top, stone, 91, 3f);
+            const float r = 5f, rise = 1.5f, reach = LevelLayout.BridgeAnchorInset + 9.5f;   // a 9.5 m gap between the rims
+            var shape = IslandShape.Random(new System.Random(Seed * 3 + 11), r, 0.3f);
+            Isle At(float sign, out float h, out float soilFwd)
+            {
+                var d = right * sign; h = Mathf.Atan2(d.z, d.x) * Mathf.Rad2Deg;
+                soilFwd = hub.Edge(h) - LevelLayout.BridgeAnchorInset;
+                return new Isle { centre = hub.centre + d * (soilFwd + reach + shape.EdgeDeg(h + 180f)) + Vector3.up * rise, radius = r, shape = shape, parent = 1, entryAngle = h + 180f };
+            }
+            bool Clear(Isle x) { foreach (var o in isles) { var d = x.centre - o.centre; d.y = 0; if (d.magnitude < o.shape.MaxEdge + r + 8.5f) return false; } return true; }
+            var X = At(1f, out float head, out float fwd);
+            if (!Clear(X)) X = At(-1f, out head, out fwd);
+            hub.outHeadings.Add(head);
+            var dir = LevelLayout.Dir(head);
+            MakeSoil(hub, new LinkPlan { from = 1, kind = PlantKind.Bridge, heading = head, seedItem = SeedItems.For(PlantKind.Bridge) }, -1, hub.centre + dir * fwd, dir, "Soil_Bridge_extra", terrain, reach, rise);
+            return X;
+        }
+
+        /// <summary>Builds and dresses the title's extra island planned by PlanShowcaseIslet (its bridge lands on the side facing the centre).</summary>
+        void AddShowcaseIslet(List<Isle> isles, Isle X, Material top, Material stone)
+        {
+            X.go = RoundIsland.Create("Island_Extra", X.centre, X.shape, 5.5f, top, stone, 91, 3f);
             X.go.transform.SetParent(transform, true);
             var bob = X.go.AddComponent<FloatBob>(); bob.amplitude = 0.22f; bob.period = 33f; bob.phaseOffset = 4.1f; bob.spin = 0f; bob.physics = true;
-            Scenery.Decorate(X.go.transform, X.centre, X.radius, a => X.shape.Edge(a), 77, false, false, X.keep, new List<Scenery.Lane>(), 0.9f, 0, false);   // no boulders: it is small
+            var e = LevelLayout.Dir(X.entryAngle);
+            var lane = new Scenery.Lane { origin = new Vector2(X.centre.x, X.centre.z), dir = new Vector2(e.x, e.z), length = X.Edge(X.entryAngle), halfWidth = 2.6f };   // the bridge's landing stays clear
+            Scenery.Decorate(X.go.transform, X.centre, X.radius, a => X.shape.Edge(a), 77, false, false, X.keep, new List<Scenery.Lane> { lane }, 0.9f, 0, false);   // no boulders: it is small
             isles.Add(X);
         }
 

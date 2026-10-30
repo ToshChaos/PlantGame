@@ -497,7 +497,7 @@ namespace PlantGame.World
                 var g = MeshPrim(gem ? "FloatGem" : "FloatChip", gem ? DebrisMeshes.Crystal(rnd.Next(4)) : DebrisMeshes.Tile(rnd.Next(8)), root.transform, pos,
                                  gem ? new Vector3(sz, sz * 1.5f, sz) : new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), gem ? crystal : marble, false);
                 var b = g.AddComponent<FloatBob>(); b.amplitude = 0.25f + sz; b.period = 3f + (float)rnd.NextDouble() * 4f; b.wobble = 10f; b.spin = (rnd.NextDouble() < 0.5 ? -1f : 1f) * (10f + (float)rnd.NextDouble() * 30f);
-                if (gem) g.AddComponent<GemSparkle>().baseLevel = 0.6f;
+                if (gem) g.AddComponent<GemSparkle>().baseLevel = 0.3f;
                 g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
@@ -518,7 +518,7 @@ namespace PlantGame.World
         /// <summary>The glowing crystal material; snow levels use a golden-yellow copy (the cyan crystals read as green against the snow).</summary>
         static Material CrystalMat()
         {
-            var m = Kit.Mat("M_Crystal");
+            var m = Kit.Mat("M_CrystalShard") ?? Kit.Mat("M_Crystal");
             if (Theme != LevelTheme.Snow || m == null) return m;
             if (_yellowCrystal != null) return _yellowCrystal;
             _yellowCrystal = new Material(m) { name = "M_Crystal_Snow", hideFlags = HideFlags.DontSave };
@@ -1409,6 +1409,7 @@ namespace PlantGame.World
                 }
                 foreach (var c in isl.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);   // islets stay out of reach
                 var b = isl.AddComponent<FloatBob>(); b.amplitude = 0.8f; b.period = 8f + i; b.spin = 1.5f;
+                if (i % 2 == 1) Object.DestroyImmediate(isl);   // half as many islets (made and dropped, so the random stream and the rest stay put)
             }
         }
     }

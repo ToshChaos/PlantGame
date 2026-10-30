@@ -65,6 +65,8 @@ namespace PlantGame.UI
             _qualityToggle.text = "Quality: " + QualityTier.Names[GameSettings.Quality];
         }
 
+        void OnDestroy() { GoldenButterflies.Focus = null; }   // the game's butterflies follow the camera again
+
         void Update()
         {
             // Esc / Android Back: back out of a sub-panel to the home screen
@@ -80,7 +82,9 @@ namespace PlantGame.UI
                 Vector3 At(Vector3[] pts, int i) => pts[((i % n) + n) % n];
                 Vector3 Spline(Vector3[] pts) => CatmullRom(At(pts, k - 1), At(pts, k), At(pts, k + 1), At(pts, k + 2), t);
                 cam.transform.position = Spline(_tour);
-                cam.transform.LookAt(Spline(_tourLook));
+                var look = Spline(_tourLook);
+                cam.transform.LookAt(look);
+                GoldenButterflies.Focus = look;   // the butterflies gather where the camera looks
             }
             else cam.transform.rotation = Quaternion.Euler(8f, Time.unscaledTime * 3f, 0f);
         }
@@ -108,6 +112,23 @@ namespace PlantGame.UI
                 pos.Add(mid + new Vector3(Mathf.Cos(w), 0f, Mathf.Sin(w)) * (reach + 16f) + Vector3.up * 20f); look.Add(mid);   // wide over the group
             }
             _tour = pos.ToArray(); _tourLook = look.ToArray();
+
+            // floating crystals and rocks the camera would fly through are hidden (bounds within 3 m of the sampled path; they bob a little)
+            var debris = GameObject.Find("FloatingRocks");
+            if (debris != null)
+            {
+                var path = new System.Collections.Generic.List<Vector3>(); int n = _tour.Length;
+                for (int k = 0; k < n; k++)
+                    for (int q = 0; q < 24; q++)
+                        path.Add(CatmullRom(_tour[(k + n - 1) % n], _tour[k], _tour[(k + 1) % n], _tour[(k + 2) % n], q / 24f));
+                foreach (Transform piece in debris.transform)
+                {
+                    var rs = piece.GetComponentsInChildren<Renderer>(); if (rs.Length == 0) continue;
+                    var b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
+                    b.Expand(6f);
+                    foreach (var pt in path) if (b.Contains(pt)) { piece.gameObject.SetActive(false); break; }
+                }
+            }
 
             var hub = isles[isles.Count >= 3 ? 1 : 0];
             var group = GameObject.Find("Islets"); if (group == null || group.transform.childCount == 0) return;

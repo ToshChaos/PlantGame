@@ -51,6 +51,12 @@ namespace PlantGame.Editor
                 SetLit(m, Palette.GlowCyan, 0.8f);
                 SetEmission(m, Palette.GlowCyan * 1.0f);   // 1.0 keeps the hex readable without tonemapping; T16 raises it once bloom/tonemapping exist
             });
+            Make("M_CrystalShard", lit, m =>   // gems and floating crystals: deep teal glass, see-through, a faint glow (GemSparkle adds the glints)
+            {
+                SetLit(m, new Color(0.06f, 0.27f, 0.33f, 0.74f), 0.94f);
+                SetEmission(m, Palette.GlowCyan * 0.1f);
+                RuntimeMats.SetTransparent(m);
+            });
             // Player outfit roles (PlayerRole); Unity picks the material by mesh-name suffix through a PlayerOutfit asset.
             Make("M_PlayerSkin", lit, m => SetLit(m, Palette.PlayerSkin, 0.3f));
             Make("M_PlayerHair", lit, m => SetLit(m, Palette.PlayerHair, 0.35f));

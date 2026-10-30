@@ -14,6 +14,8 @@ namespace PlantGame.World
         [ColorUsage(false, true)] public Color glow = new Color(4f, 2.3f, 0.6f);
 
         class Fly { public Transform root, wingL, wingR; public Vector3 pos, target; public float seed, speed, size; }
+        /// <summary>When set (the title's fly-by sets it to what the camera looks at), the butterflies gather there instead of round the camera.</summary>
+        public static Vector3? Focus;
         Fly[] _flies;
         Transform _anchor;
         Mesh _quad;
@@ -70,7 +72,7 @@ namespace PlantGame.World
         {
             if (_flies == null) return;
             if (_anchor == null) { var c = Camera.main; if (c == null) return; _anchor = c.transform; }
-            Vector3 centre = _anchor.position;
+            Vector3 centre = Focus ?? _anchor.position;
             float t = Time.time;
             foreach (var f in _flies)
             {

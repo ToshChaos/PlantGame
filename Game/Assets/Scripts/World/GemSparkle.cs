@@ -6,7 +6,7 @@ namespace PlantGame.World
     public class GemSparkle : MonoBehaviour
     {
         public Color glow = new Color(0.49f, 0.95f, 0.9f);
-        public float baseLevel = 0.5f, flare = 2.2f;
+        public float baseLevel = 0.22f, flare = 1.4f;   // the shards are dark glass: a soft glow, a clear glint
         Renderer[] _rs; MaterialPropertyBlock _mb; float _phase, _period;
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
         void Start()

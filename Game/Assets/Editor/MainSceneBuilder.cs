@@ -106,6 +106,7 @@ namespace PlantGame.Editor
                 var isl = RoundIsland.Create("Far" + i, new Vector3(Mathf.Cos(a) * r, -10f + (float)rnd.NextDouble() * 70f, Mathf.Sin(a) * r), 14f + (float)rnd.NextDouble() * 18f, 12f, terrain, stone, 100 + i, 6f);
                 foreach (var c in isl.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
                 isl.transform.SetParent(far.transform, true);
+                if (i % 2 == 1) Object.DestroyImmediate(isl);   // half as many far islands (made and dropped, so the random stream and the rest stay put)
             }
 
             Scenery.SkyDebris(root.transform);
@@ -318,9 +319,13 @@ namespace PlantGame.Editor
             {
                 var grp = GameObject.Find(g); if (grp == null) continue;
                 bool debris = g != "CloudCards";   // rocks and islets sit below the showcase islands, not among them
-                foreach (Transform c in grp.transform)
+                var pieces = new List<Transform>(); foreach (Transform c in grp.transform) pieces.Add(c);
+                foreach (var c in pieces)
                 {
-                    float y = debris ? -22f - Mathf.Repeat(c.localPosition.x * 0.37f + c.localPosition.z * 0.53f, 1f) * 28f : c.localPosition.y;
+                    float h = Mathf.Repeat(c.localPosition.x * 0.37f + c.localPosition.z * 0.53f, 1f);
+                    bool crystal = c.name.StartsWith("Crystals");
+                    if (crystal && h > 0.5f) { Object.DestroyImmediate(c.gameObject); continue; }   // none up at the third island's height (distracting)
+                    float y = !debris ? c.localPosition.y : crystal ? 2f + h * 16f : -22f - h * 28f;   // crystals float low among the islands (the world generator keeps them clear), rocks below
                     c.localPosition = new Vector3(c.localPosition.x * 0.45f, y, c.localPosition.z * 0.45f);
                 }
             }

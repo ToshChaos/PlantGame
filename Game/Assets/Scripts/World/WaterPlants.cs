@@ -11,6 +11,46 @@ namespace PlantGame.World
         static Color H(string hex) => Overgrowth.H(hex);
 
         /// <param name="discs">x, y(unused), z, radius of the pond lobes in world space.</param>
+        /// <summary>A round lily pad of radius `r` with a thin slit to the centre at angle `slit`: 24 segments, the rim curling up a touch, soft normals; both sides drawn.</summary>
+        static void LilyPad(Overgrowth.Batch b, Vector3 c, float r, float slit)
+        {
+            const int N = 24; const float gap = 0.16f;   // radians either side of the slit
+            int o = b.v.Count;
+            b.v.Add(c + Vector3.up * 0.012f); b.n.Add(Vector3.up);
+            for (int s = 0; s <= N; s++)
+            {
+                float a = slit + gap + s * (6.283f - 2f * gap) / N; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+                b.v.Add(c + d * (r * 0.62f) + Vector3.up * 0.006f); b.n.Add(Vector3.up);
+                b.v.Add(c + d * r + Vector3.up * 0.022f); b.n.Add((Vector3.up - d * 0.35f).normalized);   // the rim turns up
+            }
+            for (int s = 0; s < N; s++)
+            {
+                int i0 = o + 1 + s * 2, i1 = i0 + 2;   // inner ring at i, rim at i + 1
+                b.t.AddRange(new[] { o, i1, i0, o, i0, i1 });
+                b.t.AddRange(new[] { i0, i1, i0 + 1, i0 + 1, i1, i1 + 1, i0, i0 + 1, i1, i0 + 1, i1 + 1, i1 });
+            }
+        }
+
+        /// <summary>A cattail head: a rounded capsule from `a` to `b` (radius `r`), 8 sides, normals out from its axis.</summary>
+        static void Cattail(Overgrowth.Batch h, Vector3 a, Vector3 b, float r)
+        {
+            const int S = 8; float[] t = { 0f, 0.08f, 0.3f, 0.7f, 0.92f, 1f }; float[] k = { 0f, 0.7f, 1f, 1f, 0.7f, 0f };
+            var ax = (b - a).normalized; var u = Vector3.Cross(ax, Mathf.Abs(ax.y) > 0.9f ? Vector3.right : Vector3.up).normalized; var w = Vector3.Cross(ax, u);
+            int o = h.v.Count;
+            for (int i = 0; i < t.Length; i++)
+                for (int s = 0; s < S; s++)
+                {
+                    float ang = s * 6.283f / S; var d = u * Mathf.Cos(ang) + w * Mathf.Sin(ang);
+                    h.v.Add(Vector3.Lerp(a, b, t[i]) + d * r * k[i]); h.n.Add((d + ax * (i < 2 ? -0.6f : i > 3 ? 0.6f : 0f)).normalized);
+                }
+            for (int i = 0; i < t.Length - 1; i++)
+                for (int s = 0; s < S; s++)
+                {
+                    int p0 = o + i * S + s, p1 = o + i * S + (s + 1) % S, p2 = p0 + S, p3 = p1 + S;
+                    h.t.AddRange(new[] { p0, p2, p1, p1, p2, p3, p0, p1, p2, p1, p3, p2 });   // both windings: the material draws one side
+                }
+        }
+
         public static void Build(Isle I, IslandTerrain terrain, List<Vector4> discs, bool murky, int seed, LevelTheme theme)
         {
             if (discs.Count == 0 || theme == LevelTheme.Snow) return;
@@ -31,13 +71,8 @@ namespace PlantGame.World
             for (int k = 0; k < nPads; k++)
             {
                 var p = InPond(0.35f); float r = 0.22f + (float)rnd.NextDouble() * 0.2f, yaw = (float)(rnd.NextDouble() * 6.283);
-                var b = pads[rnd.Next(2)]; var c = new Vector3(p.x, surface, p.y); int segs = 10, notch = rnd.Next(segs);
-                for (int sIdx = 0; sIdx < segs; sIdx++)
-                {
-                    if (sIdx == notch) continue;   // the wedge cut out of a lily pad
-                    float a0 = yaw + sIdx * 6.283f / segs, a1 = yaw + (sIdx + 1) * 6.283f / segs;
-                    b.Tri(c + Vector3.up * 0.02f, c + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * r, c + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * r, Vector3.up);
-                }
+                var b = pads[rnd.Next(2)]; var c = new Vector3(p.x, surface, p.y); int notch = rnd.Next(10);
+                LilyPad(b, c, r, yaw + notch * 0.628f);
                 if (!murky && rnd.NextDouble() < 0.3)   // a flower on some pads
                 {
                     for (int q = 0; q < 6; q++)
@@ -59,7 +94,7 @@ namespace PlantGame.World
                 }
 
             // reeds and cattails along the shore: tufts of tall thin blades, some topped with a brown head
-            int nReeds = Mathf.RoundToInt(discs.Count * (murky ? 7 : 4) + 6);
+            int nReeds = Mathf.RoundToInt(discs.Count * (murky ? 7f : 2.5f) + 4);   // clear ponds: a lighter fringe (was 4 per lobe + 6)
             for (int k = 0; k < nReeds; k++)
             {
                 var d = discs[rnd.Next(discs.Count)]; float a = (float)(rnd.NextDouble() * 6.283);
@@ -76,10 +111,7 @@ namespace PlantGame.World
                     stems.Tri(mid - side * 0.8f, mid + side * 0.8f, tip, Vector3.up);
                     if (rnd.NextDouble() < 0.4)   // cattail head
                     {
-                        var up = (tip - mid).normalized; var hb = Vector3.Lerp(mid, tip, 0.55f); var he = Vector3.Lerp(mid, tip, 0.8f); float hw = 0.045f;
-                        var s2 = side.normalized * hw; var s3 = Vector3.Cross(up, s2.normalized) * hw;
-                        heads.Quad(hb - s2, hb + s2, he + s2, he - s2, s3.normalized);
-                        heads.Quad(hb - s3, hb + s3, he + s3, he - s3, s2.normalized);
+                        Cattail(heads, Vector3.Lerp(mid, tip, 0.55f), Vector3.Lerp(mid, tip, 0.8f), 0.042f);
                     }
                 }
             }
