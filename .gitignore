@@ -26,3 +26,4 @@ Game/.utmp/
 
 # private publishing notes (keystore locations, accounts, listing drafts)
 docs/private/
+Game/Assets/Resources/PerformanceTestRun*.json*
