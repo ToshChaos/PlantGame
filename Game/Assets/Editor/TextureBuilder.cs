@@ -75,6 +75,22 @@ namespace PlantGame.Editor
                 c = new Color(lum * 0.96f, lum, lum * 1.04f, 1f);
                 return (c, h);
             });
+            // loose stones: soft painted grey, broad warm / cool mottling, faint strata, a few hairline cracks and pits, the odd lichen patch
+            Make("T_Stone", 512, (u, v, c, h) =>
+            {
+                float broad = Fbm(u, v, 3, 3, 91), mid = Fbm(u, v, 9, 3, 92), fine = Fbm(u, v, 48, 2, 93), warm = Fbm(u, v, 4, 2, 97);
+                float strata = 0.5f + 0.5f * Mathf.Sin((v * 7f + broad * 1.6f) * Mathf.PI * 2f);
+                Worley(u, v, 5, 94, out float f1, out float f2);
+                float crack = (1f - Mathf.Clamp01((f2 - f1) * 40f)) * Mathf.Clamp01((Fbm(u, v, 4, 2, 95) - 0.45f) * 4f);   // only in places
+                float pit = Hash(Mathf.FloorToInt(u * 512), Mathf.FloorToInt(v * 512), 98) > 0.993f ? 1f : 0f;
+                float lichen = Mathf.Clamp01((Fbm(u, v, 6, 3, 96) - 0.64f) * 5f);
+                float lum = (0.42f + 0.42f * broad + 0.18f * mid + 0.12f * fine - 0.08f * strata) * (1f - 0.45f * crack) - 0.18f * pit;
+                lum = Mathf.Clamp01(lum);
+                var tint = Color.Lerp(new Color(0.93f, 0.97f, 1.03f), new Color(1.05f, 1.0f, 0.92f), warm);
+                c = Color.Lerp(tint * lum, new Color(0.74f, 0.8f, 0.5f) * (lum * 1.08f), lichen * 0.65f); c.a = 1f;
+                h = broad * 0.3f + mid * 0.3f + fine * 0.25f - crack * 0.5f - pit * 0.3f + strata * 0.06f;
+                return (c, h);
+            });
             // bark: vertical streaks (noise stretched along v), knotty dark fissures
             Make("T_Bark", N, (u, v, c, h) =>
             {

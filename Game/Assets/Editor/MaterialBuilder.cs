@@ -36,6 +36,7 @@ namespace PlantGame.Editor
             var sheet = Shader.Find("PlantGame/WaterfallSheet");
             if (sheet != null) Make("M_WaterfallSheet", sheet, m => { });
             Make("M_Stone", lit, m => { SetLit(m, Palette.MistBlue, 0.15f); SetTextured(m, "T_Rock", 1f); });
+            Make("M_RockLoose", lit, m => { SetLit(m, new Color(0.7f, 0.68f, 0.64f), 0.14f); SetTextured(m, "T_Stone", 0.8f); });   // loose stones and floating rocks (OrganicProps.RockMat)
             Make("M_Foliage", lit, m => { SetLit(m, Palette.Moss, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
             Make("M_FoliageLight", lit, m => { SetLit(m, Palette.LeafGreen, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
             Make("M_GoldFruit", lit, m =>   // the goal's golden fruit

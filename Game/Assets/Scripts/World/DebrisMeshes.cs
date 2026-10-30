@@ -34,6 +34,7 @@ namespace PlantGame.World
             var nr = m.normals;
             for (int i = 0; i < nr.Length; i++) if (faceW[i] > 0f) nr[i] = Vector3.Slerp(nr[i], faceN[i], Mathf.Clamp01(faceW[i] / 0.04f)).normalized;
             m.normals = nr;
+            BoxUV(m, 0.7f);
             Rocks[key] = m; return m;
         }
 
@@ -53,6 +54,35 @@ namespace PlantGame.World
             }
             m = Smooth("Tile" + seed, v, f);
             Tiles[seed] = m; return m;
+        }
+
+        /// <summary>
+        /// Box mapping: each triangle takes its UVs from the axis its face points along most (vertices are split where the axis changes, the
+        /// smooth normals are kept), so no face shows the long streaks of a single planar projection.
+        /// </summary>
+        static void BoxUV(Mesh m, float scale)
+        {
+            var v = m.vertices; var n = m.normals; var t = m.triangles;
+            var nv = new List<Vector3>(); var nn = new List<Vector3>(); var uv = new List<Vector2>(); var nt = new int[t.Length];
+            var map = new Dictionary<long, int>();
+            for (int i = 0; i < t.Length; i += 3)
+            {
+                var f = Vector3.Cross(v[t[i + 1]] - v[t[i]], v[t[i + 2]] - v[t[i]]);
+                float ax = Mathf.Abs(f.x), ay = Mathf.Abs(f.y), az = Mathf.Abs(f.z);
+                int axis = ax >= ay && ax >= az ? 0 : ay >= az ? 1 : 2;
+                for (int k = 0; k < 3; k++)
+                {
+                    int src = t[i + k]; long key = (long)src * 3 + axis;
+                    if (!map.TryGetValue(key, out int idx))
+                    {
+                        var p = v[src]; idx = nv.Count; map[key] = idx;
+                        nv.Add(p); nn.Add(n[src]);
+                        uv.Add((axis == 0 ? new Vector2(p.z, p.y) : axis == 1 ? new Vector2(p.x, p.z) : new Vector2(p.x, p.y)) * scale + new Vector2(axis * 0.37f, axis * 0.61f));
+                    }
+                    nt[i + k] = idx;
+                }
+            }
+            m.Clear(); m.SetVertices(nv); m.SetNormals(nn); m.SetUVs(0, uv); m.SetTriangles(nt, 0); m.RecalculateBounds();
         }
 
         /// <summary>Unit icosphere subdivided `detail` times (shared vertices).</summary>

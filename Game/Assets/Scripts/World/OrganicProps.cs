@@ -218,20 +218,8 @@ namespace PlantGame.World
 
         static Color H(string hex) => Overgrowth.H(hex);
 
-        static Material _rock;
-        /// <summary>Loose stones: M_Stone without its flagstone-cell texture (it read as tiled wall and hid the chiselled faces), a warm grey (M_Stone's mist blue read as snowballs).</summary>
-        public static Material RockMat()
-        {
-            if (_rock != null) return _rock;
-            var src = Kit.Mat("M_Stone"); if (src == null) return null;
-            _rock = new Material(src) { name = "M_Rock", hideFlags = HideFlags.None };
-            if (_rock.HasProperty("_BaseMap")) _rock.SetTexture("_BaseMap", null);
-            if (_rock.HasProperty("_MainTex")) _rock.SetTexture("_MainTex", null);
-            if (_rock.HasProperty("_BumpMap")) { _rock.SetTexture("_BumpMap", null); _rock.DisableKeyword("_NORMALMAP"); }
-            if (_rock.HasProperty("_Smoothness")) _rock.SetFloat("_Smoothness", 0.12f);
-            var c = H("A8A49B"); if (_rock.HasProperty("_BaseColor")) _rock.SetColor("_BaseColor", c); if (_rock.HasProperty("_Color")) _rock.SetColor("_Color", c);
-            return _rock;
-        }
+        /// <summary>Loose stones and floating rocks: M_RockLoose (painted stone texture, MaterialBuilder); M_Stone's flagstone cells read as tiled wall.</summary>
+        public static Material RockMat() => Kit.Mat("M_RockLoose") ?? Kit.Mat("M_Stone");
 
         static Color StemColour(LevelTheme t) => t == LevelTheme.Snow ? H("9FB7A8") : t == LevelTheme.Autumn ? H("7E8A3A") : t == LevelTheme.Rain ? H("3F7A45") : H("4E9E48");
         static Color GrassColour(LevelTheme t, int h) => t == LevelTheme.Snow ? H("C8D6D0") : t == LevelTheme.Autumn ? (h % 2 == 0 ? H("A9A04A") : H("C2903E")) : t == LevelTheme.Rain ? H("4C8443") : (h % 3 == 0 ? H("7CC25A") : H("5EAE4C"));
