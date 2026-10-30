@@ -401,7 +401,7 @@ namespace PlantGame.UI
         {
             if (TouchInput.Active) { width *= 1.15f; height = Mathf.Max(height * 1.25f, 64f); }   // phones: bigger touch targets
             var rt = Rect(label + "Button", parent, new Vector2(width, height), pos);
-            var im = rt.gameObject.AddComponent<Image>(); im.sprite = Rounded(); im.type = Image.Type.Sliced; im.color = new Color(0.17f, 0.37f, 0.56f, 0.95f);
+            var im = rt.gameObject.AddComponent<Image>(); im.sprite = Pill(); im.type = Image.Type.Sliced; im.color = new Color(0.17f, 0.37f, 0.56f, 0.95f);
             var b = rt.gameObject.AddComponent<UnityEngine.UI.Button>(); b.targetGraphic = im; b.onClick.AddListener(click);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
             var t = Label(rt, label, fontSize, Vector2.zero, width, Palette.TextOrange);
@@ -444,10 +444,14 @@ namespace PlantGame.UI
             return f;
         }
 
-        Sprite Rounded()
+        Sprite Rounded() => _square != null ? _square : _square = RoundedSprite(32, 8);
+
+        /// <summary>Buttons: strongly rounded corners (a pill on the usual 70 px height).</summary>
+        Sprite Pill() => _pill != null ? _pill : _pill = RoundedSprite(64, 28);
+        Sprite _pill;
+
+        static Sprite RoundedSprite(int S, int R)
         {
-            if (_square != null) return _square;
-            const int S = 32, R = 8;
             var tex = new Texture2D(S, S, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
             for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
             {
@@ -455,9 +459,9 @@ namespace PlantGame.UI
                 tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(R + 0.5f - Mathf.Sqrt(dx * dx + dy * dy))));
             }
             tex.Apply();
-            _square = Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(R, R, R, R));
-            _square.hideFlags = HideFlags.HideAndDontSave;
-            return _square;
+            var sp = Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(R, R, R, R));
+            sp.hideFlags = HideFlags.HideAndDontSave;
+            return sp;
         }
 
         void Quit()
