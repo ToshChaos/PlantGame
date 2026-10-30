@@ -1358,7 +1358,7 @@ namespace PlantGame.World
                     g = new GameObject("Pillar" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     Prim("Drum", PrimitiveType.Cylinder, g.transform, pos, new Vector3(s * 0.55f, s * (0.7f + (float)rnd.NextDouble()), s * 0.55f), _marble, false);
                     var chunk = MeshPrim("Chunk", DebrisMeshes.Tile(i), g.transform, pos + new Vector3(s * 0.9f, -s * 0.5f, s * 0.2f), new Vector3(s * 0.5f, s * 0.35f, s * 0.45f), _marble, false);
-                    chunk.transform.rotation = Random.rotationUniform;
+                    chunk.transform.rotation = Quaternion.Euler(i * 37 % 360, i * 91 % 360, i * 53 % 360);   // fixed per piece (was UnityEngine.Random: every rebuild differed)
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 40f - 20f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 40f - 20f);
                 }
                 else if (kind < 0.84)       // flat carved slab

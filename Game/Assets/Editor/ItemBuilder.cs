@@ -68,7 +68,7 @@ namespace PlantGame.Editor
                 mat.SetTexture("_BumpMap", tex != null ? TextureBuilder.Normal(tex) : null);
                 if (tex != null) { mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP"); } else mat.DisableKeyword("_NORMALMAP");
                 mat.SetFloat("_Smoothness", 0.45f);
-                mat.EnableKeyword("_EMISSION"); mat.SetColor("_EmissionColor", color * 0.22f);
+                MaterialBuilder.SetEmission(mat, color * 0.22f);
             }
             else
             {
@@ -76,8 +76,9 @@ namespace PlantGame.Editor
                 mat.SetFloat("_Smoothness", 0.6f);
                 mat.SetTexture("_BaseMap", TextureBuilder.Albedo("T_Seed"));
                 mat.SetTexture("_BumpMap", TextureBuilder.Normal("T_Seed")); mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP");
-                mat.EnableKeyword("_EMISSION"); mat.SetColor("_EmissionColor", color * 0.3f);   // low enough that the ridges read
+                MaterialBuilder.SetEmission(mat, color * 0.3f);   // low enough that the ridges read
             }
+            MaterialBuilder.ValidateUrp(mat);
             EditorUtility.SetDirty(mat);
             return mat;
         }
@@ -89,7 +90,8 @@ namespace PlantGame.Editor
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null) { mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "M_GlideLeaf" }; AssetDatabase.CreateAsset(mat, path); }
             mat.SetColor("_BaseColor", Palette.LeafYellow); mat.SetFloat("_Smoothness", 0.3f); mat.SetFloat("_Metallic", 0f);
-            mat.EnableKeyword("_EMISSION"); mat.SetColor("_EmissionColor", Palette.LeafYellow * 0.22f);
+            MaterialBuilder.SetEmission(mat, Palette.LeafYellow * 0.22f);
+            MaterialBuilder.ValidateUrp(mat);
             EditorUtility.SetDirty(mat);
             return mat;
         }

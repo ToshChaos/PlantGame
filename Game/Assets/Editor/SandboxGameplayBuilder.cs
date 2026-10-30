@@ -98,7 +98,8 @@ namespace PlantGame.Editor
             {
                 wmat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "M_Water" };
                 wmat.SetColor("_BaseColor", Palette.SkyBlue); wmat.SetFloat("_Smoothness", 0.95f);
-                wmat.EnableKeyword("_EMISSION"); wmat.SetColor("_EmissionColor", Palette.SkyBlue * 0.35f);
+                MaterialBuilder.SetEmission(wmat, Palette.SkyBlue * 0.35f);
+                MaterialBuilder.ValidateUrp(wmat);
                 AssetDatabase.CreateAsset(wmat, MaterialBuilder.Dir + "/M_Water.mat");
             }
             puddle.GetComponent<Renderer>().sharedMaterial = wmat;

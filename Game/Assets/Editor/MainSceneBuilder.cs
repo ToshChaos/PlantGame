@@ -70,7 +70,8 @@ namespace PlantGame.Editor
             {
                 m.SetColor("_BaseColor", new Color(0.05f, 0.1f, 0.22f, 0.38f));
                 m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", 0f); m.SetFloat("_SrcBlend", 5f); m.SetFloat("_DstBlend", 10f); m.SetFloat("_ZWrite", 0f);
-                m.SetOverrideTag("RenderType", "Transparent"); m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = 2990;
+                m.SetOverrideTag("RenderType", "Transparent"); m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                m.SetFloat("_QueueOffset", -10f); m.renderQueue = 2990;   // URP recomputes the queue as 3000 + _QueueOffset on validation: set both so it stays 2990
             });
             float[] abyssY = { -80f, -100f, -125f, -155f, -190f };
             for (int i = 0; i < abyssY.Length; i++) Quad("Abyss" + i, follow.transform, new Vector3(0, abyssY[i], 0), 1800f, abyss, true);
@@ -121,7 +122,12 @@ namespace PlantGame.Editor
             atm.volume = vol;
 
             StoreGenerated(root, AtmosphereDir + "/Atmosphere_Generated.asset");
-            PrefabUtility.SaveAsPrefabAsset(root, AtmospherePrefab);
+            // saving gives every object a new random file ID, so an unchanged rebuild would rewrite the whole prefab: save only when it differs
+            atm.buildHash = Fingerprint(root);
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(AtmospherePrefab);
+            var old = existing != null ? existing.GetComponent<Atmosphere>() : null;
+            if (old == null || old.buildHash != atm.buildHash) PrefabUtility.SaveAsPrefabAsset(root, AtmospherePrefab);
+            else Debug.Log("[PlantGame] Atmosphere prefab unchanged, not re-saved.");
             Object.DestroyImmediate(root);
             AssetDatabase.SaveAssets();
             Debug.Log("[PlantGame] Atmosphere prefab built: " + AtmospherePrefab);
@@ -129,29 +135,71 @@ namespace PlantGame.Editor
 
         /// <summary>
         /// Code-made meshes and materials (sky rocks, tiles, islets, far islands) are not assets, and SaveAsPrefabAsset keeps only empty
-        /// references to them: store every one under `root` in a single asset first (rebuilt from scratch each time).
+        /// references to them: store every one under `root` in a single asset first. Pieces already in the asset from the last build (same
+        /// type and name) are overwritten in place, so they keep their file IDs and a rebuild does not rewrite the asset and the prefab in git.
         /// </summary>
         static void StoreGenerated(GameObject root, string path)
         {
-            AssetDatabase.DeleteAsset(path);
-            Object main = null; var seen = new HashSet<Object>(); int n = 0;
-            void Store(Object o)
-            {
-                if (o == null || AssetDatabase.Contains(o) || !seen.Add(o)) return;
-                o.hideFlags = HideFlags.None;
-                if (main == null) { AssetDatabase.CreateAsset(o, path); main = o; } else AssetDatabase.AddObjectToAsset(o, main);
-                n++;
-            }
-            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true)) { mf.sharedMesh = Scenery.SourceOf(mf.sharedMesh); Store(mf.sharedMesh); }
-            foreach (var mc in root.GetComponentsInChildren<MeshCollider>(true)) Store(mc.sharedMesh);
-            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
-                foreach (var m in r.sharedMaterials)
+            var main = AssetDatabase.LoadMainAssetAtPath(path);
+            var pool = new Dictionary<string, Queue<Object>>();
+            if (main != null)
+                foreach (var o in AssetDatabase.LoadAllAssetsAtPath(path))
                 {
-                    Store(m);
-                    if (m != null) foreach (var id in m.GetTexturePropertyNameIDs()) Store(m.GetTexture(id));
+                    if (o == null) continue;
+                    string k = o.GetType().Name + "/" + o.name;
+                    if (!pool.TryGetValue(k, out var q)) pool[k] = q = new Queue<Object>();
+                    q.Enqueue(o);
                 }
+            var map = new Dictionary<Object, Object>(); int added = 0, reused = 0;
+            T Store<T>(T o) where T : Object
+            {
+                if (o == null || AssetDatabase.Contains(o)) return o;
+                if (map.TryGetValue(o, out var done)) return (T)done;
+                Object s;
+                if (pool.TryGetValue(o.GetType().Name + "/" + o.name, out var q) && q.Count > 0) { s = q.Dequeue(); EditorUtility.CopySerialized(o, s); reused++; }
+                else { s = o; s.hideFlags = HideFlags.None; if (main == null) { AssetDatabase.CreateAsset(s, path); main = s; } else AssetDatabase.AddObjectToAsset(s, main); added++; }
+                map[o] = s; return (T)s;
+            }
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true)) mf.sharedMesh = Store(Scenery.SourceOf(mf.sharedMesh));
+            foreach (var mc in root.GetComponentsInChildren<MeshCollider>(true)) mc.sharedMesh = Store(mc.sharedMesh);
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    var m = mats[i]; if (m == null) continue;
+                    if (!AssetDatabase.Contains(m) && !map.ContainsKey(m))   // its generated textures first, so the stored material points at stored textures
+                        foreach (var id in m.GetTexturePropertyNameIDs()) { var t = m.GetTexture(id); if (t != null) m.SetTexture(id, Store(t)); }
+                    mats[i] = Store(m);
+                }
+                r.sharedMaterials = mats;
+            }
+            int removed = 0;   // pieces the new build no longer uses (the main object stays: it anchors the asset)
+            foreach (var q in pool.Values) foreach (var o in q) if (o != main) { AssetDatabase.RemoveObjectFromAsset(o); Object.DestroyImmediate(o, true); removed++; }
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PlantGame] {n} generated meshes / materials stored in {path}");
+            Debug.Log($"[PlantGame] Generated meshes / materials in {path}: {reused} updated, {added} added, {removed} removed");
+        }
+
+        /// <summary>
+        /// A hash of everything a built hierarchy saves: paths, active flags and each component's serialized fields. Run after StoreGenerated,
+        /// so mesh / material references are assets (written as stable file IDs); scene references come out as instance ID 0.
+        /// </summary>
+        static string Fingerprint(GameObject root)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                sb.Append(AnimationUtility.CalculateTransformPath(t, root.transform)).Append('|').Append(t.gameObject.activeSelf).Append('\n');
+                foreach (var c in t.GetComponents<Component>())
+                {
+                    if (c == null) continue;
+                    var a = c as Atmosphere; string keep = a != null ? a.buildHash : null;
+                    if (a != null) a.buildHash = "";   // the hash itself is not part of what it describes
+                    sb.Append(c.GetType().Name).Append(EditorJsonUtility.ToJson(c)).Append('\n');
+                    if (a != null) a.buildHash = keep;
+                }
+            }
+            return Hash128.Compute(sb.ToString()).ToString();
         }
 
         static GameObject Quad(string name, Transform parent, Vector3 pos, float size, Material m, bool flat)
@@ -192,6 +240,7 @@ namespace PlantGame.Editor
             if (sh == null) { Debug.LogError("[PlantGame] Shader not found: " + shader); return null; }
             if (m == null) { m = new Material(sh) { name = name }; AssetDatabase.CreateAsset(m, path); } else m.shader = sh;
             setup(m);
+            MaterialBuilder.ValidateUrp(m);
             EditorUtility.SetDirty(m);
             return m;
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -147,7 +148,31 @@ namespace PlantGame.Editor
             }
             else mat.shader = shader;
             setup(mat);
+            if (!name.StartsWith("M_Keep_")) ValidateUrp(mat);   // keepers hold raw keyword sets on purpose (URP would strip them)
             EditorUtility.SetDirty(mat);
+        }
+
+        static MethodInfo _urpUpdate; static object _urpCreated;
+        /// <summary>
+        /// Runs URP's own validation on a built material (what its importer does to a new material: surface, blend, queue, keywords), so the
+        /// saved state is the one URP keeps and a rebuild or a later reimport does not flip values back and forth. No-op on custom shaders.
+        /// URP's entry point is internal, hence the reflection.
+        /// </summary>
+        public static void ValidateUrp(Material m)
+        {
+            if (m == null || m.shader == null || !m.shader.name.StartsWith("Universal Render Pipeline/")) return;
+            if (_urpUpdate == null)
+            {
+                var t = Type.GetType("Unity.Rendering.Universal.ShaderUtils, Unity.RenderPipelines.Universal.Editor");
+                if (t == null) return;
+                foreach (var mi in t.GetMethods(BindingFlags.Static | BindingFlags.NonPublic))
+                {
+                    var ps = mi.GetParameters();
+                    if (mi.Name == "UpdateMaterial" && ps.Length == 3 && ps[2].ParameterType.IsEnum) { _urpUpdate = mi; _urpCreated = Enum.Parse(ps[1].ParameterType, "CreatedNewMaterial"); }
+                }
+                if (_urpUpdate == null) { Debug.LogWarning("[PlantGame] URP ShaderUtils.UpdateMaterial not found: materials are saved unvalidated."); return; }
+            }
+            _urpUpdate.Invoke(null, new[] { m, _urpCreated, _urpUpdate.GetParameters()[2].DefaultValue });
         }
 
         static void SetLit(Material m, Color c, float smoothness)
@@ -165,7 +190,11 @@ namespace PlantGame.Editor
             m.EnableKeyword("_NORMALMAP");
         }
 
-        static void SetEmission(Material m, Color hdr)
+        /// <summary>
+        /// Emission that survives URP's material validation: it switches _EMISSION off again whenever the GI flags still say
+        /// "emissive is black" (the default of a new material), so enabling the keyword alone flips back on the next reimport.
+        /// </summary>
+        public static void SetEmission(Material m, Color hdr)
         {
             m.EnableKeyword("_EMISSION");
             m.SetColor("_EmissionColor", hdr);

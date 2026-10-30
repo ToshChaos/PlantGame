@@ -12,6 +12,7 @@ namespace PlantGame.World
     [DefaultExecutionOrder(-40)]
     public class Atmosphere : MonoBehaviour
     {
+        [HideInInspector] public string buildHash;   // editor only: fingerprint of the built prefab, so an unchanged rebuild is not saved again
         public Material skybox;
         public Color ambientSky = new Color(0.62f, 0.80f, 0.96f), ambientEquator = new Color(0.957f, 0.973f, 0.965f), ambientGround = new Color(0.373f, 0.62f, 0.55f);
         public Color fogColor = new Color(0.60f, 0.78f, 0.94f);
