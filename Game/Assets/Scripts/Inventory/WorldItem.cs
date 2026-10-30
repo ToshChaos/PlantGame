@@ -12,7 +12,7 @@ namespace PlantGame.Inventory
         public ItemDefinition item;
 
         public InteractAction Action => InteractAction.Pickup;
-        public string Prompt => "Pick up " + (item != null ? item.displayName : name);
+        public string Prompt => "Pick up " + (item != null ? item.displayName : name) + (item != null && item.id == "parachute_leaf" ? " - try gliding" : "");   // the HUD only shows prompts with Hints on
 
         public bool CanInteract(GameObject actor)
         {

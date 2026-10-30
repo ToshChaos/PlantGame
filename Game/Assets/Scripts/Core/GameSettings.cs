@@ -12,7 +12,7 @@ namespace PlantGame.Core
         /// <summary>On-screen key hints ("Q pick up / drop, E use, F water"). On by default.</summary>
         public static bool Hints
         {
-            get => PlayerPrefs.GetInt(HintsKey, 1) == 1;
+            get => PlayerPrefs.GetInt(HintsKey, 0) == 1;
             set { PlayerPrefs.SetInt(HintsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
@@ -114,7 +114,7 @@ namespace PlantGame.Core
         /// <summary>Auto water: the can refills at water within reach and waters thirsty sprouts within reach without F. Off by default.</summary>
         public static bool AutoWater
         {
-            get => PlayerPrefs.GetInt(AutoWaterKey, 0) == 1;
+            get => PlayerPrefs.GetInt(AutoWaterKey, 1) == 1;
             set { PlayerPrefs.SetInt(AutoWaterKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
