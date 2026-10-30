@@ -159,14 +159,14 @@ namespace PlantGame.UI
             for (int i = 0; i < _cardInfo.Length && i < levels.Length; i++)
             {
                 var l = levels[i];
-                _cardInfo[i].text = l.islandCount + " islands" + "  -  " + (l.theme == LevelTheme.Sunny ? "Sunny" : l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn") + (l.wind ? "  -  Windy" : "") + "\nGoal: " + GoalName(l.goal) + "\n" +
-                    BestLines(l.id);
+                string world = l.theme == LevelTheme.Sunny ? "Sunny" : l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn";
+                _cardInfo[i].text = l.islandCount + " islands\nGoal: " + GoalName(l.goal) + "\nWorld: " + world + (l.wind ? ", windy" : "") + "\n" + BestLines(l.id);
             }
             RefreshRandom();
         }
 
         /// <summary>The best time of a level, or -- when it was not finished yet.</summary>
-        string BestLines(string key) { var b = SaveService.BestTime(key); return "Best  " + (b.HasValue ? Fmt(b.Value) : "--"); }
+        string BestLines(string key) { var b = SaveService.BestTime(key); return "Best time: " + (b.HasValue ? Fmt(b.Value) : "--"); }
 
         static string GoalName(GoalKind g) => g == GoalKind.Fruit ? "golden fruit" : g == GoalKind.Gate ? "gate" : g == GoalKind.Fire ? "campfire" : "flag";
 
@@ -248,7 +248,7 @@ namespace PlantGame.UI
                 var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
                 Label(card, l.title, two ? (tc ? 24 : 21) : 23, new Vector2(0, h / 2 - (tc ? 55 : 35)), 290, Palette.TextOrange);
                 _cardInfo[i] = Label(card, "", two ? (tc ? 19 : 16) : 19, new Vector2(0, two ? 8 : 12), 280, Color.white);
-                _cardInfo[i].alignment = TextAnchor.MiddleCenter;
+                _cardInfo[i].alignment = TextAnchor.MiddleCenter; _cardInfo[i].lineSpacing = 1.6f;
                 ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(280, h - (tc ? 140 : 100));
                 Button(card, "Play", new Vector2(0, -h / 2 + (tc ? 52 : 32)), () => StartRun(l.ToConfig()), 150, 24, 50f);
             }
