@@ -15,7 +15,7 @@ Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 - Level 1 and the largest curated island hold the target frame rate on the reference device; a quality option (Low / Medium / High) exists in Options.
 
 ## Handoff
-- Reference target: a 2022 phone at 1080 x 2340 (Galaxy S22 / A53, Pixel 6a class); phones get Medium, 30 fps, postprocessing off on first run.
+- Reference target: a 2022 phone at 1080 x 2340 (Galaxy S22 / A53, Pixel 6a class), also Galaxy S23 and Honor 90 Pro (2700 x 1224); phones get Medium (810 rendered lines), 30 fps, postprocessing off on first run.
 - Code: `Core/QualityTier.cs` (tiers, first-run preset), `GameSettings.Quality`, `World/WorldOptimizer.cs` (merge, shadows, spheres, thinning), `SeedMeshes.Lite`.
 - Editor: PlantGame > Configure Quality Tiers (`QualityTierBuilder`: quality levels, `PlantGame_URP_Medium` / `_Low`, read/write scatter models); PlantGame > Tools > Game View: Phone 2340x1080.
 - Test in 30 s: set Options > Quality to Medium, start Level 1, Console shows "World pass (Medium): N renderers merged"; the Stats window drops from ~1,600 to ~640 draw calls.

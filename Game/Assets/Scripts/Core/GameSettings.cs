@@ -94,7 +94,7 @@ namespace PlantGame.Core
             set { PlayerPrefs.SetInt(FpsKey, value ? 1 : 0); PlayerPrefs.Save(); Changed?.Invoke(); }
         }
 
-        /// <summary>Battery saver: caps the frame rate at 30 (phones; QualityTier's first-run preset turns it on for all but 12 GB devices). Applied by MobileLifecycle.</summary>
+        /// <summary>Battery saver: caps the frame rate at 30 (QualityTier's first-run preset turns it on for every phone). Applied by MobileLifecycle.</summary>
         public static bool Fps30
         {
             get => PlayerPrefs.GetInt(Fps30Key, 0) == 1;
