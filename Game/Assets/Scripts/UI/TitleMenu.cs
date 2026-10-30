@@ -187,14 +187,16 @@ namespace PlantGame.UI
             _home = Screen("Home", root, 0.15f);
             if (UiLayout.WideTouch)
             {
-                // phones are wide and short: the title on the left, the six buttons in two columns on the right (tablets use the centred stack below)
-                Title(_home.transform, new Vector2(-470, 150), 0.8f);
-                Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-470, 20), 880, Color.white);
-                Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
-                Button(_home.transform, "Select level", new Vector2(150, 20), () => Show(_levels), 380);
-                Button(_home.transform, "Generate level", new Vector2(740, 140), () => Show(_generate), 380);
-                Button(_home.transform, "Options", new Vector2(740, 20), () => Show(_options), 380);
-                Danger(Button(_home.transform, "Quit", new Vector2(150, -100), Quit, 380));
+                // phones are wide and short: one column of five buttons on the right over a translucent panel, the logo low on the left so the islands stay visible
+                float cw = 1080f * Screen.width / Mathf.Max(1, Screen.height), colX = cw / 2f - 300f;
+                Panel(_home.transform, new Vector2(colX, 0), new Vector2(520, 720), new Color(0.04f, 0.09f, 0.14f, 0.6f));
+                Title(_home.transform, new Vector2(-280, -230), 0.8f);
+                Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-280, -340), 880, Color.white);
+                Accent(Button(_home.transform, "Play", new Vector2(colX, 260), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
+                Button(_home.transform, "Select level", new Vector2(colX, 130), () => Show(_levels), 380);
+                Button(_home.transform, "Generate level", new Vector2(colX, 0), () => Show(_generate), 380);
+                Button(_home.transform, "Options", new Vector2(colX, -130), () => Show(_options), 380);
+                Danger(Button(_home.transform, "Quit", new Vector2(colX, -260), Quit, 380));
             }
             else
             {
