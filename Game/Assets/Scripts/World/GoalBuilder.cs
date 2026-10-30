@@ -13,6 +13,9 @@ namespace PlantGame.World
     {
         static Material _portalMat, _emberMat;
 
+        /// <summary>World radius of a goal's base (pedestal, plinth, arch steps, benches): WorldGenerator flattens the terrain under it.</summary>
+        public static float Footprint(GoalKind kind) => kind == GoalKind.Fruit ? 1.95f : kind == GoalKind.Gate ? 3.2f : kind == GoalKind.Fire ? 3.0f : 1.45f;
+
         public static GoalFlag Build(Transform parent, Vector3 pos, GoalKind kind, LevelTheme theme)
         {
             var stone = Kit.Mat("M_Stone"); var marble = Kit.Mat("M_Marble") ?? stone; var gold = Kit.Mat("M_RuneGold"); var crystal = Kit.Mat("M_Crystal");
@@ -76,15 +79,16 @@ namespace PlantGame.World
                 case GoalKind.Fruit:
                 {
                     // rune pedestal: stepped marble disc, a gold rim and rune studs
-                    foreach (var pt in new[] { (0.001f, 0f), (2.4f, 0f), (2.4f, 0.14f), (2.2f, 0.18f), (2.2f, 0.34f), (1.95f, 0.38f), (1.95f, 0.55f), (1.7f, 0.6f), (0.001f, 0.6f) }) Tier(pt.Item1, pt.Item2);
+                    const float pb = 0.8f;   // pedestal size (the bush on top sinks into it, so it needs no shift)
+                    foreach (var pt in new[] { (0.001f, 0f), (2.4f, 0f), (2.4f, 0.14f), (2.2f, 0.18f), (2.2f, 0.34f), (1.95f, 0.38f), (1.95f, 0.55f), (1.7f, 0.6f), (0.001f, 0.6f) }) Tier(pt.Item1 * pb, pt.Item2 * pb);
                     Obj("Pedestal", ShapeMeshes.Lathe(steppedBase, 40, true, null, "Pedestal"), marble, Vector3.zero, Vector3.zero, Vector3.one);
-                    Col(PrimitiveType.Cylinder, "PedestalCol", new Vector3(0, 0.3f, 0), new Vector3(4.8f, 0.3f, 4.8f));
-                    Obj("PedestalRim", ShapeMeshes.Torus(2.22f, 0.05f, 48, 8), gold, new Vector3(0, 0.36f, 0), Vector3.zero, Vector3.one);
+                    Col(PrimitiveType.Cylinder, "PedestalCol", new Vector3(0, 0.3f * pb, 0), new Vector3(4.8f * pb, 0.3f * pb, 4.8f * pb));
+                    Obj("PedestalRim", ShapeMeshes.Torus(2.22f, 0.05f, 48, 8), gold, new Vector3(0, 0.36f * pb, 0), Vector3.zero, Vector3.one * pb);
                     var studMesh = ShapeMeshes.Ellipsoid(0.11f, 0.06f, 10, 6);
                     for (int i = 0; i < 12; i++)
                     {
                         float a = i * Mathf.PI * 2f / 12f;
-                        Obj("RuneStud", studMesh, gold, new Vector3(Mathf.Cos(a) * 2.08f, 0.4f, Mathf.Sin(a) * 2.08f), Vector3.zero, Vector3.one);
+                        Obj("RuneStud", studMesh, gold, new Vector3(Mathf.Cos(a) * 2.08f, 0.4f, Mathf.Sin(a) * 2.08f) * pb, Vector3.zero, Vector3.one * pb);
                     }
                     // the bush: heaped foliage blobs, leaf blades sticking out, blossoms and berries
                     Obj("Bush", ShapeMeshes.Ellipsoid(1.35f, 0.85f, 18, 12), leaf2, new Vector3(0, 1.0f, 0), Vector3.zero, Vector3.one);
@@ -231,20 +235,22 @@ namespace PlantGame.World
                 default:
                 {
                     // tall shrine flag: stepped marble base, brown wooden pole with gold fittings, crystal in a gold cage, big light purple pennant
-                    foreach (var pt in new[] { (0.001f, 0f), (2.9f, 0f), (2.9f, 0.18f), (2.6f, 0.23f), (2.6f, 0.4f), (2.15f, 0.45f), (2.15f, 0.6f), (1.75f, 0.7f), (0.6f, 0.85f), (0.001f, 0.88f) }) Tier(pt.Item1, pt.Item2);
+                    const float pb = 0.7f;   // the marble base is smaller than the rest of the shrine
+                    foreach (var pt in new[] { (0.001f, 0f), (2.9f, 0f), (2.9f, 0.18f), (2.6f, 0.23f), (2.6f, 0.4f), (2.15f, 0.45f), (2.15f, 0.6f), (1.75f, 0.7f), (0.6f, 0.85f), (0.001f, 0.88f) }) Tier(pt.Item1 * pb, pt.Item2 * pb);
                     Obj("Base", ShapeMeshes.Lathe(steppedBase, 44, true, null, "FlagBase"), marble, Vector3.zero, Vector3.zero, Vector3.one);
-                    Col(PrimitiveType.Cylinder, "BaseCol", new Vector3(0, 0.4f, 0), new Vector3(5.8f, 0.4f, 5.8f));
-                    Obj("BaseRim", ShapeMeshes.Torus(2.68f, 0.05f, 56, 8), gold, new Vector3(0, 0.38f, 0), Vector3.zero, Vector3.one);
+                    Col(PrimitiveType.Cylinder, "BaseCol", new Vector3(0, 0.4f * pb, 0), new Vector3(5.8f * pb, 0.4f * pb, 5.8f * pb));
+                    Obj("BaseRim", ShapeMeshes.Torus(2.68f, 0.05f, 56, 8), gold, new Vector3(0, 0.38f * pb, 0), Vector3.zero, Vector3.one * pb);
                     var flagStud = ShapeMeshes.Ellipsoid(0.12f, 0.065f, 10, 6);
                     for (int i = 0; i < 12; i++)
                     {
                         float a = i * Mathf.PI * 2f / 12f;
-                        Obj("RuneStud", flagStud, gold, new Vector3(Mathf.Cos(a) * 2.4f, 0.5f, Mathf.Sin(a) * 2.4f), Vector3.zero, Vector3.one);
+                        Obj("RuneStud", flagStud, gold, new Vector3(Mathf.Cos(a) * 2.4f, 0.5f, Mathf.Sin(a) * 2.4f) * pb, Vector3.zero, Vector3.one * pb);
                     }
+                    const float foot = 0.85f * pb;   // the pole stands on the base top
                     const float top = 8.4f;
-                    var pole = new List<Vector2> { new Vector2(0.001f, 0.85f), new Vector2(0.3f, 0.85f), new Vector2(0.26f, 1.1f), new Vector2(0.2f, 1.25f), new Vector2(0.19f, 3f), new Vector2(0.15f, top), new Vector2(0.001f, top) };
+                    var pole = new List<Vector2> { new Vector2(0.001f, foot), new Vector2(0.3f, foot), new Vector2(0.26f, foot + 0.25f), new Vector2(0.2f, foot + 0.4f), new Vector2(0.19f, 3f), new Vector2(0.15f, top), new Vector2(0.001f, top) };
                     Obj("Pole", ShapeMeshes.Lathe(pole, 18, false, (ang, p) => 1f + 0.04f * Mathf.Cos(ang * 5f), "Pole"), bark, Vector3.zero, Vector3.zero, Vector3.one);
-                    Obj("Collar", ShapeMeshes.Lathe(new List<Vector2> { new Vector2(0.16f, 0.9f), new Vector2(0.3f, 0.92f), new Vector2(0.24f, 1.25f), new Vector2(0.16f, 1.3f) }, 18, true), gold, Vector3.zero, Vector3.zero, Vector3.one);
+                    Obj("Collar", ShapeMeshes.Lathe(new List<Vector2> { new Vector2(0.16f, foot + 0.05f), new Vector2(0.3f, foot + 0.07f), new Vector2(0.24f, foot + 0.4f), new Vector2(0.16f, foot + 0.45f) }, 18, true), gold, Vector3.zero, Vector3.zero, Vector3.one);
                     var bead = ShapeMeshes.Torus(0.14f, 0.04f, 20, 6);
                     foreach (float by in new[] { 2.2f, 4.4f, 6.4f, 8.1f }) Obj("Bead", bead, gold, new Vector3(0, by, 0), Vector3.zero, Vector3.one);
                     Obj("OrbCrystal", ShapeMeshes.Lathe(ShapeMeshes.Blob(0.34f, 0.42f, 14), 20, false, null, "Orb"), crystal, new Vector3(0, top + 0.4f, 0), Vector3.zero, Vector3.one);
@@ -256,9 +262,9 @@ namespace PlantGame.World
                         float a = i * 1.1f, h = 1.5f + i * 0.3f; var o = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
                         Blade(root.transform, o * 0.13f + Vector3.up * h, o + Vector3.down * 0.3f, 0.36f + 0.12f * (i % 3), i % 2 == 0 ? leaf : leaf2);
                     }
-                    // the pennant starts low and rises to the top on use
+                    // the pennant (85 %) starts low, rises to the top on use and waves once raised (FlagWave)
                     var purple = FlagMat();
-                    var cloth = new GameObject("Cloth"); cloth.transform.SetParent(root.transform, false); cloth.transform.localPosition = new Vector3(0.12f, 1.7f, 0);
+                    var cloth = new GameObject("Cloth"); cloth.transform.SetParent(root.transform, false); cloth.transform.localPosition = new Vector3(0.12f, 1.7f, 0); cloth.transform.localScale = Vector3.one * 0.85f;
                     Obj("Pennant", ShapeMeshes.Banner(3.4f, 2.0f, 18, 10, 0.2f), purple, Vector3.zero, Vector3.zero, Vector3.one, cloth.transform);
                     Obj("Hem", ShapeMeshes.Tube(new List<Vector3> { new Vector3(0.02f, 2.0f, 0), new Vector3(1.7f, 2.0f, 0.1f), new Vector3(3.4f, 2.0f, 0.2f) }, q => 0.03f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, cloth.transform);
                     Obj("Hem2", ShapeMeshes.Tube(new List<Vector3> { new Vector3(0.02f, 0f, 0), new Vector3(1.7f, 0f, 0.1f), new Vector3(3.4f, 0f, 0.2f) }, q => 0.03f, 6), gold, Vector3.zero, Vector3.zero, Vector3.one, cloth.transform);
@@ -266,10 +272,13 @@ namespace PlantGame.World
                         ShapeMeshes.Obj("Emblem", LeafMesh.Build(1.2f, 0.5f, 0.02f, 0.01f, 10), white, cloth.transform, new Vector3(1.3f, 1.0f, 0.06f * side), new Vector3(0, 0, 22f), Vector3.one);
                     var tassel = ShapeMeshes.Ellipsoid(0.07f, 0.14f, 8, 6);
                     for (int i = 0; i < 4; i++) Obj("Tassel", tassel, gold, new Vector3(1.8f + 0.45f * i, -0.1f + 0.03f * i, 0.1f), Vector3.zero, Vector3.one, cloth.transform);
-                    goal.cloth = cloth.transform; goal.raiseHeight = 4.6f; goal.raiseSeconds = 2.6f;
-                    Tuft(Vector3.zero, 22, 2.8f, 0.55f);
-                    for (int i = 0; i < 6; i++) { float a = i * 1.1f + 0.5f; Blossom(new Vector3(Mathf.Cos(a) * 3.05f, 0.08f, Mathf.Sin(a) * 3.05f), i % 2 == 0 ? white : yellow); }
-                    trigger.center = new Vector3(0, 1.5f, 0); trigger.radius = 2.4f;
+                    goal.cloth = cloth.transform; goal.raiseHeight = 4.8f; goal.raiseSeconds = 2.6f;
+                    Tuft(Vector3.zero, 18, 2.8f * pb, 0.55f);
+                    for (int i = 0; i < 6; i++) { float a = i * 1.1f + 0.5f; Blossom(new Vector3(Mathf.Cos(a) * 3.05f * pb, 0.08f, Mathf.Sin(a) * 3.05f * pb), i % 2 == 0 ? white : yellow); }
+                    // the whole shrine at 70 %, its base edge just under the ground (WorldGenerator flattens a pad for it); the trigger keeps its world size
+                    const float flagScale = 0.7f;
+                    root.transform.localScale = Vector3.one * flagScale; root.transform.position += Vector3.down * 0.05f;
+                    trigger.center = new Vector3(0, 2.1f, 0); trigger.radius = 2.4f / flagScale;
                     break;
                 }
             }

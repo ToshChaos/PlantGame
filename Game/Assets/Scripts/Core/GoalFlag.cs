@@ -88,8 +88,18 @@ namespace PlantGame.Core
             StartCoroutine(Animate());
         }
 
+        /// <summary>Title island: the flag is already up and waving (nothing to use there).</summary>
+        public void ShowRaised()
+        {
+            if (kind != GoalKind.Flag || cloth == null || _used) return;
+            _used = true;
+            cloth.localPosition += Vector3.up * raiseHeight;
+            cloth.gameObject.AddComponent<FlagWave>();
+        }
+
         IEnumerator Animate()
         {
+            if (kind == GoalKind.Flag && cloth != null) cloth.gameObject.AddComponent<FlagWave>();   // it starts to wave as it rises
             Vector3 a = cloth != null ? cloth.localPosition : Vector3.zero, b = a + Vector3.up * raiseHeight;
             Vector3 la = doorLeft != null ? doorLeft.localPosition : Vector3.zero, ra = doorRight != null ? doorRight.localPosition : Vector3.zero;
             for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / raiseSeconds)

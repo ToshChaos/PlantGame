@@ -148,8 +148,17 @@ namespace PlantGame.World
                 {
                     // round trip: the goal waits on the start island, away from the spawn and the lanes
                     var gpos = plan.roundTrip ? Spot(I, rnd, 0.3f, 0.7f, 5f, heads, spawnPos, 9f) : I.centre;
-                    var goal = GoalBuilder.Build(I.go.transform, gpos, WorldTheme.ResolveGoal(config), Theme);
-                    if (summitSnow) { goal.transform.localScale *= 0.8f; goal.transform.position += Vector3.down * 0.35f; }   // windy summit: a smaller flag, its base sunk into the snow
+                    var gkind = WorldTheme.ResolveGoal(config);
+                    var gt = I.go.GetComponent<IslandTerrain>();
+                    if (gt != null)   // a flat pad at the mean ground height under the goal's base, so it neither floats on a slope nor sinks into a bump
+                    {
+                        float foot = GoalBuilder.Footprint(gkind), bed = gt.HeightAtWorld(gpos);
+                        for (int q = 0; q < 8; q++) bed += gt.HeightAtWorld(gpos + Quaternion.Euler(0f, q * 45f, 0f) * Vector3.forward * foot);
+                        gt.carves.Add(new Vector4(gpos.x, gpos.z, foot + 1f, bed / 9f));   // fully flat up to about 1 m inside the carve radius (shore wobble)
+                    }
+                    var goal = GoalBuilder.Build(I.go.transform, gpos, gkind, Theme);
+                    if (showcaseWater) goal.ShowRaised();   // the title island shows the flag already up and waving
+                    if (summitSnow) goal.transform.localScale *= 0.8f;   // windy summit: a smaller flag (GoalBuilder already sinks its base)
                     if (Theme == LevelTheme.Fog) { var bl = new GameObject("FogBeacon"); bl.transform.SetParent(goal.transform, false); bl.transform.localPosition = Vector3.up * 3f; var lt = bl.AddComponent<Light>(); lt.type = LightType.Point; lt.color = new Color(1f, 0.85f, 0.5f); lt.range = 26f; lt.intensity = 4f; }   // T50: a warm glow you can find in the mist
                     if (plan.roundTrip)
                     {
