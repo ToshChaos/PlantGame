@@ -295,7 +295,7 @@ namespace PlantGame.Core
             { p = "Thaw the frozen soil"; k = "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             { p = "Plant " + Inventory.SelectedItem.displayName; k = "Use"; }
-            else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil: thaw it with a Heat Seed (golden melon) before planting"; k = "Frozen"; }
+            else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
             else if (FindFrozenSource(n) != null)   // frozen pond: say so, and what melts it
             {
