@@ -272,18 +272,19 @@ namespace PlantGame.World
             var right = Vector3.Cross(Vector3.up, chain.normalized);
             const float r = 5f, rise = 1.5f, reach = LevelLayout.BridgeAnchorInset + 9.5f;   // a 9.5 m gap between the rims
             var shape = IslandShape.Random(new System.Random(Seed * 3 + 11), r, 0.3f);
-            Isle At(float sign, out float h, out float soilFwd)
+            Isle At(float sign, out float h, out float soilFwd, out float soilH)
             {
                 var d = right * sign; h = Mathf.Atan2(d.z, d.x) * Mathf.Rad2Deg;
                 soilFwd = hub.Edge(h) - LevelLayout.BridgeAnchorInset;
+                soilH = Vector2.Dot(hub.slope, new Vector2(d.x, d.z) * soilFwd);   // a tilted hub carries its soil higher or lower than its centre
                 return new Isle { centre = hub.centre + d * (soilFwd + reach + shape.EdgeDeg(h + 180f)) + Vector3.up * rise, radius = r, shape = shape, parent = 1, entryAngle = h + 180f };
             }
             bool Clear(Isle x) { foreach (var o in isles) { var d = x.centre - o.centre; d.y = 0; if (d.magnitude < o.shape.MaxEdge + r + 8.5f) return false; } return true; }
-            var X = At(1f, out float head, out float fwd);
-            if (!Clear(X)) X = At(-1f, out head, out fwd);
+            var X = At(1f, out float head, out float fwd, out float soilH);
+            if (!Clear(X)) X = At(-1f, out head, out fwd, out soilH);
             hub.outHeadings.Add(head);
             var dir = LevelLayout.Dir(head);
-            MakeSoil(hub, new LinkPlan { from = 1, kind = PlantKind.Bridge, heading = head, seedItem = SeedItems.For(PlantKind.Bridge) }, -1, hub.centre + dir * fwd, dir, "Soil_Bridge_extra", terrain, reach, rise);
+            MakeSoil(hub, new LinkPlan { from = 1, kind = PlantKind.Bridge, heading = head, seedItem = SeedItems.For(PlantKind.Bridge) }, -1, hub.centre + dir * fwd, dir, "Soil_Bridge_extra", terrain, reach, rise - soilH);   // the bridge rises from the soil to the island, not from the hub centre
             return X;
         }
 
