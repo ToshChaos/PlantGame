@@ -18,6 +18,7 @@ namespace PlantGame.Editor
         static void Create(string sceneName, bool main)
         {
             WorldKitBuilder.Build();
+            var before = BuildFingerprint.OfSavedScene(ProjectSetup.ScenePath(sceneName));   // unchanged rebuilds are not re-saved (new random file IDs)
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             ProjectSetup.ApplyLightingPreset();
             ProjectSetup.AddSun();
@@ -34,7 +35,7 @@ namespace PlantGame.Editor
             }
             MainSceneBuilder.AddAtmosphere();
             if (main) MainSceneBuilder.AddSystems();
-            EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath(sceneName));
+            BuildFingerprint.SaveIfChanged(scene, ProjectSetup.ScenePath(sceneName), before);
             ProjectSetup.RegisterScenes();
             Debug.Log($"[PlantGame] {sceneName} built (world is generated at runtime).");
         }

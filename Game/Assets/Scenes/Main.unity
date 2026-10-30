@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 692384838}
+  m_Sun: {fileID: 1670689332}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &7658140
+--- !u!1 &15295633
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,73 +127,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7658142}
-  - component: {fileID: 7658141}
-  m_Layer: 0
-  m_Name: World
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &7658141
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7658140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 455bad1e0c2b84758a40614592a4b82c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.World.WorldGenerator
-  useBootstrapConfig: 1
-  showcaseWater: 0
-  spawnPlayer: 1
-  sandboxConfig:
-    mode: 0
-    seed: 0
-    islandCount: 0
-    allowedKinds: 
-    timeLimit: 0
-    levelId: 
-    waterMode: 0
-    theme: 0
-    wind: 0
-    goal: 0
-    roundTrip: 0
-    spiral: 0
-    sideIslands: 0
-    sequence: 
---- !u!4 &7658142
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7658140}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &76472613
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 76472618}
-  - component: {fileID: 76472617}
-  - component: {fileID: 76472616}
-  - component: {fileID: 76472615}
-  - component: {fileID: 76472614}
+  - component: {fileID: 15295638}
+  - component: {fileID: 15295637}
+  - component: {fileID: 15295636}
+  - component: {fileID: 15295635}
+  - component: {fileID: 15295634}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -201,13 +139,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &76472614
+--- !u!114 &15295634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 76472613}
+  m_GameObject: {fileID: 15295633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ea5a946c954fd4dfd8ad3f999b4b162b, type: 3}
@@ -265,9 +203,6 @@ MonoBehaviour:
   - name: dry_click
     clips:
     - {fileID: 8300000, guid: 8e66b447fac5941e1a8220dcb4ec4c6c, type: 3}
-  - name: fail_sting
-    clips:
-    - {fileID: 8300000, guid: e15c762090d0e415a9e1a1deb40ef8af, type: 3}
   - name: footstep_bridge
     clips:
     - {fileID: 8300000, guid: 39bd8c30563ef4890898eef4bbf49674, type: 3}
@@ -331,9 +266,6 @@ MonoBehaviour:
   - name: select_slot
     clips:
     - {fileID: 8300000, guid: 580d3437d1354490ea682c87d0a5e6c7, type: 3}
-  - name: timer_tick
-    clips:
-    - {fileID: 8300000, guid: d0d6d37e4cf624e4791f463b2f185ca7, type: 3}
   - name: ui_click
     clips:
     - {fileID: 8300000, guid: 34d4690e94b4a42fbb657f75a63560bd, type: 3}
@@ -357,50 +289,50 @@ MonoBehaviour:
   voices: 12
   AmbienceBoost: 1
   AmbiencePitch: 1
---- !u!114 &76472615
+--- !u!114 &15295635
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 76472613}
+  m_GameObject: {fileID: 15295633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 99cdcf9094f61418f84af5e92e105de4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Audio.SfxBinder
---- !u!114 &76472616
+--- !u!114 &15295636
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 76472613}
+  m_GameObject: {fileID: 15295633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3893300528843cdaec619b43483120, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Plants.GrowthVfx
---- !u!114 &76472617
+--- !u!114 &15295637
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 76472613}
+  m_GameObject: {fileID: 15295633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b42e02d6fb5644c21b1bdb7cd72941b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.GameBootstrap
   killDepth: 30
---- !u!4 &76472618
+--- !u!4 &15295638
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 76472613}
+  m_GameObject: {fileID: 15295633}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -409,7 +341,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &692384837
+--- !u!1 &442946806
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -417,8 +349,124 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 692384839}
-  - component: {fileID: 692384838}
+  - component: {fileID: 442946808}
+  - component: {fileID: 442946807}
+  m_Layer: 0
+  m_Name: RunSession
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &442946807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442946806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27c7f9ec6474461a9f79f5c5d633d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.RunSession
+  startOnAwake: 1
+  levelId: level_1
+  Config:
+    seed: 0
+    islandCount: 0
+    allowedKinds: 
+    levelId: 
+    waterMode: 0
+    theme: 0
+    wind: 0
+    goal: 0
+    roundTrip: 0
+    spiral: 0
+    sideIslands: 0
+    sequence: 
+--- !u!4 &442946808
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442946806}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &465327847
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7301561837358706871, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+      propertyPath: m_Name
+      value: Atmosphere
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
+--- !u!1 &1670689331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1670689333}
+  - component: {fileID: 1670689332}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -426,13 +474,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!108 &692384838
+--- !u!108 &1670689332
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 692384837}
+  m_GameObject: {fileID: 1670689331}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
@@ -491,13 +539,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &692384839
+--- !u!4 &1670689333
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 692384837}
+  m_GameObject: {fileID: 1670689331}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821794, y: -0.23456973, z: 0.10938166, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -506,64 +554,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1454481593
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2259748049641759667, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7301561837358706871, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
-      propertyPath: m_Name
-      value: Atmosphere
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 3e4dac4e31dd8433ea32a9da584b5ba7, type: 3}
---- !u!1 &1923823297
+--- !u!1 &1981078921
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -571,37 +562,34 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1923823299}
-  - component: {fileID: 1923823298}
+  - component: {fileID: 1981078923}
+  - component: {fileID: 1981078922}
   m_Layer: 0
-  m_Name: RunSession
+  m_Name: World
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1923823298
+--- !u!114 &1981078922
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1923823297}
+  m_GameObject: {fileID: 1981078921}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d27c7f9ec6474461a9f79f5c5d633d20, type: 3}
+  m_Script: {fileID: 11500000, guid: 455bad1e0c2b84758a40614592a4b82c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.RunSession
-  startOnAwake: 1
-  mode: 0
-  timeLimit: 0
-  levelId: level_1
-  Config:
-    mode: 0
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.World.WorldGenerator
+  useBootstrapConfig: 1
+  showcaseWater: 0
+  spawnPlayer: 1
+  sandboxConfig:
     seed: 0
     islandCount: 0
     allowedKinds: 
-    timeLimit: 0
     levelId: 
     waterMode: 0
     theme: 0
@@ -611,13 +599,13 @@ MonoBehaviour:
     spiral: 0
     sideIslands: 0
     sequence: 
---- !u!4 &1923823299
+--- !u!4 &1981078923
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1923823297}
+  m_GameObject: {fileID: 1981078921}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -630,8 +618,8 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 692384839}
-  - {fileID: 1923823299}
-  - {fileID: 7658142}
-  - {fileID: 1454481593}
-  - {fileID: 76472618}
+  - {fileID: 1670689333}
+  - {fileID: 442946808}
+  - {fileID: 1981078923}
+  - {fileID: 465327847}
+  - {fileID: 15295638}

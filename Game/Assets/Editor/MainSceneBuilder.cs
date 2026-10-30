@@ -123,14 +123,14 @@ namespace PlantGame.Editor
 
             StoreGenerated(root, AtmosphereDir + "/Atmosphere_Generated.asset");
             // saving gives every object a new random file ID, so an unchanged rebuild would rewrite the whole prefab: save only when it differs
-            atm.buildHash = Fingerprint(root);
+            atm.buildHash = BuildFingerprint.Of(root, "buildHash", "Atmosphere");
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(AtmospherePrefab);
             var old = existing != null ? existing.GetComponent<Atmosphere>() : null;
-            if (old == null || old.buildHash != atm.buildHash) PrefabUtility.SaveAsPrefabAsset(root, AtmospherePrefab);
-            else Debug.Log("[PlantGame] Atmosphere prefab unchanged, not re-saved.");
+            bool changed = old == null || old.buildHash != atm.buildHash;
+            if (changed) PrefabUtility.SaveAsPrefabAsset(root, AtmospherePrefab);
             Object.DestroyImmediate(root);
             AssetDatabase.SaveAssets();
-            Debug.Log("[PlantGame] Atmosphere prefab built: " + AtmospherePrefab);
+            Debug.Log(changed ? "[PlantGame] Atmosphere prefab built: " + AtmospherePrefab : "[PlantGame] Atmosphere prefab unchanged, not re-saved.");
         }
 
         /// <summary>
@@ -178,28 +178,6 @@ namespace PlantGame.Editor
             foreach (var q in pool.Values) foreach (var o in q) if (o != main) { AssetDatabase.RemoveObjectFromAsset(o); Object.DestroyImmediate(o, true); removed++; }
             AssetDatabase.SaveAssets();
             Debug.Log($"[PlantGame] Generated meshes / materials in {path}: {reused} updated, {added} added, {removed} removed");
-        }
-
-        /// <summary>
-        /// A hash of everything a built hierarchy saves: paths, active flags and each component's serialized fields. Run after StoreGenerated,
-        /// so mesh / material references are assets (written as stable file IDs); scene references come out as instance ID 0.
-        /// </summary>
-        static string Fingerprint(GameObject root)
-        {
-            var sb = new System.Text.StringBuilder();
-            foreach (var t in root.GetComponentsInChildren<Transform>(true))
-            {
-                sb.Append(AnimationUtility.CalculateTransformPath(t, root.transform)).Append('|').Append(t.gameObject.activeSelf).Append('\n');
-                foreach (var c in t.GetComponents<Component>())
-                {
-                    if (c == null) continue;
-                    var a = c as Atmosphere; string keep = a != null ? a.buildHash : null;
-                    if (a != null) a.buildHash = "";   // the hash itself is not part of what it describes
-                    sb.Append(c.GetType().Name).Append(EditorJsonUtility.ToJson(c)).Append('\n');
-                    if (a != null) a.buildHash = keep;
-                }
-            }
-            return Hash128.Compute(sb.ToString()).ToString();
         }
 
         static GameObject Quad(string name, Transform parent, Vector3 pos, float size, Material m, bool flat)
@@ -354,6 +332,7 @@ namespace PlantGame.Editor
         public static void BuildTitle()
         {
             WorldKitBuilder.Build();
+            var before = BuildFingerprint.OfSavedScene(ProjectSetup.ScenePath("Title"));   // unchanged rebuilds are not re-saved (new random file IDs)
             var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Single);
             ProjectSetup.ApplyLightingPreset();
             ProjectSetup.AddSun();
@@ -386,7 +365,7 @@ namespace PlantGame.Editor
             showcase.useBootstrapConfig = false; showcase.spawnPlayer = false; showcase.showcaseWater = true;
             showcase.sandboxConfig = new RunConfig { seed = 7421, islandCount = 3, levelId = "title", theme = LevelTheme.Sunny, waterMode = WaterMode.Sources, allowedKinds = new[] { PlantKind.Bridge, PlantKind.Ladder }, sequence = new[] { PlantKind.Bridge, PlantKind.Ladder } };
             new GameObject("Title").AddComponent<PlantGame.UI.TitleMenu>();
-            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Title"));
+            BuildFingerprint.SaveIfChanged(scene, ProjectSetup.ScenePath("Title"), before);
             ProjectSetup.RegisterScenes();
             Debug.Log("[PlantGame] Title scene built.");
         }

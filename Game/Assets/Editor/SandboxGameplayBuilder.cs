@@ -21,6 +21,7 @@ namespace PlantGame.Editor
             if (MaterialBuilder.Load("M_Terrain") == null) MaterialBuilder.Build();
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabBuilder.PrefabPath) ?? PlayerPrefabBuilder.Build();
 
+            var before = BuildFingerprint.OfSavedScene(ProjectSetup.ScenePath("Sandbox"));   // unchanged rebuilds are not re-saved (new random file IDs)
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             ProjectSetup.ApplyLightingPreset();
             ProjectSetup.AddSun();
@@ -115,7 +116,7 @@ namespace PlantGame.Editor
             var p = (GameObject)PrefabUtility.InstantiatePrefab(player);
             p.transform.position = new Vector3(0f, 0.05f, 0f);
 
-            EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Sandbox"));
+            BuildFingerprint.SaveIfChanged(scene, ProjectSetup.ScenePath("Sandbox"), before);
             ProjectSetup.RegisterScenes();
             Debug.Log("[PlantGame] Sandbox built. WASD/mouse/Space; tower+ladder to the left (-X).");
         }
