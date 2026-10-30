@@ -218,6 +218,17 @@ namespace PlantGame.World
 
         static Color H(string hex) => Overgrowth.H(hex);
 
+        static Material _rock;
+        /// <summary>The rock texture of M_Stone in a warm pale grey (M_Stone itself is mist blue, which made loose stones read as snowballs).</summary>
+        public static Material RockMat()
+        {
+            if (_rock != null) return _rock;
+            var src = Kit.Mat("M_Stone"); if (src == null) return null;
+            _rock = new Material(src) { name = "M_Rock", hideFlags = HideFlags.None };
+            var c = H("B8B4AA"); if (_rock.HasProperty("_BaseColor")) _rock.SetColor("_BaseColor", c); if (_rock.HasProperty("_Color")) _rock.SetColor("_Color", c);
+            return _rock;
+        }
+
         static Color StemColour(LevelTheme t) => t == LevelTheme.Snow ? H("9FB7A8") : t == LevelTheme.Autumn ? H("7E8A3A") : t == LevelTheme.Rain ? H("3F7A45") : H("4E9E48");
         static Color GrassColour(LevelTheme t, int h) => t == LevelTheme.Snow ? H("C8D6D0") : t == LevelTheme.Autumn ? (h % 2 == 0 ? H("A9A04A") : H("C2903E")) : t == LevelTheme.Rain ? H("4C8443") : (h % 3 == 0 ? H("7CC25A") : H("5EAE4C"));
 
@@ -266,7 +277,7 @@ namespace PlantGame.World
                 // rounded stone: native sizes close to the models it replaces (Kenney small ~0.5 m, tall / large ~1 m, Quaternius medium ~1.4 m)
                 bool tall = name.Contains("tall"), large = name.Contains("large"), medium = name.StartsWith("Rock_Medium");
                 mf.sharedMesh = DebrisMeshes.Rock(h, medium || large ? 3 : 2);
-                mr.sharedMaterial = Kit.Mat("M_Stone");
+                mr.sharedMaterial = RockMat();
                 float s = medium ? 0.9f : large ? 0.7f : tall ? 0.5f : 0.35f;
                 go.transform.localScale = tall ? new Vector3(s * 0.8f, s * 1.7f, s * 0.8f) : new Vector3(s * (1f + (h >> 4) % 4 * 0.1f), s * 0.72f, s);
                 if (medium && (h >> 7) % 2 == 0)   // a soft moss cushion on top of about half the bigger stones

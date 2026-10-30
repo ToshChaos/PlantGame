@@ -8,7 +8,7 @@ namespace PlantGame.World
     {
         static readonly Dictionary<int, Mesh> Rocks = new Dictionary<int, Mesh>(), Crystals = new Dictionary<int, Mesh>(), Tiles = new Dictionary<int, Mesh>();
 
-        /// <summary>A soft, rounded stone about 1.6 m across: a welded icosphere (`detail` subdivisions) with low lumps and two worn flat faces, smooth shaded.</summary>
+        /// <summary>A soft, rounded stone about 1.6 m across: a welded icosphere (`detail` subdivisions) with low lumps and four worn flat faces, smooth shaded.</summary>
         public static Mesh Rock(int seed, int detail = 2)
         {
             seed &= 7;   // eight distinct rocks are plenty
@@ -18,13 +18,13 @@ namespace PlantGame.World
             float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
             var v = new List<Vector3>(); var f = new List<int[]>(); Icosphere(v, f, detail);
             var lumps = new Vector4[4]; for (int i = 0; i < lumps.Length; i++) lumps[i] = new Vector4(R(-1f, 1f), R(-1f, 1f), R(-1f, 1f), R(0f, 6.283f));
-            var cuts = new Vector3[2]; for (int i = 0; i < cuts.Length; i++) cuts[i] = new Vector3(R(-1f, 1f), R(0.1f, 1f), R(-1f, 1f)).normalized;
+            var cuts = new Vector3[4]; for (int i = 0; i < cuts.Length; i++) cuts[i] = new Vector3(R(-1f, 1f), R(-0.2f, 1f), R(-1f, 1f)).normalized;
             for (int i = 0; i < v.Count; i++)
             {
                 var n = v[i].normalized; float r = 0.8f;
                 foreach (var l in lumps) r += 0.07f * Mathf.Cos(2.2f * Vector3.Dot(n, new Vector3(l.x, l.y, l.z)) + l.w);
                 var p = n * r;
-                foreach (var c in cuts) { float d = Vector3.Dot(p, c) - 0.62f; if (d > 0f) p -= c * d * 0.75f; }   // worn flat faces
+                foreach (var c in cuts) { float d = Vector3.Dot(p, c) - 0.55f; if (d > 0f) p -= c * d * 0.88f; }   // broad worn faces: a stone, not an egg
                 if (p.y < -0.45f) p.y = -0.45f + (p.y + 0.45f) * 0.35f;   // a flatter underside
                 v[i] = p;
             }

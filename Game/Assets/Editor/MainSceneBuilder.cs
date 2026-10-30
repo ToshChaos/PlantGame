@@ -312,11 +312,12 @@ namespace PlantGame.Editor
             camGo.AddComponent<AudioListener>();
             camGo.transform.position = new Vector3(0, 20f, 0);
             AddAtmosphere();
-            // the title view has no use for distant stuff: pull the far islands, drifting rocks and cloud cards in (positions only, sizes stay)
-            foreach (var g in new[] { "FarIslands", "FloatingRocks", "Islets", "CloudCards" })
+            // the title view has no use for distant stuff: the big empty far islands go, drifting rocks and cloud cards are pulled in (positions only, sizes stay)
+            var farIslands = GameObject.Find("FarIslands"); if (farIslands != null) Object.DestroyImmediate(farIslands);
+            foreach (var g in new[] { "FloatingRocks", "Islets", "CloudCards" })
             {
                 var grp = GameObject.Find(g); if (grp == null) continue;
-                bool debris = g != "FarIslands" && g != "CloudCards";   // rocks and islets sit below the showcase islands, not among them
+                bool debris = g != "CloudCards";   // rocks and islets sit below the showcase islands, not among them
                 foreach (Transform c in grp.transform)
                 {
                     float y = debris ? -22f - Mathf.Repeat(c.localPosition.x * 0.37f + c.localPosition.z * 0.53f, 1f) * 28f : c.localPosition.y;
@@ -324,6 +325,7 @@ namespace PlantGame.Editor
                 }
             }
             TrimTitleDebris(GameObject.Find("FloatingRocks"));
+            KeepOneTitleIslet(GameObject.Find("Islets"));
             AddTitleAudio();
             // the world behind the menu: a small generated chain (water, trees, ruins, soils) whose plants grow while you look
             var showcase = new GameObject("TitleWorld").AddComponent<WorldGenerator>();
@@ -333,6 +335,16 @@ namespace PlantGame.Editor
             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, ProjectSetup.ScenePath("Title"));
             ProjectSetup.RegisterScenes();
             Debug.Log("[PlantGame] Title scene built.");
+        }
+
+        /// <summary>The title keeps one islet (the one nearest the showcase), a little closer under the three islands; the rest go.</summary>
+        static void KeepOneTitleIslet(GameObject group)
+        {
+            if (group == null) return;
+            Transform keep = null; float best = float.MaxValue;
+            foreach (Transform c in group.transform) { float d = new Vector2(c.localPosition.x, c.localPosition.z).magnitude; if (d < best) { best = d; keep = c; } }
+            for (int i = group.transform.childCount - 1; i >= 0; i--) { var c = group.transform.GetChild(i); if (c != keep) Object.DestroyImmediate(c.gameObject); }
+            if (keep != null) keep.localPosition = new Vector3(keep.localPosition.x * 0.75f, -16f, keep.localPosition.z * 0.75f);
         }
 
         /// <summary>The title view has half the floating debris, and only its bigger rock pieces (no logs, small chips or crystal bits).</summary>

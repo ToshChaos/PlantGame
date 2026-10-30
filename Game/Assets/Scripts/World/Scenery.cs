@@ -1336,7 +1336,7 @@ namespace PlantGame.World
                 {
                     g = new GameObject("Rock" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     g.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8), 3);
-                    g.AddComponent<MeshRenderer>().sharedMaterial = stone;
+                    g.AddComponent<MeshRenderer>().sharedMaterial = OrganicProps.RockMat() ?? stone;
                     g.transform.localScale = new Vector3(s * (0.8f + (float)rnd.NextDouble() * 0.9f), s * (0.5f + (float)rnd.NextDouble() * 0.9f), s * (0.8f + (float)rnd.NextDouble() * 0.9f));
                 }
                 else if (kind < 0.58)       // glowing crystal cluster: one big shard and two small ones leaning out
@@ -1375,7 +1375,7 @@ namespace PlantGame.World
                 {
                     g = new GameObject("RockBush" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     var rock = new GameObject("Rock"); rock.transform.SetParent(g.transform, false);
-                    rock.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8), 3); rock.AddComponent<MeshRenderer>().sharedMaterial = stone;
+                    rock.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8), 3); rock.AddComponent<MeshRenderer>().sharedMaterial = OrganicProps.RockMat() ?? stone;
                     rock.transform.localScale = new Vector3(s * 1.3f, s * 0.7f, s * 1.1f);
                     MeshPrim("MossCap", DebrisMeshes.Rock(rnd.Next(8)), g.transform, pos + Vector3.up * s * 0.6f, new Vector3(s * 0.9f, s * 0.35f, s * 0.8f), Mat("M_Foliage"), false);
                 }
@@ -1404,7 +1404,7 @@ namespace PlantGame.World
                 if (i % 5 == 0)   // a large grey rock with a green moss cap where the arch used to stand
                 {
                     float rs2 = 1.8f + (float)rnd.NextDouble() * 0.6f; var rp = pos + new Vector3(-0.2f, rs2 * 0.3f, 1.6f);
-                    MeshPrim("BigRock", DebrisMeshes.Rock(rnd.Next(8), 3), isl.transform, rp, new Vector3(rs2 * 1.3f, rs2 * 0.9f, rs2 * 1.1f), stone, false);
+                    MeshPrim("BigRock", DebrisMeshes.Rock(rnd.Next(8), 3), isl.transform, rp, new Vector3(rs2 * 1.3f, rs2 * 0.9f, rs2 * 1.1f), OrganicProps.RockMat() ?? stone, false);
                     MeshPrim("MossCap", DebrisMeshes.Rock(rnd.Next(8)), isl.transform, rp + Vector3.up * rs2 * 0.5f, new Vector3(rs2 * 0.95f, rs2 * 0.4f, rs2 * 0.85f), Mat("M_Foliage"), false);
                 }
                 foreach (var c in isl.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);   // islets stay out of reach
