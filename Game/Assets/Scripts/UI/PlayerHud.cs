@@ -431,14 +431,14 @@ namespace PlantGame.UI
             _qualityLabelP = Button("Quality", pr, V(new Vector2(380, 45), new Vector2(10, -80)), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptionLabels(); }, two ? 400 : 360, 30);   // T63; touch: middle column under Postprocessing
             _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
-            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-560, 0), new Vector2(-235, -130)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(560, 0), new Vector2(-530, -95)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            UiKit.Slider(pr, _font, "Music volume", V(new Vector2(440, -35), new Vector2(-235, -130)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(440, -105), new Vector2(-530, -95)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(550, 250)), () => SetPaused(false));
             resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
             Button("Restart", pr, V(new Vector2(0, -50), new Vector2(550, 140)), Restart);
             Button("Menu", pr, V(new Vector2(0, -150), new Vector2(550, 30)), ToMenu);
             TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(550, -80)), Quit));
-            var copyText = Button("Copy", pr, V(new Vector2(640, -70), new Vector2(550, -200)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
+            var copyText = Button("Copy", pr, V(new Vector2(640, -215), new Vector2(550, -200)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
             _copyCode = copyText.transform.parent.gameObject;
             {   // the Jump button's look: white disc, yellow rim, dark green text
                 var cimg = _copyCode.GetComponent<Image>(); cimg.color = new Color(1f, 1f, 1f, 0.95f);
