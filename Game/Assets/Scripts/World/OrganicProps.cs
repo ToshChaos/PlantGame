@@ -5,7 +5,7 @@ using PlantGame.Core;
 namespace PlantGame.World
 {
     /// <summary>
-    /// Smooth, organic stand-ins for the blocky imported Kenney nature props: meadow flowers (lupine spikes, daisies, cups, stars) with
+    /// Smooth, organic stand-ins for the blocky imported Kenney nature props: palms, meadow flowers (lupine spikes, daisies, cups, stars) with
     /// soft-glow petals like the butterflies, curved grass tufts and rounded stones, all with smooth normals. Scenery.Model asks here
     /// first, so every caller (island dressing, island sides, islets, sky debris) gets them without touching its random stream: the
     /// variation comes from a hash of the position. Meshes are cached and shared; the materials are saved with scenes the builders bake.
@@ -16,15 +16,19 @@ namespace PlantGame.World
         /// <summary>Shared-vertex geometry in a few submeshes; normals are recalculated, so every sheet, tube and blob shades smoothly.</summary>
         internal class Builder
         {
-            public readonly List<Vector3> v = new List<Vector3>();
+            public readonly List<Vector3> v = new List<Vector3>(); public readonly List<Vector2> uv = new List<Vector2>();
             public readonly List<int>[] sub;
             public Builder(int subs) { sub = new List<int>[subs]; for (int i = 0; i < subs; i++) sub[i] = new List<int>(); }
 
             /// <summary>A rows x cols sheet at(u along, w across), wound so its front faces `face`.</summary>
-            public void Sheet(int s, int rows, int cols, System.Func<float, float, Vector3> at, Vector3 face)
+            public void Sheet(int s, int rows, int cols, System.Func<float, float, Vector3> at, Vector3 face, System.Func<float, float, Vector2> uvAt = null)
             {
                 int o = v.Count;
-                for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) v.Add(at(r / (float)(rows - 1), c / (float)(cols - 1)));
+                for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++)
+                {
+                    float fu = r / (float)(rows - 1), fw = c / (float)(cols - 1);
+                    v.Add(at(fu, fw)); uv.Add(uvAt != null ? uvAt(fu, fw) : new Vector2(fu, fw));
+                }
                 int m = o + (rows / 2) * cols + Mathf.Min(cols / 2, cols - 2);
                 bool flip = Vector3.Dot(Vector3.Cross(v[m + cols] - v[m], v[m + 1] - v[m]), face) < 0f;
                 for (int r = 0; r < rows - 1; r++)
@@ -36,15 +40,17 @@ namespace PlantGame.World
             }
 
             /// <summary>A round tube through `pts` (radius by 0..1 along it) closed at the far end.</summary>
-            public void Tube(int s, IList<Vector3> pts, System.Func<float, float> radius, int sides)
+            /// <param name="vScale">bark texture repeats along the tube (v = length * vScale; u wraps once around)</param>
+            public void Tube(int s, IList<Vector3> pts, System.Func<float, float> radius, int sides, float vScale = 1f)
             {
-                int o = v.Count, n = pts.Count;
+                int o = v.Count, n = pts.Count; float len = 0f;
                 for (int i = 0; i < n; i++)
                 {
+                    if (i > 0) len += Vector3.Distance(pts[i], pts[i - 1]);
                     var t = (pts[Mathf.Min(i + 1, n - 1)] - pts[Mathf.Max(i - 1, 0)]).normalized;
                     var a = Vector3.Cross(t, Mathf.Abs(t.y) > 0.9f ? Vector3.right : Vector3.up).normalized; var b = Vector3.Cross(t, a);
                     float r = radius(i / (float)(n - 1));
-                    for (int k = 0; k < sides; k++) { float ang = k * Mathf.PI * 2f / sides; v.Add(pts[i] + (a * Mathf.Cos(ang) + b * Mathf.Sin(ang)) * r); }
+                    for (int k = 0; k < sides; k++) { float ang = k * Mathf.PI * 2f / sides; v.Add(pts[i] + (a * Mathf.Cos(ang) + b * Mathf.Sin(ang)) * r); uv.Add(new Vector2(Mathf.PingPong(k * 2f / sides, 1f), len * vScale)); }
                 }
                 bool flip = Vector3.Dot(Vector3.Cross(v[o + sides] - v[o], v[o + 1] - v[o]), v[o] - pts[0]) < 0f;
                 for (int i = 0; i < n - 1; i++)
@@ -53,7 +59,7 @@ namespace PlantGame.World
                         int a = o + i * sides + k, b = a + sides, c = o + i * sides + (k + 1) % sides, d = c + sides;
                         if (flip) sub[s].AddRange(new[] { a, c, b, c, d, b }); else sub[s].AddRange(new[] { a, b, c, c, b, d });
                     }
-                int tip = v.Count; v.Add(pts[n - 1] + (pts[n - 1] - pts[n - 2]).normalized * radius(1f) * 0.6f);
+                int tip = v.Count; v.Add(pts[n - 1] + (pts[n - 1] - pts[n - 2]).normalized * radius(1f) * 0.6f); uv.Add(new Vector2(0.5f, len * vScale));
                 for (int k = 0; k < sides; k++)
                 {
                     int a = o + (n - 1) * sides + k, c = o + (n - 1) * sides + (k + 1) % sides;
@@ -72,6 +78,7 @@ namespace PlantGame.World
                     for (int k = 0; k < around; k++) { float a = k * Mathf.PI * 2f / around; v.Add(c + rot * new Vector3(Mathf.Cos(a) * q * radii.x, y * radii.y, Mathf.Sin(a) * q * radii.z)); }
                 }
                 int top = v.Count; v.Add(c + rot * new Vector3(0, radii.y, 0));
+                while (uv.Count < v.Count) uv.Add(Vector2.zero);   // blobs carry no texture coordinates
                 var tris = new List<int>();
                 for (int k = 0; k < around; k++) { int k1 = (k + 1) % around; tris.AddRange(new[] { o, o + 1 + k1, o + 1 + k }); }
                 for (int r = 0; r < rings - 2; r++)
@@ -90,7 +97,7 @@ namespace PlantGame.World
             public Mesh Build(string name)
             {
                 var m = new Mesh { name = name, indexFormat = v.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
-                m.SetVertices(v); m.subMeshCount = sub.Length;
+                m.SetVertices(v); m.SetUVs(0, uv); m.subMeshCount = sub.Length;
                 for (int i = 0; i < sub.Length; i++) m.SetTriangles(sub[i], i);
                 m.RecalculateNormals(); m.RecalculateBounds();
                 return m;
@@ -177,6 +184,51 @@ namespace PlantGame.World
             }, head * (-d * Mathf.Sin(midLift) + Vector3.up * Mathf.Cos(midLift)));
         }
 
+        // ------------------------------------------------------------------ palms
+        static readonly Dictionary<int, Mesh> Palms = new Dictionary<int, Mesh>();
+
+        /// <summary>
+        /// A palm about 1 unit tall (Scenery.Model scales it): submesh 0 a curving trunk with ring bulges and three coconuts (PalmLook bark),
+        /// submesh 1 eight to ten arching fronds with a raised midrib and edges folding down (PalmLook frond texture, leaflets along the blade).
+        /// </summary>
+        static Mesh Palm(int variant, bool bend)
+        {
+            int key = variant * 2 + (bend ? 1 : 0);
+            if (Palms.TryGetValue(key, out var cached) && cached != null) return cached;
+            var rnd = new System.Random(variant * 631 + (bend ? 7 : 0) + 5);
+            float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
+            var b = new Builder(2);
+            float la = R(0f, 6.283f), lean = bend ? R(0.24f, 0.34f) : R(0.04f, 0.12f); const float H = 0.84f;
+            var dir = new Vector3(Mathf.Cos(la), 0, Mathf.Sin(la));
+            Vector3 T(float t) => dir * (lean * t * t) + Vector3.up * (H * t);
+            var trunk = new List<Vector3>(); for (int i = 0; i <= 30; i++) trunk.Add(T(i / 30f));
+            b.Tube(0, trunk, t => 0.036f * (1f - 0.38f * t) * (1f + 0.12f * Mathf.Pow(Mathf.Abs(Mathf.Sin(t * Mathf.PI * 10f)), 4f)) * (t < 0.06f ? 1.25f - t * 4f : 1f), 10, 7f);
+            var top = T(1f);
+            for (int i = 0; i < 3; i++)   // coconuts tucked under the crown
+            {
+                float a = la + i * 2.09f; var p = top + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * 0.032f - Vector3.up * 0.035f;
+                b.Blob(0, p, Vector3.one * 0.026f, Quaternion.identity, 8, 5);
+            }
+            int n = 8 + rnd.Next(3);
+            for (int i = 0; i < n; i++)
+            {
+                float ang = i * 6.283f / n + R(-0.2f, 0.2f), lift0 = R(0.35f, 0.75f), droop = R(1.0f, 1.5f), len = R(0.42f, 0.56f);
+                var d = new Vector3(Mathf.Cos(ang), 0, Mathf.Sin(ang)); var side = new Vector3(-d.z, 0, d.x);
+                b.Sheet(1, 15, 5, (u, w) =>
+                {
+                    float x = 0f, y = 0f; const int st = 8;
+                    for (int k = 0; k < st; k++) { float a = lift0 - droop * (k + 0.5f) / st * u; x += Mathf.Cos(a) * len * u / st; y += Mathf.Sin(a) * len * u / st; }
+                    float la2 = lift0 - droop * u, sw = w * 2f - 1f;
+                    float half = 0.075f * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.PI * Mathf.Min(1f, u * 1.08f))), 0.6f) * (1f - 0.45f * u);   // Max: sin(pi) is a hair below 0 and Pow would give NaN
+                    if (Mathf.Abs(sw) > 0.99f && Mathf.RoundToInt(u * 14f) % 2 == 1) half *= 0.62f;   // notched edge: the blade reads as leaflets
+                    var nrm = -d * Mathf.Sin(la2) + Vector3.up * Mathf.Cos(la2);
+                    return top + d * (0.012f + x) + Vector3.up * y + side * (sw * half) + nrm * (half * (0.22f * (1f - Mathf.Abs(sw)) - 0.38f * sw * sw));   // midrib up, edges fold down
+                }, Vector3.up, (u, w) => new Vector2(u * len * 5f, w));
+            }
+            var mesh = b.Build("Palm" + key);
+            return Palms[key] = mesh;
+        }
+
         // ------------------------------------------------------------------ grass tufts
         static readonly Dictionary<int, Mesh> Tufts = new Dictionary<int, Mesh>();
 
@@ -234,7 +286,7 @@ namespace PlantGame.World
         static int CellHash(Vector3 p) { unchecked { return (Mathf.FloorToInt(p.x / 2f) * 73856093) ^ (Mathf.FloorToInt(p.z / 2f) * 19349663); } }
 
         /// <summary>True for the imported models this class replaces.</summary>
-        public static bool Replaces(string name) => name.StartsWith("flower_") || name == "grass" || name == "grass_large" || IsRock(name);
+        public static bool Replaces(string name) => name.StartsWith("flower_") || name == "grass" || name == "grass_large" || name.StartsWith("tree_palm") || IsRock(name);
         static bool IsRock(string n) => n.StartsWith("rock_") || n.StartsWith("stone_") || n.StartsWith("Rock_Medium");
 
         /// <summary>The smooth replacement for imported model `name`, standing at `pos` turned by `yaw`, at roughly the original's native size; null when not replaced.</summary>
@@ -257,6 +309,12 @@ namespace PlantGame.World
                 var heart = shape == Lupine ? Color.Lerp(petal, Color.white, 0.45f) : fam == "yellow" ? H("E07B2A") : H("F2C94C");
                 mr.sharedMaterials = new[] { Soft(StemColour(theme), 0f, 0.1f), Soft(petal, 0.2f, 0.25f), Soft(heart, 0.25f, 0.3f) };
                 go.transform.localScale = Vector3.one * 0.5f;
+            }
+            else if (name.StartsWith("tree_palm"))
+            {
+                mf.sharedMesh = Palm((h >> 3) % 4, name.Contains("Bend"));
+                mr.sharedMaterials = new[] { PalmLook.BarkMat, PalmLook.FrondMat };
+                go.transform.localScale = Vector3.one * (name.Contains("Short") ? 3.2f : 4.5f);
             }
             else if (name.StartsWith("grass"))
             {

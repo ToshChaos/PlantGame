@@ -638,7 +638,7 @@ namespace PlantGame.World
                 SimplifyTree(model);
                 if (kind == 7)
                 {
-                    PalmLook.Apply(model);
+                    if (!OrganicProps.Replaces(model.name)) PalmLook.Apply(model);   // the procedural palm brings its own UVs
                     var coco = Kit.Item("coconut");   // at most one fallen coconut at the foot of about two palms in three; it never regrows
                     if (coco != null && coco.worldPrefab != null && Mathf.Repeat(sv * 7.31f, 1f) < 0.65f)
                     {

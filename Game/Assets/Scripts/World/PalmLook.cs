@@ -80,8 +80,8 @@ namespace PlantGame.World
             return m;
         }
 
-        static Material BarkMat => _barkMat != null ? _barkMat : _barkMat = MakeMat("M_PalmBark", BarkTexture(), Color.white, 0.1f);
-        static Material FrondMat => _frondMat != null ? _frondMat : _frondMat = MakeMat("M_PalmFrond", FrondTexture(), Color.white, 0.25f);
+        internal static Material BarkMat => _barkMat != null ? _barkMat : _barkMat = MakeMat("M_PalmBark", BarkTexture(), Color.white, 0.1f);
+        internal static Material FrondMat => _frondMat != null ? _frondMat : _frondMat = MakeMat("M_PalmFrond", FrondTexture(), Color.white, 0.25f);
 
         /// <summary>Swaps the palm's bark and frond materials for the textured ones and rewrites the UVs. Models without readable meshes keep the flat colours.</summary>
         public static void Apply(GameObject model)

@@ -376,7 +376,7 @@ namespace PlantGame.World
         /// <summary>A soft lumpy dome (shrub, pebble, leaf clump): shared vertices with normals fanning out from below its centre, so it shades round, not faceted.</summary>
         internal static void Blob(Batch b, Vector3 at, float r, float h, float yaw, System.Random rnd)
         {
-            const int N = 9, Rings = 3;
+            const int N = 12, Rings = 3;
             float[] lump = new float[12]; for (int i = 0; i < 12; i++) lump[i] = 0.85f + 0.3f * (float)rnd.NextDouble();   // 12 + 1 draws, as many as the old blob, so the rest of the dressing keeps its layout
             var top = at + Vector3.up * h * (0.9f + 0.2f * (float)rnd.NextDouble());
             var core = at - Vector3.up * h * 0.35f;   // normals fan out from here: a rounded cushion
