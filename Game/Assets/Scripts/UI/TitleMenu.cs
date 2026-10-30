@@ -20,7 +20,7 @@ namespace PlantGame.UI
         public string gameScene = "Main";
 
         Font _font;
-        WorldGenerator _showcase;
+        WorldGenerator _showcase; Vector3[] _tour, _tourLook;
         GameObject _home, _levels, _options, _generate;
         Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle, _qualityToggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
@@ -74,18 +74,51 @@ namespace PlantGame.UI
             if (cam == null) return;
             if (_showcase != null && _showcase.Layout != null && _showcase.Layout.isles.Count > 1)
             {
-                // slow orbit around all showcase islands, far enough out that the whole chain stays in frame
-                var isles = _showcase.Layout.isles; var mid = Vector3.zero;
-                foreach (var i in isles) mid += i.centre;
-                mid /= isles.Count;
-                float spread = 0f; foreach (var i in isles) spread = Mathf.Max(spread, Vector3.Distance(i.centre, mid));
-                var centre = mid + Vector3.up * 2.5f;
-                float ang = Time.unscaledTime * 0.06f, dist = spread + 22f;
-                cam.transform.position = centre + new Vector3(Mathf.Cos(ang) * dist, 9f, Mathf.Sin(ang) * dist);
-                cam.transform.LookAt(centre);
+                // a looping fly-by: close on each island in turn, wide and high over the group in between (see SetupTour)
+                if (_tour == null) SetupTour(_showcase.Layout.isles);
+                int n = _tour.Length; float u = Time.unscaledTime / TourSegmentSeconds; int k = Mathf.FloorToInt(u); float t = u - k;
+                Vector3 At(Vector3[] pts, int i) => pts[((i % n) + n) % n];
+                Vector3 Spline(Vector3[] pts) => CatmullRom(At(pts, k - 1), At(pts, k), At(pts, k + 1), At(pts, k + 2), t);
+                cam.transform.position = Spline(_tour);
+                cam.transform.LookAt(Spline(_tourLook));
             }
             else cam.transform.rotation = Quaternion.Euler(8f, Time.unscaledTime * 3f, 0f);
         }
+
+        const float TourSegmentSeconds = 8f;
+
+        /// <summary>
+        /// The title camera's loop: the islands sorted by their direction round the group's centre; for each, a close view from its outer side
+        /// (just above its ground, looking at it), then a wide, high view of the whole group from between it and the next. Every point lies
+        /// outside the group, so the spline through them never cuts through an island. The one backdrop islet sits below the middle island.
+        /// </summary>
+        void SetupTour(System.Collections.Generic.List<Isle> isles)
+        {
+            var mid = Vector3.zero; foreach (var i in isles) mid += i.centre; mid /= isles.Count;
+            float reach = 0f; foreach (var i in isles) { var d = i.centre - mid; d.y = 0f; reach = Mathf.Max(reach, d.magnitude + i.radius); }
+            float Dir(Isle i) => Mathf.Atan2(i.centre.z - mid.z, i.centre.x - mid.x);
+            var order = new System.Collections.Generic.List<Isle>(isles); order.Sort((a, b) => Dir(a).CompareTo(Dir(b)));
+            var pos = new System.Collections.Generic.List<Vector3>(); var look = new System.Collections.Generic.List<Vector3>();
+            for (int k = 0; k < order.Count; k++)
+            {
+                var i = order[k]; float a = Dir(i), b = Dir(order[(k + 1) % order.Count]); if (b <= a) b += Mathf.PI * 2f;
+                var outward = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                pos.Add(i.centre + outward * (i.radius + 17f) + Vector3.up * 7f); look.Add(i.centre + Vector3.up * 2f);   // close on this island
+                float w = (a + b) * 0.5f;
+                pos.Add(mid + new Vector3(Mathf.Cos(w), 0f, Mathf.Sin(w)) * (reach + 16f) + Vector3.up * 20f); look.Add(mid);   // wide over the group
+            }
+            _tour = pos.ToArray(); _tourLook = look.ToArray();
+
+            var hub = isles[isles.Count >= 3 ? 1 : 0];
+            var group = GameObject.Find("Islets"); if (group == null || group.transform.childCount == 0) return;
+            var away = hub.centre - mid; away.y = 0f; if (away.sqrMagnitude < 1f) away = Vector3.right;
+            var p = hub.centre + Quaternion.Euler(0f, 30f, 0f) * away.normalized * (hub.radius + 11f) + Vector3.down * 12f;
+            var islet = group.transform.GetChild(0);
+            var bob = islet.GetComponent<FloatBob>(); if (bob != null) bob.MoveBase(p); else islet.position = p;
+        }
+
+        static Vector3 CatmullRom(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t) =>
+            0.5f * (2f * b + (c - a) * t + (2f * a - 5f * b + 4f * c - d) * (t * t) + (3f * b - a - 3f * c + d) * (t * t * t));
 
         /// <summary>The title world plants and waters everything one by one, so the plants grow in front of the menu.</summary>
         System.Collections.IEnumerator GrowShowcase()

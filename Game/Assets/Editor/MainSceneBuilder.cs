@@ -337,14 +337,36 @@ namespace PlantGame.Editor
             Debug.Log("[PlantGame] Title scene built.");
         }
 
-        /// <summary>The title keeps one islet (the one nearest the showcase), a little closer under the three islands; the rest go.</summary>
+        /// <summary>The title keeps one islet (the one nearest the showcase; TitleMenu moves it under the middle island, SetupTour) with a few stones and grass on top; the rest go.</summary>
         static void KeepOneTitleIslet(GameObject group)
         {
             if (group == null) return;
             Transform keep = null; float best = float.MaxValue;
             foreach (Transform c in group.transform) { float d = new Vector2(c.localPosition.x, c.localPosition.z).magnitude; if (d < best) { best = d; keep = c; } }
             for (int i = group.transform.childCount - 1; i >= 0; i--) { var c = group.transform.GetChild(i); if (c != keep) Object.DestroyImmediate(c.gameObject); }
-            if (keep != null) keep.localPosition = new Vector3(keep.localPosition.x * 0.75f, -16f, keep.localPosition.z * 0.75f);
+            if (keep == null) return;
+            keep.localPosition = new Vector3(keep.localPosition.x * 0.75f, -16f, keep.localPosition.z * 0.75f);
+            // a few stones and grass tufts on its top (clear of the tree by its foot); a temporary collider on its mesh finds the ground
+            var mf = keep.GetComponent<MeshFilter>(); if (mf == null || mf.sharedMesh == null) return;
+            var col = keep.gameObject.AddComponent<MeshCollider>(); col.sharedMesh = mf.sharedMesh;
+            var rnd = new System.Random(4711); var centre = keep.position; float rad = keep.GetComponent<Renderer>().bounds.extents.x;
+            var tree = centre + new Vector3(0.5f, 0f, 0.3f);
+            for (int i = 0, placed = 0; i < 120 && placed < 34; i++)
+            {
+                float a = (float)(rnd.NextDouble() * Mathf.PI * 2), r = rad * (0.2f + (float)rnd.NextDouble() * 0.55f);
+                var p = new Vector3(centre.x + Mathf.Cos(a) * r, centre.y, centre.z + Mathf.Sin(a) * r);
+                if (Vector2.Distance(new Vector2(p.x, p.z), new Vector2(tree.x, tree.z)) < 1.2f) continue;
+                if (!col.Raycast(new Ray(p + Vector3.up * 5f, Vector3.down), out var hit, 10f) || hit.normal.y < 0.8f) continue;
+                p = hit.point;
+                bool rock = placed % 6 == 0;
+                var g = OrganicProps.Create(rock ? (placed % 12 == 0 ? "Rock_Medium_1" : "rock_smallA") : "grass_large", p, (float)rnd.NextDouble() * 360f, keep, LevelTheme.Sunny);
+                if (g == null) continue;
+                float s = rock ? 0.7f + (float)rnd.NextDouble() * 0.5f : 1.6f + (float)rnd.NextDouble() * 0.9f;
+                g.transform.localScale *= s;
+                if (rock) g.transform.position += Vector3.up * (0.12f * g.transform.lossyScale.y);   // half sunk in the turf
+                placed++;
+            }
+            Object.DestroyImmediate(col);
         }
 
         /// <summary>The title view has half the floating debris, and only its bigger rock pieces (no logs, small chips or crystal bits).</summary>

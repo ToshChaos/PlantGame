@@ -274,7 +274,7 @@ namespace PlantGame.World
             X.go = RoundIsland.Create("Island_Extra", pos, X.shape, 5.5f, top, stone, 91, 3f);
             X.go.transform.SetParent(transform, true);
             var bob = X.go.AddComponent<FloatBob>(); bob.amplitude = 0.22f; bob.period = 33f; bob.phaseOffset = 4.1f; bob.spin = 0f; bob.physics = true;
-            Scenery.Decorate(X.go.transform, X.centre, X.radius, a => X.shape.Edge(a), 77, false, false, X.keep, new List<Scenery.Lane>(), 0.9f, 1, false);
+            Scenery.Decorate(X.go.transform, X.centre, X.radius, a => X.shape.Edge(a), 77, false, false, X.keep, new List<Scenery.Lane>(), 0.9f, 0, false);   // no boulders: it is small
             isles.Add(X);
         }
 

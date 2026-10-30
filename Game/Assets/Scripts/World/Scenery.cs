@@ -234,7 +234,7 @@ namespace PlantGame.World
             }
             // rock protrusions
             string[] rocks = { "Rock_Medium_1", "Rock_Medium_2", "Rock_Medium_3", "rock_smallA", "rock_smallB", "stone_smallC" };
-            int nr = Mathf.RoundToInt((7 + rnd.Next(7)) * size);
+            int nr = Mathf.RoundToInt((7 + rnd.Next(7)) * size * Mathf.Min(1f, rimRadius / 10f));   // small islets get fewer (they were crowded)
             for (int k = 0; k < nr; k++)
             {
                 float a = (float)(rnd.NextDouble() * 6.283), y = DepthY(); var pos = WallPoint(terrain, centre, a, y, terrain.depth, out var o, 0.25f);

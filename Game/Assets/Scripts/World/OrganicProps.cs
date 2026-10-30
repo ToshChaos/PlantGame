@@ -219,13 +219,17 @@ namespace PlantGame.World
         static Color H(string hex) => Overgrowth.H(hex);
 
         static Material _rock;
-        /// <summary>The rock texture of M_Stone in a warm pale grey (M_Stone itself is mist blue, which made loose stones read as snowballs).</summary>
+        /// <summary>Loose stones: M_Stone without its flagstone-cell texture (it read as tiled wall and hid the chiselled faces), a warm grey (M_Stone's mist blue read as snowballs).</summary>
         public static Material RockMat()
         {
             if (_rock != null) return _rock;
             var src = Kit.Mat("M_Stone"); if (src == null) return null;
             _rock = new Material(src) { name = "M_Rock", hideFlags = HideFlags.None };
-            var c = H("B8B4AA"); if (_rock.HasProperty("_BaseColor")) _rock.SetColor("_BaseColor", c); if (_rock.HasProperty("_Color")) _rock.SetColor("_Color", c);
+            if (_rock.HasProperty("_BaseMap")) _rock.SetTexture("_BaseMap", null);
+            if (_rock.HasProperty("_MainTex")) _rock.SetTexture("_MainTex", null);
+            if (_rock.HasProperty("_BumpMap")) { _rock.SetTexture("_BumpMap", null); _rock.DisableKeyword("_NORMALMAP"); }
+            if (_rock.HasProperty("_Smoothness")) _rock.SetFloat("_Smoothness", 0.12f);
+            var c = H("A8A49B"); if (_rock.HasProperty("_BaseColor")) _rock.SetColor("_BaseColor", c); if (_rock.HasProperty("_Color")) _rock.SetColor("_Color", c);
             return _rock;
         }
 

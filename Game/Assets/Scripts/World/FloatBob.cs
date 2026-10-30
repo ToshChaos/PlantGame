@@ -15,6 +15,8 @@ namespace PlantGame.World
             _base = transform.position; _phase = phaseOffset >= 0f ? phaseOffset : (_base.x * 0.37f + _base.z * 0.21f);
             if (physics) { _rb = gameObject.AddComponent<Rigidbody>(); _rb.isKinematic = true; _rb.interpolation = RigidbodyInterpolation.Interpolate; }
         }
+        /// <summary>Moves the piece and the point it bobs around (a plain position change is undone by the bob).</summary>
+        public void MoveBase(Vector3 p) { _base = p; transform.position = p; }
         void FixedUpdate() { if (_rb != null) _rb.MovePosition(_base + Vector3.up * Offset(Time.time)); }
         float Offset(float t) => Mathf.Sin(t * Mathf.PI * 2f / period + _phase) * amplitude;
         void Update()
