@@ -7,7 +7,7 @@ namespace PlantGame.Inventory
     /// <summary>
     /// T05: 4 slots, no stacking (contract 5.5). Lives on the Player. Pure data + selection; input is read by
     /// PlayerInteraction (Tab / Shift+Tab / 1-4 / wheel), which calls Cycle / Select.
-    /// TryAdd fills the first empty slot; when the selected slot was empty it moves the selection to the new item.
+    /// TryAdd fills the first empty slot; the selection always moves to the slot the item went into.
     /// A refused add raises GameEvents.InventoryFull.
     /// </summary>
     public class Inventory : MonoBehaviour
@@ -40,7 +40,7 @@ namespace PlantGame.Inventory
             int slot = FirstEmpty;
             if (slot < 0) { GameEvents.RaiseInventoryFull(i); return false; }
             _slots[slot] = i;
-            if (_slots[Selected] == null || Selected == slot) Selected = slot;
+            Selected = slot;
             Changed?.Invoke();
             return true;
         }

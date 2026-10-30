@@ -95,5 +95,14 @@ namespace PlantGame.Tests
             _inv.TryAdd(_b);                      // goes to slot 1 (first empty); selection stays on the empty slot 2? -> moves to the new item
             Assert.AreSame(_b, _inv.SelectedItem);
         }
+
+        [Test]
+        public void AddSelectsTheNewSlotEvenWhenAnotherItemWasSelected()
+        {
+            _inv.TryAdd(_a);
+            _inv.TryAdd(_b);
+            Assert.AreEqual(1, _inv.Selected);
+            Assert.AreSame(_b, _inv.SelectedItem);
+        }
     }
 }
