@@ -3,14 +3,14 @@
 Target: Android beta (phones first, tablets should work), later iOS. Landscape only. Desktop keeps working unchanged; the mobile layer is additive. This is a design note for the tasks `tasks/T57..T64`; AGENTS.md section 5.8 stays the desktop contract until T57 lands, then gains a mobile column.
 
 ## Principles
-- **One-handed-thumb reachable, two thumbs maximum.** Left thumb moves, right thumb looks; a few big buttons sit in the right thumb's arc. No multi-finger gestures needed to finish the game.
+- **One-handed-thumb reachable, two thumbs maximum.** Tap the ground to walk, drag to look (there is no joystick since v3); the only button is Jump, in the right thumb's arc. No multi-finger gestures needed to finish the game.
 - **No crosshair aiming.** Desktop focus is "the thing I look at". On touch the game picks the focus itself: nearest interactable in a cone in front of the player (and the camera), within reach. A single context button shows what it will do.
 - **Fewer buttons than keys.** Collapse Q / E / F into context actions where unambiguous (see table), keep manual overrides.
 - **Everything the HUD says is bound-label aware**: prompts print the touch button name / icon, not "Press Q".
 - Controls auto-show on touch devices (and in the editor with Device Simulator or a toggle), hidden when a keyboard / gamepad is the last used device.
 
 ## Layout (v3, landscape, safe-area aware)
-No stick and no action buttons. Only **Jump** (bottom right) and **Pause** (top left) are buttons; the hotbar is top right.
+No joystick (removed in v3, so no part of the screen is reserved for one: HUD text may sit anywhere clear of the edges) and no action buttons. Only **Jump** (bottom right) and **Pause** (top left) are buttons; the hotbar is top right.
 - **Look**: drag anywhere (not over a button or the hotbar).
 - **Walk**: tap the ground. The player turns on the spot towards the tap, then walks there at walking speed (a ring marks the spot). Gives up when stuck, after 25 s, or on respawn.
 - **Act**: tap the circle / diamond marker over a pickup, soil patch, sprout, water source, collector, frozen water or the goal flag. In reach (about 3.5 m) it runs the same checks as the keys (free slot, right seed, water in the can, not frozen, ...); out of reach the player walks up to it first and a second tap acts.

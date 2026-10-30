@@ -40,7 +40,6 @@ namespace PlantGame.UI
         Image[] _drops;
         GameObject _pausePanel;
         Text _pauseHint, _retryLabel, _glowLabelP, _objective, _musicLabelP, _soundLabelP, _followLabelP, _fpsLabelP, _autoWaterLabelP, _pauseTitle, _qualityLabelP;
-        static readonly Color GoalGreen = new Color(0.35f, 1f, 0.5f);   // bright green: readable on sky and scenery
         GoalFlag _goal;
         GameObject _copyCode;
         static bool _skipMenu;   // set by Restart (and by the title screen) so the run starts without bouncing back to the title screen
@@ -233,7 +232,6 @@ namespace PlantGame.UI
             {
                 bool near = _goal.PlayerNear;
                 _objective.text = near ? "You are at the goal - activate it" : _goal.Objective;
-                _objective.color = near ? Palette.GlowCyan : GoalGreen;
             }
             var inv = _pi.Inventory;
             for (int i = 0; i < Inventory.Inventory.Slots; i++)
@@ -261,17 +259,16 @@ namespace PlantGame.UI
             }
             _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? _emptyLabel ??= "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            _waterLabel.color = TouchInput.Active ? new Color(0.06f, 0.33f, 0.16f, 1f) : new Color(0.44f, 0.66f, 0.86f, 1f);   // desktop: same blue as the droplets; touch: dark green, readable on the sky
             bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
             if (nearWater)
-            {   // at the water with room in the can: purple refill hint
-                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)"; _waterWarn.color = Color.white;
+            {   // at the water with room in the can: refill hint
+                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)";
             }
             else
             {
                 _waterWarn.enabled = empty && GameSettings.Hints;
                 _waterWarn.text = "Refill water at source (pond, stream, plant)";
-                _waterWarn.color = Color.white;
+               
             }
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
@@ -285,11 +282,10 @@ namespace PlantGame.UI
 
             var rs = RunSession.Instance;
             if (rs == null || rs.State == RunState.Idle) { _timer.text = ""; _timerSecond = -1; }
-            else if ((int)rs.Elapsed != _timerSecond) { _timerSecond = (int)rs.Elapsed; _timer.text = Fmt(rs.Elapsed); _timer.color = Palette.TextOrange; }
+            else if ((int)rs.Elapsed != _timerSecond) { _timerSecond = (int)rs.Elapsed; _timer.text = Fmt(rs.Elapsed); }
 
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
             _prompt.text = PromptText(p, key, empty);
-            _prompt.color = key == "Water" && !string.IsNullOrEmpty(p) ? Palette.TextPurple : key == "Frozen" ? new Color(0.65f, 0.9f, 1f) : Palette.TextOrange;
             if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
                 _prompt.text = TouchInput.Active ? "Tap Jump to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
             if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
@@ -385,22 +381,19 @@ namespace PlantGame.UI
             _selName = touch ? Label("SelectedName", root, "", 28, TextAnchor.MiddleCenter, new Vector2(-(total * 0.5f + 40f), -(SlotSize + 66f)), new Vector2(total, 40), new Vector2(1f, 1f))
                              : Label("SelectedName", root, "", 26, TextAnchor.MiddleCenter, new Vector2(0, SlotSize + 110), new Vector2(600, 36), new Vector2(0.5f, 0f));
             _hints = Label("Hints", root, "", 26, TextAnchor.LowerRight, new Vector2(-300, 120), new Vector2(520, 160), new Vector2(1f, 0f), false);
-            _hints.color = Palette.TextOrange;
+            Hint(_hints);
             _timer = Label("Timer", root, "", TouchInput.Active ? 62 : 46, TextAnchor.MiddleCenter, new Vector2(0, -50), new Vector2(500, 70), new Vector2(0.5f, 1f), false);
             _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, TouchInput.Active ? 0 : 70), new Vector2(1000, 54), new Vector2(0.5f, 0.2f), false);
-            _prompt.color = Palette.TextOrange;
+            Hint(_prompt);
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
-            _objective.color = GoalGreen;
             _fps = Label("Fps", root, "", 28, TextAnchor.UpperLeft, new Vector2(160, -38), new Vector2(240, 40), new Vector2(0f, 1f));   // top left (touch: the Pause button sits under it)
-            _fps.color = new Color(0.2f, 1f, 0.35f);   // bright green with a dark shadow: readable on sky and scenery
-            _fps.GetComponent<Shadow>().effectColor = new Color(0f, 0.1f, 0.05f, 0.9f);
 
             // water charges, bottom left
             var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-150, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
-            _waterWarn = Label("WaterWarn", root, "", 26, TextAnchor.MiddleLeft, touch ? new Vector2(470, 206) : new Vector2(370, 86), touch ? new Vector2(620, 76) : new Vector2(660, 36), new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
-            if (touch) { var ol = _waterLabel.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(1f, 1f, 1f, 0.85f); ol.effectDistance = new Vector2(2, -2); }
+            _waterWarn = Label("WaterWarn", root, "", 26, touch ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft, touch ? new Vector2(0, 110) : new Vector2(370, 86), touch ? new Vector2(900, 60) : new Vector2(660, 36), touch ? new Vector2(0.5f, 0f) : new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
+            Hint(_waterWarn);
             _drops = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
             {
@@ -419,7 +412,7 @@ namespace PlantGame.UI
             // touch (phones are wide): two columns, options and sliders on the left, actions on the right, centred and kept close so a 16:9 phone or a 4:3 tablet (~1660 wide) fits it; desktop keeps the centred stack
             bool two = TouchInput.Active;
             Vector2 V(Vector2 desk, Vector2 wide) => two ? wide : desk;
-            _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f));
+            _pauseTitle = Label("Title", pr, "Paused", 72, TextAnchor.MiddleCenter, new Vector2(0, 380), new Vector2(1200, 100), new Vector2(0.5f, 0.5f)); OnDark(_pauseTitle);
             // desktop: Music, Sound, Auto water down the left, Hints centred on top, Camera, Postprocessing, FPS down the right
             _hintsButtonLabel = Button("Hints", pr, V(new Vector2(0, 300), new Vector2(-530, 250)), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptionLabels(); }, two ? 400 : 300, 30);
             _musicLabelP = Button("Music", pr, V(new Vector2(-330, 300), new Vector2(-530, 140)), () => { GameSettings.Music = !GameSettings.Music; RefreshOptionLabels(); }, two ? 400 : 300, 30);
@@ -447,7 +440,7 @@ namespace PlantGame.UI
                 copyText.color = new Color(0.07f, 0.24f, 0.14f); copyText.fontStyle = FontStyle.Bold;
             }
             _pauseHint = Label("PuzzleHint", pr, PauseTip, 28, TextAnchor.MiddleCenter, new Vector2(0, -400), new Vector2(1500, 110), new Vector2(0.5f, 0.5f), true, true);
-            _pauseHint.color = Color.white;
+            OnDark(_pauseHint);
             _pausePanel.SetActive(false);
 
             // end panel (win / fail)
@@ -455,9 +448,9 @@ namespace PlantGame.UI
             var er = (RectTransform)_endPanel.transform; er.SetParent(root, false);
             er.anchorMin = Vector2.zero; er.anchorMax = Vector2.one; er.offsetMin = er.offsetMax = Vector2.zero;
             var edim = _endPanel.AddComponent<Image>(); edim.color = new Color(0.04f, 0.09f, 0.14f, 0.78f);
-            _endTitle = Label("EndTitle", er, "", 84, TextAnchor.MiddleCenter, new Vector2(0, 200), new Vector2(1000, 120), new Vector2(0.5f, 0.5f));
+            _endTitle = Label("EndTitle", er, "", 84, TextAnchor.MiddleCenter, new Vector2(0, 200), new Vector2(1000, 120), new Vector2(0.5f, 0.5f)); OnDark(_endTitle);
             _endBody = Label("EndBody", er, "", 44, TextAnchor.MiddleCenter, new Vector2(0, 80), new Vector2(1000, 150), new Vector2(0.5f, 0.5f), true, true);
-            _endBody.color = Palette.TextOrange;
+            Hint(_endBody);
             _nextButton = Button("Next level", er, new Vector2(0, -70), NextLevel).transform.parent.gameObject;
             _retryLabel = Button("Play again", er, new Vector2(0, -70), Restart);
             _endButtons = new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, TitleMenu.Danger(Button("Quit", er, new Vector2(0, -270), Quit)).transform.parent };
@@ -502,9 +495,19 @@ namespace PlantGame.UI
             var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : (Vector2?)null);
             var t = rt.gameObject.AddComponent<Text>();
             t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size, menu); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
-            t.color = Palette.TextPurple;
-            var sh = rt.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.6f); sh.effectDistance = new Vector2(2, -2);
+            t.color = Palette.TextBlue;   // HUD indicators are dark blue with a light outline; Hint() makes hints orange, OnDark() white, both with a dark outline
+            var ol = rt.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(0.96f, 0.98f, 0.97f, 0.9f); ol.effectDistance = new Vector2(2, -2);
             return t;
+        }
+
+        // key hints and prompts: orange with a dark outline, readable on sky and on dark foliage
+        static void Hint(Text t) => Recolor(t, Palette.TextOrange);
+        // text on the dark pause / end panels
+        static void OnDark(Text t) => Recolor(t, new Color(0.96f, 0.98f, 0.97f));
+        static void Recolor(Text t, Color c)
+        {
+            t.color = c;
+            var ol = t.GetComponent<Outline>(); ol.effectColor = new Color(0.08f, 0.05f, 0.02f, 0.95f);
         }
 
         static string OnOff(string n, bool v) => n + ": " + (v ? "On" : "Off");
@@ -547,7 +550,7 @@ namespace PlantGame.UI
             trig.triggers.Add(enter);
             var cb = b.colors; cb.highlightedColor = new Color(0.49f, 0.95f, 0.9f, 1f); cb.pressedColor = Palette.SkyBlue; b.colors = cb;
             var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, height), new Vector2(0.5f, 0.5f), true, true);
-            t.color = Palette.TextOrange;
+            Hint(t);
             return t;
         }
     }

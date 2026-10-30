@@ -1,4 +1,4 @@
-# T57 — Touch input layer: virtual stick, look drag, buttons feed PlayerInputReader
+# T57 — Touch input layer: look drag, tap-to-walk, buttons feed PlayerInputReader (the virtual stick was removed in v3, see the rework note below)
 
 **Owner:** A1 Gameplay · **Status:** REVIEW (post-MVP, see `TASKS.md`) · **Depends on:** —
 
@@ -25,4 +25,4 @@ Test: menu `PlantGame > Touch Controls (editor test)` then play (mouse acts as a
 Known: no long-press drop; items cycle with the Next item button.
 
 ## v3 rework (2026-10-27)
-The stick, context button and water button were replaced: tap the ground to walk (turn first, then walk), tap the circle / diamond marker to act (`InteractionMarkers.Tappables`, `PlayerInteraction.HandleTap`), tap a beanstalk to climb, double-tap a hotbar slot to drop, jump again in the air to glide. Camera follow is always on for touch. See `docs/mobile-controls.md`; backlog in `TASKS-ANDROID.md`.
+The joystick (virtual stick), context button and water button were removed / replaced; the touch HUD has no joystick area any more: tap the ground to walk (turn first, then walk), tap the circle / diamond marker to act (`InteractionMarkers.Tappables`, `PlayerInteraction.HandleTap`), tap a beanstalk to climb, double-tap a hotbar slot to drop, jump again in the air to glide. Camera follow is always on for touch. See `docs/mobile-controls.md`; backlog in `TASKS-ANDROID.md`.

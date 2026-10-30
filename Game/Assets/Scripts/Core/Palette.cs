@@ -27,7 +27,8 @@ namespace PlantGame.Core
         public static readonly Color Soil       = Hex("7A5230");
         /// <summary>HUD text accents: prompts and warnings in orange, labels in purple (user request).</summary>
         public static readonly Color TextOrange = Hex("FF9A3C");
-        public static readonly Color TextPurple = Hex("B58CFF");
+        public static readonly Color TextPurple = Hex("B58CFF");   // world focus highlight only
+        public static readonly Color TextBlue = Hex("12365C");   // HUD indicator text
         /// <summary>Magic / accent only: glow, rim, water edge.</summary>
         public static readonly Color GlowCyan   = Hex("7CF2E6");
         /// <summary>Player character, default "Explorer" outfit: one colour per PlayerRole (Gold is also used by the can and UI).</summary>
