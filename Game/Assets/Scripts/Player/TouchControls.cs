@@ -346,8 +346,8 @@ namespace PlantGame.Player
             scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = UiLayout.MatchHeight;
             var root = (RectTransform)cgo.transform;
 
-            MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-170, 190), 170, "Jump");
-            MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(120, -170), 150, "Pause");
+            MakeButton(Btn.Jump, root, new Vector2(1f, 0f), new Vector2(-165, 185), 160, "Jump");
+            MakeButton(Btn.Pause, root, new Vector2(0f, 1f), new Vector2(125, -175), 160, "Pause");
         }
 
         RectTransform Circle(string name, Transform parent, Vector2 anchor, Vector2 size, Vector2 pos, Sprite sprite)
@@ -374,7 +374,7 @@ namespace PlantGame.Player
             t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = LabelGreen;
             bool bold = b == Btn.Jump;   // Jump reads bold
             t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            t.fontSize = b == Btn.Pause ? 30 : size > 160 ? 52 : size > 140 ? 44 : 36; t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
+            t.fontSize = 44;   // same size and font on every button t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
             var ol = tgo.AddComponent<Outline>(); ol.effectColor = b == Btn.Pause ? new Color(0.45f, 0.45f, 0.45f, 0.8f) : LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = b == Btn.Pause;   // Pause reads gold too
             if (b == Btn.Pause) t.color = Palette.Gold;   // keeps the gold labels readable on the white disc
             rt.gameObject.AddComponent<CanvasGroup>();
