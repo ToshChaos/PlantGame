@@ -342,9 +342,9 @@ namespace PlantGame.UI
             OnCodeChanged("");
             Button(_generate.transform, "Back", new Vector2(0, -400), () => Show(_home), 300, 34);
 
-            // story: Resources/Story.md in one panel as tall as the generate screen's two panels
+            // story: Resources/Story.txt in one panel as tall as the generate screen's two panels
             _story = Screen("Story", root, 0.82f);
-            Label(_story.transform, "Story", 70, new Vector2(0, 450), 1200, Palette.TextOrange);
+            Label(_story.transform, "Overgrown", 70, new Vector2(0, 450), 1200, Palette.TextOrange);
             var sp = Panel(_story.transform, new Vector2(0, 30), new Vector2(gt ? 1200 : 900, 700), new Color(0.07f, 0.16f, 0.25f, 0.9f));
             var asset = Resources.Load<TextAsset>("Story");
             var st = Label(sp, asset != null ? asset.text.Trim().Replace("\r", "") : "", 30, Vector2.zero, (gt ? 1200 : 900) - 80, Color.white);
