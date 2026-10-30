@@ -422,11 +422,11 @@ namespace PlantGame.UI
             _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-530, 30)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
-            _qualityLabelP = Button("Quality", pr, V(new Vector2(380, 45), new Vector2(10, -80)), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptionLabels(); }, two ? 400 : 360, 30);   // T63; touch: middle column under Postprocessing
+            _qualityLabelP = Button("Quality", pr, V(new Vector2(0, 215), new Vector2(10, -80)), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // T63; touch: middle column under Postprocessing
             _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
             UiKit.Slider(pr, _font, "Music volume", V(new Vector2(-380, 20), new Vector2(-235, -130)), 380, GameSettings.MusicVolume, v => GameSettings.MusicVolume = v);
-            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(-380, -85), new Vector2(-530, -95)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
+            UiKit.Slider(pr, _font, "Sound volume", V(new Vector2(-380, -105), new Vector2(-530, -95)), 380, GameSettings.SoundVolume, v => { GameSettings.SoundVolume = v; Audio.AudioManager.PlaySfx("ui_click"); });
             var resumeText = Button("Resume", pr, V(new Vector2(0, 50), new Vector2(550, 250)), () => SetPaused(false));
             resumeText.transform.parent.GetComponent<Image>().color = new Color(0.22f, 0.58f, 0.32f, 0.97f);   // green: the main action
             Button("Restart", pr, V(new Vector2(0, -50), new Vector2(550, 140)), Restart);
