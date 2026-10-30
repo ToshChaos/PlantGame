@@ -327,6 +327,15 @@ namespace PlantGame.World
         // ------------------------------------------------------------------ leaf crowns
         static readonly Dictionary<string, Material> LeafMats = new Dictionary<string, Material>();
 
+        /// <summary>Leaf tint for a bush standing at `pos` (position hash, so no random draws): greens, autumn warm colours, frosted in the snow.</summary>
+        static Color BushTint(Vector3 pos)
+        {
+            int h = Mathf.Abs(Mathf.RoundToInt(pos.x * 7.3f) * 31 + Mathf.RoundToInt(pos.z * 5.9f) * 17) % 3;
+            if (Theme == LevelTheme.Snow) return new Color(0.88f, 0.94f, 0.95f);
+            if (Theme == LevelTheme.Autumn) return h == 0 ? new Color(0.92f, 0.45f, 0.16f) : h == 1 ? new Color(0.85f, 0.25f, 0.18f) : new Color(0.95f, 0.78f, 0.28f);
+            return h == 0 ? new Color(0.55f, 0.88f, 0.42f) : h == 1 ? new Color(0.42f, 0.78f, 0.36f) : new Color(0.66f, 0.9f, 0.45f);
+        }
+
         /// <summary>The Quaternius leaf-cluster material (Q_Leaves_NormalTree, alpha-clipped) tinted for `tint`; null when the kit does not carry it.</summary>
         static readonly Dictionary<string, Material> TintMats = new Dictionary<string, Material>();
 
@@ -442,8 +451,8 @@ namespace PlantGame.World
                     var p = new Vector2(rs.x + Mathf.Cos(a) * r, rs.z + Mathf.Sin(a) * r);
                     if (Vector2.Distance(p, c2) > edge(Mathf.Atan2(p.y - c2.y, p.x - c2.x)) * 0.93f || !free(p, 0.3f)) continue;
                     bool isBrick = rnd.NextDouble() < 0.3; float sz = 0.08f + (float)rnd.NextDouble() * 0.2f;
-                    var g = MeshPrim(isBrick ? "Brick" : "MarbleChip", DebrisMeshes.Rock(rnd.Next(8)), root.transform, new Vector3(p.x, Y(p) + sz * 0.15f, p.y),
-                                     isBrick ? new Vector3(sz * 2.2f, sz * 1.1f, sz * 1.2f) : new Vector3(sz * 1.5f, sz * 0.7f, sz * 1.1f), isBrick ? brick : marble, false);
+                    var g = MeshPrim(isBrick ? "Brick" : "MarbleChip", DebrisMeshes.Tile(rnd.Next(8)), root.transform, new Vector3(p.x, Y(p) + sz * 0.15f, p.y),
+                                     isBrick ? new Vector3(sz * 2.2f, sz * 1.1f, sz * 1.2f) : new Vector3(sz * 1.5f, sz * 0.45f, sz * 1.1f), isBrick ? brick : marble, false);
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 12f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 12f);
                     g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
@@ -485,7 +494,7 @@ namespace PlantGame.World
                 float a = (float)(rnd.NextDouble() * 6.283), r = edge(a) + 1.2f + (float)rnd.NextDouble() * 5f;
                 var pos = new Vector3(centre.x + Mathf.Cos(a) * r, centre.y + IslandTerrain.Shoulder - 5f + (float)rnd.NextDouble() * 7f, centre.z + Mathf.Sin(a) * r);
                 float sz = 0.15f + (float)rnd.NextDouble() * 0.35f; bool gem = rnd.NextDouble() < 0.5;
-                var g = MeshPrim(gem ? "FloatGem" : "FloatChip", gem ? DebrisMeshes.Crystal(rnd.Next(4)) : DebrisMeshes.Rock(rnd.Next(8)), root.transform, pos,
+                var g = MeshPrim(gem ? "FloatGem" : "FloatChip", gem ? DebrisMeshes.Crystal(rnd.Next(4)) : DebrisMeshes.Tile(rnd.Next(8)), root.transform, pos,
                                  gem ? new Vector3(sz, sz * 1.5f, sz) : new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), gem ? crystal : marble, false);
                 var b = g.AddComponent<FloatBob>(); b.amplitude = 0.25f + sz; b.period = 3f + (float)rnd.NextDouble() * 4f; b.wobble = 10f; b.spin = (rnd.NextDouble() < 0.5 ? -1f : 1f) * (10f + (float)rnd.NextDouble() * 30f);
                 if (gem) g.AddComponent<GemSparkle>().baseLevel = 0.6f;
@@ -505,8 +514,6 @@ namespace PlantGame.World
         }
 
         // ------------------------------------------------------------------ imported models (Kenney CC0 kits)
-        // The small Kenney rocks have no usable material of their own (they came out orange and green): they are shown as golden-orange jewels instead.
-        static bool IsJewelModel(string n) => n == "rock_smallA" || n == "rock_smallB" || n == "stone_smallC";
         static Material _yellowCrystal;
         /// <summary>The glowing crystal material; snow levels use a golden-yellow copy (the cyan crystals read as green against the snow).</summary>
         static Material CrystalMat()
@@ -532,27 +539,20 @@ namespace PlantGame.World
             return _derived[(src, name)] = m;
         }
 
-        static Material _jewel;
-        static Material JewelMat()
-        {
-            if (_jewel != null) return _jewel;
-            var m = RuntimeMats.NewLit("M_Jewel", new Color(1f, 0.62f, 0.12f, 0.3f));
-            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.92f);
-            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0.1f);
-            RuntimeMats.SetTransparent(m);
-            m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(1f, 0.5f, 0.08f) * 0.55f);
-            return _jewel = m;
-        }
-
         /// <summary>
         /// Places an imported prop (Kit.Prop) standing on `pos`, scaled so it is `height` m tall (0 = native size), turned by `yaw`.
         /// Optional box collider on the Ground layer. Returns null when the kit has no such model, so callers fall back to primitives.
         /// </summary>
         static GameObject Model(Transform parent, string name, Vector3 pos, float yaw, float height, bool collide)
         {
-            var prefab = Kit.Prop(name); if (prefab == null) return null;
-            var go = Object.Instantiate(prefab, pos, Quaternion.Euler(0, yaw, 0), parent); go.name = name;
-            if (IsJewelModel(name)) { if (height > 0f) height *= 0.6f; else go.transform.localScale *= 0.6f; foreach (var jr in go.GetComponentsInChildren<MeshRenderer>()) { var jm = new Material[jr.sharedMaterials.Length]; for (int q = 0; q < jm.Length; q++) jm[q] = JewelMat(); jr.sharedMaterials = jm; jr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; } }
+            var go = OrganicProps.Create(name, pos, yaw, parent, Theme);   // the blocky Kenney flowers, grass and rocks: smooth stand-ins
+            if (go == null)
+            {
+                bool flatBush = name.StartsWith("plant_bush") && Kit.Prop("Bush_Common") != null;   // Kenney's flat-leaf bushes: the leafy Quaternius bush, tinted
+                var prefab = Kit.Prop(flatBush ? "Bush_Common" : name); if (prefab == null) return null;
+                go = Object.Instantiate(prefab, pos, Quaternion.Euler(0, yaw, 0), parent); go.name = name;
+                if (flatBush) { Recolour(go, BushTint(pos)); if (height <= 0f) go.transform.localScale *= 0.8f; }
+            }
             var rs = go.GetComponentsInChildren<Renderer>(); if (rs.Length == 0) { Object.Destroy(go); return null; }
             Bounds B() { var b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds); return b; }
             var bb = B();
@@ -595,6 +595,9 @@ namespace PlantGame.World
         }
 
         static readonly Dictionary<Mesh, Mesh> SimplifiedTrees = new Dictionary<Mesh, Mesh>();
+
+        /// <summary>The imported mesh a simplified tree copy was made from (the atmosphere builder bakes the original, an asset, instead of the copy); `m` itself otherwise.</summary>
+        public static Mesh SourceOf(Mesh m) { foreach (var kv in SimplifiedTrees) if (kv.Value == m) return kv.Key; return m; }
 
         /// <summary>The Quaternius trees are 3-10k triangles, mostly bark. Swap in a copy whose leaf-card submesh uses generated mesh LOD 1 (fewer cards) while the bark keeps
         /// LOD 0; deeper LODs collapse the alpha-clipped leaf cards entirely, leaving bare trees.</summary>
@@ -1332,7 +1335,7 @@ namespace PlantGame.World
                 else if (kind < 0.42)       // jagged rock, squashed or stretched
                 {
                     g = new GameObject("Rock" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
-                    g.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8));
+                    g.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8), 3);
                     g.AddComponent<MeshRenderer>().sharedMaterial = stone;
                     g.transform.localScale = new Vector3(s * (0.8f + (float)rnd.NextDouble() * 0.9f), s * (0.5f + (float)rnd.NextDouble() * 0.9f), s * (0.8f + (float)rnd.NextDouble() * 0.9f));
                 }
@@ -1354,13 +1357,13 @@ namespace PlantGame.World
                 {
                     g = new GameObject("Pillar" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     Prim("Drum", PrimitiveType.Cylinder, g.transform, pos, new Vector3(s * 0.55f, s * (0.7f + (float)rnd.NextDouble()), s * 0.55f), _marble, false);
-                    var chunk = Prim("Chunk", PrimitiveType.Cube, g.transform, pos + new Vector3(s * 0.9f, -s * 0.5f, s * 0.2f), new Vector3(s * 0.5f, s * 0.35f, s * 0.45f), _marble, false);
+                    var chunk = MeshPrim("Chunk", DebrisMeshes.Tile(i), g.transform, pos + new Vector3(s * 0.9f, -s * 0.5f, s * 0.2f), new Vector3(s * 0.5f, s * 0.35f, s * 0.45f), _marble, false);
                     chunk.transform.rotation = Random.rotationUniform;
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 40f - 20f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 40f - 20f);
                 }
                 else if (kind < 0.84)       // flat carved slab
                 {
-                    g = Prim("Slab" + i, PrimitiveType.Cube, rocks.transform, pos, new Vector3(s * 1.6f, s * 0.22f, s * (0.9f + (float)rnd.NextDouble() * 0.5f)), _marble, false);
+                    g = MeshPrim("Slab" + i, DebrisMeshes.Tile(i), rocks.transform, pos, new Vector3(s * 1.6f, s * 0.22f, s * (0.9f + (float)rnd.NextDouble() * 0.5f)), _marble, false);
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 30f - 15f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 30f - 15f);
                 }
                 else if (kind < 0.93)       // floating log
@@ -1372,7 +1375,7 @@ namespace PlantGame.World
                 {
                     g = new GameObject("RockBush" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     var rock = new GameObject("Rock"); rock.transform.SetParent(g.transform, false);
-                    rock.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8)); rock.AddComponent<MeshRenderer>().sharedMaterial = stone;
+                    rock.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock(rnd.Next(8), 3); rock.AddComponent<MeshRenderer>().sharedMaterial = stone;
                     rock.transform.localScale = new Vector3(s * 1.3f, s * 0.7f, s * 1.1f);
                     MeshPrim("MossCap", DebrisMeshes.Rock(rnd.Next(8)), g.transform, pos + Vector3.up * s * 0.6f, new Vector3(s * 0.9f, s * 0.35f, s * 0.8f), Mat("M_Foliage"), false);
                 }
@@ -1401,7 +1404,7 @@ namespace PlantGame.World
                 if (i % 5 == 0)   // a large grey rock with a green moss cap where the arch used to stand
                 {
                     float rs2 = 1.8f + (float)rnd.NextDouble() * 0.6f; var rp = pos + new Vector3(-0.2f, rs2 * 0.3f, 1.6f);
-                    MeshPrim("BigRock", DebrisMeshes.Rock(rnd.Next(8)), isl.transform, rp, new Vector3(rs2 * 1.3f, rs2 * 0.9f, rs2 * 1.1f), stone, false);
+                    MeshPrim("BigRock", DebrisMeshes.Rock(rnd.Next(8), 3), isl.transform, rp, new Vector3(rs2 * 1.3f, rs2 * 0.9f, rs2 * 1.1f), stone, false);
                     MeshPrim("MossCap", DebrisMeshes.Rock(rnd.Next(8)), isl.transform, rp + Vector3.up * rs2 * 0.5f, new Vector3(rs2 * 0.95f, rs2 * 0.4f, rs2 * 0.85f), Mat("M_Foliage"), false);
                 }
                 foreach (var c in isl.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);   // islets stay out of reach

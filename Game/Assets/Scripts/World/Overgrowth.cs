@@ -61,7 +61,7 @@ namespace PlantGame.World
         static Texture2D BladeTex()
         {
             if (_bladeTex != null) return _bladeTex;
-            const int W = 64, Hh = 64;
+            const int W = 256, Hh = 256;   // fine enough that the alpha-clipped blade edges stay smooth up close
             var tex = new Texture2D(W, Hh, TextureFormat.RGBA32, true) { name = "T_GrassBlades", wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave };
             var px = new Color32[W * Hh];
             var r = new System.Random(4242);
@@ -373,23 +373,36 @@ namespace PlantGame.World
 
 
         // ---- extra ground clutter: more grass, mud / rock decals, extra moss, low shrubs, sticks and pebbles. Own random, so the layout above is unchanged.
+        /// <summary>A soft lumpy dome (shrub, pebble, leaf clump): shared vertices with normals fanning out from below its centre, so it shades round, not faceted.</summary>
         internal static void Blob(Batch b, Vector3 at, float r, float h, float yaw, System.Random rnd)
         {
-            const int N = 6;
-            var low = new Vector3[N]; var mid = new Vector3[N];
-            for (int i = 0; i < N; i++)
-            {
-                float a = yaw + i * 6.2832f / N; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
-                low[i] = at + d * r * (0.85f + 0.3f * (float)rnd.NextDouble()) - Vector3.up * h * 0.1f;
-                mid[i] = at + d * r * (0.7f + 0.25f * (float)rnd.NextDouble()) + Vector3.up * h * 0.55f;
-            }
+            const int N = 9, Rings = 3;
+            float[] lump = new float[12]; for (int i = 0; i < 12; i++) lump[i] = 0.85f + 0.3f * (float)rnd.NextDouble();   // 12 + 1 draws, as many as the old blob, so the rest of the dressing keeps its layout
             var top = at + Vector3.up * h * (0.9f + 0.2f * (float)rnd.NextDouble());
-            for (int i = 0; i < N; i++)
+            var core = at - Vector3.up * h * 0.35f;   // normals fan out from here: a rounded cushion
+            int o = b.v.Count;
+            for (int ring = 0; ring < Rings; ring++)
             {
-                int j = (i + 1) % N;
-                b.Quad(low[i], low[j], mid[j], mid[i], (low[i] - at + Vector3.up * h * 0.4f).normalized);
-                b.Tri(mid[i], mid[j], top, (mid[i] + mid[j] - at * 2f + Vector3.up * h).normalized);
+                float t = ring / (float)Rings, ang = t * Mathf.PI * 0.5f;   // 0 at the foot, toward the top
+                float rr = r * Mathf.Cos(ang) * (ring == 0 ? 1f : 1.05f), y = h * Mathf.Sin(ang) * 0.95f - (ring == 0 ? h * 0.1f : 0f);
+                for (int i = 0; i < N; i++)
+                {
+                    float a = yaw + i * 6.2832f / N; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+                    var p = at + d * rr * Mathf.Lerp(lump[i], 1f, t) + Vector3.up * y;
+                    b.v.Add(p); b.n.Add((p - core).normalized);
+                }
             }
+            int ti = b.v.Count; b.v.Add(top); b.n.Add(Vector3.up);
+            // winding: the first quad's face should point outward
+            bool flip = Vector3.Dot(Vector3.Cross(b.v[o + N] - b.v[o], b.v[o + 1] - b.v[o]), b.v[o] - at) < 0f;
+            void T(int x, int y, int z) { if (flip) b.t.AddRange(new[] { x, z, y }); else b.t.AddRange(new[] { x, y, z }); }
+            for (int ring = 0; ring < Rings - 1; ring++)
+                for (int i = 0; i < N; i++)
+                {
+                    int j = (i + 1) % N, a = o + ring * N + i, bb = o + ring * N + j, c = a + N, d = bb + N;
+                    T(a, c, bb); T(bb, c, d);
+                }
+            for (int i = 0; i < N; i++) { int a = o + (Rings - 1) * N + i, bb = o + (Rings - 1) * N + (i + 1) % N; T(a, ti, bb); }
         }
 
         static void Clutter(Transform root, Vector3 centre, int index, System.Func<float, float> edge, System.Func<Vector2, float, bool> free,

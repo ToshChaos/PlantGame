@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -118,10 +119,38 @@ namespace PlantGame.Editor
             vol.isGlobal = true; vol.priority = 1; vol.sharedProfile = profile;
             atm.volume = vol;
 
+            StoreGenerated(root, AtmosphereDir + "/Atmosphere_Generated.asset");
             PrefabUtility.SaveAsPrefabAsset(root, AtmospherePrefab);
             Object.DestroyImmediate(root);
             AssetDatabase.SaveAssets();
             Debug.Log("[PlantGame] Atmosphere prefab built: " + AtmospherePrefab);
+        }
+
+        /// <summary>
+        /// Code-made meshes and materials (sky rocks, tiles, islets, far islands) are not assets, and SaveAsPrefabAsset keeps only empty
+        /// references to them: store every one under `root` in a single asset first (rebuilt from scratch each time).
+        /// </summary>
+        static void StoreGenerated(GameObject root, string path)
+        {
+            AssetDatabase.DeleteAsset(path);
+            Object main = null; var seen = new HashSet<Object>(); int n = 0;
+            void Store(Object o)
+            {
+                if (o == null || AssetDatabase.Contains(o) || !seen.Add(o)) return;
+                o.hideFlags = HideFlags.None;
+                if (main == null) { AssetDatabase.CreateAsset(o, path); main = o; } else AssetDatabase.AddObjectToAsset(o, main);
+                n++;
+            }
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true)) { mf.sharedMesh = Scenery.SourceOf(mf.sharedMesh); Store(mf.sharedMesh); }
+            foreach (var mc in root.GetComponentsInChildren<MeshCollider>(true)) Store(mc.sharedMesh);
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+                foreach (var m in r.sharedMaterials)
+                {
+                    Store(m);
+                    if (m != null) foreach (var id in m.GetTexturePropertyNameIDs()) Store(m.GetTexture(id));
+                }
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[PlantGame] {n} generated meshes / materials stored in {path}");
         }
 
         static GameObject Quad(string name, Transform parent, Vector3 pos, float size, Material m, bool flat)
