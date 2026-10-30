@@ -139,8 +139,9 @@ namespace PlantGame.World
             int Count(float perUnit) => Mathf.RoundToInt(perUnit * area * vegetation);
             // big trees (about 2x the usual height) only grow where the island has water
             int bigTrees = water && vegetation > 0.5f && rnd.NextDouble() < 0.65 ? 1 + (area > 1.8f && rnd.NextDouble() < 0.4 ? 1 : 0) : 0;
-            if (bigTrees > 0) Scatter(bigTrees, 80, 0.45f, 0.85f, 8f, 6f, p => Tree(root.transform, World(p), 12f + (float)rnd.NextDouble() * 3f, rnd, PickKind(weights, rnd)), 6f);   // T38: normal trees are 2x, big ones stay above them
-            if (index == HugeTreeIsland) Scatter(1, 120, 0.4f, 0.8f, 10f, 8f, p => Tree(root.transform, World(p), 20f, rnd, PickKind(weights, rnd)), 8f);   // one tree three times a normal one
+            var bigTreeSpots = new List<Vector3>();   // x, z, height: thick roots hang from the underside below them (SideDecor)
+            if (bigTrees > 0) Scatter(bigTrees, 80, 0.45f, 0.85f, 8f, 6f, p => { float h = 12f + (float)rnd.NextDouble() * 3f; Tree(root.transform, World(p), h, rnd, PickKind(weights, rnd)); bigTreeSpots.Add(new Vector3(p.x, p.y, h)); }, 6f);   // T38: normal trees are 2x, big ones stay above them
+            if (index == HugeTreeIsland) Scatter(1, 120, 0.4f, 0.8f, 10f, 8f, p => { Tree(root.transform, World(p), 20f, rnd, PickKind(weights, rnd)); bigTreeSpots.Add(new Vector3(p.x, p.y, 20f)); }, 8f);   // one tree three times a normal one
             Scatter(Count(14), 160, 0.6f, 0.92f, 4.5f, 3.2f, p => Tree(root.transform, World(p), 4.8f + (float)rnd.NextDouble() * 4.0f, rnd, PickKind(weights, rnd)), 3.2f);
             Scatter(Count(10), 120, 0.35f, 0.92f, 1.8f, 1.2f, p => Bush(root.transform, World(p), 0.7f + (float)rnd.NextDouble() * 0.7f, rnd), 1.2f);
             Scatter(Mathf.RoundToInt(Count(18) * (vegetation < 0.3f ? 0.5f : 1f)), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
@@ -181,7 +182,7 @@ namespace PlantGame.World
                     var rg = new GameObject("RuinSounds"); rg.transform.SetParent(isle, true); rg.transform.position = ruinSpots[0] + Vector3.up * 1.5f;
                     rg.AddComponent<Audio.RuinSounds>();
                 }
-                SideDecor(isle, centre, index, vegetation, edge(0f));
+                SideDecor(isle, centre, index, vegetation, edge(0f), bigTreeSpots);
                 _leafTrees = null;
             }
 
@@ -218,7 +219,7 @@ namespace PlantGame.World
         /// Things growing and sticking out of the side of an island: rock protrusions, ferns / grass / bushes reaching sideways, and (on some
         /// islands) clusters of flowers. Own random, no colliders. Lives under a "SideDecor" child that the terrain Lift skips.
         /// </summary>
-        public static void SideDecor(Transform isle, Vector3 centre, int index, float lush, float rimRadius)
+        public static void SideDecor(Transform isle, Vector3 centre, int index, float lush, float rimRadius, List<Vector3> bigTrees = null)
         {
             var terrain = isle.GetComponent<IslandTerrain>(); if (terrain == null) return;
             EnsureMaterials();
@@ -267,6 +268,60 @@ namespace PlantGame.World
                     }
                 }
             }
+            if (bigTrees != null && bigTrees.Count > 0) TreeRoots(root.transform, terrain, centre, index, bigTrees);
+        }
+
+        /// <summary>
+        /// Thick bark roots breaking out of the rocky underside right below each big tree (x, z, height) and hanging down into the air,
+        /// with a few thinner side rootlets. Merged into one mesh, no collider, own random.
+        /// </summary>
+        static void TreeRoots(Transform parent, IslandTerrain terrain, Vector3 centre, int index, List<Vector3> trees)
+        {
+            var rnd = new System.Random(index * 7121 + 5);
+            var parts = new List<CombineInstance>();
+            float Rand(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
+            void Root(Vector3 start, Vector3 outward, float len, float thick, float drift)
+            {
+                var side = Vector3.Cross(Vector3.up, outward).normalized; float ph = Rand(0f, 6.28f), sw = Rand(-1f, 1f);
+                var pts = new List<Vector3>();
+                for (int i = 0; i <= 11; i++)
+                {
+                    float s = i / 11f;
+                    pts.Add(start - centre + outward * (drift * len * (1f - (1f - s) * (1f - s))) + side * (len * 0.1f * Mathf.Sin(s * 4.5f + ph) * s + sw * s * s * len * 0.15f) + Vector3.down * (len * s));
+                }
+                parts.Add(new CombineInstance { mesh = ShapeMeshes.Tube(pts, q => thick * Mathf.Lerp(1.25f, 0.1f, Mathf.Sqrt(q)), 7), transform = Matrix4x4.identity });
+                for (int b = 0, nb = rnd.Next(3); b < nb; b++)   // side rootlets
+                {
+                    int k = 3 + rnd.Next(4); var from = pts[k] + centre; float bl = len * Rand(0.25f, 0.45f);
+                    var dir = (outward * Rand(-0.3f, 0.8f) + side * Rand(-1f, 1f)).normalized; var sub = new List<Vector3>();
+                    for (int i = 0; i <= 6; i++) { float s = i / 6f; sub.Add(from - centre + dir * (bl * 0.6f * s) + Vector3.down * (bl * s * s)); }
+                    float bt = thick * Mathf.Lerp(1.25f, 0.1f, Mathf.Sqrt(k / 11f)) * 0.6f;
+                    parts.Add(new CombineInstance { mesh = ShapeMeshes.Tube(sub, q => bt * Mathf.Lerp(1f, 0.15f, q), 5), transform = Matrix4x4.identity });
+                }
+            }
+            foreach (var t in trees)
+            {
+                float big = t.z / 12f, rt = new Vector2(t.x - centre.x, t.y - centre.z).magnitude, a0 = Mathf.Atan2(t.y - centre.z, t.x - centre.x);
+                int n = Mathf.RoundToInt(Rand(3f, 5.5f) * Mathf.Sqrt(big));
+                for (int k = 0; k < n; k++)
+                {
+                    float a = a0 + Rand(-1.3f, 1.3f) / Mathf.Max(rt, 2f), r = rt + Rand(-1f, 1f);
+                    // the underside point straight below: walk down the side wall until it has curled in to the tree's distance from the centre
+                    float y = IslandTerrain.Shoulder; Vector3 o = Vector3.zero, wp = Vector3.zero;
+                    for (; y > -terrain.depth * 0.95f; y -= 0.15f)
+                    {
+                        wp = WallPoint(terrain, centre, a, y, terrain.depth, out o, 0.35f);
+                        if (new Vector2(wp.x - centre.x, wp.z - centre.z).magnitude <= r) break;
+                    }
+                    Root(wp + Vector3.up * 0.3f, o, Rand(3f, 6.5f) * Mathf.Sqrt(big), Rand(0.16f, 0.28f) * Mathf.Sqrt(big), Rand(0.08f, 0.3f));
+                }
+            }
+            if (parts.Count == 0) return;
+            var mesh = new Mesh { name = "TreeRoots", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            mesh.CombineMeshes(parts.ToArray(), true, true);
+            foreach (var c in parts) Object.DestroyImmediate(c.mesh);
+            var g = new GameObject("TreeRoots"); g.transform.SetParent(parent, false); g.transform.position = centre;
+            g.AddComponent<MeshFilter>().sharedMesh = mesh; g.AddComponent<MeshRenderer>().sharedMaterial = Kit.Mat("M_Bark");
         }
 
         // ------------------------------------------------------------------ leaf crowns

@@ -37,11 +37,11 @@ namespace PlantGame.World
         static readonly Color[] RockColors =
         {
             new Color(0.62f, 0.63f, 0.67f),   // grey granite
-            new Color(0.66f, 0.49f, 0.37f),   // brown earth
-            new Color(0.88f, 0.77f, 0.52f),   // sandstone
+            new Color(0.58f, 0.55f, 0.52f),   // warm grey (was brown earth: the undersides read grey, not brown)
+            new Color(0.74f, 0.72f, 0.66f),   // pale sandy grey
             new Color(0.78f, 0.86f, 0.94f),   // pale blue-grey (the original look)
             new Color(0.42f, 0.42f, 0.47f),   // dark slate
-            new Color(0.74f, 0.50f, 0.42f),   // red clay
+            new Color(0.62f, 0.57f, 0.55f),   // rosy grey (was red clay)
         };
         static readonly Dictionary<string, Material> RockMats = new Dictionary<string, Material>();
 
