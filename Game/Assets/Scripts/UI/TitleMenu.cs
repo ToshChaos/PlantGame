@@ -21,7 +21,7 @@ namespace PlantGame.UI
 
         Font _font;
         WorldGenerator _showcase; Vector3[] _tour, _tourLook;
-        GameObject _home, _levels, _options, _generate;
+        GameObject _home, _levels, _options, _generate, _story;
         Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle, _qualityToggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
@@ -159,7 +159,7 @@ namespace PlantGame.UI
         // ------------------------------------------------------------------ actions
         void Show(GameObject screen)
         {
-            foreach (var g in new[] { _home, _levels, _options, _generate }) g.SetActive(g == screen);
+            foreach (var g in new[] { _home, _levels, _options, _generate, _story }) g.SetActive(g == screen);
             RefreshLevels();
             if (screen == _generate) OnCodeChanged(_codeField.text);
         }
@@ -243,24 +243,24 @@ namespace PlantGame.UI
             {
                 // phones are wide and short: one column of five buttons on the right over a translucent panel, the logo low on the left so the islands stay visible
                 float cw = 1080f * UnityEngine.Screen.width / Mathf.Max(1, UnityEngine.Screen.height), colX = cw / 2f - 300f;
-                Panel(_home.transform, new Vector2(colX, 0), new Vector2(640, 720), new Color(0.12f, 0.24f, 0.34f, 0.6f));
+                Panel(_home.transform, new Vector2(colX, 0), new Vector2(640, 780), new Color(0.12f, 0.24f, 0.34f, 0.6f));
                 Title(_home.transform, new Vector2(-280, -230), 0.8f);
-                Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-280, -340), 880, Color.white);
-                Accent(Button(_home.transform, "Play", new Vector2(colX, 260), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
-                Button(_home.transform, "Select level", new Vector2(colX, 130), () => Show(_levels), 380);
-                Button(_home.transform, "Generate level", new Vector2(colX, 0), () => Show(_generate), 380);
-                Button(_home.transform, "Options", new Vector2(colX, -130), () => Show(_options), 380);
-                Danger(Button(_home.transform, "Quit", new Vector2(colX, -260), Quit, 380));
+                Accent(Button(_home.transform, "Play", new Vector2(colX, 310), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
+                Button(_home.transform, "Select level", new Vector2(colX, 190), () => Show(_levels), 380);
+                Button(_home.transform, "Generate level", new Vector2(colX, 70), () => Show(_generate), 380);
+                Button(_home.transform, "Story", new Vector2(colX, -50), () => Show(_story), 380);
+                Button(_home.transform, "Options", new Vector2(colX, -170), () => Show(_options), 380);
+                Danger(Button(_home.transform, "Quit", new Vector2(colX, -290), Quit, 380));
             }
             else
             {
             Title(_home.transform, new Vector2(0, 340));
-            Label(_home.transform, "Grow plants to cross the floating islands.", 36, new Vector2(0, 230), 1500, Color.white);
-            Accent(Button(_home.transform, "Play", new Vector2(0, 50), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
-            Button(_home.transform, "Select level", new Vector2(0, -65), () => Show(_levels));
-            Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
-            Button(_home.transform, "Options", new Vector2(0, -255), () => Show(_options));
-            Danger(Button(_home.transform, "Quit", new Vector2(0, -350), Quit));
+            Accent(Button(_home.transform, "Play", new Vector2(0, 100), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
+            Button(_home.transform, "Select level", new Vector2(0, -15), () => Show(_levels));
+            Button(_home.transform, "Generate level", new Vector2(0, -110), () => Show(_generate));
+            Button(_home.transform, "Story", new Vector2(0, -205), () => Show(_story));
+            Button(_home.transform, "Options", new Vector2(0, -300), () => Show(_options));
+            Danger(Button(_home.transform, "Quit", new Vector2(0, -395), Quit));
             }
 
             _options = Screen("Options", root, 0.85f);
@@ -341,6 +341,16 @@ namespace PlantGame.UI
             _codeField.onValueChanged.AddListener(OnCodeChanged);
             OnCodeChanged("");
             Button(_generate.transform, "Back", new Vector2(0, -400), () => Show(_home), 300, 34);
+
+            // story: Resources/Story.md in one panel as tall as the generate screen's two panels
+            _story = Screen("Story", root, 0.82f);
+            Label(_story.transform, "Story", 70, new Vector2(0, 450), 1200, Palette.TextOrange);
+            var sp = Panel(_story.transform, new Vector2(0, 30), new Vector2(gt ? 1200 : 900, 700), new Color(0.07f, 0.16f, 0.25f, 0.9f));
+            var asset = Resources.Load<TextAsset>("Story");
+            var st = Label(sp, asset != null ? asset.text.Trim().Replace("\r", "") : "", 30, Vector2.zero, (gt ? 1200 : 900) - 80, Color.white);
+            ((RectTransform)st.transform).sizeDelta = new Vector2((gt ? 1200 : 900) - 80, 640);
+            st.alignment = TextAnchor.MiddleLeft; st.resizeTextForBestFit = true; st.resizeTextMinSize = 14; st.resizeTextMaxSize = st.fontSize; st.verticalOverflow = VerticalWrapMode.Truncate;
+            Button(_story.transform, "Back", new Vector2(0, -400), () => Show(_home), 300, 34);
         }
 
         /// <summary>"Overgrown" in leaf green; the O is a ring wrapped in a vine with leaves and a curling tendril.</summary>
