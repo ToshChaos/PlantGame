@@ -1797,7 +1797,7 @@ MonoBehaviour:
   masterVolume: 1
   musicVolume: 0.55
   sfxVolume: 0.8
-  ambienceVolume: 0.175
+  ambienceVolume: 0.0875
   crossfadeSeconds: 2.5
   voices: 12
   AmbienceBoost: 1
