@@ -34,11 +34,11 @@ start island's water first. Dew Seeds grow a Water Collector (one charge every 2
 - **Ten curated levels:** First Steps, Beanstalk Hill (autumn), Water from the Sky (rain, collector only), Skyfall (leaf
   glide), Stepping Stones, There and Back (sunrise), Snowed In (snow, Heat Seeds), Windy Summit (spiral, gusts), Into the
   Mist (fog), Storm Season (rain and gusts).
-- **Generate level** builds a random world; **Input seed** rebuilds any world from its code.
+- **Generate level** builds a random world, or rebuilds any world from a typed or pasted seed code.
 
 ### Seed codes
-Every generated level has a code of five dash-joined words, shown on the pause and win screens. Type or paste it under
-**Input seed** and the same world is built: same islands, plants, seeds and water.
+Every generated level has a code of five dash-joined words, shown on the pause and win screens. Type or paste it into
+the seed field of **Generate level** and the same world is built: same islands, plants, seeds and water.
 
 ## Features
 - Plants from **Blender Geometry Nodes**: six seeded variants per kind (bridge, beanstalk, mushroom patch, Water Collector),

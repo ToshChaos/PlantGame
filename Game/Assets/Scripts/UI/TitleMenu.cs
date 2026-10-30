@@ -12,7 +12,7 @@ namespace PlantGame.UI
 {
     /// <summary>
     /// T26: title screen and level select, built at runtime. Home (Play / Quit), then the level screen: curated level cards with best times,
-    /// a Random Level block (difficulty, its seed code is shown before you start and can be copied), an Enter Seed Code field with live
+    /// a Random Level block (difficulty, its seed code is shown before you start and can be copied), a seed code field (type or Paste) with live
     /// validation. Start puts the RunConfig in GameBootstrap.PendingRun and loads Main.
     /// </summary>
     public class TitleMenu : MonoBehaviour
@@ -21,7 +21,7 @@ namespace PlantGame.UI
 
         Font _font;
         WorldGenerator _showcase;
-        GameObject _home, _levels, _options, _generate, _seed;
+        GameObject _home, _levels, _options, _generate;
         Text _musicToggle, _soundToggle, _hintsToggle, _fpsToggle, _followToggle, _glowToggle, _autoWaterToggle, _fps30Toggle, _qualityToggle;
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
@@ -105,9 +105,9 @@ namespace PlantGame.UI
         // ------------------------------------------------------------------ actions
         void Show(GameObject screen)
         {
-            foreach (var g in new[] { _home, _levels, _options, _generate, _seed }) g.SetActive(g == screen);
+            foreach (var g in new[] { _home, _levels, _options, _generate }) g.SetActive(g == screen);
             RefreshLevels();
-            if (screen == _seed) OnCodeChanged(_codeField.text);
+            if (screen == _generate) OnCodeChanged(_codeField.text);
         }
 
         void NewRandomSeed() { _randomSeed = (int)(System.DateTime.UtcNow.Ticks & SeedCode.SeedMask); RefreshRandom(); }
@@ -193,9 +193,8 @@ namespace PlantGame.UI
                 Accent(Button(_home.transform, "Play", new Vector2(150, 140), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }, 380));
                 Button(_home.transform, "Select level", new Vector2(150, 20), () => Show(_levels), 380);
                 Button(_home.transform, "Generate level", new Vector2(740, 140), () => Show(_generate), 380);
-                Button(_home.transform, "Input seed", new Vector2(740, 20), () => Show(_seed), 380);
-                Button(_home.transform, "Options", new Vector2(150, -100), () => Show(_options), 380);
-                Danger(Button(_home.transform, "Quit", new Vector2(740, -100), Quit, 380));
+                Button(_home.transform, "Options", new Vector2(740, 20), () => Show(_options), 380);
+                Danger(Button(_home.transform, "Quit", new Vector2(150, -100), Quit, 380));
             }
             else
             {
@@ -204,9 +203,8 @@ namespace PlantGame.UI
             Accent(Button(_home.transform, "Play", new Vector2(0, 50), () => { if (levels.Length > 0) StartRun(levels[0].ToConfig()); }));
             Button(_home.transform, "Select level", new Vector2(0, -65), () => Show(_levels));
             Button(_home.transform, "Generate level", new Vector2(0, -160), () => Show(_generate));
-            Button(_home.transform, "Input seed", new Vector2(0, -255), () => Show(_seed));
-            Button(_home.transform, "Options", new Vector2(0, -350), () => Show(_options));
-            Danger(Button(_home.transform, "Quit", new Vector2(0, -445), Quit));
+            Button(_home.transform, "Options", new Vector2(0, -255), () => Show(_options));
+            Danger(Button(_home.transform, "Quit", new Vector2(0, -350), Quit));
             }
 
             _options = Screen("Options", root, 0.85f);
@@ -265,32 +263,28 @@ namespace PlantGame.UI
 
             // generate level: random seed, difficulty, shows the code before starting
             _generate = Screen("Generate", root, 0.82f);
-            Label(_generate.transform, "Generate level", 70, new Vector2(0, 400), 1200, Palette.TextOrange);
+            Label(_generate.transform, "Generate level", 70, new Vector2(0, 450), 1200, Palette.TextOrange);
             _difficulty = GameSettings.Difficulty;   // the last generated level's
             bool gt = TouchInput.Active;   // phones: wider buttons (x1.15), so more room between them
-            float gx = gt ? 280f : 215f, gy1 = gt ? -15f : -25f, gy2 = gt ? -125f : -115f;
-            var rnd = Panel(_generate.transform, new Vector2(0, gt ? 40 : 60), new Vector2(gt ? 1200 : 900, gt ? 380 : 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
-            Label(rnd, "Your seed", 34, new Vector2(0, gt ? 150 : 130), 800, Palette.TextOrange);
-            _randomCode = Label(rnd, "", 40, new Vector2(0, gt ? 80 : 65), 860, Color.white);
+            float gx = gt ? 280f : 215f, gy1 = gt ? -15f : -25f, gy2 = gt ? -125f : -115f;   // buttons inside the random panel
+            var rnd = Panel(_generate.transform, new Vector2(0, 215), new Vector2(gt ? 1200 : 900, 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
+            Label(rnd, "Your seed", 34, new Vector2(0, 125), 800, Palette.TextOrange);
+            _randomCode = Label(rnd, "", 40, new Vector2(0, 62), 860, Color.white);
             _diffLabel = Button(rnd, "Difficulty", new Vector2(-gx, gy1), () => { _difficulty = (_difficulty + 1) % 3; GameSettings.Difficulty = _difficulty; RefreshRandom(); }, 420, 26);
             Button(rnd, "New seed", new Vector2(gx, gy1), NewRandomSeed, 420, 30);
             Button(rnd, "Play", new Vector2(-gx, gy2), () => StartRun(RandomConfig()), 420, 34);
             Button(rnd, "Copy code", new Vector2(gx, gy2), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(RandomConfig()), 420, 30);
-            Button(_generate.transform, "Back", new Vector2(0, gt ? -330 : -250), () => Show(_home), 300, 34);
-
-            // input seed
-            _seed = Screen("Seed", root, 0.82f);
-            Label(_seed.transform, "Input seed", 70, new Vector2(0, 400), 1200, Palette.TextOrange);
-            var code = Panel(_seed.transform, new Vector2(0, 60), new Vector2(1000, 330), new Color(0.07f, 0.16f, 0.25f, 0.9f));
-            Label(code, "Type or paste a seed code", 34, new Vector2(0, 130), 900, Palette.TextOrange);
-            _codeField = InputBox(code, new Vector2(-170, 55), new Vector2(600, 64));
-            Button(code, "Paste", new Vector2(280, 55), () => { _codeField.text = GUIUtility.systemCopyBuffer; }, 220, 28);
-            _codeStatus = Label(code, "", 26, new Vector2(0, -35), 940, Color.white);
-            ((RectTransform)_codeStatus.transform).sizeDelta = new Vector2(940, 80);
-            Button(code, "Play code", new Vector2(0, -120), () => { if (_codeValid) StartRun(_codeConfig); }, 420, 34);
+            // input seed: type or paste a code below the random one
+            var code = Panel(_generate.transform, new Vector2(0, -150), new Vector2(gt ? 1200 : 900, 340), new Color(0.07f, 0.16f, 0.25f, 0.9f));
+            Label(code, "Or type / paste a seed code", 34, new Vector2(0, 125), 860, Palette.TextOrange);
+            _codeField = InputBox(code, new Vector2(-150, 50), new Vector2(gt ? 800 : 560, 64));
+            Button(code, "Paste", new Vector2(gt ? 400 : 305, 50), () => { _codeField.text = GUIUtility.systemCopyBuffer; }, 220, 28);
+            _codeStatus = Label(code, "", 26, new Vector2(0, -35), 860, Color.white);
+            ((RectTransform)_codeStatus.transform).sizeDelta = new Vector2(860, 70);
+            Button(code, "Play code", new Vector2(0, -115), () => { if (_codeValid) StartRun(_codeConfig); }, 420, 34);
             _codeField.onValueChanged.AddListener(OnCodeChanged);
             OnCodeChanged("");
-            Button(_seed.transform, "Back", new Vector2(0, -250), () => Show(_home), 300, 34);
+            Button(_generate.transform, "Back", new Vector2(0, -400), () => Show(_home), 300, 34);
         }
 
         /// <summary>"Overgrown" in leaf green; the O is a ring wrapped in a vine with leaves and a curling tendril.</summary>
