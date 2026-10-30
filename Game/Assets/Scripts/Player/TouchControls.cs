@@ -372,11 +372,8 @@ namespace PlantGame.Player
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = new Vector2(10, 10); trt.offsetMax = new Vector2(-10, -10);
             var t = tgo.GetComponent<Text>();
             t.font = _font; t.text = label; t.alignment = TextAnchor.MiddleCenter; t.color = LabelGreen;
-            bool bold = b == Btn.Jump;   // Jump reads bold
-            t.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+            t.fontStyle = FontStyle.Bold;   // same look on every button
             t.fontSize = 44;   // same size and font on every button t.resizeTextForBestFit = true; t.resizeTextMinSize = 14; t.resizeTextMaxSize = t.fontSize; t.raycastTarget = false;
-            var ol = tgo.AddComponent<Outline>(); ol.effectColor = b == Btn.Pause ? new Color(0.45f, 0.45f, 0.45f, 0.8f) : LabelGreen; ol.effectDistance = new Vector2(1.5f, -1.5f); ol.enabled = b == Btn.Pause;   // Pause reads gold too
-            if (b == Btn.Pause) t.color = Palette.Gold;   // keeps the gold labels readable on the white disc
             rt.gameObject.AddComponent<CanvasGroup>();
             _btn[(int)b] = rt; _btnImg[(int)b] = img; _btnLabel[(int)b] = t;
         }
