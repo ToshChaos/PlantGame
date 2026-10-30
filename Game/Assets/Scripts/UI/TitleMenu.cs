@@ -188,7 +188,7 @@ namespace PlantGame.UI
             if (UiLayout.WideTouch)
             {
                 // phones are wide and short: one column of five buttons on the right over a translucent panel, the logo low on the left so the islands stay visible
-                float cw = 1080f * Screen.width / Mathf.Max(1, Screen.height), colX = cw / 2f - 300f;
+                float cw = 1080f * UnityEngine.Screen.width / Mathf.Max(1, UnityEngine.Screen.height), colX = cw / 2f - 300f;
                 Panel(_home.transform, new Vector2(colX, 0), new Vector2(520, 720), new Color(0.04f, 0.09f, 0.14f, 0.6f));
                 Title(_home.transform, new Vector2(-280, -230), 0.8f);
                 Label(_home.transform, "Grow plants to cross the floating islands.", 30, new Vector2(-280, -340), 880, Color.white);
