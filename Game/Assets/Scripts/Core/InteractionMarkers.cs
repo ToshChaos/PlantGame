@@ -21,6 +21,7 @@ namespace PlantGame.Core
         public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
         [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
 
+        static readonly Color SoilFar = new Color(1f, 0.55f, 0.1f, 0.95f);   // orange: a planting spot seen from afar
         static readonly Color WaterNear = new Color(0.45f, 0.72f, 1f, 0.9f), WaterReady = new Color(0.15f, 0.5f, 1f, 1f);
 
         [Tooltip("After a pickup the next target stays yellow this long, so two things never look 'ready' in a row.")]
@@ -109,8 +110,10 @@ namespace PlantGame.Core
                     bool thick = pickup && focused && tint != null;   // only the one pickup that F/Q would act on is thick
                     if (soilRing)
                     {
+                        // orange from afar; the seed colour once in reach or when the player faces it (like pickups)
                         var ic = PlayerHud.ItemColor(tint);
-                        near = new Color(ic.r, ic.g, ic.b, 0.4f); rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
+                        rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
+                        near = close || FacingEarly(c) ? new Color(ic.r, ic.g, ic.b, 1f) : SoilFar;
                     }
                     else if (pickup)
                     {   // yellow from afar; seed colour and thin once in reach; seed colour and thick when it is the one Q takes (never purple)
