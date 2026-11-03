@@ -29,6 +29,7 @@ namespace PlantGame.Editor
                 var inst = (GameObject)PrefabUtility.InstantiatePrefab(fbx);
                 PrefabUtility.UnpackPrefabInstance(inst, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                 inst.name = $"Plant_Bridge_{n:00}";
+                foreach (Transform c in inst.transform) c.localPosition = Vector3.zero;   // Blender row offset ((n - 1) * 5 m) must not leak into the prefab: the vine would grow beside its soil
                 foreach (var t in inst.GetComponentsInChildren<Transform>(true))
                 {
                     if (layer >= 0) t.gameObject.layer = layer;

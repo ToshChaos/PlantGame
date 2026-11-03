@@ -55,6 +55,7 @@ namespace PlantGame.World
             if (kit == null) { Debug.LogError("[PlantGame] Resources/WorldKit is missing. Run the menu PlantGame > 14 Build World Kit."); return; }
             Seed = config.seed;
             var plan = Plan = MakePlan(config, out var lay, out var rnd);
+            _variantSeed = plan.layoutSeed; _bridgeSoils = 0;
             Layout = lay;
             bool collectorOnly = plan.collectorOnly;
             var isles = lay.isles; var links = plan.links; var heads = lay.heads.ToArray();
@@ -301,6 +302,11 @@ namespace PlantGame.World
             isles.Add(X);
         }
 
+        static int _variantSeed, _bridgeSoils;
+        /// <summary>Which baked bridge (Plant_Bridge_01..06) a bridge soil grows: hashed from the seed and the soil's order, so the same code gives the
+        /// same vines and the layout's random streams are untouched. Every variant is stretched and tilted to its gap (SandboxTarget.Spawn).</summary>
+        static int BridgeVariant(int count) => count <= 0 ? -1 : Mathf.Min(count - 1, (int)(Scenery.Hash01(_variantSeed, 4100 + _bridgeSoils++) * count));
+
         const float BridgeSoilSink = 0.09f;   // the bridge's squircle bed sinks 6 cm deeper than the other beds so it sticks out less
 
         /// <summary>A soil patch for the gap `k` at `pos`, growing towards `dir`; keeps scenery clear of it.</summary>
@@ -315,7 +321,8 @@ namespace PlantGame.World
             if (L.kind == PlantKind.Bridge) target.spawnOffset += Vector3.up * (BridgeSoilSink - 0.03f);   // the bed sits lower, the vine stays where it was
             target.bridgeReach = L.kind == PlantKind.Bridge ? reach : 0f; target.bridgeRise = rise;
             target.plantPrefabs = Kit.Plants(L.kind);
-            target.variantIndex = L.kind == PlantKind.Ladder ? LevelLayout.LadderVariant - 1 : L.kind == PlantKind.Platform ? LevelLayout.PlatformVariant - 1 : -1;
+            target.variantIndex = L.kind == PlantKind.Ladder ? LevelLayout.LadderVariant - 1 : L.kind == PlantKind.Platform ? LevelLayout.PlatformVariant - 1
+                : L.kind == PlantKind.Bridge ? BridgeVariant(target.plantPrefabs.Length) : -1;
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);
             if (interactable >= 0) soil.layer = interactable;
             if (Scenery.Theme == LevelTheme.Snow) target.Freeze();   // frozen soil needs a Heat Seed before any seed goes in
