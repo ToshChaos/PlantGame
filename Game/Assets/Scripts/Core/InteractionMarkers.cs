@@ -137,6 +137,17 @@ namespace PlantGame.Core
                     r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : soilRing ? UiSprites.RingSlim : UiSprites.Ring;
                     r.color = focused ? rdy : near;
                     if (water && !slim && ready) thickRefill = true;
+                    if (t.interactable is GoalFlag { kind: GoalKind.Gate } gate)
+                    {   // the portal fills the middle of a gate: one circle on each side of it instead
+                        Vector3 side = gate.transform.right * 2.6f;
+                        var r2 = Get(used++);
+                        r2.sprite = r.sprite; r2.color = r.color; r2.transform.localScale = r.transform.localScale;
+                        r.transform.position = pos - side; r2.transform.position = pos + side;
+                        r.transform.rotation = Quaternion.LookRotation(r.transform.position - _cam.transform.position);
+                        r2.transform.rotation = Quaternion.LookRotation(r2.transform.position - _cam.transform.position);
+                        Tappables[Tappables.Count - 1] = new Tappable { position = r.transform.position, collider = c, target = t };
+                        Tappables.Add(new Tappable { position = r2.transform.position, collider = c, target = t });
+                    }
                 }
             }
             if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)

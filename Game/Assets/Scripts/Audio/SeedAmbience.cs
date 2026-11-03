@@ -21,6 +21,7 @@ namespace PlantGame.Audio
             var r = new System.Random(unchecked((int)(transform.position.x * 131f + transform.position.z * 977f)));
             _src.pitch = 0.9f + (float)r.NextDouble() * 0.2f;     // every tree sounds a little different
             _src.time = (float)r.NextDouble() * clip.length;
+            Apply();   // mute / volume before the first sample, not a frame later
             _src.Play();
         }
 

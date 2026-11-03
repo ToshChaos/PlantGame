@@ -19,7 +19,8 @@ namespace PlantGame.Audio
             _src.minDistance = minDistance; _src.maxDistance = maxDistance; _src.dopplerLevel = 0f;
             var r = new System.Random(unchecked((int)(transform.position.x * 131f + transform.position.z * 977f)));
             _src.pitch = 0.95f + (float)r.NextDouble() * 0.1f; _src.time = (float)r.NextDouble() * clip.length;
-            _src.Play();
+            Apply();   // mute / volume before the first sample, not a frame later
+            if (GameSettings.Sound) _src.Play();
         }
 
         void Update() => Apply();

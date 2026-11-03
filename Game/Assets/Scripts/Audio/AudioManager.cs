@@ -60,7 +60,7 @@ namespace PlantGame.Audio
             if (OnTitle) { _amb.Stop(); _amb.clip = null; return; }   // the title plays the music only
             var clip = Theme == LevelTheme.Rain && rainAmbience != null ? rainAmbience : windAmbience;
             if (clip == null || _amb.clip == clip) return;
-            _amb.clip = clip; _amb.Play();
+            _amb.clip = clip; ApplyVolumes(); _amb.Play();   // volumes and mute first: a fresh source would play one frame at full volume
         }
 
         AudioClip LevelTune(string id)

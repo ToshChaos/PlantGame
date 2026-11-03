@@ -371,7 +371,6 @@ namespace PlantGame.UI
             for (int i = 0; i < n; i++)
             {
                 var slot = Rect("Slot" + (i + 1), bar, new Vector2(0f, 0.5f), new Vector2(SlotSize, SlotSize), new Vector2(i * (SlotSize + Gap) + SlotSize * 0.5f, 0));
-                var rim = Img("Rim", slot, RoundedSquare(), Palette.Gold, SlotSize + 10f); rim.type = Image.Type.Sliced;   // gold outline
                 _slotBg[i] = Img("Bg", slot, UiSprites.Disc, Color.white, SlotSize);
                 _slotBg[i].sprite = RoundedSquare();
                 _slotBg[i].type = Image.Type.Sliced;
@@ -501,19 +500,17 @@ namespace PlantGame.UI
             var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : (Vector2?)null);
             var t = rt.gameObject.AddComponent<Text>();
             t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size, menu); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
-            t.color = Palette.TextBlue;   // HUD indicators are dark blue with a light outline; Hint() makes hints orange, OnDark() white, both with a dark outline
-            var ol = rt.gameObject.AddComponent<Outline>(); ol.effectColor = new Color(0.96f, 0.98f, 0.97f, 0.9f); ol.effectDistance = new Vector2(2, -2);
+            t.color = Palette.TextBlue;   // HUD indicators are dark blue; Hint() makes hints orange, OnDark() white (no text outlines)
             return t;
         }
 
-        // key hints and prompts: orange with a dark outline, readable on sky and on dark foliage
+        // key hints and prompts: orange, readable on sky and on dark foliage
         static void Hint(Text t) => Recolor(t, Palette.TextOrange);
         // text on the dark pause / end panels
         static void OnDark(Text t) => Recolor(t, new Color(0.96f, 0.98f, 0.97f));
         static void Recolor(Text t, Color c)
         {
             t.color = c;
-            var ol = t.GetComponent<Outline>(); ol.effectColor = new Color(0.08f, 0.05f, 0.02f, 0.95f);
         }
 
         static string OnOff(string n, bool v) => n + ": " + (v ? "On" : "Off");
@@ -556,7 +553,7 @@ namespace PlantGame.UI
             trig.triggers.Add(enter);
             var cb = b.colors; cb.highlightedColor = TitleMenu.LimeHi; cb.pressedColor = new Color(0.4f, 0.75f, 0.05f, 1f); b.colors = cb;
             var t = Label("Text", rt, label, fontSize, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(width, height), new Vector2(0.5f, 0.5f), true, true);
-            Recolor(t, Color.black); t.GetComponent<Outline>().effectColor = Color.clear;
+            Recolor(t, Color.black);
             return t;
         }
     }
