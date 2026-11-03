@@ -167,6 +167,7 @@ namespace PlantGame.World
                         var toCentre = I.centre - gpos; toCentre.y = 0f;
                         if (toCentre.sqrMagnitude > 0.01f) goal.transform.rotation = Quaternion.LookRotation(toCentre.normalized, Vector3.up);   // the gate (and its steps) face into the island
                     }
+                    if (config.levelId == GameBootstrap.Level1Id && gkind == GoalKind.Gate && !plan.roundTrip) goal.transform.rotation *= Quaternion.Euler(0f, 90f, 0f);   // Level 1: the gate stood sideways to the approach
                     I.keep.Add(new Vector4(gpos.x, gpos.z, 4.5f, 8f));
                 }
                 if (plan.roundTrip && i == goalIsle)
