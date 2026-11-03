@@ -275,6 +275,8 @@ namespace PlantGame.Core
             var w = NearbyWaterable(n);   // F waters the nearest thirsty sprout around the player, no aiming needed
             if (w == null)
             {
+                var bare = PlantGame.World.LeaflessTree.Nearest(Sensor.Chest);   // a leafless tree: F brings its leaves back, free of charge
+                if (bare != null) { bare.GrowLeaves(); GameEvents.RaiseWatered(); return; }
                 if (FindFrozenSource(n) != null) { GameEvents.RaiseHint("The water is frozen: it needs Heat (press E to melt it)"); GameEvents.RaiseUseRejected(); }
                 return;
             }
@@ -332,6 +334,7 @@ namespace PlantGame.Core
             { p = "Plant " + Inventory.SelectedItem.displayName; k = "Use"; }
             else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
+            else if (World.LeaflessTree.Nearest(Sensor.Chest) != null) { p = "Grow leaves"; k = "Water"; }
             else if (FindFrozenSource(n) != null)   // frozen pond: say so, and what melts it
             {
                 var held = Inventory.SelectedItem;

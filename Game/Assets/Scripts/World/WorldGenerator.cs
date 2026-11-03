@@ -62,7 +62,7 @@ namespace PlantGame.World
             int goalIsle = plan.GoalIsland(isles.Count);
             var grounds = Ground.Assign(plan.layoutSeed, isles.Count);
             bool summitSnow = config.spiral && config.wind && !showcaseWater;   // T46: the top of the windy spiral is snow-covered
-            Theme = WorldTheme.Resolve(config); Scenery.Theme = Theme; Scenery.HugeTreeIsland = plan.hugeTreeIsland;
+            Theme = WorldTheme.Resolve(config); Scenery.Theme = Theme; Scenery.Coconuts = config.levelId != GameBootstrap.Level1Id; Scenery.Leafless = config.levelId != GameBootstrap.Level1Id && config.levelId != "level_2"; Scenery.HugeTreeIsland = plan.hugeTreeIsland;
             var terrain = Scenery.Mat("M_Terrain"); var stone = Kit.Mat("M_Stone");
             foreach (var pr in lay.problems) Debug.LogWarning("[PlantGame] " + pr);
             IslandSpawn.All.Clear();

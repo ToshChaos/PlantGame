@@ -14,6 +14,8 @@ namespace PlantGame.World
     {
         /// <summary>Set by the world generator before Decorate: autumn swaps the greens for yellows, oranges and reds.</summary>
         public static LevelTheme Theme = LevelTheme.Sunny;
+        /// <summary>Set per level by the generator: the first levels carry no coconuts and no leafless trees (and frozen levels never get leafless trees).</summary>
+        public static bool Coconuts = true, Leafless = true;
 
         /// <summary>Kit material by name, re-coloured for the current theme (foliage, blossom and island tops).</summary>
         /// <summary>Well-spread 0..1 value from two ints (the first draw of System.Random with nearby seeds is nearly the same, so it is not used for per-island coin flips).</summary>
@@ -631,7 +633,8 @@ namespace PlantGame.World
             height *= (kind == 7 ? 0.65f : 0.72f) + sv * sv * (kind == 7 ? 0.95f : 0.7f) + sv * 0.12f;   // 0.7x to about 1.5x, mostly mid-sized with the odd giant or sapling
             pos += Vector3.down * (0.25f + 0.04f * height);   // sink the foot into the ground (the island's Lift sets the terrain height afterwards)
             float mh = kind == 7 ? height * 1.3f : kind == 1 ? height * 1.5f : kind == 2 ? height * 1.35f : kind == 5 ? height * 1.6f : height * 1.1f;
-            if (_leafTrees != null && kind != 1 && kind != 5 && kind != 7) _leafTrees.Add(new Vector4(pos.x, pos.y, pos.z, kind == 2 ? height * 1.35f : height * 1.1f));
+            bool leafless = Leafless && Theme != LevelTheme.Snow && kind != 1 && kind != 5 && kind != 7 && Mathf.Repeat(sv * 91.7f + pos.x * 0.37f, 1f) < 0.1f;   // about one tree in ten
+            if (!leafless && _leafTrees != null && kind != 1 && kind != 5 && kind != 7) _leafTrees.Add(new Vector4(pos.x, pos.y, pos.z, kind == 2 ? height * 1.35f : height * 1.1f));
             var model = Model(parent, ThemedTree(kind, rnd), pos, (float)rnd.NextDouble() * 360f, mh, false);
             if (model != null)
             {
@@ -639,8 +642,8 @@ namespace PlantGame.World
                 if (kind == 7)
                 {
                     if (!OrganicProps.Replaces(model.name)) PalmLook.Apply(model);   // the procedural palm brings its own UVs
-                    var coco = Kit.Item("coconut");   // at most one fallen coconut at the foot of about two palms in three; it never regrows
-                    if (coco != null && coco.worldPrefab != null && Mathf.Repeat(sv * 7.31f, 1f) < 0.65f)
+                    var coco = Kit.Item("coconut");   // at most one fallen coconut at the foot of about one palm in three; it never regrows
+                    if (coco != null && coco.worldPrefab != null && Coconuts && Mathf.Repeat(sv * 7.31f, 1f) < 0.34f)
                     {
                         float ca = sv * 40f; var cp = pos + new Vector3(Mathf.Cos(ca), 0.9f, Mathf.Sin(ca)) * (height * 0.12f + 0.5f);
                         var cgo = Object.Instantiate(coco.worldPrefab, cp, Quaternion.identity, parent); cgo.name = "Coconut";
@@ -648,6 +651,7 @@ namespace PlantGame.World
                 }
                 bool coloured = kind == 6 || (Theme == LevelTheme.Autumn && kind != 1 && kind != 5);
                 if (coloured && model.name.StartsWith("CommonTree") || coloured && model.name.StartsWith("TwistedTree")) Recolour(model, TreeTint(rnd));
+                if (leafless) { var lt = model.AddComponent<LeaflessTree>(); if (!lt.Setup(model)) Object.Destroy(lt); }
                 var tcol = new GameObject("Trunk"); tcol.transform.SetParent(model.transform.parent, true); tcol.transform.position = pos;
                 var cap = tcol.AddComponent<CapsuleCollider>(); cap.radius = 0.28f * Mathf.Max(1f, height / 4f); cap.height = Mathf.Min(mh, 2.5f); cap.center = new Vector3(0, cap.height * 0.5f, 0);
                 int g0 = LayerMask.NameToLayer(Layers.GroundName); if (g0 >= 0) tcol.layer = g0;
