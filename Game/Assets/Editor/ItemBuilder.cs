@@ -8,8 +8,8 @@ using PlantGame.World;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T05: builds the ItemDefinition assets (ScriptableObjects/Items) and placeholder world prefabs (Prefabs/Items):
-    /// a glowing seed sphere in palette colours with a trigger collider on layer Interactable and a WorldItem.
+    /// T05: builds the ItemDefinition assets (ScriptableObjects/Items) and world prefabs (Prefabs/Items):
+    /// a shaped, softly glowing pickup mesh (SeedMeshes) with a trigger collider on layer Interactable and a WorldItem.
     /// Menu: PlantGame > 6 Build Items. Idempotent (assets updated in place so references survive).
     /// </summary>
     public static class ItemBuilder
@@ -54,30 +54,20 @@ namespace PlantGame.Editor
             switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; case "heart_seed": return "T_SeedHeart"; case "heat_seed": return "T_SeedMelon"; default: return null; }
         }
 
-        static Material SeedMaterial(string matName, Color color, bool shaped = false, string itemId = null)
+        /// <summary>Seed pickup material: the mesh carries the detail, plain colour with a soft glow and the item's seed-coat texture.</summary>
+        static Material SeedMaterial(string matName, Color color, string itemId)
         {
             var path = $"{MaterialBuilder.Dir}/{matName}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null) { mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = matName }; AssetDatabase.CreateAsset(mat, path); }
             mat.SetColor("_BaseColor", color);
-            if (shaped)   // bamboo / bean / puffball / succulent: the mesh carries the detail, plain colour with a soft glow
-            {
-                string tex = SeedTexture(itemId);
-                if (tex != null && TextureBuilder.Albedo(tex) == null) TextureBuilder.Build();
-                mat.SetTexture("_BaseMap", tex != null ? TextureBuilder.Albedo(tex) : null);
-                mat.SetTexture("_BumpMap", tex != null ? TextureBuilder.Normal(tex) : null);
-                if (tex != null) { mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP"); } else mat.DisableKeyword("_NORMALMAP");
-                mat.SetFloat("_Smoothness", 0.45f);
-                MaterialBuilder.SetEmission(mat, color * 0.22f);
-            }
-            else
-            {
-                if (TextureBuilder.Albedo("T_Seed") == null) TextureBuilder.Build();
-                mat.SetFloat("_Smoothness", 0.6f);
-                mat.SetTexture("_BaseMap", TextureBuilder.Albedo("T_Seed"));
-                mat.SetTexture("_BumpMap", TextureBuilder.Normal("T_Seed")); mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP");
-                MaterialBuilder.SetEmission(mat, color * 0.3f);   // low enough that the ridges read
-            }
+            string tex = SeedTexture(itemId);
+            if (tex != null && TextureBuilder.Albedo(tex) == null) TextureBuilder.Build();
+            mat.SetTexture("_BaseMap", tex != null ? TextureBuilder.Albedo(tex) : null);
+            mat.SetTexture("_BumpMap", tex != null ? TextureBuilder.Normal(tex) : null);
+            if (tex != null) { mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP"); } else mat.DisableKeyword("_NORMALMAP");
+            mat.SetFloat("_Smoothness", 0.45f);
+            MaterialBuilder.SetEmission(mat, color * 0.22f);
             MaterialBuilder.ValidateUrp(mat);
             EditorUtility.SetDirty(mat);
             return mat;
@@ -140,7 +130,7 @@ namespace PlantGame.Editor
 
             var go = new GameObject(name);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, true, item.id);
+            go.AddComponent<MeshRenderer>().sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, item.id);
             var solid = go.AddComponent<SphereCollider>(); solid.radius = SeedMeshes.RestRadius(item.id);
             var pick = go.AddComponent<SphereCollider>(); pick.isTrigger = true; pick.radius = 0.7f;
             int layer = LayerMask.NameToLayer(Layers.InteractableName);
@@ -157,31 +147,8 @@ namespace PlantGame.Editor
         static GameObject BuildPrefab(string name, ItemDefinition item, Color color)
         {
             if (item.id == "parachute_leaf") return BuildLeafPrefab(name, item);
-            if (SeedMeshes.For(item.id) != null) return BuildShapedPrefab(name, item, color);
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = name;
-            go.transform.localScale = Vector3.one * 0.4f;
-            Object.DestroyImmediate(go.GetComponent<SphereCollider>());
-            var solid = go.AddComponent<SphereCollider>();   // lets the item rest on the ground (Interactable only collides with Ground)
-            solid.radius = 0.5f;
-            var col = go.AddComponent<SphereCollider>();
-            col.isTrigger = true; col.radius = 1.6f;          // generous pick area (local units: 1.6 * 0.4 = 0.64 m)
-            int layer = LayerMask.NameToLayer(Layers.InteractableName);
-            if (layer >= 0) go.layer = layer; else Debug.LogWarning("[PlantGame] Layer 'Interactable' missing; run PlantGame > 1 Setup Project.");
-
-            var r = go.GetComponent<Renderer>();
-            r.sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color);
-
-            go.AddComponent<WorldItem>().item = item;
-            go.AddComponent<ItemBob>();
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = false; rb.useGravity = true; rb.linearDamping = 1.5f;
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
-
-            var path = $"{PrefabDir}/{name}.prefab";
-            var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
-            Object.DestroyImmediate(go);
-            return prefab;
+            if (SeedMeshes.For(item.id) == null) throw new System.InvalidOperationException($"[PlantGame] Item '{item.id}' has no pickup mesh: add it to SeedMeshes.For");
+            return BuildShapedPrefab(name, item, color);
         }
     }
 }

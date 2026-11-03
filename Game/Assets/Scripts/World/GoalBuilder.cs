@@ -326,6 +326,15 @@ namespace PlantGame.World
             return _emberMat = m;
         }
 
+        static Material _flameMat, _sparkMat;   // shared like the other goal materials: DontSave, so a per-run copy would never be freed
+        static Material FlameMat()
+        {
+            if (_flameMat != null) return _flameMat;
+            var m = RuntimeMats.NewParticles("M_Flame", new Color(3f, 1.6f, 0.5f, 1f), additive: true);
+            m.SetFloat("_Blend", 1f); m.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+            return _flameMat = m;
+        }
+
         static void BuildFlames(GameObject fire)
         {
             var ps = fire.AddComponent<ParticleSystem>();
@@ -339,9 +348,7 @@ namespace PlantGame.World
             var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = 12f; sh.radius = 0.4f;
             var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 1f, 1f, 0.1f));
             var r = fire.GetComponent<ParticleSystemRenderer>();
-            var m = RuntimeMats.NewParticles("M_Flame", new Color(3f, 1.6f, 0.5f, 1f), additive: true);
-            m.SetFloat("_Blend", 1f); m.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-            r.sharedMaterial = m;
+            r.sharedMaterial = FlameMat();
             ps.Play();
 
             // sparks drifting up from the flames
@@ -356,8 +363,7 @@ namespace PlantGame.World
             var grad = new Gradient(); grad.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) }, new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
             sc.color = grad;
             var sr = sg.GetComponent<ParticleSystemRenderer>();
-            var sMat = RuntimeMats.NewParticles("M_Spark", new Color(3f, 2f, 0.8f, 1f), additive: true);
-            sr.sharedMaterial = sMat;
+            sr.sharedMaterial = _sparkMat != null ? _sparkMat : _sparkMat = RuntimeMats.NewParticles("M_Spark", new Color(3f, 2f, 0.8f, 1f), additive: true);
             sp.Play();
         }
     }

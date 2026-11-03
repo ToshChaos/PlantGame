@@ -63,12 +63,23 @@ namespace PlantGame.Tests
         }
 
         [Test]
-        public void CycleWrapsBothWays()
+        public void CycleWrapsBothWaysOverFilledSlots()
         {
-            Assert.AreEqual(0, _inv.Selected);
-            _inv.Cycle(1); _inv.Cycle(1); _inv.Cycle(1); Assert.AreEqual(3, _inv.Selected);
+            _inv.TryAdd(_a); _inv.TryAdd(_b); _inv.TryAdd(_c); _inv.TryAdd(_d);
+            _inv.Remove(2); _inv.Select(0);   // slots: a, b, (empty), d
+            _inv.Cycle(1); Assert.AreEqual(1, _inv.Selected);
+            _inv.Cycle(1); Assert.AreEqual(3, _inv.Selected);   // Tab skips the empty slot
             _inv.Cycle(1); Assert.AreEqual(0, _inv.Selected);
             _inv.Cycle(-1); Assert.AreEqual(3, _inv.Selected);
+            _inv.Cycle(-1); Assert.AreEqual(1, _inv.Selected);
+        }
+
+        [Test]
+        public void CycleOnAnEmptyInventoryKeepsTheSelection()
+        {
+            _inv.Select(2);
+            _inv.Cycle(1); _inv.Cycle(-1);
+            Assert.AreEqual(2, _inv.Selected);
         }
 
         [Test]

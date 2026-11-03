@@ -25,7 +25,7 @@ namespace PlantGame.World
         {
             _mat = Core.RuntimeMats.New(Core.RuntimeMats.Unlit, "M_Butterfly", glow);
             Core.RuntimeMats.SetTransparent(_mat); _mat.SetFloat("_Cull", 0f);
-            _mat.SetTexture("_BaseMap", WingTexture());
+            _mat.SetTexture("_BaseMap", _wingTex != null ? _wingTex : _wingTex = WingTexture());
             _quad = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
             _flies = new Fly[count];
             var rnd = new System.Random(42);
@@ -50,6 +50,10 @@ namespace PlantGame.World
             q.transform.localScale = new Vector3(side, 1f, 1f);                         // mirror the right wing
             return hinge;
         }
+
+        static Texture2D _wingTex;
+
+        void OnDestroy() { if (_mat != null) Destroy(_mat); }   // DontSave: a scene unload would not free it
 
         static Texture2D WingTexture()
         {

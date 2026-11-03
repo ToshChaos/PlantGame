@@ -15,15 +15,20 @@ namespace PlantGame.Plants
         class Follow { public PlantInstance plant; public ParticleSystem ps; public Transform anchor, tip; }
 
         readonly List<Follow> _active = new List<Follow>();
+        static Material _sharedMat;   // DontSave: built once per session, so a scene reload never leaks a copy
         Material _mat;
         Transform _player;
 
         void Awake()
         {
-            _mat = RuntimeMats.NewParticles("M_VfxDot", Color.white, additive: true);
-            var tex = MakeDot();
-            _mat.mainTexture = tex;
-            if (_mat.HasProperty("_BaseMap")) _mat.SetTexture("_BaseMap", tex);
+            if (_sharedMat == null)
+            {
+                _sharedMat = RuntimeMats.NewParticles("M_VfxDot", Color.white, additive: true);
+                var tex = MakeDot();
+                _sharedMat.mainTexture = tex;
+                if (_sharedMat.HasProperty("_BaseMap")) _sharedMat.SetTexture("_BaseMap", tex);
+            }
+            _mat = _sharedMat;
         }
 
         void OnEnable()

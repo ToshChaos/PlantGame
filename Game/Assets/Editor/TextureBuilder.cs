@@ -113,17 +113,6 @@ namespace PlantGame.Editor
                 c = new Color(lum, lum * 0.96f, lum * 0.9f, 1f);
                 return (c, h);
             });
-            // seed coat: longitudinal ridges (u wraps round the sphere) + speckle
-            Make("T_Seed", 128, (u, v, c, h) =>
-            {
-                float wob = Fbm(u, v, 4, 3, 31);
-                float s = 0.5f + 0.5f * Mathf.Sin((u * 8f + wob * 0.6f) * Mathf.PI * 2f);
-                float speck = Hash(Mathf.FloorToInt(u * 128), Mathf.FloorToInt(v * 128), 32);
-                h = s * 0.7f + wob * 0.2f;
-                float lum = Mathf.Clamp01(0.7f + 0.3f * s - (speck > 0.9f ? 0.22f : 0f));
-                c = new Color(lum, lum, lum, 1f);
-                return (c, h);
-            });
             // T67: tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
             Make("T_PlantBark", 256, normalMap: false, gen: (u, v, c, h) =>
             {

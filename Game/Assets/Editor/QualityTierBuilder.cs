@@ -13,6 +13,7 @@ namespace PlantGame.Editor
     ///   Low (PlantGame_URP_Low) is the same at render scale 0.6 without shadows.
     /// - Small scatter props (all Kenney models, Quaternius bushes, rocks, ferns, mushrooms) are imported read/write so the
     ///   WorldOptimizer can static-batch them at runtime; the big trees and ruins stay GPU-only.
+    /// - Phone builds cap the big third-party textures (Quaternius, Ruins: 2048 maps) at 1024; desktop keeps 2048.
     /// </summary>
     public static class QualityTierBuilder
     {
@@ -27,8 +28,9 @@ namespace PlantGame.Editor
             var low = Tier(Low, 0.6f, false);
             Levels(low, medium, high);
             int readable = MakeScatterReadable();
+            int capped = CapPhoneTextures();
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PlantGame] Quality tiers: Low / Medium / High configured; {readable} scatter model(s) switched to read/write.");
+            Debug.Log($"[PlantGame] Quality tiers: Low / Medium / High configured; {readable} scatter model(s) switched to read/write, {capped} texture(s) capped at {PhoneMaxTexture} on phones.");
         }
 
         static UniversalRenderPipelineAsset Tier(string path, float scale, bool shadows)
@@ -97,6 +99,31 @@ namespace PlantGame.Editor
             if (!path.StartsWith("Assets/Art/Models/Quaternius/")) return false;
             var f = Path.GetFileName(path);
             return f.StartsWith("Bush_") || f.StartsWith("Rock_") || f.StartsWith("Fern_") || f.StartsWith("Mushroom_");
+        }
+
+        public const int PhoneMaxTexture = 1024;
+
+        /// <summary>Android / iOS overrides: the third-party maps above 1024 import at 1024 on phones (desktop keeps the default size).</summary>
+        static int CapPhoneTextures()
+        {
+            int n = 0;
+            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art/Models/Quaternius", "Assets/Art/Models/Ruins" }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!(AssetImporter.GetAtPath(path) is TextureImporter imp)) continue;
+                imp.GetSourceTextureWidthAndHeight(out int w, out int h);
+                if (Mathf.Max(w, h) <= PhoneMaxTexture) continue;
+                bool changed = false;
+                foreach (var platform in new[] { "Android", "iPhone" })
+                {
+                    var s = imp.GetPlatformTextureSettings(platform);
+                    if (s.overridden && s.maxTextureSize == PhoneMaxTexture) continue;
+                    s.overridden = true; s.maxTextureSize = PhoneMaxTexture;   // format stays Automatic: the project-wide phone compression
+                    imp.SetPlatformTextureSettings(s); changed = true;
+                }
+                if (changed) { imp.SaveAndReimport(); n++; }
+            }
+            return n;
         }
 
         static int MakeScatterReadable()

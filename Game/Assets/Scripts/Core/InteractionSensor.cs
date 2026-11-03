@@ -15,7 +15,7 @@ namespace PlantGame.Core
     [DefaultExecutionOrder(10)]
     public class InteractionSensor : MonoBehaviour
     {
-        [Tooltip("The view the player aims with: PlayerController.EyeTransform (the camera).")]
+        [Tooltip("The view the player aims with: the player camera (PlayerPrefabBuilder sets it).")]
         public Transform eye;
         public float range = 3f;
         public float castRadius = 0.3f;
@@ -36,7 +36,6 @@ namespace PlantGame.Core
             public IInteractable interactable;
             public IUsableTarget usable;
             public IWaterable waterable;
-            public bool IsValid => component != null;
         }
 
         public Target Focus { get; private set; }

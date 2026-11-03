@@ -37,6 +37,8 @@ namespace PlantGame.Player
         /// <summary>True when the point is on the player's side of the climb line (not yet past it towards the stalk): grabbing from the far side would drag the player through the plant.</summary>
         public bool IsOnClimbSide(Vector3 worldPoint) => Vector3.Dot(worldPoint - ClimbLinePoint, SurfaceNormal) > -0.25f;
         public float TopY => land != null ? land.position.y : Box.bounds.max.y;
+        /// <summary>World bounds of the climb volume (InteractionMarkers places the touch circles from it).</summary>
+        public Bounds Bounds => Box.bounds;
 
         /// <summary>Where the player ends up when reaching the top.</summary>
         public Vector3 LandPosition

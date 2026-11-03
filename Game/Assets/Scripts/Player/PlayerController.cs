@@ -121,8 +121,6 @@ namespace PlantGame.Player
                 return ClimbHint.Climb;
             }
         }
-        /// <summary>The view the player aims with (camera, else pivot). T04 casts its focus ray from here.</summary>
-        public Transform EyeTransform => cameraTransform != null ? cameraTransform : cameraPivot != null ? cameraPivot : transform;
         /// <summary>Current velocity in m/s (horizontal + vertical). PlayerAnimator reads this.</summary>
         public Vector3 Velocity => CurrentState == State.Climbing ? Vector3.up * _climbVel : _hVel + Vector3.up * _vVel;
         public PlayerInputReader Input { get; private set; }

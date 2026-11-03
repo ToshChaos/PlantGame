@@ -82,6 +82,9 @@ namespace PlantGame.Plants
             if (_patches.Count == 0 && surface != null) surface.sharedMaterial = IceMat();
         }
 
+        readonly System.Collections.Generic.List<Mesh> _pieceMeshes = new System.Collections.Generic.List<Mesh>();
+        void OnDestroy() { foreach (var m in _pieceMeshes) if (m != null) Destroy(m); }   // DontSave: a scene unload would not free them
+
         void SplitSurface()
         {
             var mf = surface.GetComponent<MeshFilter>(); var src = mf != null ? mf.sharedMesh : null; if (src == null) return;
@@ -99,7 +102,7 @@ namespace PlantGame.Plants
             {
                 var go = new GameObject("WaterPiece"); go.layer = surface.gameObject.layer;
                 go.transform.SetParent(surface.transform, false);
-                var m = Instantiate(src); m.name = "WaterPiece"; m.hideFlags = HideFlags.DontSave; m.triangles = lists[k].ToArray();
+                var m = Instantiate(src); m.name = "WaterPiece"; m.hideFlags = HideFlags.DontSave; m.triangles = lists[k].ToArray(); _pieceMeshes.Add(m);
                 go.AddComponent<MeshFilter>().sharedMesh = m;
                 var r = go.AddComponent<MeshRenderer>(); r.sharedMaterial = surface.sharedMaterial;
                 r.shadowCastingMode = surface.shadowCastingMode; r.receiveShadows = surface.receiveShadows;

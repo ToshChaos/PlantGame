@@ -43,7 +43,9 @@ namespace PlantGame.Core
         readonly HashSet<Component> _seen = new HashSet<Component>();
         static int Mask => Layers.InteractMask;
 
-        void Awake() { _pi = GetComponent<PlayerInteraction>(); }
+        PlantGame.Player.PlayerController _pc;
+
+        void Awake() { _pi = GetComponent<PlayerInteraction>(); _pc = GetComponent<PlantGame.Player.PlayerController>(); }
         void OnEnable() { GameEvents.ItemPickedUp += OnPicked; }
         void OnPicked(Inventory.ItemDefinition _) { _blockReadyUntil = Time.unscaledTime + readyDelayAfterPickup; }
 
@@ -140,7 +142,7 @@ namespace PlantGame.Core
             if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
             {
                 // grown beanstalks: a circle at the foot (and at the top, to climb back down); tapping it climbs the whole stalk (touch)
-                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                var pc = _pc;
                 if (pc != null && !pc.IsClimbing)
                     foreach (var v in PlantGame.Player.ClimbableVolume.All)
                     {
@@ -148,10 +150,10 @@ namespace PlantGame.Core
                         bool atTop = transform.position.y >= v.TopY - 2.5f;
                         if (atTop)   // the top circle sits on the far side of the stalk (180 degrees round it), where the end island is
                         {
-                            Vector3 c = v.GetComponent<BoxCollider>().bounds.center;
+                            Vector3 c = v.Bounds.center;
                             foot = new Vector3(2f * c.x - foot.x, foot.y, 2f * c.z - foot.z);
                         }
-                        float baseY = atTop ? v.TopY + 2.1f : v.GetComponent<BoxCollider>().bounds.min.y + 2.1f;
+                        float baseY = atTop ? v.TopY + 2.1f : v.Bounds.min.y + 2.1f;
                         var pos = new Vector3(foot.x, baseY, foot.z);
                         float dist = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(transform.position.x, transform.position.z));
                         if (dist > showRadius) continue;
@@ -169,7 +171,7 @@ namespace PlantGame.Core
             if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
             {
                 // grown vine bridges: a circle at each end; tapping one walks to that end and then across to the other (touch)
-                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                var pc = _pc;
                 if (pc != null && !pc.IsClimbing)
                     foreach (var pl in PlantInstance.All)
                     {
@@ -196,7 +198,7 @@ namespace PlantGame.Core
             if (_pi != null && _cam != null)
             {
                 // mushroom caps: a circle over each cap the player can hop to from here; hidden during the hop and tap walks
-                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                var pc = _pc;
                 if (pc != null && !pc.IsClimbing && !pc.IsHopping && !PlantGame.Player.TouchControls.AutoWalking)
                 {
                     CapHops.Find(transform.position, _hops);

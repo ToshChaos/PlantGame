@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using PlantGame.Core;
 using PlantGame.Player;
@@ -89,7 +90,7 @@ namespace PlantGame.World
             }
             if (RenderSettings.skybox != null)
             {
-                var m = new Material(RenderSettings.skybox) { name = "Sky_" + _theme, hideFlags = HideFlags.DontSave };
+                var m = Own(new Material(RenderSettings.skybox) { name = "Sky_" + _theme, hideFlags = HideFlags.DontSave });
                 m.SetColor("_HorizonColor", horizon); m.SetColor("_MidColor", mid); m.SetColor("_SkyColor", sky); m.SetColor("_ZenithColor", zenith);
                 m.SetColor("_GroundColor", mid); m.SetColor("_SunColor", sun); m.SetFloat("_SunSize", sunSize); m.SetFloat("_SunGlow", sunGlow);
                 RenderSettings.skybox = m;
@@ -111,7 +112,7 @@ namespace PlantGame.World
                 {
                     var sm = r.sharedMaterial;
                     if (sm == null || sm.shader == null || sm.shader.name != "PlantGame/CloudLayer") continue;
-                    var inst = r.material;   // per-renderer copy
+                    var inst = Own(r.material);   // per-renderer copy
                     inst.SetColor("_Color", cloud); inst.SetColor("_Shade", shade);
                 }
 
@@ -121,7 +122,16 @@ namespace PlantGame.World
             if (_wind && WindLeaves == null) Leaves();
         }
 
-        void OnDestroy() { WeatherState.Set(false, false, 0f); }
+        /// <summary>Materials and textures this controller made: destroyed with it (DontSave ones survive scene unloads otherwise).</summary>
+        readonly List<Object> _owned = new List<Object>();
+        T Own<T>(T o) where T : Object { _owned.Add(o); return o; }
+
+        void OnDestroy()
+        {
+            WeatherState.Set(false, false, 0f);
+            foreach (var o in _owned) if (o != null) Destroy(o);
+            _owned.Clear();
+        }
 
         void Update()
         {
@@ -213,7 +223,7 @@ namespace PlantGame.World
 
         Material ParticleMaterial(Texture2D tex)
         {
-            var m = RuntimeMats.NewParticles("M_WeatherFx", Color.white);
+            var m = Own(RuntimeMats.NewParticles("M_WeatherFx", Color.white));
             if (tex != null) m.SetTexture("_BaseMap", tex);
             return m;
         }
@@ -222,7 +232,7 @@ namespace PlantGame.World
         Texture2D LeafTexture()
         {
             const int S = 32;
-            var t = new Texture2D(S, S, TextureFormat.RGBA32, false) { hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp };
+            var t = Own(new Texture2D(S, S, TextureFormat.RGBA32, false) { hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp });
             for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
             {
                 float u = (x + 0.5f) / S * 2f - 1f, v = (y + 0.5f) / S * 2f - 1f;   // v along the leaf

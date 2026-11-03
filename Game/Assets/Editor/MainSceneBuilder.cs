@@ -265,17 +265,18 @@ namespace PlantGame.Editor
         // ------------------------------------------------------------------ audio
         public static void SetupAudioImports()
         {
-            foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio" }))
+            foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio", "Assets/Resources/Audio" }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var imp = (AudioImporter)AssetImporter.GetAtPath(path);
                 if (imp == null) continue;
                 bool music = path.Contains("/Music/");
+                bool ambience = path.StartsWith("Assets/Resources/Audio/");   // 3D loops (LoopEmitter, RuinSounds, SeedAmbience): several play at once, so keep them ADPCM in memory
                 var s = imp.defaultSampleSettings;
-                s.loadType = music ? AudioClipLoadType.Streaming : AudioClipLoadType.DecompressOnLoad;
+                s.loadType = music ? AudioClipLoadType.Streaming : ambience ? AudioClipLoadType.CompressedInMemory : AudioClipLoadType.DecompressOnLoad;
                 s.compressionFormat = music ? AudioCompressionFormat.Vorbis : AudioCompressionFormat.ADPCM;
                 s.quality = 0.6f;
-                imp.defaultSampleSettings = s; imp.forceToMono = true; imp.loadInBackground = music;
+                imp.defaultSampleSettings = s; imp.forceToMono = !ambience; imp.loadInBackground = music;   // the ambience clips are mono already: Force To Mono would also normalise them, 2-4x louder
                 imp.SaveAndReimport();
             }
         }

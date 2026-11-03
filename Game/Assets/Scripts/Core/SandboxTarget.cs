@@ -32,16 +32,18 @@ namespace PlantGame.Core
         public float bridgeRise;
 
         [Tooltip("Snow levels: frozen soil takes no seed until a Heat Seed (E) thaws it.")] public bool frozen;
-        PlantInstance _plant; Material _thawedMat;
+        PlantInstance _plant; Material _thawedMat, _iceMat;
 
         public void Freeze()
         {
             var r = GetComponent<Renderer>(); if (r == null) return;
-            frozen = true; _thawedMat = r.sharedMaterial;
-            var ice = new Material(_thawedMat) { hideFlags = HideFlags.DontSave };
-            var c = new Color(0.82f, 0.92f, 1f); ice.SetColor("_BaseColor", c); ice.SetColor("_Color", c);
-            r.sharedMaterial = ice;
+            frozen = true; if (_iceMat == null || r.sharedMaterial != _iceMat) _thawedMat = r.sharedMaterial;
+            if (_iceMat == null) _iceMat = new Material(_thawedMat) { hideFlags = HideFlags.DontSave };
+            var c = new Color(0.82f, 0.92f, 1f); _iceMat.SetColor("_BaseColor", c); _iceMat.SetColor("_Color", c);
+            r.sharedMaterial = _iceMat;
         }
+
+        void OnDestroy() { if (_iceMat != null) Destroy(_iceMat); }   // DontSave: a scene unload would not free it
 
         public bool CanUseItem(ItemDefinition item, GameObject actor)
         {
@@ -55,6 +57,7 @@ namespace PlantGame.Core
             if (frozen)
             {
                 frozen = false; var tr = GetComponent<Renderer>(); if (tr != null && _thawedMat != null) tr.sharedMaterial = _thawedMat;
+                if (_iceMat != null) { Destroy(_iceMat); _iceMat = null; }
                 GameEvents.RaiseHint("The soil thaws: you can plant here now");
                 return;
             }

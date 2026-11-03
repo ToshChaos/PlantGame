@@ -25,7 +25,7 @@ namespace PlantGame.World
     public class LevelLayout
     {
         public const float BaseRadius = 10.5f, LadderPadReach = 1.2f, LadderPadGap = 0f, LadderEdgeInset = 1.6f;   // T51: no top pad: the target rim lies LadderPadReach in front of the stalk top
-        public const float BridgeAnchorInset = 1.8f, BridgeAnchorToEdge = 7.9f, Wobble = 0.55f;
+        public const float BridgeAnchorInset = 1.8f, Wobble = 0.55f;
         public const int LadderVariant = 3, PlatformVariant = 3;   // Plant_Ladder_03: 11 m; Plant_Platform_03: 3 pads, 3.6 m rise, ~5 m reach
         public const float GlideGap = 19f, GlideDrop = 8f;
         public const float LadderHeight = 11f, PadMaxRadius = 1.4f, PlatformGap = 1.0f;
