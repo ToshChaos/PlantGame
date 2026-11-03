@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cca267c1133784f9cb142ebd39fa18de, type: 3}
+  m_Name: Outfit_Explorer
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Player.PlayerOutfit
+  materials:
+  - {fileID: 2100000, guid: e304a81761b8144c6b3a3ca94f5e4a66, type: 2}
+  - {fileID: 2100000, guid: 580c6987dcf744244b6e0ab1fc0a7191, type: 2}
+  - {fileID: 2100000, guid: 629515b93f4ab4fe3bf5cb538265c982, type: 2}
+  - {fileID: 2100000, guid: e969a42c406b240e49f9f08bd5c59184, type: 2}
+  - {fileID: 2100000, guid: faa08dba093ad4a88a01c53a1a512998, type: 2}
+  - {fileID: 2100000, guid: 95330c63dd42d4606aae309d0d63078e, type: 2}
+  - {fileID: 2100000, guid: 403548ccff25445fa92824bf0a6d29f7, type: 2}
+  - {fileID: 2100000, guid: c96e6f7d34cdb430ca89983253bc6cc2, type: 2}
+  - {fileID: 2100000, guid: 10f09c35529804bd6937f2c2ef9c54db, type: 2}

@@ -1,0 +1,265 @@
+using System.Collections.Generic;
+using UnityEngine;
+using PlantGame.Plants;
+using PlantGame.UI;
+using PlantGame.World;
+
+namespace PlantGame.Core
+{
+    /// <summary>
+    /// World markers over things the player can act on: a diamond outline over pickups, a circle over things the selected
+    /// item can be used on (and Use-interactables such as water). Yellow = nearby but not usable yet, blue = the player can
+    /// act on it right now (it is the focused target within range). Billboarded sprites, pooled.
+    /// </summary>
+    [DefaultExecutionOrder(30)]
+    public class InteractionMarkers : MonoBehaviour
+    {
+        public float showRadius = 9f;
+        public float size = 0.85f;
+        [Tooltip("A pickup this much beyond reach shows its seed colour (thin) when the player faces it.")] public float earlyColourExtra = 2f;
+        public float earlyColourAngle = 40f;
+        public Color nearColor = new Color(1f, 0.85f, 0.2f, 0.95f);
+        [System.NonSerialized] public Color readyColor = new Color(0.8f, 0.3f, 1f, 1f);   // purple: the focused, actionable pickup / usable
+
+        static readonly Color SoilFar = new Color(1f, 0.55f, 0.1f, 0.95f);   // orange: a planting spot seen from afar
+        static readonly Color WaterNear = new Color(0.45f, 0.72f, 1f, 0.9f), WaterReady = new Color(0.15f, 0.5f, 1f, 1f);
+
+        [Tooltip("After a pickup the next target stays yellow this long, so two things never look 'ready' in a row.")]
+        public float readyDelayAfterPickup = 0.3f;
+
+        /// <summary>True while a refill marker (lake, waterfall, ready collector) is drawn as the thick circle: the HUD hint turns purple with it.</summary>
+        public static bool RefillRingThick { get; private set; }
+
+        /// <summary>A marker drawn this frame: what a tap on it would act on (touch).</summary>
+        public struct Tappable { public Vector3 position; public Collider collider; public InteractionSensor.Target target; public PlantGame.Player.ClimbableVolume climb; public Vector3 bridgeFrom, bridgeTo; public bool bridge; public bool cap; public Vector3 capPoint; }
+        public static readonly List<Tappable> Tappables = new List<Tappable>();
+
+        readonly List<CapHops.Option> _hops = new List<CapHops.Option>();
+        PlayerInteraction _pi;
+        float _blockReadyUntil;
+        Camera _cam;
+        readonly Collider[] _hits = new Collider[64];
+        readonly List<SpriteRenderer> _pool = new List<SpriteRenderer>();
+        readonly HashSet<Component> _seen = new HashSet<Component>();
+        static int Mask => Layers.InteractMask;
+
+        void Awake() { _pi = GetComponent<PlayerInteraction>(); }
+        void OnEnable() { GameEvents.ItemPickedUp += OnPicked; }
+        void OnPicked(Inventory.ItemDefinition _) { _blockReadyUntil = Time.unscaledTime + readyDelayAfterPickup; }
+
+        void LateUpdate()
+        {
+            if (_cam == null) _cam = Camera.main;
+            int used = 0;
+            bool thickRefill = false;
+            _seen.Clear();
+            Tappables.Clear();
+            if (_pi != null && _cam != null)
+            {
+                int n = Physics.OverlapSphereNonAlloc(transform.position, showRadius, _hits, Mask, QueryTriggerInteraction.Collide);
+                var focus = _pi.Sensor.Focus.component;
+                var item = _pi.Inventory.SelectedItem;
+                for (int i = 0; i < n; i++)
+                {
+                    var c = _hits[i];
+                    if (!InteractionSensor.TryResolve(c, out var t) || !_seen.Add(t.component)) continue;
+
+                    bool pickup = false, ready, seedColoured = false, soilRing = false, waterRing = false, wetGoal = false;
+                    Inventory.ItemDefinition tint = null;
+                    if (t.interactable != null && t.interactable.Action == InteractAction.Pickup)
+                    {
+                        pickup = true;
+                        ready = t.interactable.CanInteract(gameObject);
+                        tint = (t.interactable as Inventory.WorldItem)?.item;
+                    }
+                    else if (t.interactable != null && t.interactable.Action == InteractAction.Use)
+                    {
+                        ready = t.interactable.CanInteract(gameObject);
+                        if (t.interactable is GoalFlag { TooWet: true }) { ready = false; wetGoal = true; }   // a campfire in the rain: thin, faded ring like unplantable soil
+                        if (!ready && !wetGoal && (t.interactable is WaterCollector || t.interactable is GoalFlag)) continue;   // an empty collector (or a full can) offers nothing on F, a used goal nothing on E: no marker
+                    }
+                    else if (t.usable is SandboxTarget soil && !soil.planted && !soil.frozen && (Kit.Item(soil.acceptedItemId) ?? item) != null)
+                    {
+                        // soil always shows the seed it wants: faded and thin until that seed is selected, then bright and thick
+                        soilRing = true; tint = Kit.Item(soil.acceptedItemId) ?? item;
+                        ready = item != null && soil.CanUseItem(item, gameObject);
+                    }
+                    else if (t.usable != null && item != null && t.usable.CanUseItem(item, gameObject))
+                    {
+                        ready = true; seedColoured = true;
+                    }
+                    else if (t.waterable != null && t.waterable.NeedsWater)
+                        { ready = false; waterRing = true; }   // a sprout waiting for F: thin blue ring
+                    else continue;
+
+                    var r = Get(used++);
+                    var b = c.bounds;
+                    if (t.interactable is WaterSource wsrc)   // a pond / stream is one trigger: the marker sits on the patch next to the player, not the middle of the whole thing
+                    { var pc = wsrc.MarkerCentre(transform.position); b = new Bounds(new Vector3(pc.x, b.center.y, pc.z), new Vector3(1f, b.size.y, 1f)); }
+                    bool focused = soilRing ? ready : ready && t.component == focus && Time.unscaledTime >= _blockReadyUntil;
+                    // floating: a slow bob (out of step per target) so the markers catch the eye
+                    float bob = 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + b.center.x * 1.7f + b.center.z * 1.3f);
+                    Vector3 pos = b.center + Vector3.up * (Mathf.Min(b.extents.y, 0.6f) + 0.75f + bob + (waterRing ? 0.9f : 0f));   // the sprout ring floats higher: sprouts are tiny
+                    r.transform.position = pos;
+                    Tappables.Add(new Tappable { position = pos, collider = c, target = t });
+                    r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                    r.transform.localScale = Vector3.one * (size * (focused ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                    bool water = t.interactable is WaterSource || t.interactable is WaterCollector;   // water points are blue
+                    var near = water ? WaterNear : nearColor; var rdy = water ? WaterReady : readyColor;
+                    bool close = (c.bounds.ClosestPoint(_pi.Sensor.Chest) - _pi.Sensor.Chest).sqrMagnitude <= _pi.Sensor.range * _pi.Sensor.range;   // the same reach as the sensor / F: marker and action agree
+                    bool thick = pickup && focused && tint != null;   // only the one pickup that F/Q would act on is thick
+                    if (soilRing)
+                    {
+                        // orange from afar; the seed colour once in reach or when the player faces it (like pickups)
+                        var ic = PlayerHud.ItemColor(tint);
+                        rdy = Color.Lerp(ic, Color.white, 0.25f); rdy.a = 1f;
+                        near = close || FacingEarly(c) ? new Color(ic.r, ic.g, ic.b, 1f) : SoilFar;
+                    }
+                    else if (pickup)
+                    {   // yellow from afar; seed colour and thin once in reach; seed colour and thick when it is the one Q takes (never purple)
+                        near = nearColor; rdy = nearColor;
+                        if (tint != null && (close || focused || FacingEarly(c)))
+                        {
+                            var ic = PlayerHud.ItemColor(tint); near = new Color(ic.r, ic.g, ic.b, 1f);
+                            rdy = Color.Lerp(near, Color.white, 0.3f);
+                        }
+                    }
+                    else if (seedColoured)
+                    {
+                        var ic = PlayerHud.ItemColor(item); ic.a = 1f;
+                        near = new Color(ic.r, ic.g, ic.b, 0.85f); rdy = Color.Lerp(ic, Color.white, 0.3f);
+                    }
+                    if (waterRing) { near = WaterNear; rdy = WaterReady; focused = close; }
+                    // use circles stay slim: hairline when faded / far, medium when it is the right thing
+                    bool slim = waterRing || wetGoal || (soilRing ? !ready : water && !close && !focused);
+                    r.sprite = pickup ? (thick ? UiSprites.DiamondThick : UiSprites.DiamondThin) : slim ? UiSprites.RingThin : soilRing ? UiSprites.RingSlim : UiSprites.Ring;
+                    r.color = focused ? rdy : near;
+                    if (water && !slim && ready) thickRefill = true;
+                }
+            }
+            if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
+            {
+                // grown beanstalks: a circle at the foot (and at the top, to climb back down); tapping it climbs the whole stalk (touch)
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing)
+                    foreach (var v in PlantGame.Player.ClimbableVolume.All)
+                    {
+                        Vector3 foot = v.ClimbLinePoint + v.SurfaceNormal * 0.5f;
+                        bool atTop = transform.position.y >= v.TopY - 2.5f;
+                        if (atTop)   // the top circle sits on the far side of the stalk (180 degrees round it), where the end island is
+                        {
+                            Vector3 c = v.GetComponent<BoxCollider>().bounds.center;
+                            foot = new Vector3(2f * c.x - foot.x, foot.y, 2f * c.z - foot.z);
+                        }
+                        float baseY = atTop ? v.TopY + 2.1f : v.GetComponent<BoxCollider>().bounds.min.y + 2.1f;
+                        var pos = new Vector3(foot.x, baseY, foot.z);
+                        float dist = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(transform.position.x, transform.position.z));
+                        if (dist > showRadius) continue;
+                        var r = Get(used++);
+                        bool ready = dist <= _pi.Sensor.range;
+                        pos.y += 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + pos.x * 1.7f);
+                        r.transform.position = pos;
+                        r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                        r.transform.localScale = Vector3.one * (size * (ready ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                        r.sprite = ready ? UiSprites.Ring : UiSprites.RingSlim;
+                        r.color = ready ? readyColor : nearColor;
+                        Tappables.Add(new Tappable { position = pos, climb = v });
+                    }
+            }
+            if (PlantGame.Player.TouchInput.Active && !PlantGame.Player.TouchControls.AutoWalking && _pi != null && _cam != null)
+            {
+                // grown vine bridges: a circle at each end; tapping one walks to that end and then across to the other (touch)
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing)
+                    foreach (var pl in PlantInstance.All)
+                    {
+                        if (pl.kind != PlantKind.Bridge || !pl.IsGrown || !pl.TryGetEnds(out var a, out var t)) continue;
+                        if (OnBridge(a, t, transform.position)) continue;   // already on the vine: no circles
+                        for (int e = 0; e < 2; e++)
+                        {
+                            Vector3 from = e == 0 ? a : t, to = e == 0 ? t : a;
+                            Vector3 along = to - from; along.y = 0f; along.Normalize();
+                            float dist = Vector2.Distance(new Vector2(from.x, from.z), new Vector2(transform.position.x, transform.position.z));
+                            if (dist > showRadius) continue;
+                            var r = Get(used++);
+                            bool ready = dist <= _pi.Sensor.range;
+                            var pos = from + along * 0.8f + Vector3.up * (1.6f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + from.x * 1.7f));
+                            r.transform.position = pos;
+                            r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                            r.transform.localScale = Vector3.one * (size * (ready ? 1.25f : 1f) * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                            r.sprite = ready ? UiSprites.Ring : UiSprites.RingSlim;
+                            r.color = ready ? readyColor : nearColor;
+                            Tappables.Add(new Tappable { position = pos, bridge = true, bridgeFrom = from - along * 0.3f, bridgeTo = to + along * 1.0f });
+                        }
+                    }
+            }
+            if (_pi != null && _cam != null)
+            {
+                // mushroom caps: a circle over each cap the player can hop to from here; hidden during the hop and tap walks
+                var pc = GetComponent<PlantGame.Player.PlayerController>();
+                if (pc != null && !pc.IsClimbing && !pc.IsHopping && !PlantGame.Player.TouchControls.AutoWalking)
+                {
+                    CapHops.Find(transform.position, _hops);
+                    foreach (var o in _hops)
+                    {
+                        var r = Get(used++);
+                        var pos = o.point + Vector3.up * (1.5f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + o.point.x * 1.7f));
+                        // standing on a cap: the neighbour's ring would sit right next to (or under) the player, so it floats out towards that cap at a readable distance
+                        Vector3 flat = o.point - transform.position; flat.y = 0f;
+                        if (flat.magnitude < 3f && Mathf.Abs(transform.position.y - o.point.y) < 6f)
+                        {
+                            Vector3 dir = flat.sqrMagnitude > 0.01f ? flat.normalized : transform.forward;
+                            pos = transform.position + dir * 3f; pos.y = Mathf.Max(o.point.y, transform.position.y) + 2f + 0.14f * Mathf.Sin(Time.unscaledTime * 2.6f + o.point.x * 1.7f);
+                        }
+                        r.transform.position = pos;
+                        r.transform.rotation = Quaternion.LookRotation(pos - _cam.transform.position);
+                        r.transform.localScale = Vector3.one * (size * 1.25f * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 4f)));
+                        r.sprite = UiSprites.Ring; r.color = readyColor;
+                        Tappables.Add(new Tappable { position = pos, cap = true, capPoint = o.point });
+                    }
+                }
+            }
+            RefillRingThick = thickRefill;
+            for (int i = 0; i < _pool.Count; i++) _pool[i].gameObject.SetActive(i < used);
+        }
+
+        /// <summary>A pickup a little beyond reach already shows its seed colour (thin) while the player faces it.</summary>
+        bool FacingEarly(Collider c)
+        {
+            Vector3 to = c.bounds.center - transform.position; to.y = 0f;
+            float reach = _pi.Sensor.range + earlyColourExtra;
+            if (to.sqrMagnitude > reach * reach || to.sqrMagnitude < 1e-4f) return false;
+            var f = PlantGame.Player.TouchInput.Active && _pi.Sensor.facing != null ? _pi.Sensor.facing : _cam.transform;
+            Vector3 fwd = f.forward; fwd.y = 0f;
+            return fwd.sqrMagnitude > 1e-4f && Vector3.Angle(fwd, to) <= earlyColourAngle;
+        }
+
+        /// <summary>True when the point stands on the bridge between its two ends (along it, near its width, near its height).</summary>
+        static bool OnBridge(Vector3 a, Vector3 t, Vector3 p)
+        {
+            Vector2 a2 = new Vector2(a.x, a.z), d = new Vector2(t.x, t.z) - a2, q = new Vector2(p.x, p.z) - a2;
+            float len2 = d.sqrMagnitude;
+            if (len2 < 0.01f) return false;
+            float k = Vector2.Dot(q, d) / len2;
+            if (k < 0f || k > 1f) return false;
+            if ((q - d * k).magnitude > 1.6f) return false;
+            return Mathf.Abs(p.y - Mathf.Lerp(a.y, t.y, k)) < 2f;
+        }
+
+        SpriteRenderer Get(int i)
+        {
+            while (_pool.Count <= i)
+            {
+                var go = new GameObject("InteractionMarker") { hideFlags = HideFlags.DontSave };
+                var r = go.AddComponent<SpriteRenderer>();
+                r.sortingOrder = 100;
+                _pool.Add(r);
+            }
+            _pool[i].gameObject.SetActive(true);
+            return _pool[i];
+        }
+
+        void OnDisable() { GameEvents.ItemPickedUp -= OnPicked; foreach (var r in _pool) if (r != null) r.gameObject.SetActive(false); }
+        void OnDestroy() { foreach (var r in _pool) if (r != null) Destroy(r.gameObject); }
+    }
+}

@@ -1,0 +1,341 @@
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+
+namespace PlantGame.Editor
+{
+    /// <summary>
+    /// Procedural, tileable detail textures (no sourced assets): grass-top and rock for the islands, a ridged seed coat.
+    /// Albedo textures are luminance/hue variation that multiplies the palette colour of the material; each has a matching
+    /// normal map made from the same height field. Written to Assets/Art/Textures (committed). Menu: PlantGame > 11 Build Textures.
+    /// </summary>
+    public static class TextureBuilder
+    {
+        public const string Dir = "Assets/Art/Textures";
+
+        [MenuItem("PlantGame/10 Build Textures", false, 10)]
+        public static void Build()
+        {
+            Directory.CreateDirectory(Dir);
+            const int N = 256;
+            // grass top: dark undercoat with rows of leaning, tapering blades (lighter tips), broad patches of colour and a few bright specks
+            Make("T_Terrain", 512, (u, v, c, h) =>
+            {
+                float x = u * 160f, y = v * 28f;
+                int col = Mathf.FloorToInt(x);
+                float yy = y + Hash(col, 0, 61), fy = yy - Mathf.Floor(yy);
+                int row = Mod(Mathf.FloorToInt(yy), 28);
+                float tone = Hash(col, row, 62), lean = (Hash(col, row, 63) - 0.5f) * 1.3f;
+                float half = 0.5f * (1f - fy * 0.9f), dx = x - col - (0.5f + lean * fy);
+                float cover = Mathf.Clamp01((half - Mathf.Abs(dx)) * 7f);
+                float patch = Fbm(u, v, 4, 3, 64), dry = Fbm(u, v, 3, 2, 65);
+                float under = 0.30f + 0.12f * patch;
+                float blade = (0.50f + 0.45f * fy) * (0.78f + 0.4f * tone);
+                float lum = Mathf.Lerp(under, blade, cover) * (0.82f + 0.4f * patch);
+                if (Hash(Mathf.FloorToInt(u * 512), Mathf.FloorToInt(v * 512), 66) > 0.994f) lum += 0.25f;   // dew / seed heads
+                lum = Mathf.Clamp01(lum);
+                h = cover * (0.3f + 0.7f * fy) * 0.8f + patch * 0.2f;
+                c = new Color(lum * (0.92f + 0.2f * dry), lum, lum * (0.84f + 0.05f * dry), 1f);   // yellower where it is dry
+                return (c, h);
+            });
+            // mud: wet dark patches, dry cracked plates, straw and pebbles
+            Make("T_Mud", 512, (u, v, c, h) =>
+            {
+                Worley(u, v, 7, 71, out float f1, out float f2);
+                float wet = Mathf.Clamp01((Fbm(u, v, 4, 4, 72) - 0.5f) * 3.5f);
+                float crack = (1f - Mathf.Clamp01((f2 - f1) * 9f)) * (1f - wet);
+                float clod = Fbm(u, v, 24, 3, 73), speck = Hash(Mathf.FloorToInt(u * 512), Mathf.FloorToInt(v * 512), 74);
+                float lum = (0.70f + 0.28f * clod) * Mathf.Lerp(1f, 0.62f, wet) * (1f - 0.3f * crack);
+                if (speck > 0.985f) lum += 0.22f;
+                h = (1f - crack) * 0.5f + clod * 0.35f - wet * 0.15f + (speck > 0.985f ? 0.2f : 0f);
+                lum = Mathf.Clamp01(lum);
+                c = new Color(lum, lum * 0.95f, lum * 0.88f, 1f);
+                return (c, h);
+            });
+            // flagstones and gravel: rounded plates, each its own shade, dark joints, moss patches
+            Make("T_Pebbles", 512, (u, v, c, h) =>
+            {
+                WorleyCell(u, v, 6, 81, out float f1, out float f2, out float cell);
+                float joint = Mathf.Clamp01((f2 - f1) * 7f);
+                float grain = Fbm(u, v, 40, 2, 82), moss = Mathf.Clamp01((Fbm(u, v, 5, 3, 83) - 0.55f) * 3f);
+                float lum = (0.6f + 0.25f * cell) * Mathf.Lerp(0.6f, 1f, joint) * (0.85f + 0.3f * grain);
+                h = joint * (1f - f1 * 0.6f) * 0.7f + grain * 0.25f;
+                lum = Mathf.Clamp01(lum);
+                c = new Color(lum * (1f - 0.18f * moss), lum, lum * (1f - 0.3f * moss), 1f);
+                return (c, h);
+            });
+            // rock: cracks from cell edges + mottling
+            Make("T_Rock", N, (u, v, c, h) =>
+            {
+                Worley(u, v, 6, 21, out float f1, out float f2);
+                float crack = Mathf.Clamp01((f2 - f1) * 16f);
+                float m = Fbm(u, v, 8, 4, 22);
+                h = crack * 0.6f + m * 0.25f + f1 * 0.15f;
+                float lum = Mathf.Clamp01((0.62f + 0.4f * m) * Mathf.Lerp(0.6f, 1f, crack));
+                c = new Color(lum * 0.96f, lum, lum * 1.04f, 1f);
+                return (c, h);
+            });
+            // loose stones: soft painted grey, broad warm / cool mottling, faint strata, a few hairline cracks and pits, the odd lichen patch
+            Make("T_Stone", 512, (u, v, c, h) =>
+            {
+                float broad = Fbm(u, v, 3, 3, 91), mid = Fbm(u, v, 9, 3, 92), fine = Fbm(u, v, 48, 2, 93), warm = Fbm(u, v, 4, 2, 97);
+                float strata = 0.5f + 0.5f * Mathf.Sin((v * 7f + broad * 1.6f) * Mathf.PI * 2f);
+                Worley(u, v, 5, 94, out float f1, out float f2);
+                float crack = (1f - Mathf.Clamp01((f2 - f1) * 40f)) * Mathf.Clamp01((Fbm(u, v, 4, 2, 95) - 0.45f) * 4f);   // only in places
+                float pit = Hash(Mathf.FloorToInt(u * 512), Mathf.FloorToInt(v * 512), 98) > 0.993f ? 1f : 0f;
+                float lichen = Mathf.Clamp01((Fbm(u, v, 6, 3, 96) - 0.64f) * 5f);
+                float lum = (0.42f + 0.42f * broad + 0.18f * mid + 0.12f * fine - 0.08f * strata) * (1f - 0.45f * crack) - 0.18f * pit;
+                lum = Mathf.Clamp01(lum);
+                var tint = Color.Lerp(new Color(0.93f, 0.97f, 1.03f), new Color(1.05f, 1.0f, 0.92f), warm);
+                c = Color.Lerp(tint * lum, new Color(0.74f, 0.8f, 0.5f) * (lum * 1.08f), lichen * 0.65f); c.a = 1f;
+                h = broad * 0.3f + mid * 0.3f + fine * 0.25f - crack * 0.5f - pit * 0.3f + strata * 0.06f;
+                return (c, h);
+            });
+            // bark: vertical streaks (noise stretched along v), knotty dark fissures
+            Make("T_Bark", N, (u, v, c, h) =>
+            {
+                float streak = Fbm(u, v, 12, 3, 41);                      // fine in u ...
+                float along = ValueNoise(u * 12f, v * 3f, 12, 42);         // ... slow in v: long grain
+                float fis = Mathf.Clamp01((0.5f - Mathf.Abs(ValueNoise(u * 9f, v * 2f, 9, 43) - 0.5f)) * 5f);
+                h = streak * 0.4f + along * 0.3f + (1f - fis) * 0.3f;
+                float lum = Mathf.Clamp01((0.72f + 0.35f * along) * Mathf.Lerp(0.55f, 1f, 1f - fis * 0.0f - (fis > 0.8f ? 0.45f : 0f)));
+                c = new Color(lum, lum * 0.97f, lum * 0.92f, 1f);
+                return (c, h);
+            });
+            // furrowed earth: ridges along v (u repeats 6x), dark furrow bottoms, clods and pebbles
+            Make("T_Soil", N, (u, v, c, h) =>
+            {
+                float wob = Fbm(u, v, 4, 3, 51);
+                float ridge = 0.5f + 0.5f * Mathf.Cos((u * 6f + wob * 0.25f) * Mathf.PI * 2f);          // 1 on the ridge crest, 0 in the furrow
+                float clod = Fbm(u, v, 16, 3, 52), speck = Hash(Mathf.FloorToInt(u * N), Mathf.FloorToInt(v * N), 53);
+                h = ridge * 0.6f + clod * 0.3f + (speck > 0.97f ? 0.25f : 0f);
+                float lum = Mathf.Clamp01((0.55f + 0.5f * ridge) * (0.82f + 0.3f * clod) - (speck > 0.97f ? 0.0f : 0f));
+                c = new Color(lum, lum * 0.96f, lum * 0.9f, 1f);
+                return (c, h);
+            });
+            // seed coat: longitudinal ridges (u wraps round the sphere) + speckle
+            Make("T_Seed", 128, (u, v, c, h) =>
+            {
+                float wob = Fbm(u, v, 4, 3, 31);
+                float s = 0.5f + 0.5f * Mathf.Sin((u * 8f + wob * 0.6f) * Mathf.PI * 2f);
+                float speck = Hash(Mathf.FloorToInt(u * 128), Mathf.FloorToInt(v * 128), 32);
+                h = s * 0.7f + wob * 0.2f;
+                float lum = Mathf.Clamp01(0.7f + 0.3f * s - (speck > 0.9f ? 0.22f : 0f));
+                c = new Color(lum, lum, lum, 1f);
+                return (c, h);
+            });
+            // T67: tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
+            Make("T_PlantBark", 256, normalMap: false, gen: (u, v, c, h) =>
+            {
+                float grain = ValueNoise(u * 24f, v * 4f, 24, 111), fis = Mathf.Clamp01((0.5f - Mathf.Abs(ValueNoise(u * 12f, v * 3f, 12, 112) - 0.5f)) * 6f);
+                float lum = Mathf.Clamp01((0.72f + 0.35f * grain) * (1f - 0.35f * fis) * (0.9f + 0.2f * Fbm(u, v, 5, 3, 113)));
+                h = grain * 0.5f + (1f - fis) * 0.5f; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            Make("T_PlantLeaf", 256, normalMap: false, gen: (u, v, c, h) =>
+            {
+                Worley(u, v, 7, 114, out float f1, out float f2);
+                float vein = Mathf.Clamp01((f2 - f1) * 14f), mid = Mathf.Clamp01(1f - Mathf.Abs(u - 0.5f) * 18f) * 0.4f;
+                float lum = Mathf.Clamp01((0.92f - 0.28f * (1f - vein) - mid * 0.3f) * (0.88f + 0.2f * Fbm(u, v, 6, 3, 115)));
+                h = vein * 0.6f + mid; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            Make("T_PlantCap", 256, normalMap: false, gen: (u, v, c, h) =>
+            {
+                float blot = Fbm(u, v, 5, 4, 116), flake = ValueNoise(u * 40f, v * 40f, 40, 117);
+                Worley(u, v, 8, 118, out float f1, out float f2);
+                float lum = Mathf.Clamp01((0.72f + 0.5f * blot) * (0.9f + 0.18f * flake) * (1f - 0.12f * Mathf.Clamp01((f2 - f1) * 4f)));
+                h = blot * 0.5f + flake * 0.3f; c = new Color(lum, lum, lum, 1f); return (c, h);
+            });
+            // T67: seed pickup textures (u wraps round the seed, v runs along it). Grey values multiply the item colour.
+            Make("T_SeedBamboo", 256, (u, v, c, h) =>
+            {
+                float fibre = ValueNoise(u * 60f, v * 4f, 60, 91), band = Mathf.Abs(Mathf.Sin(v * Mathf.PI * 3f));
+                float node = Mathf.Clamp01((band - 0.9f) * 12f);
+                float lum = Mathf.Clamp01((0.78f + 0.3f * fibre) * (1f - 0.25f * node) * (0.9f + 0.2f * Fbm(u, v, 6, 3, 92)));
+                h = fibre * 0.4f + node * 0.8f;
+                c = new Color(lum, lum, lum * 0.95f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedBean", 256, (u, v, c, h) =>
+            {
+                float mott = Fbm(u, v, 5, 4, 93), fine = Fbm(u, v, 40, 2, 94);
+                float speck = Hash(Mathf.FloorToInt(u * 256), Mathf.FloorToInt(v * 256), 95);
+                float lum = Mathf.Clamp01(0.62f + 0.5f * mott - (speck > 0.93f ? 0.3f : 0f) + 0.1f * fine);
+                h = mott * 0.6f + fine * 0.3f;
+                c = new Color(lum, lum * 0.97f, lum * 0.92f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedPuff", 256, (u, v, c, h) =>
+            {
+                Worley(u, v, 9, 96, out float f1, out float f2);
+                float pore = Mathf.Clamp01((0.18f - f1) * 8f), flake = Fbm(u, v, 14, 3, 97);
+                float lum = Mathf.Clamp01((0.9f + 0.15f * flake) * (1f - 0.07f * pore) - (f2 - f1 < 0.05f ? 0.05f : 0f));
+                h = flake * 0.4f + (1f - pore) * 0.08f;
+                c = new Color(lum, lum, lum, 1f);
+                return (c, h);
+            });
+            Make("T_SeedSucc", 256, (u, v, c, h) =>
+            {
+                float vein = Mathf.Abs(Mathf.Sin(u * Mathf.PI * 16f)), stripe = Mathf.Clamp01((0.15f - Mathf.Abs(vein - 0.0f)) * 5f);
+                float lum = Mathf.Clamp01((0.8f + 0.25f * Fbm(u, v, 8, 3, 98)) * (1f - 0.2f * stripe) * (0.7f + 0.4f * v));
+                h = stripe * 0.4f + Fbm(u, v, 8, 3, 98) * 0.3f;
+                c = new Color(lum, lum, lum, 1f);
+                return (c, h);
+            });
+            Make("T_SeedHeart", 256, (u, v, c, h) =>
+            {
+                // glossy ripe skin: fine pitting, faint vein lines (cell borders) and a soft darker shading toward the tip
+                Worley(u, v, 12, 101, out float f1, out float f2);
+                float vein = Mathf.Clamp01((0.03f - (f2 - f1)) * 8f) * 0.5f, pit = ValueNoise(u * 70f, v * 70f, 70, 102), soft = Fbm(u, v, 5, 3, 103);
+                float lum = Mathf.Clamp01((0.9f + 0.08f * soft - 0.06f * pit) * (1f - 0.25f * vein) * (0.82f + 0.18f * v));
+                h = soft * 0.3f + (1f - vein) * 0.25f + pit * 0.1f;
+                c = new Color(lum, lum * 0.95f, lum * 0.95f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedMelon", 256, (u, v, c, h) =>
+            {
+                // rind: darker stripes along each rib (u wraps round, v along the melon) under a net of raised cracks
+                float rib = 0.5f + 0.5f * Mathf.Cos(u * Mathf.PI * 2f * 10f), stripe = Mathf.Clamp01((0.45f - rib) * 3f);
+                Worley(u * 3f, v * 3f, 14, 104, out float f1, out float f2);
+                float net = Mathf.Clamp01((0.07f - (f2 - f1)) * 10f), mott = Fbm(u, v, 6, 4, 105);
+                float lum = Mathf.Clamp01((0.95f - 0.28f * stripe + 0.06f * mott) * (1f - 0.14f * net) * (1f - 0.1f * Mathf.Pow(Mathf.Abs(v - 0.5f) * 2f, 4f)));
+                h = net * 0.6f + (1f - stripe) * 0.2f + mott * 0.2f;
+                c = new Color(lum, lum, lum * 0.92f, 1f);
+                return (c, h);
+            });
+            Make("T_GoldFruit", 256, (u, v, c, h) =>
+            {
+                // goal fruit skin: gently dimpled gold, soft lengthwise bands and a darker, warmer stem end
+                float band = 0.5f + 0.5f * Mathf.Cos(u * Mathf.PI * 2f * 5f), dimple = ValueNoise(u * 36f, v * 36f, 36, 106), flow = Fbm(u, v, 5, 4, 107);
+                float lum = Mathf.Clamp01((0.86f + 0.08f * band + 0.1f * flow) * (1f - 0.1f * dimple));
+                h = dimple * 0.45f + flow * 0.3f + band * 0.1f;
+                c = new Color(lum, lum * 0.97f, lum * 0.88f, 1f);
+                return (c, h);
+            });
+            Make("T_SeedCoconut", 256, (u, v, c, h) =>
+            {
+                float hair = ValueNoise(u * 90f, v * 14f, 90, 99), coarse = Fbm(u, v, 7, 4, 100);
+                float lum = Mathf.Clamp01((0.58f + 0.45f * hair) * (0.8f + 0.35f * coarse));
+                h = hair * 0.7f + coarse * 0.3f;
+                c = new Color(lum, lum * 0.93f, lum * 0.85f, 1f);
+                return (c, h);
+            });
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[PlantGame] Textures built in " + Dir);
+        }
+
+        public static Texture2D Albedo(string name) => AssetDatabase.LoadAssetAtPath<Texture2D>($"{Dir}/{name}.png");
+        public static Texture2D Normal(string name) => AssetDatabase.LoadAssetAtPath<Texture2D>($"{Dir}/{name}_N.png");
+
+        delegate (Color, float) Gen(float u, float v, Color c, float h);
+
+        /// <summary>Writes the albedo and, unless `normalMap` is false (the PlantGrow maps have no normal slot), a matching _N normal map from the height.</summary>
+        static void Make(string name, int n, Gen gen) => Make(name, n, true, gen);
+
+        static void Make(string name, int n, bool normalMap, Gen gen)
+        {
+            var albedo = new Color[n * n];
+            var height = new float[n * n];
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    var (c, h) = gen((x + 0.5f) / n, (y + 0.5f) / n, Color.white, 0f);
+                    albedo[y * n + x] = c; height[y * n + x] = h;
+                }
+            var normal = new Color[n * n];
+            const float strength = 3.0f;
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float hl = height[y * n + (x + n - 1) % n], hr = height[y * n + (x + 1) % n];
+                    float hd = height[((y + n - 1) % n) * n + x], hu = height[((y + 1) % n) * n + x];
+                    var nv = new Vector3((hl - hr) * strength, (hd - hu) * strength, 1f).normalized;
+                    normal[y * n + x] = new Color(nv.x * 0.5f + 0.5f, nv.y * 0.5f + 0.5f, nv.z * 0.5f + 0.5f, 1f);
+                }
+            Write(name, n, albedo, false);
+            if (normalMap) Write(name + "_N", n, normal, true);
+        }
+
+        static void Write(string name, int n, Color[] px, bool isNormal)
+        {
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false, true);
+            tex.SetPixels(px);
+            var path = $"{Dir}/{name}.png";
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            imp.textureType = isNormal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            imp.sRGBTexture = !isNormal;
+            imp.wrapMode = TextureWrapMode.Repeat;
+            imp.filterMode = FilterMode.Bilinear;
+            imp.mipmapEnabled = true;
+            imp.anisoLevel = 4;
+            imp.SaveAndReimport();
+        }
+
+        // ---------------------------------------------------------------- tileable noise (u, v in 0..1)
+        static float Hash(int x, int y, int seed)
+        {
+            unchecked
+            {
+                uint h = (uint)(x * 374761393) + (uint)(y * 668265263) + (uint)(seed * 1274126177);
+                h = (h ^ (h >> 13)) * 1274126177u;
+                return ((h ^ (h >> 16)) & 0xFFFFFF) / (float)0x1000000;
+            }
+        }
+
+        static int Mod(int a, int m) => ((a % m) + m) % m;
+
+        static float ValueNoise(float x, float y, int period, int seed)
+        {
+            int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+            float fx = x - xi, fy = y - yi;
+            fx = fx * fx * (3f - 2f * fx); fy = fy * fy * (3f - 2f * fy);
+            float a = Hash(Mod(xi, period), Mod(yi, period), seed), b = Hash(Mod(xi + 1, period), Mod(yi, period), seed);
+            float c = Hash(Mod(xi, period), Mod(yi + 1, period), seed), d = Hash(Mod(xi + 1, period), Mod(yi + 1, period), seed);
+            return Mathf.Lerp(Mathf.Lerp(a, b, fx), Mathf.Lerp(c, d, fx), fy);
+        }
+
+        static float Fbm(float u, float v, int baseFreq, int octaves, int seed)
+        {
+            float sum = 0f, amp = 0.5f, norm = 0f; int f = baseFreq;
+            for (int o = 0; o < octaves; o++)
+            {
+                sum += amp * ValueNoise(u * f, v * f, f, seed + o * 7);
+                norm += amp; amp *= 0.5f; f *= 2;
+            }
+            return sum / norm;
+        }
+
+        static void WorleyCell(float u, float v, int cells, int seed, out float f1, out float f2, out float cellValue)
+        {
+            float x = u * cells, y = v * cells;
+            int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+            f1 = f2 = 9f; cellValue = 0f;
+            for (int j = -1; j <= 1; j++)
+                for (int i = -1; i <= 1; i++)
+                {
+                    int cx = xi + i, cy = yi + j;
+                    float px = cx + Hash(Mod(cx, cells), Mod(cy, cells), seed), py = cy + Hash(Mod(cx, cells), Mod(cy, cells), seed + 5);
+                    float d = Mathf.Sqrt((px - x) * (px - x) + (py - y) * (py - y));
+                    if (d < f1) { f2 = f1; f1 = d; cellValue = Hash(Mod(cx, cells), Mod(cy, cells), seed + 9); } else if (d < f2) f2 = d;
+                }
+        }
+
+        static void Worley(float u, float v, int cells, int seed, out float f1, out float f2)
+        {
+            float x = u * cells, y = v * cells;
+            int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+            f1 = f2 = 9f;
+            for (int j = -1; j <= 1; j++)
+                for (int i = -1; i <= 1; i++)
+                {
+                    int cx = xi + i, cy = yi + j;
+                    float px = cx + Hash(Mod(cx, cells), Mod(cy, cells), seed), py = cy + Hash(Mod(cx, cells), Mod(cy, cells), seed + 5);
+                    float d = Mathf.Sqrt((px - x) * (px - x) + (py - y) * (py - y));
+                    if (d < f1) { f2 = f1; f1 = d; } else if (d < f2) f2 = d;
+                }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_CloudSea
+  m_Shader: {fileID: 4800000, guid: 5ec5e152724c64c4c835d57a90f13edf, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 4d0943edeb35f49789f6bb0b5e52ab35, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Coverage: 0.5
+    - _FogAmount: 0.3
+    - _Opacity: 0.95
+    - _Tiling: 8
+    m_Colors:
+    - _Color: {r: 0.58760786, g: 0.7159216, b: 0.8290196, a: 1}
+    - _Radius: {r: 0.3, g: 0.5, b: 0, a: 0}
+    - _Scroll: {r: 0.006, g: 0.002, b: 0, a: 0}
+    - _Shade: {r: 0.02588235, g: 0.05529411, b: 0.084117636, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
