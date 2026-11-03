@@ -4,8 +4,8 @@ using UnityEngine;
 namespace PlantGame.World
 {
     /// <summary>
-    /// Small procedural shapes shared by the goal objects and the melon patch: lathes (columns, bases, fruit, logs), tori (rings, rims),
-    /// a waving pennant, arch bands, tubes (vines, tendrils) and a ribbed melon. Y is the axis of every lathe, profiles run bottom to top
+    /// Small procedural shapes shared by the goal objects and the pumpkin patch: lathes (columns, bases, fruit, logs), tori (rings, rims),
+    /// a waving pennant, arch bands, tubes (vines, tendrils) and a ribbed pumpkin. Y is the axis of every lathe, profiles run bottom to top
     /// with the solid on the left (radius, height).
     /// </summary>
     public static class ShapeMeshes
@@ -154,15 +154,14 @@ namespace PlantGame.World
             return m;
         }
 
-        /// <summary>A ribbed oval melon, about 0.62 m long by 0.46 m across at scale 1 (lies on its side), with a stem nub on top and a flower scar underneath.</summary>
-        public static Mesh Melon(int ribs = 10)
+        /// <summary>A squat ribbed pumpkin, about 0.6 m across by 0.46 m tall at scale 1 (stands upright, stem on top, ten deep ribs). Its carved face is in the T_SeedPumpkin textures, centred on the groove at u = 0.25.</summary>
+        public static Mesh Pumpkin(int ribs = 10)
         {
             var prof = new List<Vector2>();
             const int rings = 18;
-            for (int i = 0; i < rings; i++) { float phi = Mathf.PI * i / rings; prof.Add(new Vector2(i == 0 ? 0.0005f : 0.23f * Mathf.Sin(phi), -0.31f * Mathf.Cos(phi))); }
-            prof.Add(new Vector2(0.05f, 0.305f)); prof.Add(new Vector2(0.03f, 0.315f)); prof.Add(new Vector2(0.026f, 0.37f)); prof.Add(new Vector2(0.0005f, 0.375f));   // stem nub
-            var m = Lathe(prof, 40, false, (ang, p) => 1f + 0.05f * Mathf.Cos(ang * ribs) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(p / (float)(rings - 1))), "Melon");
-            return m;
+            for (int i = 0; i < rings; i++) { float phi = Mathf.PI * i / rings; prof.Add(new Vector2(i == 0 ? 0.0005f : 0.30f * Mathf.Sin(phi), -0.23f * Mathf.Cos(phi))); }
+            prof.Add(new Vector2(0.05f, 0.215f)); prof.Add(new Vector2(0.04f, 0.27f)); prof.Add(new Vector2(0.04f, 0.33f)); prof.Add(new Vector2(0.056f, 0.375f)); prof.Add(new Vector2(0.0005f, 0.378f));   // stem
+            return Lathe(prof, 40, false, (ang, p) => 1f + 0.07f * Mathf.Cos(ang * ribs) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(p / (float)(rings - 1))), "Pumpkin");
         }
 
         /// <summary>An inflated heart about 0.36 m tall (a Heart Seed pickup), centred on the origin: the classic heart outline revolved and flattened front to back.</summary>
@@ -197,11 +196,11 @@ namespace PlantGame.World
             return m;
         }
 
-        /// <summary>The Heat Seed pickup: a small ribbed melon, centred on the origin.</summary>
-        public static Mesh MelonSeed()
+        /// <summary>The Heat Seed pickup: a small pumpkin with a glowing face, standing upright and centred on the origin.</summary>
+        public static Mesh PumpkinSeed()
         {
-            var m = Melon(); var src = m.vertices; var v = new Vector3[src.Length];
-            for (int i = 0; i < src.Length; i++) v[i] = Quaternion.Euler(90f, 0f, 0f) * (src[i] - new Vector3(0f, 0.03f, 0f)) * 0.55f;   // lying down, 0.35 m long
+            var m = Pumpkin(); var src = m.vertices; var v = new Vector3[src.Length];
+            for (int i = 0; i < src.Length; i++) v[i] = (src[i] - new Vector3(0f, 0.07f, 0f)) * 0.75f;   // 0.45 m across
             m.vertices = v; m.RecalculateBounds(); m.RecalculateNormals();
             return m;
         }

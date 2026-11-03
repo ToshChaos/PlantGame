@@ -180,17 +180,28 @@ namespace PlantGame.Editor
                 c = new Color(lum, lum * 0.95f, lum * 0.95f, 1f);
                 return (c, h);
             });
-            Make("T_SeedMelon", 256, (u, v, c, h) =>
+            Make("T_SeedPumpkin", 512, (u, v, c, h) =>
             {
-                // rind: darker stripes along each rib (u wraps round, v along the melon) under a net of raised cracks
+                // rind: darker grooves between the ten ribs (u wraps round, v runs along the profile), fine cracks, and the carved face recessed and dark
                 float rib = 0.5f + 0.5f * Mathf.Cos(u * Mathf.PI * 2f * 10f), stripe = Mathf.Clamp01((0.45f - rib) * 3f);
                 Worley(u * 3f, v * 3f, 14, 104, out float f1, out float f2);
-                float net = Mathf.Clamp01((0.07f - (f2 - f1)) * 10f), mott = Fbm(u, v, 6, 4, 105);
+                float net = Mathf.Clamp01((0.07f - (f2 - f1)) * 10f), mott = Fbm(u, v, 6, 4, 105), face = PumpkinFace(u, v);
                 float lum = Mathf.Clamp01((0.95f - 0.28f * stripe + 0.06f * mott) * (1f - 0.14f * net) * (1f - 0.1f * Mathf.Pow(Mathf.Abs(v - 0.5f) * 2f, 4f)));
-                h = net * 0.6f + (1f - stripe) * 0.2f + mott * 0.2f;
+                lum *= 1f - 0.85f * face;
+                h = net * 0.6f + (1f - stripe) * 0.2f + mott * 0.2f - face * 0.9f;
                 c = new Color(lum, lum, lum * 0.92f, 1f);
                 return (c, h);
             });
+            {   // the face glows from inside: warm orange at the cut edges, pale yellow at the heart of each shape (the rest of the rind stays dark)
+                const int en = 512; var glow = new Color[en * en];
+                for (int y = 0; y < en; y++)
+                    for (int x = 0; x < en; x++)
+                    {
+                        float f = PumpkinFace((x + 0.5f) / en, (y + 0.5f) / en), core = f * f;
+                        glow[y * en + x] = new Color(Mathf.Lerp(0.9f, 1f, core) * f, Mathf.Lerp(0.38f, 0.92f, core) * f, Mathf.Lerp(0.04f, 0.45f, core) * f, 1f);
+                    }
+                Write("T_SeedPumpkin_E", en, glow, false);
+            }
             Make("T_GoldFruit", 256, (u, v, c, h) =>
             {
                 // goal fruit skin: gently dimpled gold, soft lengthwise bands and a darker, warmer stem end
@@ -211,6 +222,26 @@ namespace PlantGame.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[PlantGame] Textures built in " + Dir);
+        }
+
+        /// <summary>The carved jack-o'-lantern face of the Heat pumpkin as a soft 0..1 mask over (u, v) of the Pumpkin lathe: two triangle eyes, a small nose and a toothy grin, centred on u = 0.25 (a rib groove).</summary>
+        static float PumpkinFace(float u, float v)
+        {
+            float x = (u - 0.25f) * 1.885f, y = (v - 0.45f) * 1.03f;   // metres on the rind at scale 1 (equator circumference and profile arc per UV unit)
+            const float soft = 0.006f;
+            float Tri(float px, float py, float cx, float cy, float w, float hgt, bool up)
+            {
+                float dx = px - cx, dy = up ? py - cy : cy - py;   // apex at +hgt/2, base at -hgt/2 (flipped for a point-down triangle)
+                float halfW = w * 0.5f * (hgt * 0.5f - dy) / hgt, n = Mathf.Sqrt(1f + (w * 0.5f / hgt) * (w * 0.5f / hgt));
+                return Mathf.Min(dy + hgt * 0.5f, (halfW - Mathf.Abs(dx)) / n);
+            }
+            float d = Mathf.Max(Tri(x, y, -0.11f, 0.075f, 0.1f, 0.085f, true), Tri(x, y, 0.11f, 0.075f, 0.1f, 0.085f, true));   // eyes
+            d = Mathf.Max(d, Tri(x, y, 0f, 0.0f, 0.045f, 0.04f, false));   // nose
+            float ax = Mathf.Abs(x), mid = -0.085f + 0.075f * (ax / 0.19f) * (ax / 0.19f);
+            float mouth = Mathf.Min(Mathf.Min(y - (mid - 0.032f), (mid + 0.032f) - y), 0.19f - ax);
+            if (y > mid) mouth = Mathf.Min(mouth, Mathf.Abs(ax - 0.07f) - 0.014f);   // a tooth gap either side of the centre on the upper lip
+            d = Mathf.Max(d, mouth);
+            return Mathf.Clamp01(d / soft * 0.5f + 0.5f);
         }
 
         public static Texture2D Albedo(string name) => AssetDatabase.LoadAssetAtPath<Texture2D>($"{Dir}/{name}.png");

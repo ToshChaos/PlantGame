@@ -19,7 +19,7 @@ namespace PlantGame.World
                 case "dew_seed": return Succulent();
                 case "coconut": return Coconut();
                 case "heart_seed": return ShapeMeshes.Heart();
-                case "heat_seed": return ShapeMeshes.MelonSeed();
+                case "heat_seed": return ShapeMeshes.PumpkinSeed();
                 default: return null;
             }
         }

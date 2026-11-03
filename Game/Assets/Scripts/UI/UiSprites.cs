@@ -6,7 +6,7 @@ namespace PlantGame.UI
     public static class UiSprites
     {
         const int N = 64;
-        static Sprite _coconut, _disc, _ring, _drop, _leaf, _bamboo, _bean, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _melon;
+        static Sprite _coconut, _disc, _ring, _drop, _leaf, _bamboo, _bean, _diamondThick, _diamondThin, _ringThin, _ringSlim, _puffball, _roundMushroom, _succulent, _heart, _pumpkin;
 
         public static Sprite Disc => _disc != null ? _disc : _disc = Make((x, y) => Mathf.Clamp01(N * 0.5f - 1f - Dist(x, y)));
         public static Sprite Ring => _ring != null ? _ring : _ring = Make((x, y) =>
@@ -67,7 +67,7 @@ namespace PlantGame.UI
                 case "shelf_seed": return Puffball;
                 case "dew_seed": return Succulent;
                 case "heart_seed": return Heart;
-                case "heat_seed": return Melon;
+                case "heat_seed": return Pumpkin;
                 case "coconut": return Coconut;
                 default: return null;
             }
@@ -150,26 +150,27 @@ namespace PlantGame.UI
             return new Vector2(al, shade);
         });
 
-        /// <summary>Golden melon: a round fruit with curved rib lines, a bright highlight and a short stem on top (Heat Seed).</summary>
-        public static Sprite Melon => _melon != null ? _melon : _melon = MakeShaded((x, y) =>
+        /// <summary>Heat pumpkin: a squat ribbed pumpkin with a short stem and a bright jack-o'-lantern face (Heat Seed).</summary>
+        public static Sprite Pumpkin => _pumpkin != null ? _pumpkin : _pumpkin = MakeShaded((x, y) =>
         {
-            float u = (x - (N - 1) * 0.5f) / (N * 0.5f), v = (y - (N - 1) * 0.5f) / (N * 0.5f) + 0.08f;
-            const float R = 0.72f;
-            float d = Mathf.Sqrt(u * u + v * v);
-            float body = Mathf.Clamp01((R - d) * 10f);
-            // stem: a short dark nub rising from the top
-            float stem = Mathf.Abs(u - 0.02f * v) < 0.07f && v > R - 0.1f && v < R + 0.17f ? 1f : 0f;
-            // leaf: a small blade leaning right from the stem base
-            float lu = u - 0.16f, lv = v - (R + 0.02f);
-            float leaf = (lu * lu) / 0.012f + (lv * lv) / 0.0025f < 1f && lu > -0.02f ? 1f : 0f;
-            if (body <= 0f && stem <= 0f && leaf <= 0f) return Vector2.zero;
-            if (body <= 0f) return new Vector2(1f, stem > 0f ? 0.45f : 0.7f);
-            float phi = Mathf.Asin(Mathf.Clamp(u / R, -1f, 1f));
-            float rib = Mathf.Abs(Mathf.Repeat(phi / 0.5236f + 0.5f, 1f) - 0.5f);   // meridian every 30 degrees
-            float lines = rib < 0.06f ? 0.72f : 1f;
-            float light = 0.82f + 0.2f * Mathf.Clamp01((-u * 0.6f + v * 0.8f) * 1.2f) - 0.12f * Mathf.Clamp01(d / R);   // lit from the upper left
-            float hl = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(u, v), new Vector2(-0.25f, 0.28f)) / 0.14f) * 0.25f;
-            return new Vector2(body, Mathf.Clamp01(light * lines + hl));
+            float u = (x - (N - 1) * 0.5f) / (N * 0.5f), v = (y - (N - 1) * 0.5f) / (N * 0.5f) + 0.06f;
+            const float RX = 0.8f, RY = 0.6f;
+            float d = Mathf.Sqrt((u / RX) * (u / RX) + (v / RY) * (v / RY));
+            float body = Mathf.Clamp01((1f - d) * RY * 10f);
+            // stem: a short curved nub rising from the top, leaning right
+            float stem = Mathf.Abs(u - 0.05f - 0.25f * (v - RY)) < 0.07f && v > RY - 0.14f && v < RY + 0.2f ? 1f : 0f;
+            if (body <= 0f && stem <= 0f) return Vector2.zero;
+            if (body <= 0f) return new Vector2(1f, 0.45f);
+            float phi = Mathf.Asin(Mathf.Clamp(u / RX, -1f, 1f));
+            float rib = Mathf.Abs(Mathf.Repeat(phi / 0.4f + 0.5f, 1f) - 0.5f);   // a groove between the ribs
+            float lines = rib < 0.07f ? 0.7f : 1f;
+            float light = 0.62f + 0.2f * Mathf.Clamp01((-u * 0.6f + v * 0.8f) * 1.2f) - 0.1f * Mathf.Clamp01(d);   // lit from the upper left, a little darker so the face glows
+            // carved face: two triangle eyes and a toothy grin at full brightness
+            bool Tri(float px, float py, float cx, float cy, float w, float h) { float dy = py - cy; if (dy < -h * 0.5f || dy > h * 0.5f) return false; return Mathf.Abs(px - cx) < w * 0.5f * (h * 0.5f - dy) / h; }
+            float ax = Mathf.Abs(u), mid = -0.26f + 0.2f * (ax / 0.5f) * (ax / 0.5f);
+            bool mouth = ax < 0.5f && v > mid - 0.07f && v < mid + 0.07f && !(v > mid && Mathf.Abs(ax - 0.17f) < 0.04f);
+            bool face = Tri(u, v, -0.28f, 0.14f, 0.26f, 0.22f) || Tri(u, v, 0.28f, 0.14f, 0.26f, 0.22f) || mouth;
+            return new Vector2(body, face ? 1f : Mathf.Clamp01(light * lines));
         });
 
         /// <summary>Coconut: a round hairy husk with a lit upper left, fibre streaks and the three dark "eyes" near the top.</summary>

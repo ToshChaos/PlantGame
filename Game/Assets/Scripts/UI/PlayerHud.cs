@@ -335,7 +335,7 @@ namespace PlantGame.UI
         static Color ComputeItemColor(ItemDefinition it)
         {
             if (it.id == "parachute_leaf") return Palette.LeafYellow;   // the glide leaf is yellow in the hotbar as well as in the world
-            if (it.id == "heat_seed") return new Color(1f, 0.66f, 0.14f);   // golden melon
+            if (it.id == "heat_seed") return new Color(1f, 0.66f, 0.14f);   // orange pumpkin
             if (it.id == "heart_seed") return new Color(0.9f, 0.14f, 0.2f);   // the Heart Seed is a red heart
             if (it.id == "shelf_seed") return Palette.CloudWhite;       // T33: seeds keep their pickup colour in the hotbar
             if (it.worldPrefab != null)

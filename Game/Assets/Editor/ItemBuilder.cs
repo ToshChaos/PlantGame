@@ -25,7 +25,7 @@ namespace PlantGame.Editor
             ("dew_seed", "Dew", "Item_DewSeed", Palette.SeedSucculent, ItemKind.Seed),
             ("parachute_leaf", "Parachute Leaf", "Item_ParachuteLeaf", Palette.LeafYellow, ItemKind.Misc),
             ("heart_seed", "Heart", "Item_HeartSeed", new Color(0.9f, 0.14f, 0.2f), ItemKind.Key),
-            ("heat_seed", "Heat melon", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
+            ("heat_seed", "Heat pumpkin", "Item_HeatSeed", new Color(1f, 0.55f, 0.1f), ItemKind.Misc),
             ("coconut", "Coconut", "Item_Coconut", new Color(0.55f, 0.37f, 0.21f), ItemKind.Misc),   // only palms drop one; nothing can plant it
         };
 
@@ -51,7 +51,7 @@ namespace PlantGame.Editor
 
         static string SeedTexture(string id)
         {
-            switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; case "heart_seed": return "T_SeedHeart"; case "heat_seed": return "T_SeedMelon"; default: return null; }
+            switch (id) { case "vine_seed": return "T_SeedBamboo"; case "beanstalk_seed": return "T_SeedBean"; case "shelf_seed": return "T_SeedPuff"; case "dew_seed": return "T_SeedSucc"; case "coconut": return "T_SeedCoconut"; case "heart_seed": return "T_SeedHeart"; case "heat_seed": return "T_SeedPumpkin"; default: return null; }
         }
 
         /// <summary>Seed pickup material: the mesh carries the detail, plain colour with a soft glow and the item's seed-coat texture.</summary>
@@ -68,6 +68,9 @@ namespace PlantGame.Editor
             if (tex != null) { mat.SetFloat("_BumpScale", 1f); mat.EnableKeyword("_NORMALMAP"); } else mat.DisableKeyword("_NORMALMAP");
             mat.SetFloat("_Smoothness", 0.45f);
             MaterialBuilder.SetEmission(mat, color * 0.22f);
+            var glow = itemId == "heat_seed" ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{TextureBuilder.Dir}/T_SeedPumpkin_E.png") : null;
+            mat.SetTexture("_EmissionMap", glow);
+            if (glow != null) MaterialBuilder.SetEmission(mat, new Color(1.5f, 1.5f, 1.5f));   // the glowing face; the rind is black in the map
             MaterialBuilder.ValidateUrp(mat);
             EditorUtility.SetDirty(mat);
             return mat;

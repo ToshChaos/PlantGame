@@ -758,8 +758,8 @@ namespace PlantGame.World
             return g;
         }
 
-        /// <summary>Heat-seed source: a melon patch. Creeping vines with big lobed leaves, curly tendrils and small yellow flowers, and ribbed warm melons lying in the middle.</summary>
-        public static void MelonPatch(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
+        /// <summary>Heat-seed source: a pumpkin patch. Creeping vines with big lobed leaves, curly tendrils and small yellow flowers, and ribbed orange pumpkins with glowing carved faces sitting in the middle.</summary>
+        public static void PumpkinPatch(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
         {
             EnsureMaterials();
             var foliage = Kit.Mat("M_Foliage"); var light = Kit.Mat("M_FoliageLight");   // the Heat Seed patch stays green on every theme: it sits on warm ground
@@ -804,13 +804,13 @@ namespace PlantGame.World
                 }
                 At("FlowerCentre", centreMesh, _gold, tip + Vector3.up * 0.02f, Vector3.zero, Vector3.one);
             }
-            // the melons: ribbed ovals in the seed's warm orange, two paler green-gold ones, resting on little leaf pads
-            var pale = Derived(fruit, "M_MelonPale", m => { if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", Color.Lerp(fruit.GetColor("_BaseColor"), new Color(0.55f, 0.75f, 0.25f), 0.65f)); });
-            var melon = ShapeMeshes.Melon();
+            // the pumpkins: ribbed and squat in the seed's warm orange, two paler green-gold ones, each facing its own way on a little leaf pad (the glowing face is in the seed material's emission map)
+            var pale = Derived(fruit, "M_PumpkinPale", m => { if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", Color.Lerp(fruit.GetColor("_BaseColor"), new Color(0.55f, 0.75f, 0.25f), 0.65f)); });
+            var pumpkin = ShapeMeshes.Pumpkin();
             for (int m = 0; m < 5; m++)
             {
                 float a = m * 1.257f + (float)rnd.NextDouble() * 0.4f, d = m == 0 ? 0.1f : 0.7f + (float)rnd.NextDouble() * 0.55f, s = 1.05f + (float)rnd.NextDouble() * 0.5f;
-                var g = At("Melon" + m, melon, m % 3 == 2 ? pale : fruit, new Vector3(Mathf.Cos(a) * d, 0.23f * s + 0.03f, Mathf.Sin(a) * d), new Vector3(90f + (float)(rnd.NextDouble() - 0.5) * 10f, (float)rnd.NextDouble() * 360f, 0f), Vector3.one * s);
+                var g = At("Pumpkin" + m, pumpkin, m % 3 == 2 ? pale : fruit, new Vector3(Mathf.Cos(a) * d, 0.23f * s + 0.03f, Mathf.Sin(a) * d), new Vector3((float)(rnd.NextDouble() - 0.5) * 8f, (float)rnd.NextDouble() * 360f, (float)(rnd.NextDouble() - 0.5) * 8f), Vector3.one * s);
                 var padGo = ShapeMeshes.Obj("Pad", LeafMesh.Build(0.9f, 0.7f, 0.02f, 0.03f, 8), light, parent, Vector3.zero, Vector3.zero, Vector3.one);
                 padGo.transform.position = pos + new Vector3(Mathf.Cos(a) * d, 0.015f, Mathf.Sin(a) * d); padGo.transform.rotation = Quaternion.Euler(0, a * 57f + 90f * m, 0);
             }
