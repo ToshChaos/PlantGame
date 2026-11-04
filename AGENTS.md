@@ -69,7 +69,7 @@ PlantGame/                         (git root)
   AGENTS.md  CLAUDE.md  README.md
   TASKS-MVP.md                     MVP board (complete)
   TASKS.md                         board after the MVP: later tasks + open work
-  tasks/                           one file per task (T00..T75)
+  tasks/                           one file per open task (finished ones: `git show 8992895:tasks/<file>`)
   docs/                            art-bible, pipeline, controls, mobile-controls, test-seeds, qa-checklist, bugs, task-log, shots/ (local, git-ignored)
   Builds/                          standalone builds (git-ignored)
   Source/Blender/
@@ -291,7 +291,7 @@ the top steps the player onto the ladder's `Land`. Prompts print the key from th
 ## 7. Handoff protocol
 End each task by filling the **Handoff** section of its task file: files created, prefab/scene names, public API,
 how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `DONE` after checking in Main.
-Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`).
+Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`). A `DONE` or `CUT` task leaves the board and its file is deleted; lasting notes go to `docs/task-log.md`.
 
 ## 8. Scope & cut line
 _Final (2026-10-25): the MVP below shipped complete (`TASKS-MVP.md`); later work is in `TASKS.md`. The cut order is kept for reference._
@@ -304,7 +304,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
-- v3.7 (2026-11-04, iOS): `IosBuild.Configure` owns the iOS stripping and define settings (Medium stripping, `APP_UI_EDITOR_ONLY`): anything reached only by reflection now needs a `link.xml`. `StripUnusedPackageShaders` removes `com.unity.ai.inference` shaders from every player; delete it if the game ever runs a model. The `TASKS*.md` boards list open work only.
+- v3.7 (2026-11-04, iOS): `IosBuild.Configure` owns the iOS stripping and define settings (Medium stripping, `APP_UI_EDITOR_ONLY`): anything reached only by reflection now needs a `link.xml`. `StripUnusedPackageShaders` removes `com.unity.ai.inference` shaders from every player; delete it if the game ever runs a model. The `TASKS*.md` boards and `tasks/` hold open work only: when a task is done, remove its row and delete its file, keeping anything worth keeping in `docs/task-log.md`.
 - v3.6 (2026-11-03): bridge soils grow one of the six baked vines (`WorldGenerator.BridgeVariant`: hashed from the layout seed and the soil's order, so layouts and seed codes are unchanged and `GeneratorVersion` stays 3; before, every level used Plant_Bridge_01). `BridgePrefabBuilder` zeroes the Blender row offset like the ladder / platform builders (variants 02-06 used to grow 5-25 m beside their soil).
 - v3.5 (2026-11-03, cleanup): `PlayerController.EyeTransform` removed (the sensor's `eye` is the camera, set by PlayerPrefabBuilder); `ClimbableVolume.Bounds` added; runtime-made `DontSave` objects are either session-shared statics or destroyed by their owner's `OnDestroy` (a scene load does not free them); `Resources/Audio` ambience is ADPCM, Compressed In Memory; phones cap third-party textures at 1024 (`QualityTierBuilder`). History squashed to one commit (old history: `PlantGame-history-2026-11-03.bundle` beside the repo).
 - v3.4 (2026-10-30, T63): quality levels are exactly Low / Medium / High (`QualityTierBuilder`; URP assets `PlantGame_URP_Low` / `_Medium` / `PlantGame_URP`); `GameSettings.Quality` (phones default Medium) applied by `Core.QualityTier`, which also sets a first-run preset on phones (Medium, `Fps30` on, `Bloom` off; Low on weak devices) and keeps Medium / Low at 810 / 650 rendered lines on any screen height. `World.WorldOptimizer` merges static island props per material on Medium / Low (rendering only; scripts that move props are listed in `WorldOptimizer.Still`, add new ones there). Reference phone: 1080 x 2340 (PlantGame > Tools > Game View: Phone 2340x1080).

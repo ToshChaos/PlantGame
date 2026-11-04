@@ -1,6 +1,6 @@
 # Mobile controls
 
-Target: Android beta (phones first, tablets should work), later iOS. Landscape only. Desktop keeps working unchanged; the mobile layer is additive. This is a design note for the tasks `tasks/T57..T64`; AGENTS.md section 5.8 stays the desktop contract until T57 lands, then gains a mobile column.
+Target: Android beta (phones first, tablets should work), later iOS. Landscape only. Desktop keeps working unchanged; the mobile layer is additive. This is a design note for tasks T57-T64; AGENTS.md section 5.8 stays the desktop contract until T57 lands, then gains a mobile column.
 
 ## Principles
 - **One-handed-thumb reachable, two thumbs maximum.** Tap the ground to walk, drag to look (there is no joystick since v3); the only button is Jump, in the right thumb's arc. No multi-finger gestures needed to finish the game.

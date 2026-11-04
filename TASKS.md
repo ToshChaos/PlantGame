@@ -1,7 +1,7 @@
 # TASKS.md — board after the MVP
 
-Open work only. The MVP (T00-T56, finished 2026-10-25) is on **`TASKS-MVP.md`**; T65-T67 are done (details in their task files).
-The Android beta tasks are on `TASKS-ANDROID.md`, the iOS release tasks on `TASKS-IOS.md`. Details, acceptance criteria and handoff notes stay in `tasks/T<nn>-*.md`;
+Open work only. The MVP (T00-T56, finished 2026-10-25) is on **`TASKS-MVP.md`**; T65-T67 are done.
+The Android beta tasks are on `TASKS-ANDROID.md`, the iOS release tasks on `TASKS-IOS.md`. Details, acceptance criteria and handoff notes of open tasks are in `tasks/T<nn>-*.md`;
 roles are in `AGENTS.md` section 4. When a task starts, set its status in the task file and in the table below; when it is done, remove its row.
 
 Status: `TODO` · `DOING` · `REVIEW`.
