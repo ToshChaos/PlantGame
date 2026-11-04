@@ -10,7 +10,7 @@ namespace PlantGame.Editor
     /// <summary>
     /// T69: iOS settings and builds. Menu: PlantGame > Configure iOS, Build iOS (Device), Build iOS (Simulator).
     /// CLI: Unity -batchmode -executeMethod PlantGame.Editor.IosBuild.BuildDevice (or BuildSimulator). Output: git-ignored Builds/Overgrown-ios/
-    /// (an Xcode project), log Logs/build-ios.txt. Needs the "iOS Build Support" module and a full Xcode (see docs/release-ios.md).
+    /// (an Xcode project), log Logs/build-ios.txt. Needs the "iOS Build Support" module and a full Xcode.
     /// Environment, nothing in the repo: OVERGROWN_APPLE_TEAM (team id, automatic signing), OVERGROWN_BUILD_NUMBER (grows with every upload).
     /// </summary>
     public static class IosBuild
