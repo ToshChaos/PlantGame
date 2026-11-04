@@ -29,6 +29,7 @@ Shader "PlantGame/OvergrowthWater"
             CBUFFER_START(UnityPerMaterial)
                 half4 _ShallowColor, _DeepColor, _RimColor; float _Tiling, _Speed; half _Depth, _Glint;
             CBUFFER_END
+            float _PG_Fx;   // global, set by SurfaceFx: 1 with Postprocessing on (outside the CBUFFER so the SRP batcher is unaffected)
 
             struct A { float4 pos : POSITION; float3 nrm : NORMAL; };
             struct V { float4 pos : SV_POSITION; float3 wpos : TEXCOORD0; float3 wnrm : TEXCOORD1; float fog : TEXCOORD2; };
@@ -68,6 +69,22 @@ Shader "PlantGame/OvergrowthWater"
                 float3 v = normalize(GetWorldSpaceViewDir(i.wpos));
                 half fres = pow(1.0 - saturate(dot(normalize(i.wnrm), v)), 3.0);
                 col = lerp(col, _RimColor.rgb, fres * 0.55);
+                if (_PG_Fx > 0.5)
+                {
+                    // Postprocessing on: a rippled surface normal from the ripple layers drives sun glints, a sky reflection and foam streaks.
+                    const float e = 0.02;
+                    half ax = SAMPLE_TEXTURE2D(_Ripple, sampler_Ripple, uv + float2(t, t * 0.6) + float2(e, 0)).a;
+                    half ay = SAMPLE_TEXTURE2D(_Ripple, sampler_Ripple, uv + float2(t, t * 0.6) + float2(0, e)).a;
+                    float3 rn = normalize(float3((a - ax) * 3.0, 1.0, (a - ay) * 3.0));
+                    float3 sunDir = normalize(_MainLightPosition.xyz);
+                    float3 refl = reflect(-v, normalize(lerp(float3(0, 1, 0), rn, 0.85)));
+                    half spec = pow(saturate(dot(refl, sunDir)), 220.0);
+                    col += spec * 2.2 * half3(1.0, 0.96, 0.85);                      // sun sparkle on ripple crests
+                    half sky = pow(1.0 - saturate(dot(rn, v)), 2.5);
+                    col = lerp(col, half3(0.72, 0.88, 1.0), sky * 0.22);              // soft sky reflection at glancing angles
+                    half streak = smoothstep(0.58, 0.82, VNoise(i.wpos.xz * float2(1.1, 3.6) + float2(t * 1.6, 0)) * 0.5 + b * 0.5 + (rip - 0.5) * 0.3);
+                    col = lerp(col, half3(0.95, 0.99, 1.0), streak * 0.22 * (0.4 + depth));   // pale foam streaks
+                }
                 col = MixFog(col, i.fog);
                 return half4(col, 1);
             }

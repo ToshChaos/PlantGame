@@ -130,6 +130,8 @@ namespace PlantGame.Editor
                         if (emission) m.EnableKeyword("_EMISSION"); else m.DisableKeyword("_EMISSION");
                         if (normal) m.EnableKeyword("_NORMALMAP"); else m.DisableKeyword("_NORMALMAP");
                     });
+            // SurfaceFx (Postprocessing on) turns on the detail maps of the island and rock materials in code
+            Make("M_Keep_LitDetail", lit, m => { m.EnableKeyword("_DETAIL_MULX2"); m.EnableKeyword("_NORMALMAP"); });
             if (particles == null) { Debug.LogError("[PlantGame] URP Particles/Unlit not found."); return; }
             Make("M_Keep_Particles", particles, m => RuntimeMats.SetTransparent(m));
             Make("M_Keep_ParticlesPremultiply", particles, m => { RuntimeMats.SetTransparent(m, true); m.SetFloat("_Blend", 1f); m.EnableKeyword("_ALPHAPREMULTIPLY_ON"); });
