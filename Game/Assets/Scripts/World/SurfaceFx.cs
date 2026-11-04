@@ -12,7 +12,7 @@ namespace PlantGame.World
     ///  - water: the global <c>_PG_Fx</c> switches on the extra water shader work (rippled sun glints, sky reflection, foam streaks).
     /// The High quality tier (GameSettings.Quality 2) = the textures themselves:
     ///  - surface detail: a second, finer, generated detail layer (URP Lit detail albedo + detail normal) on the island tops and rocks:
-    ///    blade streaks and clumps on grass, grain on mud, cracked stone and grit on rock; a little more sheen so the sun picks them out;
+    ///    blade streaks and clumps on grass, grain on mud, cracked stone and grit on rock, kept soft and matte (no extra sheen: only water is reflective);
     /// The kit materials are shared assets, so each one is snapshotted before it is changed and restored when the setting goes off or the game
     /// ends (the editor must not save a play-mode tweak). The detail keyword is carried into builds by <c>M_Keep_LitDetail</c> (MaterialBuilder).
     /// </summary>
@@ -20,15 +20,15 @@ namespace PlantGame.World
     {
         enum Look { Grass, Mud, Rock }
 
-        struct Entry { public string name; public Look look; public float tile; public float smoothBoost; }
+        struct Entry { public string name; public Look look; public float tile; }
         static readonly Entry[] Targets =
         {
-            new Entry { name = "M_Terrain",       look = Look.Grass, tile = 7f, smoothBoost = 0.10f },
-            new Entry { name = "M_TerrainAutumn", look = Look.Grass, tile = 7f, smoothBoost = 0.10f },
-            new Entry { name = "M_TerrainMud",    look = Look.Mud,   tile = 6f, smoothBoost = 0.08f },
-            new Entry { name = "M_TerrainRock",   look = Look.Rock,  tile = 5f, smoothBoost = 0.16f },
-            new Entry { name = "M_Stone",         look = Look.Rock,  tile = 4f, smoothBoost = 0.14f },
-            new Entry { name = "M_RockLoose",     look = Look.Rock,  tile = 4f, smoothBoost = 0.14f },
+            new Entry { name = "M_Terrain",       look = Look.Grass, tile = 7f },
+            new Entry { name = "M_TerrainAutumn", look = Look.Grass, tile = 7f },
+            new Entry { name = "M_TerrainMud",    look = Look.Mud,   tile = 6f },
+            new Entry { name = "M_TerrainRock",   look = Look.Rock,  tile = 5f },
+            new Entry { name = "M_Stone",         look = Look.Rock,  tile = 4f },
+            new Entry { name = "M_RockLoose",     look = Look.Rock,  tile = 4f },
         };
         static readonly string[] TextureProps = { "_BaseMap", "_BumpMap", "_Ripple" };
         static readonly int WaterFx = Shader.PropertyToID("_PG_Fx");
@@ -102,9 +102,8 @@ namespace PlantGame.World
                 var (alb, nrm) = Detail(t.look);
                 m.SetTexture("_DetailAlbedoMap", alb); m.SetTexture("_DetailNormalMap", nrm);
                 m.SetTextureScale("_DetailAlbedoMap", new Vector2(t.tile, t.tile)); m.SetTextureScale("_DetailNormalMap", new Vector2(t.tile, t.tile));
-                m.SetFloat("_DetailAlbedoMapScale", t.look == Look.Grass ? 0.8f : 0.55f);
-                m.SetFloat("_DetailNormalMapScale", t.look == Look.Rock ? 0.9f : 0.7f);
-                if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", Mathf.Clamp01(m.GetFloat("_Smoothness") + t.smoothBoost));
+                m.SetFloat("_DetailAlbedoMapScale", t.look == Look.Grass ? 0.4f : 0.35f);
+                m.SetFloat("_DetailNormalMapScale", t.look == Look.Rock ? 0.4f : 0.3f);
                 m.EnableKeyword("_DETAIL_MULX2"); m.EnableKeyword("_NORMALMAP");
             }
         }
