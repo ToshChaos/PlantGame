@@ -1,7 +1,7 @@
 # TASKS.md — board after the MVP
 
 The MVP (T00-T56, finished Sunday 2026-10-25) is finished: see **`TASKS-MVP.md`**. This file holds everything since: the T67 detail pass, the bare-tree and palm tasks, plus the open work.
-The Android beta tasks (T57-T64) are on `TASKS-ANDROID.md`. Details, acceptance criteria and handoff notes stay in `tasks/T<nn>-*.md`;
+The Android beta tasks (T57-T64) are on `TASKS-ANDROID.md`, the iOS release tasks (T69-T75) on `TASKS-IOS.md`. Details, acceptance criteria and handoff notes stay in `tasks/T<nn>-*.md`;
 roles are in `AGENTS.md` section 4. When a task starts, set its status in the task file and in the table below.
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `FIXED` · `CUT`.
