@@ -44,7 +44,10 @@ namespace PlantGame.World
         static void Boot()
         {
             Shader.SetGlobalFloat(WaterFx, 0f);   // statics survive when domain reload is off
-            var go = new GameObject("SurfaceFx") { hideFlags = HideFlags.DontSave };
+            // No HideFlags.DontSave: such an object outlives play mode, so every session would add one more copy, each snapshotting the
+            // materials the others had already changed. Clear any copy left by an older run, then make one that dies with the player.
+            foreach (var old in Resources.FindObjectsOfTypeAll<SurfaceFx>()) if (old != null) { old.OnDisable(); if (Application.isPlaying) Destroy(old.gameObject); else DestroyImmediate(old.gameObject); }
+            var go = new GameObject("SurfaceFx");
             DontDestroyOnLoad(go);
             _inst = go.AddComponent<SurfaceFx>();
         }
@@ -52,7 +55,7 @@ namespace PlantGame.World
         void OnEnable() { GameSettings.Changed += Apply; Apply(); }
         void OnDisable() { GameSettings.Changed -= Apply; RevertFilter(); RevertDetail(); }
         void OnApplicationQuit() { RevertFilter(); RevertDetail(); }
-        void OnDestroy() { RevertFilter(); RevertDetail(); foreach (var d in _detail) { if (d.Value.albedo != null) Destroy(d.Value.albedo); if (d.Value.normal != null) Destroy(d.Value.normal); } _detail.Clear(); }
+        void OnDestroy() { RevertFilter(); RevertDetail(); foreach (var d in _detail) { if (d.Value.albedo != null) Kill(d.Value.albedo); if (d.Value.normal != null) Kill(d.Value.normal); } _detail.Clear(); }
 
         /// <summary>Postprocessing switches filtering and shaders; the High quality tier switches the surface textures.</summary>
         void Apply()
