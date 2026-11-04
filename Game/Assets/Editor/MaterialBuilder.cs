@@ -30,14 +30,14 @@ namespace PlantGame.Editor
 
             if (TextureBuilder.Albedo("T_Terrain") == null || TextureBuilder.Albedo("T_Mud") == null) TextureBuilder.Build();
             // island tops: a calmer, deeper green than the plants and seeds, so those stand out; texture adds the grass mottling
-            Make("M_Terrain", lit, m => { SetLit(m, Color.Lerp(Palette.Moss, Palette.LeafGreen, 0.55f), 0.1f); SetTextured(m, "T_Terrain", 0.8f); });
+            Make("M_Terrain", lit, m => { SetLit(m, Color.Lerp(Palette.Moss, Palette.LeafGreen, 0.55f), 0.1f); SetTextured(m, "T_Terrain", 0.8f); SetMatte(m); });
             // other ground types for islands with less grass (WorldGenerator picks one per island)
-            Make("M_TerrainMud", lit, m => { SetLit(m, new Color(0.80f, 0.60f, 0.42f), 0.08f); SetTextured(m, "T_Mud", 1.3f); });
-            Make("M_TerrainRock", lit, m => { SetLit(m, new Color(0.64f, 0.66f, 0.70f), 0.12f); SetTextured(m, "T_Pebbles", 1.1f); });
+            Make("M_TerrainMud", lit, m => { SetLit(m, new Color(0.80f, 0.60f, 0.42f), 0.08f); SetTextured(m, "T_Mud", 1.3f); SetMatte(m); });
+            Make("M_TerrainRock", lit, m => { SetLit(m, new Color(0.64f, 0.66f, 0.70f), 0.12f); SetTextured(m, "T_Pebbles", 1.1f); SetMatte(m); });
             var sheet = Shader.Find("PlantGame/WaterfallSheet");
             if (sheet != null) Make("M_WaterfallSheet", sheet, m => { });
-            Make("M_Stone", lit, m => { SetLit(m, Palette.MistBlue, 0.15f); SetTextured(m, "T_Rock", 1f); });
-            Make("M_RockLoose", lit, m => { SetLit(m, new Color(0.7f, 0.68f, 0.64f), 0.14f); SetTextured(m, "T_Stone", 0.8f); });   // loose stones and floating rocks (OrganicProps.RockMat)
+            Make("M_Stone", lit, m => { SetLit(m, Palette.MistBlue, 0.15f); SetTextured(m, "T_Rock", 1f); SetMatte(m); });
+            Make("M_RockLoose", lit, m => { SetLit(m, new Color(0.7f, 0.68f, 0.64f), 0.14f); SetTextured(m, "T_Stone", 0.8f); SetMatte(m); });   // loose stones and floating rocks (OrganicProps.RockMat)
             Make("M_Foliage", lit, m => { SetLit(m, Palette.Moss, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
             Make("M_FoliageLight", lit, m => { SetLit(m, Palette.LeafGreen, 0.2f); SetTextured(m, "T_Terrain", 0.6f); m.mainTextureScale = new Vector2(3f, 3f); });
             Make("M_GoldFruit", lit, m =>   // the goal's golden fruit
@@ -181,6 +181,14 @@ namespace PlantGame.Editor
             m.SetColor("_BaseColor", c);
             m.SetFloat("_Smoothness", smoothness);
             m.SetFloat("_Metallic", 0f);
+        }
+
+        /// <summary>Island ground and rock: fully matte (no specular highlight, no sky reflection) on every quality setting; only water is reflective.</summary>
+        public static void SetMatte(Material m)
+        {
+            m.SetFloat("_Smoothness", 0f); m.SetFloat("_Metallic", 0f);
+            m.SetFloat("_SpecularHighlights", 0f); m.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+            m.SetFloat("_EnvironmentReflections", 0f); m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
         }
 
         static void SetTextured(Material m, string tex, float bump)

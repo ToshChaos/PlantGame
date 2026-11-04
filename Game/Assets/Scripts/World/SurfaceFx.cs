@@ -20,13 +20,13 @@ namespace PlantGame.World
     {
         enum Look { Grass, Mud, Rock }
 
-        struct Entry { public string name; public Look look; public float tile; }
+        struct Entry { public string name; public Look look; public float tile; public float smooth; }
         static readonly Entry[] Targets =
         {
             new Entry { name = "M_Terrain",       look = Look.Grass, tile = 7f },
             new Entry { name = "M_TerrainAutumn", look = Look.Grass, tile = 7f },
             new Entry { name = "M_TerrainMud",    look = Look.Mud,   tile = 6f },
-            new Entry { name = "M_TerrainRock",   look = Look.Rock,  tile = 5f },
+            new Entry { name = "M_TerrainRock",   look = Look.Rock,  tile = 5f, smooth = 0.06f },
             new Entry { name = "M_Stone",         look = Look.Rock,  tile = 4f },
             new Entry { name = "M_RockLoose",     look = Look.Rock,  tile = 4f },
         };
@@ -36,7 +36,7 @@ namespace PlantGame.World
         static SurfaceFx _inst;
         bool _filterOn, _detailOn;
         bool _forced;
-        readonly List<(Material live, Material backup, bool hadDetail)> _mats = new List<(Material, Material, bool)>();
+        readonly List<(Material live, Material backup, bool hadDetail, bool specOff, bool envOff)> _mats = new List<(Material, Material, bool, bool, bool)>();
         readonly Dictionary<Texture, (int aniso, FilterMode filter)> _tex = new Dictionary<Texture, (int, FilterMode)>();
         readonly Dictionary<Look, (Texture2D albedo, Texture2D normal)> _detail = new Dictionary<Look, (Texture2D, Texture2D)>();
 
@@ -101,13 +101,19 @@ namespace PlantGame.World
                 var m = Kit.Mat(t.name);
                 if (m == null || !m.HasProperty("_DetailAlbedoMap")) continue;
                 bool had = m.IsKeywordEnabled("_DETAIL_MULX2");
-                _mats.Add((m, new Material(m) { hideFlags = HideFlags.DontSave }, had));
+                _mats.Add((m, new Material(m) { hideFlags = HideFlags.DontSave }, had, m.IsKeywordEnabled("_SPECULARHIGHLIGHTS_OFF"), m.IsKeywordEnabled("_ENVIRONMENTREFLECTIONS_OFF")));
                 var (alb, nrm) = Detail(t.look);
                 m.SetTexture("_DetailAlbedoMap", alb); m.SetTexture("_DetailNormalMap", nrm);
                 m.SetTextureScale("_DetailAlbedoMap", new Vector2(t.tile, t.tile)); m.SetTextureScale("_DetailNormalMap", new Vector2(t.tile, t.tile));
                 m.SetFloat("_DetailAlbedoMapScale", t.look == Look.Grass ? 0.4f : 0.35f);
                 m.SetFloat("_DetailNormalMapScale", t.look == Look.Rock ? 0.4f : 0.3f);
                 m.EnableKeyword("_DETAIL_MULX2"); m.EnableKeyword("_NORMALMAP");
+                if (t.smooth > 0f)   // the grey rock island is lightly reflective on High (the asset is matte; about half its old shine)
+                {
+                    m.SetFloat("_Smoothness", t.smooth);
+                    m.SetFloat("_SpecularHighlights", 1f); m.DisableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    m.SetFloat("_EnvironmentReflections", 1f); m.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+                }
             }
         }
 
@@ -115,12 +121,14 @@ namespace PlantGame.World
         {
             if (!_detailOn) return;
             _detailOn = false;
-            foreach (var (live, backup, had) in _mats)
+            foreach (var (live, backup, had, specOff, envOff) in _mats)
             {
                 if (live != null)
                 {
                     live.CopyPropertiesFromMaterial(backup);
                     if (had) live.EnableKeyword("_DETAIL_MULX2"); else live.DisableKeyword("_DETAIL_MULX2");
+                    if (specOff) live.EnableKeyword("_SPECULARHIGHLIGHTS_OFF"); else live.DisableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    if (envOff) live.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF"); else live.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
                 }
                 if (backup != null) Kill(backup);
             }

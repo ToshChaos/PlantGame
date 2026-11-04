@@ -88,6 +88,7 @@ namespace PlantGame.Editor
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null) { m = new Material(src) { name = name }; AssetDatabase.CreateAsset(m, path); }
             m.SetColor("_BaseColor", tint);
+            if (name == "M_TerrainAutumn") MaterialBuilder.SetMatte(m);   // island ground is never reflective
             EditorUtility.SetDirty(m);
         }
 
