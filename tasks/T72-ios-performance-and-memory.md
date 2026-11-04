@@ -13,7 +13,7 @@ Shares tiers and budgets with T63. The Android profile numbers do not carry over
 
 ## Acceptance
 - Level 1 and the largest curated level hold 30 fps at the first-run preset on the weakest supported device, without a memory kill.
-- Numbers (device, preset, fps, peak memory, size) recorded in `docs/task-log.md`; minimum device written into `docs/release-ios.md`.
+- Numbers (device, preset, fps, peak memory, size) recorded in `docs/task-log.md`; minimum device written into `docs/private/release-ios.md`.
 
 ## Handoff
 - 2026-11-04 build pass, numbers in `docs/task-log.md`: unsigned device `.app` 152 MB, about 58 MB zipped (the App Store's own figure comes with a signed archive).

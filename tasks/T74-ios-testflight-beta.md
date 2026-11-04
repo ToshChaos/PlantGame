@@ -1,9 +1,9 @@
 # T74 — TestFlight beta
 
-**Owner:** A8 Tester/Release · **Status:** TODO (`docs/release-ios.md` drafted) (see `TASKS-IOS.md`) · **Depends on:** T70, T71, T72, T73
+**Owner:** A8 Tester/Release · **Status:** TODO (`docs/private/release-ios.md` drafted) (see `TASKS-IOS.md`) · **Depends on:** T70, T71, T72, T73
 
 ## Work
-- `docs/release-ios.md`, the sibling of `docs/release-android.md`: account, signing, build commands, upload, TestFlight, pre-release checklist. Add an iOS section to the git-ignored `docs/private/publishing.md` (team id, build-number log).
+- `docs/private/release-ios.md`, the sibling of `docs/private/release-android.md`: account, signing, build commands, upload, TestFlight, pre-release checklist. Add an iOS section to the git-ignored `docs/private/publishing.md` (team id, build-number log).
 - Person: join the Apple Developer Program, register the bundle id, create the app record in App Store Connect (decisions in `TASKS-IOS.md`).
 - Archive, export and upload from the command line (`xcodebuild archive`, `-exportArchive`, upload through Xcode or Transporter). Build number from `OVERGROWN_BUILD_NUMBER`.
 - TestFlight: internal testers first (no review). External testers only if wanted; the first external build goes through Beta App Review. A simple feedback route for testers (TestFlight's built-in feedback is enough).

@@ -1,6 +1,6 @@
 # T64 — Android build, signing and beta distribution
 
-**Owner:** A8 Tester/Release · **Status:** DOING (post-MVP, see `TASKS.md`) · **Depends on:** T62, T63
+**Owner:** A8 Tester/Release · **Status:** DOING (post-MVP, see `TASKS-ANDROID.md`) · **Depends on:** T62, T63
 
 Design: `docs/mobile-controls.md`. Not scheduled for the hackathon weekend.
 
@@ -19,7 +19,7 @@ Done (groundwork): `Editor/AndroidBuild.cs`, menu `PlantGame > Configure Android
 Blocked: the Unity 6000.6.5f1 install has no Android Build Support module (only macOS and WebGL), so no APK has been built yet. Install it in Unity Hub (Android Build Support, OpenJDK, Android SDK & NDK Tools), then run the menu item.
 Not done: release keystore (debug keystore until then; keep the real one outside the repo), icons check, LICENSES.md review, beta track, test matrix.
 
-Update 2026-10-29: Android module installed, `Overgrown.apk` builds. Release signing via env vars, privacy policy, store listing and a Play checklist added (`docs/release-android.md`). Still open: keystore creation, AAB upload to internal testing, device matrix.
+Update 2026-10-29: Android module installed, `Overgrown.apk` builds. Release signing via env vars, privacy policy, store listing and a Play checklist added (`docs/private/release-android.md`). Still open: keystore creation, AAB upload to internal testing, device matrix.
 
 Update 2026-11-04: Medium managed stripping is on (`AndroidBuild.Configure`, same as iOS). APK 61.7 -> 54.2 MB with the shader strip -> 50.7 MB with Medium; details in `docs/task-log.md`. **This player has not been run: no device or emulator here.** Needs a person, on the first device install:
 - App starts past the splash; title draws with the right materials and shaders (Vulkan, then a GLES3-only device if one is at hand).

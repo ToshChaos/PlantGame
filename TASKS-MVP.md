@@ -1,7 +1,7 @@
 # TASKS-MVP.md — MVP board (complete, finished Sunday 2026-10-25)
 
 The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CUT`. Later work (polish, levels, plants, audio, mobile) is on
-**`TASKS.md`**; the Android beta tasks are on `TASKS-ANDROID.md`. The task files were deleted on 2026-11-04; read one from git with
+**`TASKS-ANDROID.md`** and **`TASKS-IOS.md`**. The task files were deleted on 2026-11-04; read one from git with
 `git show 8992895:tasks/T<nn>-<slug>.md` (`git ls-tree --name-only 8992895 tasks/` lists them). Roles are in `AGENTS.md` section 4.
 
 ## Board
@@ -31,7 +31,7 @@ The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CU
 | T22 | QA pass, regression seeds, bug list | A8 | T15 | DONE |
 | T23 | Performance pass + standalone build | A8 | T22 | DONE |
 | T24 | README, credits (gallery + demo capture cut: demo is showcased manually) | A0 | all | DONE |
-| T25 | Run timer, best-time save (Challenge mode removed later) | A1 | T12 | DONE |
+| T25 | Run timer, best-time save | A1 | T12 | DONE |
 | T26 | Title + level select, Random Level, seed codes (copy/enter) | A7 | T14, T25 | DONE |
 | T27 | Watering can: 2 charges, sprout state, refill at sources | A2 | T04, T11 | DONE |
 | T28 | Geometry Nodes: Water Collector plant | A3 | T06 | DONE |
@@ -71,4 +71,4 @@ The hackathon MVP is finished: every task below is `DONE`, `FIXED` (bugs) or `CU
 - Title screen: Play, Select level, Generate level, Input seed, Options (volume, reset best times, hints) over a generated showcase world; Select level also lists the Interaction test (one of every item; formerly the Movement course).
 - World look: imported CC0 / royalty-free models (Kenney, Quaternius, FreeStylized Ruins; `Game/Assets/ThirdParty/LICENSES.md`), only the ones the game places. T10 (Blender island kit) is CUT; islands are procedural (grass, mud or rock ground; snow on snow levels).
 - Cleanup (2026-10-26): unused models, materials, dead code and the T02 test fixture removed; raw Blender exports and the built `.app` are git-ignored (see `docs/task-log.md`).
-- Not covered by the MVP (by-hand playthrough, built-player smoke test, listening pass, balance): see `TASKS.md`.
+- Not covered by the MVP (by-hand playthrough, built-player smoke test, listening pass, balance): see `tasks/` and `docs/qa-checklist.md`.

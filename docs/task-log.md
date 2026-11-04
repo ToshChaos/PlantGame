@@ -1,6 +1,6 @@
 # Task log
 
-Long per-task notes live here (keep `TASKS.md` and task files short). Newest first.
+Long per-task notes live here (keep the boards and task files short). Newest first.
 
 ## Island shapes, start away from seeds, pause orbit (last pass, partly verified)
 - `IslandShape` (in `RoundIsland.cs`): ellipse + lobes + optional bay + wobble; layout, soils, bridges, spawn, water and `Scenery.Decorate` use `Edge(angle)` instead of a circle. The start spawn sits at 0.68 of the rim and the start island's seed sources (and the collector soil) lie at least 10 m from it (`SeedFromSpawn`): measured 10.5 / 16.4 m to the shelf patch / vine tree. Layout shot `docs/shots/level1_layout.png` shows varied outlines.
@@ -94,7 +94,7 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - `Scripts/World`: `LevelPlanner` (Level 1 hand plan, `Generate(config, attempt)` chain with seed supply windows and water budget), `LevelLayout` (positions, rim-sampled overlap check), `WorldValidator`, `WorldGenerator` (builds islands/soils/seeds/water/goal/player from `Kit` = `Resources/WorldKit`, filled by menu `14 Build World Kit`). `RoundIsland`, `Scenery`, `TreeParts`, `SoilPatchMesh` moved from Editor to runtime. Same RunConfig -> same world.
 - `Core/SeedCode`: `LEAF-XXXX-XXXX-XX` (44 bit payload + checksum symbol); `LevelDefinition` assets in `ScriptableObjects/World` (menu 14 also writes them). `RunSession.SaveKey` = levelId or the seed code.
 - Menu `15 Validate Seeds`: 10k round trips, 200 generated levels, 0 invalid (about a third need a layout re-roll for overlaps).
-- `Title.unity` (menu 16, `UI/TitleMenu`): level cards with best times, random level (difficulty, code shown, copy), enter code with live validation, mode toggle. Main skips its in-game start menu when coming from the title; Menu buttons return to Title. Seed code on pause/end panels + copy button.
+- `Title.unity` (menu 16, `UI/TitleMenu`): level cards with best times, random level (difficulty, code shown, copy), enter code with live validation. Main skips its in-game start menu when coming from the title; Menu buttons return to Title. Seed code on pause/end panels + copy button.
 - T32 (reduced): `parachute_leaf` item, `PlayerController.TryStartGlide` (fall cap 2.5 m/s, 8 s max, ends on landing/Space/climb), E in mid-air spends the leaf; leaf bushes on one mid island of levels with 5+ islands. Verified in play mode (leaf consumed, glide on, vy -0.4 at start).
 - Gotchas: `Unity_RunCommand` logs with `{n:0.0}` format specifiers print literally, concatenate strings instead. After script edits wait ~60 s for the domain reload ("Unity not detected").
 
@@ -107,12 +107,12 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Verified: all six levels plan and validate, level 2/3/4 played in the editor (autumn, rain, glide layout), SeedCode round trips. Not yet played through: level 6 end to end, fruit / fire goals, glide crossing with a real jump.
 
 ## Menus: options, volume sliders, 8-bit music, purple markers
-- Title: Home (mode toggle, Play = level 1, Select level, Generate level, Input seed, Options, Quit); each has its own screen. Options: Music / Sound toggles + volume sliders (`GameSettings.MusicVolume / SoundVolume`, `UI/UiKit.Slider`), key hints. Pause menu and the in-game start menu have the same sliders. Music is now on by default; Title.unity has an AudioManager for the menu track.
+- Title: Home (Play = level 1, Select level, Generate level, Input seed, Options, Quit); each has its own screen. Options: Music / Sound toggles + volume sliders (`GameSettings.MusicVolume / SoundVolume`, `UI/UiKit.Slider`), key hints. Pause menu and the in-game start menu have the same sliders. Music is now on by default; Title.unity has an AudioManager for the menu track.
 - Music: `docs/audio/make_audio.py` `chip()` synthesises 8-bit tracks (pulse lead, quiet pulse arpeggio, triangle bass, noise drums): gameplay C major, menu G major, rain A minor without drums, autumn D dorian. 16 bars each; rain and wind ambience unchanged.
 - Focused pickup / usable marker and the focus highlight are purple (`Palette.TextPurple`); the Water HUD text sits further right.
 - Gotcha: if `PlantGame > 12 Build Main` throws in `Kit.Mat`, run `14 Build World Kit` first (12 now does it itself).
 
-- Best times are per level and mode only: the in-game start menu no longer shows a generic best time (only the Challenge limit); the title cards and the end panel show the level's own. "Reset all best times" in Title > Options (and the in-game start menu's Reset button) clears every saved time. Pause menu: Copy seed code moved off the Sound slider, the pickup prompt is hidden while paused.
+- Best times are per level: the in-game start menu no longer shows a generic best time; the title cards and the end panel show the level's own. "Reset all best times" in Title > Options (and the in-game start menu's Reset button) clears every saved time. Pause menu: Copy seed code moved off the Sound slider, the pickup prompt is hidden while paused.
 
 ## Word seed codes, title showcase, varied backdrop, island heights, waterfalls
 - Seed codes are five dash-joined lowercase words (`Core/SeedCode.cs`, 256-word list, 24-bit seed + islands + kinds + version + checksum nibble). Spaces / underscores / capitals are accepted and the input box rewrites them to dashes. Legacy `LEAF-XXXX-XXXX-XX` still decodes (only tried when the text is not five words, since `leaf` is also a word). Random seeds are masked to 24 bits.
@@ -127,7 +127,7 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Builders (menus): `17 Build Kenney Props`, `18 Build Quaternius Props`, `19 Build Ruins Props`, then `14 Build World Kit` (fills `WorldKit.props`, looked up with `Kit.Prop(name)`). `ModelImportSettings` skips these three folders (they keep their embedded materials until the builder remaps them).
 - `Scenery.cs`: `Model()` places an imported prop standing on a point, scaled to a target height; trees, bushes, flowers, rocks, ruin pillars/rubble and the portal arch use imported models and fall back to the old primitives when a model is missing (so an old WorldKit still works). Autumn levels use Kenney `_fall` trees.
 - Sky debris no longer floats next to islands (`KeepDebrisClear`) and the space below the islands is darker and deeper (see asset-sources.md).
-- Regression run in the editor (2026-10-24): `15 Validate Seeds` 0 invalid of 200, seed code round trip 0 failures of 10000; Title loads (showcase world, 7 buttons); levels 1 (Challenge), 2, 3, 4, 5, 6 load with player, scenery, items and goal; level 4: the glide leaf is focused ("Pick up Parachute Leaf"), Q picks it up (slot 0), E in the air starts the glide and spends it; planting + watering a vine seed on level 1 grows a bridge with colliders. Console: no errors or warnings from the project. Not run: a full manual playthrough of each level.
+- Regression run in the editor (2026-10-24): `15 Validate Seeds` 0 invalid of 200, seed code round trip 0 failures of 10000; Title loads (showcase world, 7 buttons); levels 1, 2, 3, 4, 5, 6 load with player, scenery, items and goal; level 4: the glide leaf is focused ("Pick up Parachute Leaf"), Q picks it up (slot 0), E in the air starts the glide and spends it; planting + watering a vine seed on level 1 grows a bridge with colliders. Console: no errors or warnings from the project. Not run: a full manual playthrough of each level.
 - Gotcha: after editing editor scripts the domain reloads and RunCommand calls fail with "Unity not detected" for about a minute; wait and retry. Tint of Kenney materials is applied in a separate pass because remapped models no longer expose their embedded materials.
 
 ## Parachute leaf look, seed spin, F refill, task board
@@ -167,7 +167,7 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Also removed: `M_UI`, `M_Cloud`, `M_SeedParachuteLeaf` (unused), the `T_Plant*_N` normal maps (the PlantGrow shader has no normal slot; `TextureBuilder` no longer writes them), the T02 round-trip fixture (`Test_Asym`, `PipelineRoundTripTest`, `t02_make_test_object.py`), `kit.blend` (T10 cut), the stray `words.txt`.
 - Code: `PlantDefinition` was never instantiated (`ItemDefinition.plant` always null), so it is gone and `PlantKind` has its own file; `GameEvents.PlantStarted/PlantGrown` (never raised) and `GlideStarted/GlideEnded` (no listeners) removed; about 15 unused members (`UiSprites.RingThick/Diamond`, `Palette.SeedLime`, the `Layers` int getters, `WindGusts.Strength`, `RoundIsland.MinEdge`, debug counters, dead locals). `Layers.WalkableMask` is cached (the camera queried `LayerMask.GetMask` every frame).
 - Repo: `Source/Blender/exports/` and built `.app` / Unity backup folders are git-ignored; local `docs/shots/` (134 MB) and `.blend1` backups deleted. `Source/ThirdParty-raw/` (532 MB, git-ignored) is kept as the source for re-importing models.
-- Docs: post-MVP tasks (T21, T57-T66) moved to `TODO.md`; `TASKS.md` is the finished MVP board; README rewritten; AGENTS.md layout, contract 5.5 and change log v2.9 updated.
+- Docs: post-MVP tasks (T57-T66) moved to `TODO.md`; `TASKS.md` is the finished MVP board; README rewritten; AGENTS.md layout, contract 5.5 and change log v2.9 updated.
 - Verified: compile clean, 37/37 EditMode tests (golden seeds unchanged), `Smoke Test Levels` 11/11 OK with no console errors (2.1-3.0 ms per frame in the editor). Fixed on the way: the smoke test's first level always started in Title (`playModeStartScene` kept by PlayFromTitle), so level 1 Exploration reported "no player"; `LevelSmokeTest.Start` now clears it.
 
 ## Player rework (v3.1)
@@ -210,7 +210,7 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 
 ## HUD text colours and touch hint position (2026-10-30)
 - Hints and prompts (key hints, prompt line, refill-water hint, menu buttons, end body) are orange (`Palette.TextOrange`) with a dark outline; indicators (timer, objective, selected item name, water label, FPS) are dark blue (`Palette.TextBlue`, 12365C) with a light outline; text on the dark pause / end panels is cloud white. Purple, cyan, green and white HUD text are gone (`Palette.TextPurple` stays for the 3D focus highlight only).
-- The touch refill-water hint is centred at the bottom (900 x 60 box, 110 above the edge) since no joystick area exists any more.
+- The touch refill-water hint is centred at the bottom (900 x 60 box, 110 above the edge).
 
 ## Smooth, organic small props (2026-10-30)
 - User: flowers, rocks and small objects were too blocky (the butterflies were the bar); reference image: lush meadow with tall pink spike flowers, soft pale stone, white marble tiles.

@@ -1,6 +1,6 @@
 # TASKS-IOS.md — iOS release backlog
 
-Open work only. The touch layer (T57-T61) and the quality tiers (T63) are shared and are not redone here. Settled decisions and compliance facts: `docs/release-ios.md`. Controls design: `docs/mobile-controls.md`.
+Open work only. The touch layer (T57-T61) and the quality tiers (T63) are shared and are not redone here. Settled decisions and compliance facts: `docs/private/release-ios.md` (git-ignored). Controls design: `docs/mobile-controls.md`.
 Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`. When a task is done, remove its row.
 
 | ID | Task | Owner | Depends on | What is left |

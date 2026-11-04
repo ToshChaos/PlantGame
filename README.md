@@ -8,7 +8,7 @@ A third-person exploration game on floating islands. You cannot jump the gaps, s
 from a shareable **seed code**. Reach the goal on the last island.
 
 Built in three days for a hackathon. **Status: the MVP is complete** (every task on `TASKS-MVP.md` is done). Later work,
-including the Android port, is in `TASKS.md`.
+including the Android and iOS ports, is in `TASKS-ANDROID.md`, `TASKS-IOS.md` and `tasks/`.
 
 ## How to play
 | Key | Action |
@@ -71,7 +71,7 @@ open Builds/Overgrown-mac/Overgrown.app
 
 ## Repository
 - `AGENTS.md`: contracts (scale, plant envelopes, C# API, controls), roles and rules. Read it before changing code.
-- `TASKS-MVP.md`: the finished MVP board; `TASKS.md`: later and open tasks. Each open task has a file in `tasks/`.
+- `TASKS-MVP.md`: the finished MVP board; `TASKS-ANDROID.md` / `TASKS-IOS.md`: open mobile tasks. Each open task has a file in `tasks/`.
 - `Game/`: the Unity project. Scenes, prefabs and materials are rebuilt by the **PlantGame** editor menus.
 - `Source/Blender/`: `plants.blend`, `characters.blend` and the Python scripts that build and export them
   (`docs/pipeline.md`). Raw exports and downloaded packs are git-ignored.

@@ -11,4 +11,4 @@
 
 ## Handoff
 - Icon: `AppIconBuilder.BuildIos` writes `T_AppIcon_iOS.png` (1024, RGB, no alpha, uncompressed) into all 19 iOS slots.
-- `IosBuild.PatchInfoPlist` sets `ITSAppUsesNonExemptEncryption = false`. Compliance facts and the App Privacy answer are in `docs/release-ios.md`.
+- `IosBuild.PatchInfoPlist` sets `ITSAppUsesNonExemptEncryption = false`. Compliance facts and the App Privacy answer are in `docs/private/release-ios.md`.

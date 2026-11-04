@@ -1,6 +1,6 @@
 # AGENTS.md — "Overgrown" · 3-day hackathon MVP
 
-Read this file fully before touching anything. Then read `TASKS.md` (`TASKS-MVP.md` for the MVP) and your task file in `tasks/`.
+Read this file fully before touching anything. Then read your task file in `tasks/` (boards: `TASKS-ANDROID.md`, `TASKS-IOS.md`; `TASKS-MVP.md` for the finished MVP).
 
 ## 1. Game in one paragraph
 Third-person 3D exploration of **floating islands** (one blocky white/black/gold player model, orbit camera). You cannot cross the gaps — you **grow plants** that become
@@ -8,7 +8,7 @@ Third-person 3D exploration of **floating islands** (one blocky white/black/gold
 picked from **procedural Blender (Geometry Nodes) variations**. Goal: reach the Heart Tree on the last island.
 Style: fantasy, **white / green / blue**, soft, glowing, stylized.
 
-**Run:** no lose condition and no timer pressure; falling just respawns you. The elapsed time is shown, and **best times** (time spent to finish) are saved per level/seed. There is no countdown or "challenge" mode (removed in v3.0).
+**Run:** no lose condition and no timer pressure; falling just respawns you. The elapsed time is shown, and **best times** (time spent to finish) are saved per level/seed.
 **Levels:** MVP ships at least **1 curated level** (fixed seed) and a **level-select menu** with: curated levels
 (1 required, 3 nice), **Random Level**, and **Enter Seed Code**. Any generated level can be re-created from its
 **seed code** (copy/paste shareable).
@@ -58,7 +58,7 @@ Style: fantasy, **white / green / blue**, soft, glowing, stylized.
 - Do **not** edit scripts in play mode (domain reload wipes non-serialized state). After script or package changes the
   domain reloads: calls fail with "Network error" for a few seconds — wait ~10 s and retry. `Game/Logs/Editor.log` is the
   fallback when the console tool lags. The third-person camera is a child of the player, so teleports move it too.
-- Docs habit: long per-task notes go in `docs/task-log.md`; keep `TASKS.md` and the task files short. `docs/shots/` is gitignored (local screenshots only; describe what you saw in the task log).
+- Docs habit: long per-task notes go in `docs/task-log.md`; keep the boards and the task files short. `docs/shots/` is gitignored (local screenshots only; describe what you saw in the task log).
 - Audio options (Music / Sound toggles and sliders) must work **while the game is paused** (`timeScale` 0), in a **standalone build**, not only in the editor. Rules: every audio source follows `GameSettings.Sound` / `Music` through `AudioSource.mute` as well as `volume` (a NaN or infinite volume from boost / weather maths is silently ignored by Unity and leaves the old volume playing); apply the setting in the `GameSettings.Changed` handler as well as in `Update` (never rely on a frame tick or on game time); use `SoundGain` / `MusicGain`, not the raw slider values; keep audio logic free of `Time.time` / `timeScale`. A new audio source or emitter is not done until you have toggled Sound and Music off and on in the pause menu of a rebuilt Mac player and heard silence at once (the editor is not enough: a stale build or a hot-reloaded script gives false results, so rebuild first).
 - Editor-built URP materials (builders): set emission with `MaterialBuilder.SetEmission` (it sets the GI flag URP needs to keep `_EMISSION`) and end the setup with `MaterialBuilder.ValidateUrp` (URP's own validation), so a rebuild writes the state URP keeps and leaves git clean. The `M_Keep_*` keepers skip it on purpose. Code-made meshes for a prefab go through `StoreGenerated` (MainSceneBuilder). Scene builders take `BuildFingerprint.OfSavedScene` before `NewScene` and save with `BuildFingerprint.SaveIfChanged`, so an unchanged rebuild leaves the file alone (a mismatch writes both descriptions to `Game/Temp/BuildFingerprint_*` to compare); anything code-made that a builder bakes into a scene must be saveable (no `HideFlags.DontSave`).
 - Runtime materials: create them through `PlantGame.Core.RuntimeMats` (never a bare `Shader.Find`). A player build only carries shaders and keyword combos used by a material asset; the `M_Keep_*` materials (`MaterialBuilder`, listed in `Resources/WorldKit`) cover transparent Lit and Particles/Unlit. Add a keeper when code turns on a new keyword combo.
@@ -68,7 +68,7 @@ Style: fantasy, **white / green / blue**, soft, glowing, stylized.
 PlantGame/                         (git root)
   AGENTS.md  CLAUDE.md  README.md
   TASKS-MVP.md                     MVP board (complete)
-  TASKS.md                         board after the MVP: later tasks + open work
+  TASKS-ANDROID.md  TASKS-IOS.md   boards of the open mobile tasks
   tasks/                           one file per open task (finished ones: `git show 8992895:tasks/<file>`)
   docs/                            art-bible, pipeline, controls, mobile-controls, test-seeds, qa-checklist, bugs, task-log, shots/ (local, git-ignored)
   Builds/                          standalone builds (git-ignored)
@@ -96,7 +96,7 @@ Roles, not necessarily separate sessions — one session may wear several hats, 
 
 | ID | Role | Owns (may edit freely) | Tools | Tasks |
 |----|------|------------------------|-------|-------|
-| A0 | **Director** (integrator/producer) | `Main.unity`, `TASKS.md`, `AGENTS.md`, project settings, git merges | Unity, git | T00 T15 T21 T24 |
+| A0 | **Director** (integrator/producer) | `Main.unity`, the `TASKS-*.md` boards, `AGENTS.md`, project settings, git merges | Unity, git | T00 T15 T24 |
 | A1 | **Gameplay** | `Scripts/Player`, `Scripts/Inventory`, `Scripts/Core` (interaction), Player/Items prefabs, `Scripts/Core/Modes`, `Scripts/Core/Save` | Unity | T03 T04 T05 T12 T25 T31 |
 | A2 | **Botanist** | `Scripts/Plants`, plant ScriptableObjects, Plants prefabs, grow shader hookup, watering can | Unity | T11 T27 |
 | A3 | **Plant Smith** | `Source/Blender/plants.blend`, `characters.blend`, `Source/Blender/scripts/plants_*`, `char_*`, `Art/Models/Plants`, `Art/Models/Characters` | Blender | T06 T07 T08 T28 T09 T31 |
@@ -286,7 +286,7 @@ the top steps the player onto the ladder's `Land`. Prompts print the key from th
 - [ ] Blender: file saved, scripts committed to `Source/Blender/scripts`, exports re-importable, screenshot in `docs/shots/`.
 - [ ] Contract names used exactly as in section 5.
 - [ ] Task file updated: status line, Handoff notes (what exists, how to use it, known issues).
-- [ ] Row in `TASKS.md` updated by the owner.
+- [ ] Row on the task's board (`TASKS-ANDROID.md` / `TASKS-IOS.md`) updated by the owner.
 
 ## 7. Handoff protocol
 End each task by filling the **Handoff** section of its task file: files created, prefab/scene names, public API,
@@ -294,9 +294,9 @@ how to test in 30 seconds, known issues. Then set status to `REVIEW`; A0 sets `D
 Statuses: `TODO` -> `DOING` -> `REVIEW` -> `DONE` (or `CUT`, `BLOCKED(reason)`). A `DONE` or `CUT` task leaves the board and its file is deleted; lasting notes go to `docs/task-log.md`.
 
 ## 8. Scope & cut line
-_Final (2026-10-25): the MVP below shipped complete (`TASKS-MVP.md`); later work is in `TASKS.md`. The cut order is kept for reference._
+_Final (2026-10-25): the MVP below shipped complete (`TASKS-MVP.md`); later work is in `tasks/`. The cut order is kept for reference._
 
-**MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T21–T26 (T26 minimum: title -> level 1 / random / seed code).
+**MVP (must ship):** T27 (watering can), T29 (lake + waterfall), T30 (water look), T31 (player model + third-person camera), T00–T05, T06–T09, T10, T11–T15, T16–T19, T22–T26 (T26 minimum: title -> level 1 / random / seed code).
 **Cut order if behind (cut from the top first):** T20 growth VFX polish -> second music track / ambience layers -> Water Collector plant (T28; generator then puts a water source on every island) ->
 Platform plant kind (keep Bridge + Ladder) -> ruin variety -> PlantGallery showcase scene (replace with a video).
 **Never cut:** watering can with 2 charges + refill at a lake or waterfall, seeded generation with copyable seed codes, best-time saving, at least 2 plant kinds with real Blender variants, pickup/drop/use/limited
@@ -313,13 +313,12 @@ inventory, music + SFX + sky, a win condition, a working build.
 - v3.3 (2026-10-28): `GameSettings.AutoWater` (off by default, title Options left column after Music / Sound, FPS counter moved to the right column; also in the pause menu): `PlayerInteraction` waters a thirsty sprout within reach, else refills at water within reach, as if F was pressed (0.6 s between automatic actions).
 - v3.2 (2026-10-28, cleanup): `GameEvents.FocusChanged` and `CanChanged` removed (raised, never subscribed: the HUD reads `PlayerInteraction.CurrentPrompt` and `WateringCan.Charges`); `PlayerInteraction.waterRange` removed (watering uses `InteractionSensor.range`); `RunConfig` / `WorldTheme` / `LevelTheme` / `GoalKind` / `WaterMode` live in `Core/RunConfig.cs` (was `GameMode.cs`); cached `Layers.InteractMask` / `SolidMask`.
 - v3.1 (2026-10-27): **Player model reworked**: rounded explorer-mage of the ruined magic civilisation (`char_player.py`: hat with leaf sprig, glowing-glyph cloak, satchel, vine on the left arm, boots). Joint names unchanged. Mesh suffix is now a material ROLE (`_Skin _Hair _Cloth _Cloak _Gear _Trim _Glow _Leaf _Dark`), mapped by a `PlayerOutfit` asset (`ScriptableObjects/Player/Outfit_Explorer`, `PlayerOutfitApplier` on `Model`) so reskins are a new outfit asset; materials `M_Player<Role>` replace `M_PlayerWhite/Black/Gold`. The watering can is part of the model (`Hold_Can` / `Can_Tilt` / `CanWater_Glow` under `Joint_ArmR`); `WateringCanVisual` only shows, tips and fills it.
-- v3.0 (2026-10-27): **Challenge mode removed** (no value): `GameMode`, `RunConfig.mode` / `timeLimit`, `LevelDefinition.challengeTimeLimitSeconds` / `parTimeSeconds`, `RunSession.Fail` / `Remaining` / `AddTime`, `RunState.Failed`, `GameEvents.GameFailed` / `TimeAdded`, `TimeFruit` and the mode toggle on the title screen are gone; `RunStarted` has no argument; `SaveService` best times are per key only (old Challenge records are ignored).
 - v2.9 (2026-10-26, cleanup): `PlantDefinition` (never created) removed, `PlantKind` lives in `Plants/PlantKind.cs`, `ItemDefinition.plant` removed; `GameEvents.PlantStarted` / `PlantGrown` (never raised) and `GlideStarted` / `GlideEnded` (no listeners) removed; `kit.blend` deleted (T10 cut); raw Blender exports and built `.app` folders are git-ignored; post-MVP tasks moved to `TODO.md`.
 - v2.8 (day 3, T67): plant variant tri budget 10k (was 4k); platform plant is a mushroom patch (per-cap stalks from the ground, no central stem; decorative baby mushroom has `padi = -1`); bridge sprout = two small vines (`spr` flag, bridge growth_t starts at 0.085); parachute is a big leaf (`LeafMesh.CreateHeld`, `Scenery.LeafPlant`).
 - v2.7 (day 3): vine bridges tilt up or down by the height difference to the next island (`LevelLayout.MaxBridgeRise` 3.4 m, was 1.5); the plant is stretched along its slope so the horizontal reach stays the same.
 - v2.6 (day 3): beanstalk climbing: Up / Down arrows climb like W / S; the player climbs on the start-island side of the stalk (`ClimbableVolume.playerBehind`, volume spans both sides, grab only from the player's side), so the camera has open air behind the player; frozen water shows a cold glow and the prompt "Frozen water: it needs a Heat Seed" (F says so too); after a use (plant, thaw, glide) the selection moves to the next filled slot (`Inventory.SelectNextFilled`).
 - v2.5 (day 3): game renamed **Overgrown** ("Grow plants to cross the floating islands."); `SeedCode.GeneratorVersion` 3: two vine bridges from one island leave at least 50 degrees apart and bridges elsewhere keep 7 m between them, one or two decoy soil patches (`Soil_*_decoy`, no route needs them) on levels with more than 3 islands; swamp ponds (`Isle.murky`, not a `WaterSource`); the Heat Seed melts ice with E; scenery between the camera and the player fades (`CameraOcclusionFade`); shrubs have no colliders; Sandbox_PlantTest, Sandbox_Plants and Sandbox_World are gone, Sandbox holds one of every item.
-- v2.4 (day 3): `RunConfig.spiral` (islands curl round, +50 degrees per link; Windy Summit), snow-capped goal island and altitude-scaled wind ambience on windy spirals; Challenge-only time fruits (`RunSession.AddTime`, `GameEvents.TimeAdded`): ceil(islands / 3) per level, 30 s per island in total; best times are kept per level and per mode.
+- v2.4 (day 3): `RunConfig.spiral` (islands curl round, +50 degrees per link; Windy Summit), snow-capped goal island and altitude-scaled wind ambience on windy spirals.
 - v2.3 (day 3): arrow keys move like WASD; the player turns slower (300 deg/s); turning the player more than 15 degrees away from the camera while moving forward swings the camera round to follow the facing (the mouse still looks around freely and overrides it). Themes `Snow` and `Fog` plus a per-level `wind` flag (`RunConfig.wind`, `WorldTheme.ResolveWind`); ten curated levels (T50).
 - v2.2 (day 3): the beanstalk ladder has no platform at the top and is taller (8.5-12.3 m, generator 11 m); `LevelLayout.LadderPadReach` 1.2 m, `LadderEdgeInset` 1.6 m; `Land` sits 1.9 m in front of the stalk top (T51).
 - v2.1 (day 3): islands keep 8.5 m from every island but their parent; bridge gaps 8.6-11.6 m (plant stretched to fit, `SandboxTarget.bridgeReach`), platform gaps 4.5 m; up to 15 degrees of island tilt; same `GeneratorVersion` 2 (not yet released).

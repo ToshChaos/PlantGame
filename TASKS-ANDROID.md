@@ -1,6 +1,6 @@
 # TASKS-ANDROID.md — Android beta backlog
 
-Open work only. The touch layer (T57-T61) is done; design and action map are in `docs/mobile-controls.md` (v3: no stick; tap the ground to walk,
+Open work only. The touch layer (T57-T61) is done; design and action map are in `docs/mobile-controls.md` (tap the ground to walk,
 tap the circle / diamond markers to act, double-tap a hotbar slot to drop, Jump and Pause buttons only).
 Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`. When a task is done, remove its row.
 
@@ -16,7 +16,7 @@ Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`
 - Left-handed mirror (from T59) is not built.
 
 ## Needs a person
-Developer account, keystore, hosting the privacy policy, contact email, store graphics, device testing and profiling (T63), internal test track upload. Steps: `docs/release-android.md`.
+Developer account, keystore, hosting the privacy policy, contact email, store graphics, device testing and profiling (T63), internal test track upload. Steps: `docs/private/release-android.md` (git-ignored).
 
 ## Standing decision
 Supported devices: phones released after 2020 (they ship with Android 10 or later). Min SDK stays 26: a superset, so nothing is dropped. A 2020-era phone is the low end of T63's test matrix.
