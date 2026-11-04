@@ -435,7 +435,7 @@ namespace PlantGame.UI
             Button("Resume", pr, V(new Vector2(0, 50), new Vector2(550, 250)), () => SetPaused(false)).fontStyle = FontStyle.Bold;
             Button("Restart", pr, V(new Vector2(0, -50), new Vector2(550, 140)), Restart);
             Button("Start", pr, V(new Vector2(0, -150), new Vector2(550, 30)), ToMenu);
-            TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(550, -80)), Quit));
+            if (!TitleMenu.NoQuit) TitleMenu.Danger(Button("Quit", pr, V(new Vector2(0, -250), new Vector2(550, -80)), Quit));
             var copyText = Button("Copy", pr, V(new Vector2(640, -215), new Vector2(550, -200)), () => GUIUtility.systemCopyBuffer = SeedCode.Encode(GameBootstrap.Current), 360, 28);
             _copyCode = copyText.transform.parent.gameObject;
             {   // the Jump button's look: white disc, yellow rim, dark green text
@@ -458,7 +458,9 @@ namespace PlantGame.UI
             Hint(_endBody);
             _nextButton = Button("Next level", er, new Vector2(0, -70), NextLevel).transform.parent.gameObject;
             _retryLabel = Button("Play again", er, new Vector2(0, -70), Restart);
-            _endButtons = new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, TitleMenu.Danger(Button("Quit", er, new Vector2(0, -270), Quit)).transform.parent };
+            _endButtons = TitleMenu.NoQuit
+                ? new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent }
+                : new[] { _retryLabel.transform.parent, Button("Menu", er, new Vector2(0, -170), ToMenu).transform.parent, TitleMenu.Danger(Button("Quit", er, new Vector2(0, -270), Quit)).transform.parent };
             _endPanel.SetActive(false);
         }
 

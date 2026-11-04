@@ -251,7 +251,7 @@ namespace PlantGame.UI
                 Button(_home.transform, "Generate level", new Vector2(colX, 70), () => Show(_generate), 380);
                 Button(_home.transform, "Story", new Vector2(colX, -50), () => Show(_story), 380);
                 Button(_home.transform, "Options", new Vector2(colX, -170), () => Show(_options), 380);
-                Danger(Button(_home.transform, "Quit", new Vector2(colX, -290), Quit, 380));
+                if (!NoQuit) Danger(Button(_home.transform, "Quit", new Vector2(colX, -290), Quit, 380));
             }
             else
             {
@@ -261,7 +261,7 @@ namespace PlantGame.UI
             Button(_home.transform, "Generate level", new Vector2(0, -110), () => Show(_generate));
             Button(_home.transform, "Story", new Vector2(0, -205), () => Show(_story));
             Button(_home.transform, "Options", new Vector2(0, -300), () => Show(_options));
-            Danger(Button(_home.transform, "Quit", new Vector2(0, -395), Quit));
+            if (!NoQuit) Danger(Button(_home.transform, "Quit", new Vector2(0, -395), Quit));
             }
 
             _options = Screen("Options", root, 0.85f);
@@ -538,6 +538,9 @@ namespace PlantGame.UI
             sp.hideFlags = HideFlags.HideAndDontSave;
             return sp;
         }
+
+        /// <summary>iOS apps do not quit themselves (App Store guideline: no exit button), so iPhone and iPad builds have no Quit button.</summary>
+        public static bool NoQuit => Application.platform == RuntimePlatform.IPhonePlayer;
 
         void Quit()
         {

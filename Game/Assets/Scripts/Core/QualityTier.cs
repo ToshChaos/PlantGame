@@ -32,7 +32,7 @@ namespace PlantGame.Core
         /// <summary>
         /// First run on a phone or tablet: picks the tier, the 30 fps battery saver and postprocessing from the device and saves them, so the
         /// player's own changes in Options win afterwards. The reference target is a 2022 phone at 1080 x 2340 (Galaxy S22 / A53, Pixel 6a class;
-        /// also Galaxy S23, Honor 90 Pro): Medium, 30 fps, no postprocessing. Weak devices (under 5 GB or fewer than 6 cores) get Low.
+        /// also Galaxy S23, Honor 90 Pro): Medium, 30 fps, no postprocessing. Weak Android devices (under 5 GB or fewer than 6 cores) get Low; on iOS only under 3.5 GB (iPhone 8 / X / XR).
         /// Desktop keeps the defaults (High, 60+ fps, postprocessing on).
         /// </summary>
         static void DetectPreset()
@@ -40,7 +40,13 @@ namespace PlantGame.Core
             PlayerPrefs.SetInt(PresetKey, 1);
             if (!Application.isMobilePlatform) { PlayerPrefs.Save(); return; }
             int ram = SystemInfo.systemMemorySize;   // MB
+            // iPhones and iPads: Apple GPUs are strong even with little RAM (iPhone 11 to 14 have 4-6 GB), so only the old 2-3 GB models
+            // (iPhone 8 / X / XR) start on Low. Android keeps the RAM and core rule.
+#if UNITY_IOS
+            GameSettings.Quality = ram < 3500 ? Low : Medium;
+#else
             GameSettings.Quality = ram < 5000 || SystemInfo.processorCount < 6 ? Low : Medium;
+#endif
             GameSettings.Fps30 = true;   // even 12 GB flagships (Honor 90 Pro) throttle at 60 fps after a few minutes
             GameSettings.Bloom = false;
             Debug.Log($"[PlantGame] First-run preset: {Names[GameSettings.Quality]}, {(GameSettings.Fps30 ? 30 : 60)} fps, postprocessing off ({ram} MB, {SystemInfo.processorCount} cores, {SystemInfo.graphicsDeviceType}, {SystemInfo.graphicsDeviceName}, {Screen.width} x {Screen.height}).");

@@ -40,6 +40,7 @@ namespace PlantGame.Editor
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(Path_);
             PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
             BuildAndroid(o);
+            BuildIos(o);
             AssetDatabase.SaveAssets();
             Debug.Log("[PlantGame] App icon built: " + Path_);
         }
@@ -64,6 +65,46 @@ namespace PlantGame.Editor
             var adaptive = PlayerSettings.GetPlatformIcons(target, UnityEditor.Android.AndroidPlatformIconKind.Adaptive);
             foreach (var i in adaptive) i.SetTextures(bgTex, fgTex);
             PlayerSettings.SetPlatformIcons(target, UnityEditor.Android.AndroidPlatformIconKind.Adaptive, adaptive);
+        }
+
+
+        /// <summary>iOS: App Store Connect rejects an icon with an alpha channel and the system rounds the corners, so this is a full-bleed opaque square (same gradient as the Android background, O inside the rounded-corner safe area) with no alpha, assigned to every iOS slot (Application, Settings, Notification, Spotlight, Marketing).</summary>
+        static void BuildIos(Texture2D o)
+        {
+            const int S = 1024;
+            const float oScale = 0.72f;
+            var top = new Color(0.10f, 0.25f, 0.38f); var bot = new Color(0.04f, 0.10f, 0.17f);
+            var px = new Color32[S * S];
+            for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
+            {
+                float u = (x + 0.5f) / S, v = (y + 0.5f) / S;
+                var c = Color.Lerp(bot, top, v);
+                float ou = (u - 0.5f) / oScale + 0.5f, ov = (v - 0.5f) / oScale + 0.5f;
+                if (ou >= 0f && ou <= 1f && ov >= 0f && ov <= 1f)
+                {
+                    var oc = o.GetPixelBilinear(ou, ov);
+                    c = Color.Lerp(c, new Color(oc.r, oc.g, oc.b), oc.a);
+                }
+                px[y * S + x] = new Color32((byte)Mathf.RoundToInt(c.r * 255), (byte)Mathf.RoundToInt(c.g * 255), (byte)Mathf.RoundToInt(c.b * 255), 255);
+            }
+            const string path = "Assets/Art/Textures/T_AppIcon_iOS.png";
+            var t = new Texture2D(S, S, TextureFormat.RGB24, false);
+            t.SetPixels32(px); t.Apply();
+            File.WriteAllBytes(path, t.EncodeToPNG());
+            Object.DestroyImmediate(t);
+            AssetDatabase.ImportAsset(path);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            imp.textureType = TextureImporterType.Default; imp.alphaSource = TextureImporterAlphaSource.None; imp.alphaIsTransparency = false;
+            imp.mipmapEnabled = false; imp.npotScale = TextureImporterNPOTScale.None;
+            imp.SaveAndReimport();
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            var target = UnityEditor.Build.NamedBuildTarget.iOS;
+            foreach (var kind in new PlatformIconKind[] { UnityEditor.iOS.iOSPlatformIconKind.Application, UnityEditor.iOS.iOSPlatformIconKind.Settings, UnityEditor.iOS.iOSPlatformIconKind.Notification, UnityEditor.iOS.iOSPlatformIconKind.Spotlight, UnityEditor.iOS.iOSPlatformIconKind.Marketing })
+            {
+                var icons = PlayerSettings.GetPlatformIcons(target, kind);
+                foreach (var i in icons) i.SetTexture(icon);
+                PlayerSettings.SetPlatformIcons(target, kind, icons);
+            }
         }
 
         static Texture2D SaveLayer(string path, Color[] px, int size)
