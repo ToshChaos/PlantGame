@@ -5,8 +5,9 @@ namespace PlantGame.Editor
 {
     /// <summary>
     /// T02: applies the pipeline import settings to every model under Assets/Art/Models (docs/pipeline.md).
-    /// Scale 1 m, no material import (project materials are assigned in prefabs), mesh compression off,
-    /// read/write on for plants (vertex colours + runtime collider work), empties preserved (Anchor/Tip/COL_*).
+    /// Scale 1 m, no material import (project materials are assigned in prefabs), mesh compression off, read/write off
+    /// (nothing reads plant vertices at runtime; colliders are the baked COL_ boxes), no tangents on plants (no UVs, no normal maps, PlantGrow does not
+    /// use them), empties preserved (Anchor/Tip/COL_*).
     /// Runs on first import only (no existing .meta), so hand-tuned settings survive.
     /// </summary>
     public class ModelImportSettings : AssetPostprocessor
@@ -28,7 +29,8 @@ namespace PlantGame.Editor
             m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/") || m.assetPath.StartsWith(Root + "Plants/");   // hierarchies exported without bake_space_transform (T31)
             m.materialImportMode = ModelImporterMaterialImportMode.None;
             m.meshCompression = ModelImporterMeshCompression.Off;
-            m.isReadable = m.assetPath.StartsWith(Root + "Plants/");
+            m.isReadable = false;
+            if (m.assetPath.StartsWith(Root + "Plants/")) m.importTangents = ModelImporterTangents.None;
             m.preserveHierarchy = true;                  // keep empty transforms (Anchor, Tip, Land, COL_*)
             m.importBlendShapes = false;
             m.importCameras = false;

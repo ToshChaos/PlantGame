@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEditor;
+using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -31,6 +32,10 @@ namespace PlantGame.Editor
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             // Size: removes the unused package and engine code, as on iOS (T72). Anything reached only by reflection now needs a link.xml; Assets/Scripts has none.
             PlayerSettings.SetManagedStrippingLevel(android, ManagedStrippingLevel.Medium);
+            // Size: generic instantiations were 55% of the generated C++; this shares them, at some cost to generic-heavy code. A device profile decides if it stays.
+            PlayerSettings.SetIl2CppCodeGeneration(android, Il2CppCodeGeneration.OptimizeSize);
+            // Size: R8 shrinks the Kotlin and AndroidX code in classes.dex. Unity's proguard-unity.txt keeps what the engine calls; a Java class reached only from C# through JNI would need its own keep rule.
+            PlayerSettings.Android.minifyRelease = true;
 
             // landscape only, both directions
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
@@ -41,7 +46,7 @@ namespace PlantGame.Editor
             PlayerSettings.Android.renderOutsideSafeArea = false;   // notches stay clear of the HUD until T59 adds safe-area layout
 
             ApplySigning();
-            Debug.Log("[PlantGame] Android player settings applied (IL2CPP, ARM64, API 26+, Vulkan + GLES3, Medium stripping, landscape only).");
+            Debug.Log("[PlantGame] Android player settings applied (IL2CPP optimised for size, ARM64, API 26+, Vulkan + GLES3, Medium stripping, R8, landscape only).");
         }
 
         /// <summary>
@@ -96,6 +101,24 @@ namespace PlantGame.Editor
             if (s.result == BuildResult.Succeeded && !made) Debug.LogError("[PlantGame] Build reported success but " + opts.locationPathName + " was not created. Restart Unity after installing the Android module, and check the console for 'Build target Android not supported'.");
             else if (s.result != BuildResult.Succeeded) Debug.LogError("[PlantGame] Android build failed: " + s.result);
             else Debug.Log("[PlantGame] Android build done: " + s.outputPath);
+        }
+    }
+
+    /// <summary>
+    /// com.unity.dt.app-ui is only here for the editor tooling. Its managed code is stripped from the player (APP_UI_EDITOR_ONLY plus the linker), but the package's
+    /// native library still lands in the APK with nothing left to call it. If the game ever uses App UI in a player, delete this class.
+    /// </summary>
+    class DropUnusedAndroidLibraries : IPostGenerateGradleAndroidProject
+    {
+        const string Library = "libAppUITextMateLib.so";
+
+        public int callbackOrder => 0;
+
+        public void OnPostGenerateGradleAndroidProject(string path)
+        {
+            var jni = Path.Combine(path, "src/main/jniLibs");
+            if (!Directory.Exists(jni)) return;
+            foreach (var file in Directory.GetFiles(jni, Library, SearchOption.AllDirectories)) File.Delete(file);
         }
     }
 }

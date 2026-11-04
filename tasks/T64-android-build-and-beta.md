@@ -28,3 +28,7 @@ Update 2026-11-04: Medium managed stripping is on (`AndroidBuild.Configure`, sam
 - Generate level: Copy code and Paste work; the seed code keyboard works.
 - `save.json` is written, a best time is saved and survives a restart. Music and Sound toggles work while paused.
 - `adb logcat -s Unity` shows no `MissingMethodException`, `TypeLoadException` or `Unable to find` lines, which are what over-stripping looks like. A fix for one is a `link.xml`, not lowering the level.
+
+Update 2026-11-04 (later): APK 50.7 -> 43.4 MB with IL2CPP `OptimizeSize`, R8 and no `libAppUITextMateLib.so`; details in `docs/task-log.md`. Still not run on a device. Add to the first install:
+- `adb logcat` shows no `ClassNotFoundException`, `NoSuchMethodError` or `NoSuchFieldError`, which are what over-shrinking by R8 looks like. A fix for one is a keep rule, not turning R8 off.
+- Frame time and load time in a level, against a build with `OptimizeSpeed` if either feels worse. `OptimizeSize` stays only if the phone agrees.

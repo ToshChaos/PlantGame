@@ -275,3 +275,15 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Not checked on any player: a best time being saved, finishing a level, audio. The AAB was not built.
 - Found, not fixed: Level 1 (seed 1101) logs `No valid layout for seed 1101, using the last attempt` on every load. All 100 attempts fail `WorldValidator` with "start island has 1 seed sources". The level plays; whether the validator or the plan is wrong was not looked into, and the 100 attempts are wasted load time.
 - Moving the active target away from iOS flipped `m_Automatic` for iOS to 1 in `ProjectSettings.asset` (`IosBuild.Configure` sets it back). It was restored here and is not in the commit; it may come back after a target switch.
+
+## Android size pass: code generation, R8, plant meshes (2026-11-04)
+- APK 50.7 -> 43.4 MB (50,676,543 -> 43,376,436 bytes), 7.3 MB or 14%. Compressed sizes in the APK, one build for all four changes, read from the files they touch:
+  - IL2CPP code generation `OptimizeSize` (generics were 55% of the generated C++): `libil2cpp.so` 10.26 -> 6.60 MB (39.6 -> 20.6 MB unpacked), `global-metadata.dat` 2.35 -> 1.81 MB.
+  - R8 (`minifyRelease`): `classes.dex` 2.36 -> 0.35 MB, 4,702 -> 903 classes.
+  - `DropUnusedAndroidLibraries` deletes `libAppUITextMateLib.so` from the Gradle project: 0.67 MB. Its managed assembly was already stripped.
+  - The 24 plant models: no tangents, Read/Write off. Files 3.11 -> 2.59 MB, vertex data 9.7 -> 6.2 MB. Their read/write copy no longer sits in RAM (not measured on a device).
+- Checked: EditMode 39 / 39. Play mode, Medium, seed 4299: three bridges, a ladder and a platform planted, watered and grown, plus a collector grown directly; colliders on, vertex colours kept, no console errors. Renders of bridge, ladder and platform look right; the collector was checked by data only (the editor left play mode before its render). Metal only.
+- Checked in the APK: the manifest activity and provider and all 22 classes the native libraries name by JNI path survive R8 (dexdump, `strings`). This does not prove methods reached by reflection survive.
+- **Not checked: the APK has not been run; no device or emulator here.** `OptimizeSize` can slow generic-heavy code and has no profile. First device pass: T64.
+- The build moved the active target to Android and flipped iOS `m_Automatic` again; both restored (Mac, `SetUseDefaultGraphicsAPIs(iOS, false)`).
+- Still open from the same audit: 15 unused plant variants (2.05 MB before this pass, loaded through `WorldKit`), the Unity splash, ASTC instead of ETC, mesh compression on Quaternius trees, Vulkan pre-rotation, fixed timestep at 30 fps, mipmap limit on Low. Quaternius trees stay read/write: `Scenery`, `LeaflessTree` and `PalmLook` read their indices or vertices.

@@ -42,7 +42,7 @@ faces Unity +Z, left at -X, 1:1 scale; the FBX root empty keeps a ~90° X rotati
 in model space (see `PlayerAnimator`). Plants/kit pieces with nested parts should use the same overrides.
 
 ## Unity import (`Assets/Editor/ModelImportSettings.cs`)
-Applied automatically on first import of any FBX under `Assets/Art/Models`: scale 1 with `useFileScale`, no material import, mesh compression off, Read/Write on for `Plants/`, hierarchy preserved (empties kept), no animation/cameras/lights. Menu `PlantGame > Tools > Reapply Model Import Settings` re-applies after a preset change. `growth_t` is read with `mesh.colors[i].r`.
+Applied automatically on first import of any FBX under `Assets/Art/Models`: scale 1 with `useFileScale`, no material import, mesh compression off, Read/Write off, no tangents on `Plants/`, hierarchy preserved (empties kept), no animation/cameras/lights. Menu `PlantGame > Tools > Reapply Model Import Settings` re-applies after a preset change. `growth_t` is read with `mesh.colors[i].r`.
 
 ## Round-trip test (T02, done)
 The axis / scale settings above were verified once with an asymmetric test object (`Test_Asym`). The fixture
