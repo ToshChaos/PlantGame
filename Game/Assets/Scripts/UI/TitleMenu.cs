@@ -299,12 +299,12 @@ namespace PlantGame.UI
                 var l = levels[i];
                 int row = i / perRow, col = i % perRow, inRow = Mathf.Min(perRow, levels.Length - row * perRow);
                 // tc (touch): taller cards with bigger text (the screen has the vertical room)
-                float x = (col - (inRow - 1) * 0.5f) * 314f, y = two ? (tc ? (row == 0 ? 185f : -235f) : (row == 0 ? 155f : -175f)) : 130f, h = two ? (tc ? 380f : 270f) : 330f;
-                var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(304, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
-                Label(card, l.title, two ? (tc ? 24 : 21) : 23, new Vector2(0, h / 2 - (tc ? 55 : 35)), 290, Lime);
-                _cardInfo[i] = Label(card, "", two ? (tc ? 19 : 16) : 19, new Vector2(0, two ? 8 : 12), 280, Color.white);
+                float x = (col - (inRow - 1) * 0.5f) * 350f, y = two ? (tc ? (row == 0 ? 185f : -235f) : (row == 0 ? 155f : -175f)) : 130f, h = two ? (tc ? 380f : 270f) : 330f;
+                var card = Panel(_levels.transform, new Vector2(x, y), new Vector2(340, h), new Color(0.07f, 0.16f, 0.25f, 0.9f));
+                Label(card, l.title, two ? (tc ? 24 : 21) : 23, new Vector2(0, h / 2 - (tc ? 55 : 35)), 326, Lime);
+                _cardInfo[i] = Label(card, "", two ? (tc ? 19 : 16) : 19, new Vector2(0, two ? 8 : 12), 316, Color.white);
                 _cardInfo[i].alignment = TextAnchor.MiddleCenter; _cardInfo[i].lineSpacing = 1.6f;
-                ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(280, h - (tc ? 140 : 100));
+                ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(316, h -(tc ? 140 : 100));
                 Button(card, "Play", new Vector2(0, -h / 2 + (tc ? 52 : 32)), () => StartRun(l.ToConfig()), 150, 24, 50f);
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
@@ -315,7 +315,7 @@ namespace PlantGame.UI
                 if (!Application.CanStreamedLevelBeLoaded(scene)) continue;
                 Reverse(Button(_levels.transform, TestScenes[i].label, new Vector2(i * 360, testY - 20f), () => { Time.timeScale = 1f; SceneManager.LoadScene(scene); }, 340, 26));
             }
-            Reverse(Button(_levels.transform, "Back", new Vector2(two ? 630 : 0, two ? 440 : -420), () => Show(_home), 300, 34));   // right edge in line with the cards (a 4:3 tablet is only ~1660 wide)
+            Reverse(Button(_levels.transform, "Back", new Vector2(two ? 720 : 0, two ? 440 : -420), () => Show(_home), 300, 34));   // right edge in line with the cards (a 4:3 tablet is only ~1660 wide)
 
             // generate level: random seed, difficulty, shows the code before starting
             _generate = Screen("Generate", root, 0.82f);
