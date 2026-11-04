@@ -58,7 +58,7 @@ namespace PlantGame.World
 
         // ---- grass blades: a sprite of a few tapering, leaning blades (alpha-cut), drawn as crossed quads
         static Texture2D _bladeTex;
-        static Texture2D BladeTex()
+        public static Texture2D BladeTex()
         {
             if (_bladeTex != null) return _bladeTex;
             const int W = 256, Hh = 256;   // fine enough that the alpha-clipped blade edges stay smooth up close
@@ -81,7 +81,43 @@ namespace PlantGame.World
                     px[y * W + x] = new Color32(c, c, c, (byte)(a * 255f));
                 }
             tex.SetPixels32(px); tex.Apply(true);
-            return _bladeTex = tex;
+            _bladeTex = tex;
+            SetBladeFilter(_bladeFilter);
+            return tex;
+        }
+
+        static bool _bladeFilter;
+        /// <summary>
+        /// Postprocessing (via SurfaceFx): filters the blade sprite. Trilinear + 16x anisotropic, and mips that keep the blades' coverage: a plain
+        /// box-filtered alpha mip drops under the alpha-clip cutoff, so tufts thin out and shimmer with distance. Off restores the plain mips.
+        /// </summary>
+        public static void SetBladeFilter(bool on)
+        {
+            _bladeFilter = on;
+            var t = _bladeTex;
+            if (t == null) return;
+            t.anisoLevel = on ? 16 : 1;
+            t.filterMode = on ? FilterMode.Trilinear : FilterMode.Bilinear;
+            t.Apply(true);   // regenerates the plain mip chain from level 0
+            if (!on) return;
+            var l0 = t.GetPixels32(0);
+            int opaque = 0; foreach (var c in l0) if (c.a >= 128) opaque++;
+            float target = opaque / (float)l0.Length;
+            for (int m = 1; m < t.mipmapCount; m++)
+            {
+                var px = t.GetPixels32(m);
+                float lo = 1f, hi = 8f;   // alpha gain; 0.5 cutoff, so find the gain that keeps the level-0 share of blade pixels
+                for (int i = 0; i < 12; i++)
+                {
+                    float g = 0.5f * (lo + hi); int n = 0;
+                    foreach (var c in px) if (c.a * g >= 127.5f) n++;
+                    if (n / (float)px.Length < target) lo = g; else hi = g;
+                }
+                float gain = 0.5f * (lo + hi);
+                for (int i = 0; i < px.Length; i++) px[i].a = (byte)Mathf.Min(255f, px[i].a * gain);
+                t.SetPixels32(px, m);
+            }
+            t.Apply(false);
         }
 
         static Material _bladeMat;

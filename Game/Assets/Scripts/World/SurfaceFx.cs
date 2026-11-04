@@ -9,6 +9,7 @@ namespace PlantGame.World
     /// "Postprocessing" (GameSettings.Bloom) = filtering and shaders:
     ///  - 16x anisotropic + trilinear on the island, rock and water textures (sharper at grazing angles, which is how the camera sees an island top),
     ///    and the global anisotropic switch turned on when the tier has it off;
+    ///  - the grass blade sprites (<c>Overgrowth.SetBladeFilter</c>): trilinear, 16x anisotropic and coverage-preserving mips, so distant tufts keep their blades instead of thinning out;
     ///  - water: the global <c>_PG_Fx</c> switches on the extra water shader work (rippled sun glints, sky reflection, foam streaks).
     /// The High quality tier (GameSettings.Quality 2) = the textures themselves:
     ///  - surface detail: a second, finer, generated detail layer (URP Lit detail albedo + detail normal) on the island tops and rocks:
@@ -80,6 +81,7 @@ namespace PlantGame.World
             if (kit != null && kit.materials != null)
                 foreach (var m in kit.materials) if (m != null && m.shader != null && m.shader.name == "PlantGame/OvergrowthWater") Sharpen(m, "_Ripple");
             Shader.SetGlobalFloat(WaterFx, 1f);
+            Overgrowth.SetBladeFilter(true);   // the grass blade sprites
         }
 
         void RevertFilter()
@@ -87,6 +89,7 @@ namespace PlantGame.World
             if (!_filterOn) return;
             _filterOn = false;
             Shader.SetGlobalFloat(WaterFx, 0f);
+            Overgrowth.SetBladeFilter(false);
             if (_forced && QualitySettings.anisotropicFiltering == AnisotropicFiltering.Enable) QualitySettings.anisotropicFiltering = AnisotropicFiltering.Disable;
             _forced = false;
             foreach (var kv in _tex) if (kv.Key != null) { kv.Key.anisoLevel = kv.Value.aniso; kv.Key.filterMode = kv.Value.filter; }
