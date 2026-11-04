@@ -54,9 +54,9 @@ the seed field of **Generate level** and the same world is built: same islands, 
 1. Open `Game/` in Unity Hub with **Unity 6000.6.5f1** (URP).
 2. Open `Assets/Scenes/Title.unity` and press Play. `Sandbox.unity` is a movement course with one of every item.
 
-Every generated asset is committed. After changing a builder, rerun its **PlantGame** menu: **Rebuild Core Assets** (project
-settings, materials, items, player, sandbox), **7 / 8 / 10 / 14** (plant prefabs), **14 Build World Kit** (the runtime
-asset list), **11 Build Atmosphere**, **12 Build Main**, **16 Build Title**.
+Every generated asset is committed. After changing a builder, rerun its **PlantGame** menu entry: **Rebuild Core Assets**
+(project settings, materials, items, player, sandbox), **Plants > ... Prefabs**, **Scenes > World Kit** (the runtime asset
+list), **Scenes > Main**, **Scenes > Title**, **Assets > Materials / Water Materials**.
 
 ### Build
 **PlantGame > Platforms > Build macOS Standalone** writes `Builds/Overgrown-mac/Overgrown.app` (git-ignored), then:
@@ -64,10 +64,23 @@ asset list), **11 Build Atmosphere**, **12 Build Main**, **16 Build Title**.
 open Builds/Overgrown-mac/Overgrown.app
 ```
 
-### Checks
-- EditMode tests (Test Runner): inventory, seed codes, save service, world generation (including golden seeds).
-- **PlantGame > Test > Validate Seeds** checks that generated levels are beatable; **PlantGame > Test > Smoke Test Levels** loads
-  all ten curated levels in play mode and logs frame time and draw calls.
+### Testing and QA
+Nothing here is part of a player build (the test assemblies are editor-only). Run in this order before a release:
+
+| Layer | How to run | What it covers | Time |
+|-------|-----------|----------------|------|
+| 1. Unit / regression tests | **PlantGame > Test > Run Unit Tests** (summary and failures in the Console; **Open Test Runner** for the full tree) | inventory, seed codes, save service, watering can, level themes, world generation (determinism, 100 seeds beatable, golden seeds), the ten curated levels | ~3 s |
+| 2. Seed validation | **PlantGame > Test > Validate Seeds** | 10,000 seed-code round trips and 200 generated levels through the validator | ~5 s |
+| 3. Level smoke test | **PlantGame > Test > Smoke Test Levels** | plays each curated level in play mode, logs frame time and draw calls to `Game/Logs/smoke.txt` | ~1 min |
+| 4. Manual pass | `docs/qa-checklist.md` (menus, controls, plants, water, audio, saves, mobile) in a rebuilt player | everything a script cannot judge | ~30 min |
+
+Helpers: **Test > Game View: Phone 2340x1080** (reference phone), **Test > Touch Controls (editor test)** (touch UI in the editor),
+**Test > Play From Title** (Play starts at the Title scene). Controls reference: `docs/controls.md`; frozen seeds: `docs/test-seeds.md`.
+
+- **Golden seeds** (`GoldenSeedsKeepTheirWorld`): if one fails, a generator change altered existing worlds and shared seed codes.
+  Bump `SeedCode.GeneratorVersion` if that was intended, then re-record the values in `WorldGenerationTests.cs`.
+- **Adding a test:** put an NUnit class in `Game/Assets/Tests/EditMode/` (assembly `PlantGame.Tests.EditMode`); it appears in both menus at once.
+- **Audio changes** need the extra check in `AGENTS.md` section 2 (toggle Sound / Music in a rebuilt Mac player).
 
 ## Repository
 - `AGENTS.md`: contracts (scale, plant envelopes, C# API, controls), roles and rules. Read it before changing code.

@@ -1,6 +1,7 @@
 # QA checklist (manual)
 
-Automated first: **Window > General > Test Runner > EditMode** (inventory, seed codes, save service, world generation, golden seeds) and
+Automated first (see README, "Testing and QA"): **PlantGame > Test > Run Unit Tests** (inventory, seed codes, save service, watering can,
+themes, world generation, golden seeds, curated levels), **PlantGame > Test > Validate Seeds**, and
 **PlantGame > Test > Smoke Test Levels** (plays each curated level for a few seconds, report in `Game/Logs/smoke.txt`).
 Tick what you observed, note the build and date. Controls reference: `docs/controls.md`.
 
