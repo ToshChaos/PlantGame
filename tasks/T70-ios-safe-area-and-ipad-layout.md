@@ -1,6 +1,6 @@
 # T70 — Home indicator and iPad layout
 
-**Owner:** A7 Sound & UI · **Status:** TODO (see `TASKS-IOS.md`) · **Depends on:** T59, T69
+**Owner:** A7 Sound & UI · **Status:** DOING (code in; Simulator checks partly done, device open) (see `TASKS-IOS.md`) · **Depends on:** T59, T69
 
 Design: `docs/mobile-controls.md`.
 
@@ -21,3 +21,4 @@ iOS draws edge to edge. **Checked 2026-11-04 on the Simulator (iPhone 18 Pro, la
 - The Android build, with `renderOutsideSafeArea` decided again, still looks right.
 
 ## Handoff
+- 2026-11-04: `deferSystemGesturesMode = BottomEdge` set in `IosBuild.Configure`. `ScreenWatcher` (Core) re-fits CanvasScalers and the rendered line count when the size changes and reloads the title scene when the phone / tablet layout flips. iPad Pro 13" Simulator, landscape (one direction): title, Level 1 HUD and pause look right, nothing clipped, no Quit. Not done: the other landscape direction, Options on iPad, a real window resize (the Simulator cannot resize iPad windows; needs a device or iPadOS 26 Simulator window handles), device check of the bottom-edge swipe, Android `renderOutsideSafeArea` re-decision.

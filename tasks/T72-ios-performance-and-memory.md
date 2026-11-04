@@ -1,6 +1,6 @@
 # T72 — iOS performance and memory
 
-**Owner:** A6 Tech Artist · **Status:** TODO (see `TASKS-IOS.md`) · **Depends on:** T63, T69
+**Owner:** A6 Tech Artist · **Status:** DOING (preset rule done; the rest needs a device) (see `TASKS-IOS.md`) · **Depends on:** T63, T69
 
 Shares tiers and budgets with T63. The Android profile numbers do not carry over; the Simulator says nothing about performance, so this needs a real device.
 
@@ -17,3 +17,4 @@ Shares tiers and budgets with T63. The Android profile numbers do not carry over
 - Numbers (device, preset, fps, peak memory, size) recorded in `docs/task-log.md`; minimum device written into `docs/release-ios.md`.
 
 ## Handoff
+- 2026-11-04: preset rule is in (`QualityTier.DetectPreset`: Low under 3.5 GB, else Medium, 30 fps). `QualityTier.Rescale()` re-applies the line count on resize. Memory, thermal, size, ASTC check and the minimum device need a physical device; nothing measured yet.

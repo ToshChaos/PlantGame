@@ -23,6 +23,8 @@ Output: `Builds/Overgrown-android/Overgrown.aab`. Version name: `bundleVersion` 
 - Upload the .aab to **Internal testing** first; add testers; install on two phones (one low-end, one tablet), play Level 1, update the build and check the best time survives.
 - New personal accounts must run a closed test with 12 testers for 14 days before production access.
 
+Supported devices: phones released after 2020 (min SDK 26 stays as a superset). Use a 2020-21 phone as the low-end test device.
+
 ## 4. Before promoting to production
 - [ ] Device pass: touch controls, safe area, Back button, home/return auto-pause (`docs/qa-checklist.md`, touch section)
 - [ ] Profile on a mid-range phone (T63): 30 fps minimum; the "Battery saver (30 fps)" option exists in Options

@@ -309,7 +309,7 @@ namespace PlantGame.UI
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
             float testY = two ? (TouchInput.Active ? -470f : -345f) : -150f;
-            for (int i = 0; i < TestScenes.Length && Application.platform != RuntimePlatform.Android; i++)
+            for (int i = 0; i < TestScenes.Length && !Application.isMobilePlatform; i++)
             {
                 string scene = TestScenes[i].scene;
                 if (!Application.CanStreamedLevelBeLoaded(scene)) continue;

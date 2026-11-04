@@ -1,6 +1,6 @@
 # T71 — iOS platform behaviour
 
-**Owner:** A0 Director · **Status:** TODO (see `TASKS-IOS.md`) · **Depends on:** T62, T69
+**Owner:** A0 Director · **Status:** DOING (code in; audio, saves, paste, lifecycle need a device) (see `TASKS-IOS.md`) · **Depends on:** T62, T69
 
 ## Work
 - **Quit:** iOS apps should not close themselves and an in-game Quit can look like a crash to App Review. Hide the button on iOS in `TitleMenu` (home, both layouts) and `PlayerHud` (pause, end of run), and close the gap it leaves. Android keeps it.
@@ -17,3 +17,4 @@
 - A seed code copied in the game, sent out through another app and pasted back starts the same level.
 
 ## Handoff
+- 2026-11-04: Quit hidden (T73 commit); test-scene buttons hidden on all mobile platforms; `MobileLifecycle` pauses on focus loss as well as app pause and its comments are platform neutral; runtime orientation override removed (Player Settings decide). Audio: `muteOtherAudioSources` stays off (Ambient category), not yet heard. Not done: sound toggles in a rebuilt player, kill-from-switcher save check, seed paste prompt, soft keyboard in landscape, call / Siri return.

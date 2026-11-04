@@ -61,6 +61,9 @@ namespace PlantGame.Core
             ScaleToScreen();
         }
 
+        /// <summary>T70: the window changed size (iPad multitasking, rotation): the rendered line count follows.</summary>
+        public static void Rescale() => ScaleToScreen();
+
         /// <summary>
         /// Medium and Low render a fixed number of lines (810 / 650: 0.75 / 0.6 of the 1080-high reference phone), so a taller screen costs
         /// the same: 2700 x 1224 (Honor 90 Pro) renders at 0.66, 1440p at 0.56. Player only: in the editor it would rewrite the URP asset.

@@ -1,6 +1,6 @@
 # T74 — TestFlight beta
 
-**Owner:** A8 Tester/Release · **Status:** TODO (see `TASKS-IOS.md`) · **Depends on:** T70, T71, T72, T73
+**Owner:** A8 Tester/Release · **Status:** TODO (`docs/release-ios.md` drafted) (see `TASKS-IOS.md`) · **Depends on:** T70, T71, T72, T73
 
 ## Work
 - `docs/release-ios.md`, the sibling of `docs/release-android.md`: account, signing, build commands, upload, TestFlight, pre-release checklist. Add an iOS section to the git-ignored `docs/private/publishing.md` (team id, build-number log).
@@ -16,3 +16,4 @@
 - The matrix results are in `docs/qa-checklist.md`, with no open blocker.
 
 ## Handoff
+

@@ -1,6 +1,6 @@
 # T69 — iOS toolchain and build script
 
-**Owner:** A8 Tester/Release · **Status:** DOING (simulator done; device build and Mac/Android re-check open) (see `TASKS-IOS.md`) · **Depends on:** —
+**Owner:** A8 Tester/Release · **Status:** DOING (simulator and xcodebuild done; device build, archive, Mac/Android re-check open) (see `TASKS-IOS.md`) · **Depends on:** —
 
 ## State on 2026-11-04
 Not installed: Xcode (only Command Line Tools are active) and Unity's iOS module (`PlaybackEngines` holds Android, Mac, WebGL). No signing identities. Player Settings have no iPhone bundle id; `iPhoneSdkVersion` is the device SDK; automatic signing is off.
@@ -26,3 +26,5 @@ Done 2026-11-04 (A8):
 - Seen for T70: the Dynamic Island covers the Menu button's left side and the title screen ignores the safe area; app icons are empty (T73).
 - Warning from Configure: "empty graphics device types list for platform iOSSupport" (harmless, Metal is the default).
 - Open: device build on a physical iPhone (needs `OVERGROWN_APPLE_TEAM`), `xcodebuild archive`, re-check Mac and Android builds after the target switch, pre-release packages' effect on size (project export is 1.4 GB, check the real .app size). `iPhoneSdkVersion` in ProjectSettings flips between device (988) and simulator (989) with the last build.
+
+2026-11-04 (later): Simulator export rebuilt after the T70-T73 changes (0 errors), `xcodebuild` BUILD SUCCEEDED, plist flag verified in the export, runs on the iPad Pro 13" Simulator (Level 1 HUD fine). `IosBuild` now forces the development flag off (a Development Console had leaked in), defers the bottom-edge gesture. Still open: device build, `xcodebuild archive` (needs signing), Mac and Android re-check, real `.app` size.

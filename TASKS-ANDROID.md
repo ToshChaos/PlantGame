@@ -25,3 +25,6 @@ Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`
 ## Release prep (2026-10-29)
 - Done in repo: 30 fps battery-saver option (touch Options), release signing / version code from env vars (`AndroidBuild.ApplySigning`), `docs/privacy-policy.md`, `docs/store-listing.md`, `docs/release-android.md` (keystore, AAB, Play Console steps).
 - Needs a person: developer account, keystore, hosting the privacy policy, contact email, store graphics, device testing and profiling (T63), internal test track upload.
+
+## Decision: supported devices (2026-11-04)
+Phones released after 2020 (they ship with Android 10 or later). Android min SDK stays 26: it is a superset, so nothing is dropped; raising it to 29 is optional and only worth doing if an older-device problem shows up. T63's first-run preset and the profiling devices are chosen from this age range, so a 2020-era phone is the low end of the test matrix.

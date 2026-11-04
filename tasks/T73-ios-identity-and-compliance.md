@@ -1,6 +1,6 @@
 # T73 — App identity and compliance
 
-**Owner:** A8 Tester/Release · **Status:** DOING (see `TASKS-IOS.md`) · **Depends on:** T69
+**Owner:** A8 Tester/Release · **Status:** DOING (most done; Organizer validation and licences review open) (see `TASKS-IOS.md`) · **Depends on:** T69
 
 ## Work
 - **Icon:** `T_AppIcon.png` has an alpha channel, which App Store Connect rejects. `AppIconBuilder` writes an opaque iOS version from the Android background and O layers (the system rounds the corners) and assigns it to all iOS sizes, 1024 x 1024 included.
@@ -20,3 +20,4 @@
 ## Handoff
 - 2026-11-04: icon done. `AppIconBuilder.BuildIos` writes `T_AppIcon_iOS.png` (1024, RGB, no alpha, full bleed, O at 72%) into every iOS slot (19 filled: Application, Settings, Notification, Spotlight, Marketing). Not yet checked in a signed archive / Organizer.
 - iPhone builds have no Quit button (`TitleMenu.NoQuit`: title, pause, end panel). `QualityTier.DetectPreset` iOS rule: Low only under 3.5 GB, else Medium, 30 fps, postprocessing off (T72 may refine with device data). `submitAnalytics: 0`.
+- 2026-11-04 (later): Info.plist `ITSAppUsesNonExemptEncryption = false` through a post-build `plutil` step (`IosBuild.PatchInfoPlist`, verified in the export). Network check: no `UnityWebRequest` or sockets in `Assets/Scripts`, analytics and hardware stats off, so "Data Not Collected". Privacy manifest: Unity's `UnityFramework` and `UnityRuntime.framework` ship manifests for UserDefaults, file timestamps, boot time, disk space; no extra API in our code (confirm with Xcode's privacy report on an archive). Launch screen stays Unity's default storyboard. Privacy policy made store neutral (contact email still a placeholder). Open: Organizer validation, `LICENSES.md` review, hosting the policy.
