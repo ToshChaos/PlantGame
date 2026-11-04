@@ -5,7 +5,7 @@ Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`
 
 | ID | Task | Owner | Depends on | What is left |
 |----|------|-------|-----------|--------------|
-| [T69](tasks/T69-ios-toolchain-and-build.md) | Build tooling | A8 | — | Install on a physical iPhone, signed archive, Mac and Android re-check |
+| [T69](tasks/T69-ios-toolchain-and-build.md) | Build tooling | A8 | — | Install on a physical iPhone, signed archive |
 | [T70](tasks/T70-ios-safe-area-and-ipad-layout.md) | Home indicator and iPad layout | A7 | T59, T69 | Other landscape direction, iPad Options, window resize, bottom-edge swipe on a device, Android `renderOutsideSafeArea` |
 | [T71](tasks/T71-ios-platform-behaviour.md) | Platform behaviour | A0 | T62, T69 | Device checks: audio, lifecycle, saves, paste, keyboard |
 | [T72](tasks/T72-ios-performance-and-memory.md) | Performance and memory | A6 | T63, T69 | Device profile: fps, peak memory, thermal, minimum device |

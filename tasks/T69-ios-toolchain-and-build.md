@@ -5,7 +5,6 @@
 ## Left to do
 - Device build on a physical iPhone from Xcode (a free personal team is enough; its builds expire after 7 days), reaching Level 1. Needs `OVERGROWN_APPLE_TEAM`.
 - Signed `xcodebuild archive`, ready for T74.
-- Build the Mac and Android players once. They have not been rebuilt since the iOS target switch and since `StripUnusedPackageShaders` (all platforms) went in.
 
 ## Handoff
 - `Game/Assets/Editor/IosBuild.cs`: menu `PlantGame > Configure iOS / Build iOS (Device) / Build iOS (Simulator)`, CLI `PlantGame.Editor.IosBuild.BuildDevice` / `BuildSimulator`. Writes the Xcode project to `Builds/Overgrown-ios[-sim]/`, log `Game/Logs/build-ios.txt`. Commands: `docs/release-ios.md`.

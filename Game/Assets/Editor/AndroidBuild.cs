@@ -29,6 +29,8 @@ namespace PlantGame.Editor
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan, GraphicsDeviceType.OpenGLES3 });
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+            // Size: removes the unused package and engine code, as on iOS (T72). Anything reached only by reflection now needs a link.xml; Assets/Scripts has none.
+            PlayerSettings.SetManagedStrippingLevel(android, ManagedStrippingLevel.Medium);
 
             // landscape only, both directions
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
@@ -39,7 +41,7 @@ namespace PlantGame.Editor
             PlayerSettings.Android.renderOutsideSafeArea = false;   // notches stay clear of the HUD until T59 adds safe-area layout
 
             ApplySigning();
-            Debug.Log("[PlantGame] Android player settings applied (IL2CPP, ARM64, API 26+, Vulkan + GLES3, landscape only).");
+            Debug.Log("[PlantGame] Android player settings applied (IL2CPP, ARM64, API 26+, Vulkan + GLES3, Medium stripping, landscape only).");
         }
 
         /// <summary>

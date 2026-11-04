@@ -11,6 +11,7 @@ Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`
 | [T64](tasks/T64-android-build-and-beta.md) | Android build, signing, beta track, test matrix | A8 | T62, T63 | DOING |
 
 ## Still open
+- First run of the Medium-stripped APK (50.7 MB, built 2026-11-04) on a device: not run yet, checklist in T64.
 - Device check of tap-to-walk, marker taps (sprout watering, pickups, goal), beanstalk tap-to-climb, jump-to-glide and the smoother camera follow.
 - Left-handed mirror (from T59) is not built.
 

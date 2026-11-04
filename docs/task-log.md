@@ -263,3 +263,15 @@ Long per-task notes live here (keep `TASKS.md` and task files short). Newest fir
 - Other settings: accelerometer off (nothing reads it), Metal API validation off (it skews Xcode profiling), `Application.lowMemory` frees unused assets, rain and snow at 0.6 on Medium and 0.35 on Low.
 - Checked on the Simulator after Medium stripping: clean install, title, Level 1, a generated snow level, tap-to-walk, pause menu, `save.json` written with the seed code; no exceptions in the console. Not checked: a best time being saved, rain, and anything on a device (fps, memory and the benefit of the particle cut are unmeasured). Mac and Android players were not rebuilt.
 
+## Android and Mac player re-check, Medium stripping on Android (2026-11-04)
+- `AndroidBuild.Configure` now sets Medium managed stripping, as `IosBuild.Configure` does. The Mac player stays Mono with stripping Disabled.
+- APK size, three builds, 61.7 -> 54.2 -> 50.7 MB (61,720,491 / 54,156,499 / 50,676,543 bytes), 11.0 MB or 18% in all:
+  - 61.7 MB: the APK of 2026-11-03, Minimal, before `StripUnusedPackageShaders`. Six commits older than the other two.
+  - 54.2 MB: current code, still Minimal. The shader strip is the saving: two asset files of 4.7 and 1.2 MB compressed are gone, code unchanged.
+  - 50.7 MB: Medium stripping, 3.5 MB less. Compressed, `libil2cpp.so` 12.6 -> 10.3 MB, `libunity.so` 9.7 -> 9.4 MB, `global-metadata.dat` 3.2 -> 2.3 MB. `classes.dex` unchanged.
+- Build warnings: 20 for both builds of 2026-11-04 (1270 in the last logged build before them). `libAppUITextMateLib.so` (0.7 MB compressed) is still in the APK: `APP_UI_EDITOR_ONLY` removes AppUI's managed code, not this native plugin.
+- Mac player: builds (153 MB, 8 warnings). Checked in the player: title, Level 1 (walk, jump, can filled from the stream, pause menu, back to title), a generated Easy level, `save.json` taking the new seed code and staying valid JSON, no exceptions or errors in `Player.log`. The save was backed up first and restored after.
+- **The stripped Android player has not been run.** No device or emulator is available here, so everything above about Android is build output only. The Mac run does not test stripping (Mono, Disabled); it only tests the shader strip and the current code. The nearest evidence is the iOS Simulator run at Medium (same level, same scripts, other platform). Android still to check by a person: see T64.
+- Not checked on any player: a best time being saved, finishing a level, audio. The AAB was not built.
+- Found, not fixed: Level 1 (seed 1101) logs `No valid layout for seed 1101, using the last attempt` on every load. All 100 attempts fail `WorldValidator` with "start island has 1 seed sources". The level plays; whether the validator or the plan is wrong was not looked into, and the 100 attempts are wasted load time.
+- Moving the active target away from iOS flipped `m_Automatic` for iOS to 1 in `ProjectSettings.asset` (`IosBuild.Configure` sets it back). It was restored here and is not in the commit; it may come back after a target switch.

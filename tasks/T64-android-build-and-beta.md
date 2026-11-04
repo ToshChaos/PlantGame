@@ -20,3 +20,11 @@ Blocked: the Unity 6000.6.5f1 install has no Android Build Support module (only 
 Not done: release keystore (debug keystore until then; keep the real one outside the repo), icons check, LICENSES.md review, beta track, test matrix.
 
 Update 2026-10-29: Android module installed, `Overgrown.apk` builds. Release signing via env vars, privacy policy, store listing and a Play checklist added (`docs/release-android.md`). Still open: keystore creation, AAB upload to internal testing, device matrix.
+
+Update 2026-11-04: Medium managed stripping is on (`AndroidBuild.Configure`, same as iOS). APK 61.7 -> 54.2 MB with the shader strip -> 50.7 MB with Medium; details in `docs/task-log.md`. **This player has not been run: no device or emulator here.** Needs a person, on the first device install:
+- App starts past the splash; title draws with the right materials and shaders (Vulkan, then a GLES3-only device if one is at hand).
+- Level 1 and a generated level load; plants grow; rain and snow draw.
+- Touch: tap-to-walk, marker taps, hotbar, double-tap drop, Jump and Pause buttons, beanstalk climb, glide.
+- Generate level: Copy code and Paste work; the seed code keyboard works.
+- `save.json` is written, a best time is saved and survives a restart. Music and Sound toggles work while paused.
+- `adb logcat -s Unity` shows no `MissingMethodException`, `TypeLoadException` or `Unable to find` lines, which are what over-stripping looks like. A fix for one is a `link.xml`, not lowering the level.

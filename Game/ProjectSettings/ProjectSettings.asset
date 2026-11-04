@@ -780,6 +780,7 @@ PlayerSettings:
   il2cppLTOMode: {}
   il2cppStacktraceInformation: {}
   managedStrippingLevel:
+    Android: 2
     iPhone: 2
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 1
