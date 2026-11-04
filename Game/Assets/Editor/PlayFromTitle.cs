@@ -7,7 +7,7 @@ namespace PlantGame.Editor
     [InitializeOnLoad]
     public static class PlayFromTitle
     {
-        const string Pref = "PlantGame.PlayFromTitle", TitlePath = "Assets/Scenes/Title.unity", Menu = "PlantGame/Play From Title";
+        const string Pref = "PlantGame.PlayFromTitle", TitlePath = "Assets/Scenes/Title.unity", Menu = "PlantGame/Test/Play From Title";
 
         static PlayFromTitle() { EditorApplication.delayCall += Apply; }
 

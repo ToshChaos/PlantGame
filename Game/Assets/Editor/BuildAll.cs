@@ -6,7 +6,7 @@ namespace PlantGame.Editor
     /// <summary>One-click rebuild of everything T00–T03 generate. Menu: PlantGame > Rebuild Core Assets.</summary>
     public static class BuildAll
     {
-        [MenuItem("PlantGame/Rebuild Core Assets", false, 100)]
+        [MenuItem("PlantGame/Rebuild Core Assets", false, 1)]
         public static void Run()
         {
             ProjectSetup.Run();

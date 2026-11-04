@@ -19,7 +19,7 @@ namespace PlantGame.Editor
     {
         const string OutDir = "../Builds/Overgrown-ios";
 
-        [MenuItem("PlantGame/Configure iOS", false, 120)]
+        [MenuItem("PlantGame/Platforms/iOS: Configure", false, 70)]
         public static void Configure()
         {
             var ios = NamedBuildTarget.iOS;
@@ -64,10 +64,10 @@ namespace PlantGame.Editor
             UnityEngine.Debug.Log("[PlantGame] iOS player settings applied (IL2CPP, ARM64, Metal, iPhone + iPad, landscape only, team " + (string.IsNullOrEmpty(team) ? "not set" : "set") + ").");
         }
 
-        [MenuItem("PlantGame/Build iOS (Device)", false, 121)]
+        [MenuItem("PlantGame/Platforms/iOS: Build Device", false, 71)]
         public static void BuildDevice() => Build(false);
 
-        [MenuItem("PlantGame/Build iOS (Simulator)", false, 122)]
+        [MenuItem("PlantGame/Platforms/iOS: Build Simulator", false, 72)]
         public static void BuildSimulator() => Build(true);
 
         /// <summary>

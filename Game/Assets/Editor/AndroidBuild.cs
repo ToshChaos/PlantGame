@@ -19,7 +19,7 @@ namespace PlantGame.Editor
     {
         const string OutDir = "../Builds/Overgrown-android";
 
-        [MenuItem("PlantGame/Configure Android", false, 110)]
+        [MenuItem("PlantGame/Platforms/Android: Configure", false, 60)]
         public static void Configure()
         {
             var android = NamedBuildTarget.Android;
@@ -70,10 +70,10 @@ namespace PlantGame.Editor
             Debug.Log("[PlantGame] Android release keystore in use (" + alias + ").");
         }
 
-        [MenuItem("PlantGame/Build Android APK", false, 111)]
+        [MenuItem("PlantGame/Platforms/Android: Build APK", false, 61)]
         public static void BuildApk() => Build(false);
 
-        [MenuItem("PlantGame/Build Android AAB (Play)", false, 112)]
+        [MenuItem("PlantGame/Platforms/Android: Build AAB (Play)", false, 62)]
         public static void BuildAab() => Build(true);
 
         static void Build(bool bundle)

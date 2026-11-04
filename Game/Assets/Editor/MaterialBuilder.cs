@@ -15,7 +15,7 @@ namespace PlantGame.Editor
     {
         public const string Dir = "Assets/Art/Materials";
 
-        [MenuItem("PlantGame/2 Build Materials", false, 2)]
+        [MenuItem("PlantGame/Assets/Materials", false, 10)]
         public static void Build()
         {
             Directory.CreateDirectory(Dir);
@@ -98,7 +98,6 @@ namespace PlantGame.Editor
         }
 
         /// <summary>T67: give every PlantGrow material the bark / leaf / cap maps.</summary>
-        [MenuItem("PlantGame/3 Assign Plant Textures", false, 3)]
         public static void AssignPlantTextures()
         {
             if (TextureBuilder.Albedo("T_PlantBark") == null) TextureBuilder.Build();

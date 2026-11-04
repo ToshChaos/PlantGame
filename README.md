@@ -59,14 +59,14 @@ settings, materials, items, player, sandbox), **7 / 8 / 10 / 14** (plant prefabs
 asset list), **11 Build Atmosphere**, **12 Build Main**, **16 Build Title**.
 
 ### Build
-**PlantGame > Build Standalone (macOS)** writes `Builds/Overgrown-mac/Overgrown.app` (git-ignored), then:
+**PlantGame > Platforms > Build macOS Standalone** writes `Builds/Overgrown-mac/Overgrown.app` (git-ignored), then:
 ```bash
 open Builds/Overgrown-mac/Overgrown.app
 ```
 
 ### Checks
 - EditMode tests (Test Runner): inventory, seed codes, save service, world generation (including golden seeds).
-- **PlantGame > 15 Validate Seeds** checks that generated levels are beatable; **PlantGame > Smoke Test Levels** loads
+- **PlantGame > Test > Validate Seeds** checks that generated levels are beatable; **PlantGame > Test > Smoke Test Levels** loads
   all ten curated levels in play mode and logs frame time and draw calls.
 
 ## Repository

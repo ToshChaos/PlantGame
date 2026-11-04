@@ -15,10 +15,10 @@ Raw downloads live in the git-ignored `Source/ThirdParty-raw/<pack>/`; only the 
 
 ## Re-importing (editor menus)
 1. Copy the FBX (and textures) from `Source/ThirdParty-raw/` into the pack's folder under `Game/Assets/Art/Models/`.
-2. Run the pack's builder: `PlantGame > 17 Build Kenney Props` (URP materials, leaf / bark re-tinted to the art bible),
+2. Run the pack's builder: ``PlantGame.Editor.KenneyPropBuilder.Build()` (menu entry removed)` (URP materials, leaf / bark re-tinted to the art bible),
    `18 Build Quaternius Props` (alpha-clipped, two-sided leaf and flower cards) or `19 Build Ruins Props` (one URP Lit
    material per atlas, normal maps).
-3. `PlantGame > 14 Build World Kit` so `Resources/WorldKit` lists the model; `Scenery.cs` places it by file name through
+3. `PlantGame > Scenes > World Kit` so `Resources/WorldKit` lists the model; `Scenery.cs` places it by file name through
    `Kit.Prop(name)` and falls back to procedural primitives when a model is missing.
 
 ## Where the packs came from

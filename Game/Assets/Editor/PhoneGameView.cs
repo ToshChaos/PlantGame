@@ -12,7 +12,7 @@ namespace PlantGame.Editor
     {
         public const int Width = 2340, Height = 1080;
 
-        [MenuItem("PlantGame/Tools/Game View: Phone 2340x1080")]
+        [MenuItem("PlantGame/Test/Game View: Phone 2340x1080", false, 42)]
         public static void Apply() => Set(Width, Height, "Phone 2340x1080");
 
         public static void Set(int width, int height, string label)

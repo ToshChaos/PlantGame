@@ -19,7 +19,7 @@ namespace PlantGame.Editor
     {
         const string Dir = "Assets/Settings", High = Dir + "/PlantGame_URP.asset", Medium = Dir + "/PlantGame_URP_Medium.asset", Low = Dir + "/PlantGame_URP_Low.asset";
 
-        [MenuItem("PlantGame/Configure Quality Tiers", false, 109)]
+        [MenuItem("PlantGame/Platforms/Quality Tiers", false, 80)]
         public static void Build()
         {
             var high = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(High);

@@ -10,7 +10,7 @@ namespace PlantGame.Editor
     {
         const string Path_ = "Assets/Art/Textures/T_AppIcon.png";
 
-        [MenuItem("PlantGame/Build App Icon", false, 103)]
+        [MenuItem("PlantGame/Platforms/App Icon", false, 81)]
         public static void Build()
         {
             const int S = 1024;

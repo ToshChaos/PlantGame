@@ -10,7 +10,7 @@ namespace PlantGame.Editor
     {
         public const string OutDir = "../Builds/Overgrown-mac", AppName = "Overgrown.app";
 
-        [MenuItem("PlantGame/Build Standalone (macOS)", false, 101)]
+        [MenuItem("PlantGame/Platforms/Build macOS Standalone", false, 50)]
         public static void BuildMac()
         {
             Directory.CreateDirectory(OutDir);

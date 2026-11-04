@@ -29,7 +29,7 @@ Rule of thumb: ~60% mist/cloud/sky, ~30% greens, ~10% glow cyan.
 - Fog: linear, mist blue, start 40 m, end 220 m (final sky/fog/bloom in T16).
 - Rim light on plants (glow cyan, power 3) so they pop against the sky. Gentle bloom only; HDR emission is for crystals and the growth front.
 
-## Materials (`Assets/Art/Materials`, built by `PlantGame > 2 Build Materials`)
+## Materials (`Assets/Art/Materials`, built by `PlantGame > Assets > Materials`)
 | Material | Shader | Colour |
 |----------|--------|--------|
 | `M_Terrain` | URP Lit | leaf green |
@@ -70,7 +70,7 @@ white-stone ruins wrapped in vines, a thin waterfall dissolving into spray, smal
 Think: gentle animated-film landscapes; harp and pad music.
 
 ## Textures (procedural, no sourced assets)
-`PlantGame > 11 Build Textures` writes tileable PNGs to `Art/Textures`: `T_Terrain` (grass mottling), `T_Rock` (cracked rock), `T_Seed` (ridged seed coat), each with a `_N` normal map from the same height field. They multiply the palette colour of `M_Terrain`, `M_Stone` and the `M_Seed*` materials. Island slabs use `TexturedBox` (world-scale UVs, 1 tile per 3 m; grass top, rock sides).
+``TextureBuilder.Build()` (runs automatically from Materials)` writes tileable PNGs to `Art/Textures`: `T_Terrain` (grass mottling), `T_Rock` (cracked rock), `T_Seed` (ridged seed coat), each with a `_N` normal map from the same height field. They multiply the palette colour of `M_Terrain`, `M_Stone` and the `M_Seed*` materials. Island slabs use `TexturedBox` (world-scale UVs, 1 tile per 3 m; grass top, rock sides).
 
 ## Reference mood (user screenshot, T16 art pass)
 Lush and bright: dense round trees and bushes with flowers on the island rims, **white carved-stone ruins** (pillars, broken slabs, a portal arch with a glowing disc and gold runes), floating rocks and small tree-topped islets in a deep blue sky with fluffy clouds, warm sun and saturated colour, **glowing golden butterflies** drifting around the player. Waterfalls spilling off islands are planned for T29/T30.

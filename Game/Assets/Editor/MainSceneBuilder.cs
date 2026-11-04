@@ -21,7 +21,6 @@ namespace PlantGame.Editor
         const string AtmosphereDir = "Assets/Prefabs/Environment", AtmospherePrefab = AtmosphereDir + "/Atmosphere.prefab";
         const string ProfilePath = "Assets/Art/VFX/PostFX_Overgrowth.asset";
 
-        [MenuItem("PlantGame/11 Build Atmosphere", false, 11)]
         public static void BuildAtmosphere()
         {
             Directory.CreateDirectory(AtmosphereDir); Directory.CreateDirectory("Assets/Art/VFX");
@@ -329,7 +328,7 @@ namespace PlantGame.Editor
         static AudioClip Clip(string rel) => AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/" + rel + ".wav");
 
         /// <summary>Title.unity: sky, camera and the TitleMenu (level select, random level, seed codes).</summary>
-        [MenuItem("PlantGame/17 Build Title", false, 17)]
+        [MenuItem("PlantGame/Scenes/Title", false, 32)]
         public static void BuildTitle()
         {
             WorldKitBuilder.Build();
@@ -419,7 +418,7 @@ namespace PlantGame.Editor
                 if (i >= keep || items[i].t.name.StartsWith("Log")) Object.DestroyImmediate(items[i].t.gameObject);
         }
 
-        [MenuItem("PlantGame/12 Build Main", false, 12)]
+        [MenuItem("PlantGame/Scenes/Main", false, 31)]
         public static void BuildMainMenu() { WorldKitBuilder.Build(); BuildAtmosphere(); SandboxPlantTestBuilder.BuildMain(); }
     }
 }

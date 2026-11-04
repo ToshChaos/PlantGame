@@ -1,7 +1,7 @@
 # QA checklist (manual)
 
 Automated first: **Window > General > Test Runner > EditMode** (inventory, seed codes, save service, world generation, golden seeds) and
-**PlantGame > Smoke Test Levels** (plays each curated level for a few seconds, report in `Game/Logs/smoke.txt`).
+**PlantGame > Test > Smoke Test Levels** (plays each curated level for a few seconds, report in `Game/Logs/smoke.txt`).
 Tick what you observed, note the build and date. Controls reference: `docs/controls.md`.
 
 ## Menus and flow
@@ -48,4 +48,4 @@ Tick what you observed, note the build and date. Controls reference: `docs/contr
 
 ## Regression after generator changes
 - [ ] Test Runner: `GoldenSeedsKeepTheirWorld` passes (else bump `SeedCode.GeneratorVersion` and re-record on purpose)
-- [X] `PlantGame > 15 Validate Seeds`: 0 invalid
+- [X] `PlantGame > Test > Validate Seeds`: 0 invalid

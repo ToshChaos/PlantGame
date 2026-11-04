@@ -14,7 +14,6 @@ namespace PlantGame.Editor
     {
         public const string ModelDir = "Assets/Art/Models/Ruins", MatDir = "Assets/Art/Materials/Ruins";
 
-        [MenuItem("PlantGame/21 Build Ruins Props", false, 21)]
         public static void Build()
         {
             Directory.CreateDirectory(MatDir);

@@ -15,7 +15,7 @@ namespace PlantGame.Editor
     {
         public static string PrefabPath(int n) => $"{BridgePrefabBuilder.PrefabDir}/Plant_Collector_{n:00}.prefab";
 
-        [MenuItem("PlantGame/14 Build Collector Prefabs", false, 14)]
+        [MenuItem("PlantGame/Plants/Collector Prefabs", false, 23)]
         public static void Build()
         {
             Directory.CreateDirectory(BridgePrefabBuilder.PrefabDir);

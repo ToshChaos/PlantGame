@@ -42,7 +42,7 @@ namespace PlantGame.Editor
         }
 
         /// <summary>Re-applies the settings to all models (use after changing the preset).</summary>
-        [MenuItem("PlantGame/Tools/Reapply Model Import Settings")]
+        [MenuItem("PlantGame/Assets/Reapply Model Import Settings", false, 14)]
         public static void ReapplyAll()
         {
             int n = 0;

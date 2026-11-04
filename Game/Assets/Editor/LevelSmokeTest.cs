@@ -28,7 +28,7 @@ namespace PlantGame.Editor
             if (EditorApplication.isPlayingOrWillChangePlaymode) Arm();
         }
 
-        [MenuItem("PlantGame/Smoke Test Levels", false, 102)]
+        [MenuItem("PlantGame/Test/Smoke Test Levels", false, 41)]
         static void Start()
         {
             File.WriteAllText(ReportPath, "");

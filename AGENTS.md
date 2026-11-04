@@ -42,7 +42,7 @@ Style: fantasy, **white / green / blue**, soft, glowing, stylized.
   `FBX_SCALE_UNITS`, `bake_space_transform=True` — verified 1:1, no X mirror, for single objects. **Parented hierarchies**
   (empties with child meshes) break with `bake_space_transform`: export them with `overrides=CHAR_FBX_OVERRIDES` and let
   Unity bake the axis conversion (T31). Naming `Type_Name_Variant`.
-- Generate scenes/prefabs with **editor builder scripts** (menu `PlantGame > Build ...`, in `Game/Assets/Editor/`) so
+- Generate scenes/prefabs with **editor builder scripts** (menu `PlantGame > Assets / Plants / Scenes / Test / Platforms`, in `Game/Assets/Editor/`) so
   they can be rebuilt. Same for Blender: every asset has a reproducible script in `Source/Blender/scripts/`
   (`exec(open(path).read()); build_all()`).
 

@@ -15,7 +15,7 @@ namespace PlantGame.Editor
     /// </summary>
     public static class SandboxGameplayBuilder
     {
-        [MenuItem("PlantGame/5 Build Sandbox", false, 5)]
+        [MenuItem("PlantGame/Scenes/Sandbox", false, 33)]
         public static void Build()
         {
             if (MaterialBuilder.Load("M_Terrain") == null) MaterialBuilder.Build();

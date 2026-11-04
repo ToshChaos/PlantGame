@@ -1,6 +1,6 @@
 # Seeds: curated levels and showcase picks
 
-Frozen list. Generator changes must not alter these worlds (re-run **PlantGame > 15 Validate Seeds** and the level audit after any change to `World/`).
+Frozen list. Generator changes must not alter these worlds (re-run **PlantGame > Test > Validate Seeds** and the level audit after any change to `World/`).
 Estimated minimum = 30 s walking per gap + grow time + 20 s per Dew wait + 40 s setup (a lower bound, not a measured time).
 
 | Level | Title | Seed | Islands | Gaps (B bridge, L ladder, P platform, G glide) | Est. min |
