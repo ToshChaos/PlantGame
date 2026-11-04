@@ -26,6 +26,8 @@ namespace PlantGame.UI
         Text _diffLabel, _randomCode, _codeStatus, _resetNote;
         InputField _codeField;
         Text[] _cardInfo;
+        GameObject[] _cardPlay;   // the Play button of each level card
+        Text[] _cardLock;         // the 'Complete ... to unlock' note shown instead of Play
         int _difficulty = 1;   // 0 easy (4 islands), 1 normal (6), 2 hard (8)
         int _randomSeed;
         RunConfig _codeConfig; bool _codeValid;
@@ -215,9 +217,20 @@ namespace PlantGame.UI
             {
                 var l = levels[i];
                 string world = l.theme == LevelTheme.Sunny ? "Sunny" : l.theme == LevelTheme.Rain ? "Rain" : l.theme == LevelTheme.Snow ? "Snow" : l.theme == LevelTheme.Fog ? "Dense fog" : l.theme == LevelTheme.Sunset ? "Sunset" : l.theme == LevelTheme.Sunrise ? "Sunrise" : "Autumn";
-                _cardInfo[i].text = l.islandCount + " islands\nGoal: " + GoalName(l.goal) + "\nWorld: " + world + (l.wind ? ", windy" : "") + "\n" + BestLines(l.id);
+                string lockNote = LockNote(levels, i);
+                if (_cardPlay != null) { _cardPlay[i].SetActive(lockNote == null); _cardLock[i].gameObject.SetActive(lockNote != null); _cardLock[i].text = lockNote ?? ""; }
+                _cardInfo[i].text = l.islandCount + " islands\nGoal: " + GoalName(l.goal) + "\nWorld: " + world + (l.wind ? ", windy" : "") + (lockNote == null ? "\n" + BestLines(l.id) : "");
             }
             RefreshRandom();
+        }
+
+        /// <summary>Levels 1-4 are always open, 5-9 need levels 1-4 finished, 10 needs every earlier level. Returns the lock note, or null when open.</summary>
+        static string LockNote(LevelDefinition[] levels, int i)
+        {
+            if (i < 4) return null;
+            if (i < 9) { for (int k = 0; k < 4 && k < levels.Length; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete levels 1-4 to unlock"; return null; }
+            for (int k = 0; k < i; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete previous levels to unlock";
+            return null;
         }
 
         /// <summary>The best time of a level, or -- when it was not finished yet.</summary>
@@ -291,7 +304,7 @@ namespace PlantGame.UI
             // select level: the curated levels with best times, plus the test scenes
             _levels = Screen("Levels", root, 0.82f);
             Label(_levels.transform, "Select level", 70, new Vector2(0, 450), 1200, Lime);
-            _cardInfo = new Text[levels.Length];
+            _cardInfo = new Text[levels.Length]; _cardPlay = new GameObject[levels.Length]; _cardLock = new Text[levels.Length];
             int perRow = levels.Length > 6 ? (levels.Length + 1) / 2 : Mathf.Max(1, levels.Length);   // T50: ten levels go in two rows of five
             bool two = levels.Length > 6;
             for (int i = 0; i < levels.Length; i++)
@@ -305,7 +318,12 @@ namespace PlantGame.UI
                 _cardInfo[i] = Label(card, "", two ? (tc ? 19 : 16) : 19, new Vector2(0, two ? 8 : 12), 316, Color.white);
                 _cardInfo[i].alignment = TextAnchor.MiddleCenter; _cardInfo[i].lineSpacing = 1.6f;
                 ((RectTransform)_cardInfo[i].transform).sizeDelta = new Vector2(316, h -(tc ? 140 : 100));
-                Button(card, "Play", new Vector2(0, -h / 2 + (tc ? 52 : 32)), () => StartRun(l.ToConfig()), 150, 24, 50f);
+                var playLabel = Button(card, "Play", new Vector2(0, -h / 2 + (tc ? 52 : 32)), () => StartRun(l.ToConfig()), 150, 24, 50f);
+                _cardPlay[i] = playLabel.transform.parent.gameObject;
+                // locked: two wrapped lines of text where the Play button would be (box and font sized to fit the card on desktop and phone)
+                _cardLock[i] = Label(card, "", tc ? 19 : 17, new Vector2(0, -h / 2 + (tc ? 62 : 44)), 300, new Color(1f, 0.85f, 0.45f));
+                ((RectTransform)_cardLock[i].transform).sizeDelta = new Vector2(300, tc ? 80 : 60);
+                _cardLock[i].alignment = TextAnchor.MiddleCenter;
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
             float testY = two ? (TouchInput.Active ? -470f : -345f) : -150f;
