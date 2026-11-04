@@ -96,6 +96,7 @@ namespace PlantGame.Editor
             var imp = (TextureImporter)AssetImporter.GetAtPath(path);
             imp.textureType = TextureImporterType.Default; imp.alphaSource = TextureImporterAlphaSource.None; imp.alphaIsTransparency = false;
             imp.mipmapEnabled = false; imp.npotScale = TextureImporterNPOTScale.None;
+            imp.textureCompression = TextureImporterCompression.Uncompressed;   // Unity warns once per icon slot for a compressed icon, and ASTC would soften it
             imp.SaveAndReimport();
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             var target = UnityEditor.Build.NamedBuildTarget.iOS;

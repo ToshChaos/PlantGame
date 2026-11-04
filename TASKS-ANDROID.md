@@ -1,30 +1,21 @@
 # TASKS-ANDROID.md — Android beta backlog
 
-Android board, split out of `TASKS.md`. Controls design and action map: `docs/mobile-controls.md` (v3: no stick; tap the ground to walk,
+Open work only. The touch layer (T57-T61) is done; design and action map are in `docs/mobile-controls.md` (v3: no stick; tap the ground to walk,
 tap the circle / diamond markers to act, double-tap a hotbar slot to drop, Jump and Pause buttons only).
-Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW` · `DONE` · `CUT`.
-
+Task details live in `tasks/T<nn>-*.md`; statuses: `TODO` · `DOING` · `REVIEW`. When a task is done, remove its row.
 
 | ID | Task | Owner | Depends on | Status |
 |----|------|-------|-----------|--------|
-| [T57](tasks/T57-mobile-input-layer.md) | Touch input layer (look drag, tap-to-walk, tap markers, Jump / Pause) behind `PlayerInputReader` | A1 | — | DONE |
-| [T58](tasks/T58-touch-auto-focus-context-button.md) | Auto-focus interaction; tap the circle / diamond to act (context button removed) | A1 | T57 | DONE |
-| [T59](tasks/T59-mobile-touch-hud-layout.md) | Touch HUD layout, safe area, scaling, left-handed mode | A7 | T57 | DONE |
-| [T60](tasks/T60-touch-hotbar-and-pause.md) | Tappable hotbar, pause / Back, touch-friendly menus, soft-keyboard seed entry | A7 | T59 | DONE |
-| [T61](tasks/T61-touch-gameplay-tuning.md) | Camera, climbing, jump and glide tuning for touch | A1 | T57, T58 | DONE |
 | [T62](tasks/T62-mobile-pause-focus-lifecycle.md) | App lifecycle, orientation, auto-pause, frame rate | A0 | — | DOING |
-| [T63](tasks/T63-mobile-performance-quality-tier.md) | Quality tier, decoration thinning, texture compression, profiling | A6 | T23 | DOING |
+| [T63](tasks/T63-mobile-performance-quality-tier.md) | Texture compression and device profiling (tiers, first-run preset and world pass are in) | A6 | T23 | DOING |
 | [T64](tasks/T64-android-build-and-beta.md) | Android build, signing, beta track, test matrix | A8 | T62, T63 | DOING |
 
-
-## Still open after the v3 control rework
+## Still open
 - Device check of tap-to-walk, marker taps (sprout watering, pickups, goal), beanstalk tap-to-climb, jump-to-glide and the smoother camera follow.
-- T59 touch HUD layout: safe area, scaling, left-handed mode (left-handed mirror is not done).
-- T62 / T64: lifecycle, build, signing, beta track; T63: tiers, first-run preset and world pass done (2026-10-30), device profiling and texture compression open.
+- Left-handed mirror (from T59) is not built.
 
-## Release prep (2026-10-29)
-- Done in repo: 30 fps battery-saver option (touch Options), release signing / version code from env vars (`AndroidBuild.ApplySigning`), `docs/privacy-policy.md`, `docs/store-listing.md`, `docs/release-android.md` (keystore, AAB, Play Console steps).
-- Needs a person: developer account, keystore, hosting the privacy policy, contact email, store graphics, device testing and profiling (T63), internal test track upload.
+## Needs a person
+Developer account, keystore, hosting the privacy policy, contact email, store graphics, device testing and profiling (T63), internal test track upload. Steps: `docs/release-android.md`.
 
-## Decision: supported devices (2026-11-04)
-Phones released after 2020 (they ship with Android 10 or later). Android min SDK stays 26: it is a superset, so nothing is dropped; raising it to 29 is optional and only worth doing if an older-device problem shows up. T63's first-run preset and the profiling devices are chosen from this age range, so a 2020-era phone is the low end of the test matrix.
+## Standing decision
+Supported devices: phones released after 2020 (they ship with Android 10 or later). Min SDK stays 26: a superset, so nothing is dropped. A 2020-era phone is the low end of T63's test matrix.

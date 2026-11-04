@@ -1,20 +1,14 @@
 # T71 — iOS platform behaviour
 
-**Owner:** A0 Director · **Status:** DOING (code in; audio, saves, paste, lifecycle need a device) (see `TASKS-IOS.md`) · **Depends on:** T62, T69
+**Owner:** A0 Director · **Status:** DOING (code in; the rest needs a device) (see `TASKS-IOS.md`) · **Depends on:** T62, T69
 
-## Work
-- **Quit:** iOS apps should not close themselves and an in-game Quit can look like a crash to App Review. Hide the button on iOS in `TitleMenu` (home, both layouts) and `PlayerHud` (pause, end of run), and close the gap it leaves. Android keeps it.
-- **Test scenes:** `TitleMenu` hides them with `platform != Android`; change to `Application.isMobilePlatform`.
-- **Audio session:** `muteOtherAudioSources` is off, so the game should mix with the player's music and obey the silent switch; confirm that is what happens and that it suits the game. After a call, Siri, an alarm or a headphone change, sound returns at the right volumes.
+## Left to do (on a device)
+- **Audio session:** the game mixes with the player's music and obeys the silent switch, and that suits the game. After a call, Siri, an alarm or a headphone change, sound returns at the right volumes.
 - **AGENTS.md audio rule on a rebuilt iOS player:** toggle Sound and Music off and on in the pause menu (`timeScale` 0) and hear silence at once.
-- **Lifecycle:** `MobileLifecycle` auto-pause on home, the app switcher, Control Center, Notification Center and a call. Decide which of these should pause. There is no Back button, so the Pause button is the only way in. Update the Android-only wording in its comments.
+- **Lifecycle:** lock, home, the app switcher, Control Center, Notification Center and a call or Siri each land in the pause menu or a sensible state, with the clock stopped and audio right.
 - **Saves:** kill the app from the switcher right after a best time and after changing a setting; nothing is lost (`SaveService`, `PlayerPrefs.Save`). Saves survive an update (final check in T74).
-- **Seed codes:** Copy works from Generate and pause; Paste shows the iOS paste permission prompt: allowing fills the field, declining breaks nothing. The soft keyboard in landscape does not hide the seed field and dismisses cleanly.
-
-## Acceptance
-- No Quit button anywhere on iOS; layouts have no holes.
-- On a device: lock, home, call (or Siri) and return each land in the pause menu or a sensible state, with the clock stopped and audio right.
-- A seed code copied in the game, sent out through another app and pasted back starts the same level.
+- **Seed codes:** a code copied in the game, sent through another app and pasted back starts the same level. Paste shows the iOS permission prompt: allowing fills the field, declining breaks nothing. The soft keyboard in landscape does not hide the seed field and dismisses cleanly.
 
 ## Handoff
-- 2026-11-04: Quit hidden (T73 commit); test-scene buttons hidden on all mobile platforms; `MobileLifecycle` pauses on focus loss as well as app pause and its comments are platform neutral; runtime orientation override removed (Player Settings decide). Audio: `muteOtherAudioSources` stays off (Ambient category), not yet heard. Not done: sound toggles in a rebuilt player, kill-from-switcher save check, seed paste prompt, soft keyboard in landscape, call / Siri return.
+- `TitleMenu.NoQuit` hides Quit on iOS (title, pause, end panel). Test-scene buttons are hidden on all mobile platforms.
+- `MobileLifecycle` pauses on focus loss as well as app pause, and frees unused assets on `Application.lowMemory` (at most once per 10 s). Orientation comes from Player Settings.

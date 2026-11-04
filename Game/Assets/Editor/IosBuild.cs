@@ -26,8 +26,21 @@ namespace PlantGame.Editor
             PlayerSettings.SetApplicationIdentifier(ios, "com.overgrown.game");
             PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
             PlayerSettings.SetArchitecture(ios, 1);   // ARM64
-            PlayerSettings.SetGraphicsAPIs(BuildTarget.iOS, new[] { GraphicsDeviceType.Metal });
-            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.iOS, false);
+            // Only when needed: setting these logs "empty graphics device types list" even with Metal already set.
+            var apis = PlayerSettings.GetGraphicsAPIs(BuildTarget.iOS);
+            if (PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.iOS) || apis.Length != 1 || apis[0] != GraphicsDeviceType.Metal)
+            {
+                PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.iOS, false);
+                PlayerSettings.SetGraphicsAPIs(BuildTarget.iOS, new[] { GraphicsDeviceType.Metal });
+            }
+            // T72: size and startup. APP_UI_EDITOR_ONLY compiles com.unity.dt.app-ui (editor tooling) out of the player, as on Android and Mac; without it the player
+            // creates AppUI's manager object at launch. Medium stripping removes the other unused package and engine code (no reflection in Assets/Scripts).
+            var defines = PlayerSettings.GetScriptingDefineSymbols(ios);
+            if (!defines.Contains("APP_UI_EDITOR_ONLY")) PlayerSettings.SetScriptingDefineSymbols(ios, string.IsNullOrEmpty(defines) ? "APP_UI_EDITOR_ONLY" : defines + ";APP_UI_EDITOR_ONLY");
+            PlayerSettings.SetManagedStrippingLevel(ios, ManagedStrippingLevel.Medium);
+            // Battery and honest numbers: nothing reads the accelerometer (it polled at 60 Hz), and Metal API validation slows every run started from Xcode, which would skew T72's profile.
+            PlayerSettings.accelerometerFrequency = 0;
+            PlayerSettings.enableMetalAPIValidation = false;
             PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
             PlayerSettings.iOS.targetOSVersionString = "15.0";
             // T70: a look drag or hotbar tap near the bottom edge must not trigger the home-indicator swipe at once (the first swipe is deferred, a second one leaves)
@@ -71,6 +84,27 @@ namespace PlantGame.Editor
             using var proc = Process.Start(psi);
             proc.WaitForExit();
             if (proc.ExitCode != 0) UnityEngine.Debug.LogError("[PlantGame] plutil failed: " + proc.StandardError.ReadToEnd());
+        }
+
+        /// <summary>
+        /// T72: quiets warnings in Unity's own generated Xcode project, so that a warning in the log means something. None of them can be fixed from the game:
+        /// - IL2CPP hard-codes an iOS 11 compile target for GameAssembly (the app itself is 15.0), and libc++ warns once per source file (500 times);
+        /// - the IL2CPP script phase has no outputs because it must run on every build, so it says so (alwaysOutOfDate);
+        /// - Unity's trampoline (Classes/) uses its own deprecated members.
+        /// </summary>
+        [PostProcessBuild(101)]
+        public static void PatchXcodeProject(BuildTarget target, string path)
+        {
+            if (target != BuildTarget.iOS) return;
+            var file = Path.Combine(path, "Unity-iPhone.xcodeproj/project.pbxproj");
+            if (!File.Exists(file)) { UnityEngine.Debug.LogError("[PlantGame] project.pbxproj not found in " + path); return; }
+            var text = File.ReadAllText(file);
+            var patched = text
+                .Replace("--compile-cpp\\n", "--compile-cpp\\n    --compiler-flags=-Wno-#warnings\\n")
+                .Replace("isa = PBXShellScriptBuildPhase;", "isa = PBXShellScriptBuildPhase;\n\t\t\talwaysOutOfDate = 1;")
+                .Replace("IPHONEOS_DEPLOYMENT_TARGET = ", "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;\n\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = ");
+            if (patched == text) UnityEngine.Debug.LogWarning("[PlantGame] project.pbxproj had nothing to patch: did Unity change its template?");
+            File.WriteAllText(file, patched);
         }
 
         static void Build(bool simulator)

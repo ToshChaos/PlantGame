@@ -139,12 +139,12 @@ namespace PlantGame.World
             {
                 if (Time.time >= _snowSwitchAt) { _snowing = !_snowing; _snowSwitchAt = Time.time + (_snowing ? Random.Range(30f, 60f) : Random.Range(15f, 30f)); }
                 _snowAmount = Mathf.MoveTowards(_snowAmount, _snowing ? 1f : 0f, Time.deltaTime / 4f);
-                var se = _snowPs.emission; se.rateOverTime = 260f * _snowAmount;
+                var se = _snowPs.emission; se.rateOverTime = 260f * _snowAmount * Density;
             }
             if (_rain == null) return;
             if (Time.time >= _switchAt) { _showering = !_showering; _switchAt = Time.time + (_showering ? RainSeconds : DrySeconds); }
             _intensity = Mathf.MoveTowards(_intensity, _showering ? 1f : 0f, Time.deltaTime / 3f);
-            var em = _rain.emission; em.rateOverTime = 1800f * _intensity;
+            var em = _rain.emission; em.rateOverTime = 1800f * _intensity * Density;
             WeatherState.Set(true, _showering, _intensity);
         }
 
@@ -157,6 +157,9 @@ namespace PlantGame.World
 
         static Color C(float r, float g, float b) => new Color(r, g, b, 1f);
 
+        /// <summary>T72: rain and snow are the largest pile of blended pixels on screen, and tile GPUs pay for each one; the phone tiers draw fewer flakes and drops.</summary>
+        static float Density => QualityTier.Thin ? 0.35f : QualityTier.Lite ? 0.6f : 1f;
+
         // ------------------------------------------------------------------ rain
         void Rain()
         {
@@ -164,7 +167,7 @@ namespace PlantGame.World
             var main = ps.main;
             main.loop = true; main.startLifetime = 0.9f; main.startSpeed = 0f; main.startSize = 0.05f;
             main.startColor = new Color(0.78f, 0.88f, 1f, 0.5f); main.maxParticles = 4000; main.simulationSpace = ParticleSystemSimulationSpace.World;
-            var em = ps.emission; em.rateOverTime = 1800f;
+            var em = ps.emission; em.rateOverTime = 1800f * Density;
             var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(44f, 0.1f, 44f);
             var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.World;
             vel.x = 2.5f; vel.y = -32f; vel.z = 0f;
@@ -180,7 +183,7 @@ namespace PlantGame.World
             var main = ps.main;
             main.loop = true; main.startLifetime = 9f; main.startSpeed = 0f; main.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
             main.startColor = new Color(1f, 1f, 1f, 0.9f); main.maxParticles = 2500; main.simulationSpace = ParticleSystemSimulationSpace.World;
-            var em = ps.emission; em.rateOverTime = 260f;
+            var em = ps.emission; em.rateOverTime = 260f * Density;
             var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(48f, 4f, 48f);
             var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.World;
             vel.x = 0.9f; vel.y = -1.4f; vel.z = 0.3f;
