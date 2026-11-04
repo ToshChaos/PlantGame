@@ -228,8 +228,8 @@ namespace PlantGame.UI
         static string LockNote(LevelDefinition[] levels, int i)
         {
             if (i < 4) return null;
-            if (i < 9) { for (int k = 0; k < 4 && k < levels.Length; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete levels 1-4 to unlock"; return null; }
-            for (int k = 0; k < i; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete previous levels to unlock";
+            if (i < 9) { for (int k = 0; k < 4 && k < levels.Length; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete levels 1-4\nto unlock"; return null; }
+            for (int k = 0; k < i; k++) if (!SaveService.BestTime(levels[k].id).HasValue) return "Complete previous\nlevels to unlock";
             return null;
         }
 
@@ -321,8 +321,8 @@ namespace PlantGame.UI
                 var playLabel = Button(card, "Play", new Vector2(0, -h / 2 + (tc ? 52 : 32)), () => StartRun(l.ToConfig()), 150, 24, 50f);
                 _cardPlay[i] = playLabel.transform.parent.gameObject;
                 // locked: two wrapped lines of text where the Play button would be (box and font sized to fit the card on desktop and phone)
-                _cardLock[i] = Label(card, "", tc ? 19 : 17, new Vector2(0, -h / 2 + (tc ? 62 : 44)), 300, new Color(1f, 0.85f, 0.45f));
-                ((RectTransform)_cardLock[i].transform).sizeDelta = new Vector2(300, tc ? 80 : 60);
+                _cardLock[i] = Label(card, "", tc ? 17 : 16, new Vector2(0, -h / 2 + (tc ? 62 : 44)), 326, new Color(1f, 0.85f, 0.45f));
+                ((RectTransform)_cardLock[i].transform).sizeDelta = new Vector2(326, tc ? 80 : 60);
                 _cardLock[i].alignment = TextAnchor.MiddleCenter;
             }
             // asset / mechanics test scenes (not runs: no timer, no best times)
