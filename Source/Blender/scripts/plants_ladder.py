@@ -5,8 +5,8 @@ In Blender (via MCP execute_blender_code):
     exec(open(S + 'plants_ladder.py').read())
     build_all()            # node group, 6 baked variants Plant_Ladder_01..06, saves plants.blend
 
-The ladder grows along Blender +Z (= Unity +Y). The climbable face is Blender +Y (Unity +Z); leaves stay on the back (-Y),
-so the front column has >= 0.8 m clearance. T51: no top platform; the stalk ends at z = Height right beside the target island's rim and `Land` is 1.9 m in front of the stalk top.
+The ladder grows along Blender +Z (= Unity +Y). The player climbs on the Blender -Y side (Unity -Z: the start-island side, contract v2.6),
+so the steps are there; leaves, pods and tendrils grow out to the two flanks and keep that column clear. Blender +Y faces the target island. T51: no top platform; the stalk ends at z = Height right beside the target island's rim and `Land` is 1.9 m in front of the stalk top.
 growth_t: R = z / (Height + VINE_EXT) (0..1; the stalk tapers into a thin vine above Height), G = part id (0 stalk, .34 vines + bean pods, .67 rungs/leaves, ~.8 beans (yellow in the shader)), B = random tint.
 Reuses the node helpers and preview material of plants_bridge.py.
 """
@@ -22,6 +22,8 @@ exec(open(_S + 'plants_bridge.py').read(), _ns)
 _B = _ns['_B']
 make_material = _ns['make_material']
 _empty = _ns['_empty']
+two_sided = _ns['two_sided']
+shade_by_angle = _ns['shade_by_angle']
 MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Ladder'
@@ -72,6 +74,14 @@ def build_group():
     def xform(geo, trans):
         return b.make('GeometryNodeTransform', {'Geometry': geo, 'Translation': trans})
 
+    def flank_rot(tilt_lo, tilt_hi, lo, hi, sd):
+        """Rotation for a part modelled on the climber's side (-Y): a tilt about X, then a yaw of `lo`..`hi` radians to the left or the right,
+        so the part ends up on one of the two flanks and never in the climb column."""
+        tilt = b.en(b.make('FunctionNodeRandomValue', {'Min': tilt_lo, 'Max': tilt_hi, 'Seed': b.m('ADD', seed, sd)}, data_type='FLOAT'))
+        u = b.en(b.make('FunctionNodeRandomValue', {'Min': -1.0, 'Max': 1.0, 'Seed': b.m('ADD', seed, sd + 1)}, data_type='FLOAT'))
+        yaw = b.m('MULTIPLY', b.m('SIGN', u), b.m('ADD', lo, b.m('MULTIPLY', b.m('ABSOLUTE', u), hi - lo)))
+        return b.xyz(tilt, 0, yaw)
+
     # ---- stalk path: vertical, lateral sway fading to 0 at both ends (top stays above the anchor)
     def sway_curve(top, count):
         ln = b.make('GeometryNodeCurvePrimitiveLine', {'End': b.xyz(0, 0, top)})
@@ -109,16 +119,16 @@ def build_group():
     hres = b.make('GeometryNodeResampleCurve', {'Curve': base, 'Count': 64}, mode='COUNT')
     ht = b.make('GeometryNodeSplineParameter').outputs['Factor']
     hz = b.m('MULTIPLY', ht, height)
-    circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 4, 'Radius': 0.04})
+    circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 5, 'Radius': 0.04})   # five sides shade as a round vine (four read as a square wire)
     for k in (0.0, math.pi):
         ang = b.m('ADD', b.m('MULTIPLY', hz, twist), k)
         ro = b.m('ADD', rad, 0.09)
         off = b.xyz(b.m('MULTIPLY', b.m('COSINE', ang), ro), b.m('MULTIPLY', b.m('SINE', ang), ro), 0)
         vine = b.make('GeometryNodeSetPosition', {'Geometry': hres, 'Offset': off})
-        m = b.make('GeometryNodeCurveToMesh', {'Curve': vine, 'Profile Curve': circ})
+        m = b.make('GeometryNodeCurveToMesh', {'Curve': vine, 'Profile Curve': circ, 'Fill Caps': True})
         parts.append(store_part(m, 0.34).outputs[0])
 
-    # ---- rungs (front, climbable side) between z = 0.3 and Height - 0.45
+    # ---- rungs on the climber's side (-Y), between z = 0.3 and Height - 0.45
     rcount = b.m('MAXIMUM', b.m('ROUND', b.m('DIVIDE', height, spacing)), 2.0)
     rpts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': rcount}, mode='COUNT')
     pz = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
@@ -126,14 +136,14 @@ def build_group():
     # rounded step: a slab smoothed with one Catmull-Clark level (tri budget), so every corner and edge is soft (the plain box looked artificial)
     cube = b.make('GeometryNodeMeshCube', {'Size': b.xyz(0.86, 0.32, 0.1)})
     cube = b.make('GeometryNodeSubdivisionSurface', {'Mesh': cube, 'Level': 1})
-    rung = xform(cube, b.xyz(0, b.m('ADD', rad, 0.05), 0))
+    rung = xform(cube, b.xyz(0, b.m('MULTIPLY', b.m('ADD', rad, 0.05), -1.0), 0))
     rrot = b.make('FunctionNodeRandomValue', {'Min': (0, 0, -0.2), 'Max': (0, 0, 0.2), 'Seed': b.m('ADD', seed, 7)},
                   data_type='FLOAT_VECTOR')
     ri = b.make('GeometryNodeInstanceOnPoints', {'Points': rpts.outputs['Points'], 'Selection': sel, 'Instance': rung,
                                                  'Rotation': b.en(rrot)})
     parts.append(store_part(ri, 0.67, 'INSTANCE').outputs[0])
 
-    # ---- leaves and blossoms on the back side (-Y)
+    # ---- leaves on the two flanks (the blade is modelled pointing along -Y, `flank_rot` turns it sideways)
     lcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.6)), 1.0)
     lf = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 12, 'Radius': 0.3})}, mode='N-gons')
     lf = b.make('GeometryNodeSubdivideMesh', {'Mesh': lf, 'Level': 1})
@@ -142,15 +152,14 @@ def build_group():
     lx = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['X']
     droop = b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.35), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.6))   # drooping tip, cupped sides
     lf = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, droop)})
+    lf = two_sided(b, tree, lf)   # the climber looks at the leaves from below
     leaf_geo = xform(lf, b.xyz(0, b.m('MULTIPLY', rad, -1.6), 0))
     for cnt, geo, pid, smin, smax, sd in ((lcount, leaf_geo, 0.67, 0.7, 1.3, 11),):
         pts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': cnt}, mode='COUNT')
-        rv = b.make('FunctionNodeRandomValue', {'Min': (-0.4, 0.0, -1.2), 'Max': (0.4, 0.0, 1.2),
-                                                'Seed': b.m('ADD', seed, sd)}, data_type='FLOAT_VECTOR')
         rs = b.make('FunctionNodeRandomValue', {'Min': smin, 'Max': smax, 'Seed': b.m('ADD', seed, sd + 5)}, data_type='FLOAT')
         sc = b.m('MULTIPLY', b.en(rs), leafs)
         ip = b.make('GeometryNodeInstanceOnPoints', {'Points': pts.outputs['Points'], 'Instance': geo,
-                                                     'Rotation': b.en(rv), 'Scale': b.xyz(sc, sc, sc)})
+                                                     'Rotation': flank_rot(-0.4, 0.4, 1.1, 2.0, sd), 'Scale': b.xyz(sc, sc, sc)})   # 2.0 rad at most: a long leaf near the top stays short of the target island's rim
         parts.append(store_part(ip, pid, 'INSTANCE').outputs[0])
 
     # ---- curling tendrils (T67)
@@ -159,13 +168,12 @@ def build_group():
     tm = b.make('GeometryNodeCurveToMesh', {'Curve': sp, 'Profile Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 3, 'Radius': 0.014})})
     tcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.4)), 3.0)
     tpts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': tcount}, mode='COUNT')
-    trv = b.make('FunctionNodeRandomValue', {'Min': (-0.5, 0.0, -2.6), 'Max': (0.5, 0.0, 2.6), 'Seed': b.m('ADD', seed, 71)}, data_type='FLOAT_VECTOR')
     tmesh = xform(tm, b.xyz(0, b.m('MULTIPLY', rad, -0.9), 0))
-    tins = b.make('GeometryNodeInstanceOnPoints', {'Points': tpts.outputs['Points'], 'Instance': tmesh, 'Rotation': b.en(trv),
+    tins = b.make('GeometryNodeInstanceOnPoints', {'Points': tpts.outputs['Points'], 'Instance': tmesh, 'Rotation': flank_rot(-0.5, 0.5, 1.0, 2.6, 71),
                                                    'Scale': b.xyz(1.6, 1.6, 1.6)})
     parts.append(store_part(tins, 0.34, 'INSTANCE').outputs[0])
 
-    # ---- bean pods hanging on the back side: slim closed green pods (a seam ridge, a curled tip) and two open pods (one low, one near the top) showing three yellow beans
+    # ---- bean pods hanging on the two flanks: slim closed green pods (a seam ridge, a curled tip) and two open pods (one low, one near the top) showing three yellow beans
     pcount = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', height, 1.5)), 3.0)
 
     def pod_shape(open_pod):
@@ -174,7 +182,7 @@ def build_group():
         body = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': body, 'Name': 'part', 'Value': 0.34}, data_type='FLOAT', domain='POINT')
         pj = b.make('GeometryNodeJoinGeometry')
         tree.links.new(body.outputs[0], pj.inputs[0])
-        ridge = b.make('GeometryNodeMeshUVSphere', {'Segments': 6, 'Rings': 8, 'Radius': 0.5})                    # seam along the front of the pod
+        ridge = b.make('GeometryNodeMeshUVSphere', {'Segments': 5, 'Rings': 5, 'Radius': 0.5})                    # seam along the front of the pod (kept light: it pays for the two-sided leaves)
         ridge = xform(b.make('GeometryNodeTransform', {'Geometry': ridge, 'Scale': b.xyz(0.04, 0.05, 0.46)}), b.xyz(0, 0.075, -0.3))
         ridge = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': ridge, 'Name': 'part', 'Value': 0.67}, data_type='FLOAT', domain='POINT')
         tree.links.new(ridge.outputs[0], pj.inputs[0])
@@ -191,15 +199,15 @@ def build_group():
         return xform(b.make('GeometryNodeRealizeInstances', {'Geometry': pj}), b.xyz(0, b.m('MULTIPLY', rad, -1.2), 0))
 
     ppts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': pcount}, mode='COUNT')
-    prv = b.make('FunctionNodeRandomValue', {'Min': (-0.55, 0.0, -1.3), 'Max': (-0.15, 0.0, 1.3), 'Seed': b.m('ADD', seed, 53)}, data_type='FLOAT_VECTOR')
     psz = b.en(b.make('FunctionNodeRandomValue', {'Min': 1.3, 'Max': 1.9, 'Seed': b.m('ADD', seed, 59)}, data_type='FLOAT'))
     pidx = b.make('GeometryNodeInputIndex').outputs[0]
     is_open = b.m('MULTIPLY', b.m('GREATER_THAN', pidx, 2.5), b.m('LESS_THAN', pidx, 3.5))
     top_open = b.m('MULTIPLY', b.m('GREATER_THAN', pidx, b.m('SUBTRACT', pcount, 3.5)), b.m('LESS_THAN', pidx, b.m('SUBTRACT', pcount, 2.5)))   # user request: a second open pod near the top (second from last)
     is_open = b.m('MAXIMUM', is_open, top_open)
+    prot = flank_rot(-0.55, -0.15, 1.4, 2.2, 53)   # 1.4 rad at least: a pod hangs clear of the ends of the steps
     for open_pod, sel_ in ((False, b.m('SUBTRACT', 1.0, is_open)), (True, is_open)):
         pins = b.make('GeometryNodeInstanceOnPoints', {'Points': ppts.outputs['Points'], 'Selection': sel_, 'Instance': pod_shape(open_pod),
-                                                       'Rotation': b.en(prv), 'Scale': b.xyz(psz, psz, psz)})
+                                                       'Rotation': prot, 'Scale': b.xyz(psz, psz, psz)})
         parts.append(pins.outputs[0])
 
     # (T51: no platform at the top any more: the climber steps straight onto the target island at `Land`)
@@ -291,14 +299,13 @@ def bake_variant(n, offset_x=0.0):
     bm.free()
     me.materials.clear()
     me.materials.append(bpy.data.materials[MAT])
-    for poly in me.polygons:
-        poly.use_smooth = False
+    shade_by_angle(me)
     H = p['Height']
     mk = lambda nm, loc: _empty(nm, loc, main, coll)
     mk('Anchor_%s@L' % nn, mathutils.Vector((0, 0, 0)))
     mk('Tip_%s@L' % nn, mathutils.Vector((0, 0, H)))
     mk('Land_%s@L' % nn, mathutils.Vector((0, LAND_Y, H)))
-    # one climb trigger: a column in front of the stalk (line at 0.5 m), reaching 1.2 m above the top so W keeps climbing to the step-off
+    # one climb trigger, reaching 1.2 m above the top so W keeps climbing to the step-off (LadderPrefabBuilder resizes it to span both sides of the stalk)
     _box('CLIMB_%s_0@L' % nn, (0, 0.55, (H + 1.2) / 2), (1.1, 1.0, H + 1.2), main, coll, main)
     # a thin collider along the stalk (the pipeline wants one proxy; it stays clear of the climb line at 0.5 m)
     _box('COL_%s_0@L' % nn, (0, 0, H / 2), (0.12, 0.12, H), main, coll, main)

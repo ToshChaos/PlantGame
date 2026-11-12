@@ -74,7 +74,9 @@ namespace PlantGame.Plants
             if (reservoir == null) return;
             float f = _plant != null && !_plant.IsGrown ? 0f : Fill;
             reservoir.gameObject.SetActive(f > 0.01f);
-            reservoir.localScale = new Vector3(_fullScale.x, Mathf.Max(0.001f, _fullScale.y * f), _fullScale.z);
+            // the basin is narrow at the bottom, so the water widens as it rises (half width when empty): its edge stays hidden inside the basin wall
+            float w = Mathf.Lerp(0.5f, 1f, Mathf.Sqrt(f));
+            reservoir.localScale = new Vector3(_fullScale.x * w, Mathf.Max(0.001f, _fullScale.y * f), _fullScale.z * w);
         }
     }
 }

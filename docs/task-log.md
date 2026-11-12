@@ -2,6 +2,18 @@
 
 Long per-task notes live here (keep the boards and task files short). Newest first.
 
+## Plant assets checked and rebaked (2026-11-12)
+- Checked all 24 plant variants: validator (names, `growth_t`, Anchor / Tip / COL / CLIMB, tri budget), mesh health (no loose or degenerate geometry), contract reach (bridge 10.0-12.2 m, ladder 8.5-12.3 m, mushrooms 2.4-3.6 m rise with steps of 1.2 m at most), and renders of every prefab with the game shader from above, below and at the sprout / mid-growth stages.
+- Found and fixed:
+  - **Leaves vanished from behind.** Bridge and beanstalk leaves were single-sided cards and `PlantGrow` culls back faces: no leaves at all when looking up a beanstalk while climbing, or at a bridge from below. Leaf blades are two-sided now.
+  - **Beanstalk steps faced away from the climber.** Since v2.6 the player climbs on the start-island side, but the steps were still on the far side and the leaves and pods hung in the climb column. Steps moved to the climber's side; leaves, pods and tendrils grow out to the flanks (nothing but steps within the 0.35 m climb column, checked per variant).
+  - **Collector water stuck out under the bowl** (reservoir 0.78 R wide at a height where the basin is 0.63 R). New cone-shaped reservoir, and `WaterCollector.ApplyFill` widens the water as it rises.
+  - **`plants.blend` had no Water Collector collections** (a later bake of another kind saved over them); rebuilt from `plants_collector.py`, same triangle counts as the exported FBX files.
+  - **Mushroom colliders did not match the caps.** The committed `Plant_Platform_NN` prefabs predated the last cap redesign (smaller, convex caps; first cap moved): every pad collider was 16 % wider than its cap and 8 cm low, and the first pad's was 0.3-0.5 m off to the side. Rebuilding the prefabs from the FBX files fixed it; the collectors' prefabs only gained the `oneShot` field.
+  - **Faceted look, heavy vertex counts.** Everything was flat-shaded, so Catmull-Clark steps, stalks and vines showed every face and the shader's growing-tip taper pulled faces apart. Smooth shading with sharp edges above 80 degrees; thin bridge and beanstalk vines got 5-6 sides and end caps. Vertices in Unity: bridge 7.1-8.9k -> 4.2-6.0k, beanstalk 13.3-17.3k -> 5.0-6.4k, mushrooms 8.1-8.8k -> 4.0-4.6k. Triangles: bridge 4.8-5.8k (was 3.8-4.5k), beanstalk 7.6-9.4k, mushrooms unchanged.
+- Verified in play mode on level 2: beanstalk grabbed, climbed and stepped off on the upper island; player stands on a rebaked bridge; no new console errors. Colliders, Anchor / Tip / Land and the mushroom jump check are unchanged.
+- Left alone: the bridge group's `Thickness` input is not connected to anything (removing its random draw would change the six variants); the first mushroom cap has a ragged cut where the stalks pass (`cut_hole`); all four kinds sit on top of each other at the origin of `plants.blend` (the prefab builders zero the row offsets).
+
 ## Code review: unused code, per-frame work, stale comments (2026-11-12)
 - Analyzer findings fixed, a handful of per-frame costs removed (`GameSettings` keeps its values, one sprout lookup and one butterfly raycast a frame, the HUD prompt is set once a frame), finished-task numbers and history notes taken out of the comments. Checked with the edit-mode tests (50 pass) and a play-mode run of levels 1 and 4; no player build was made.
 - The list of what was not done, and the recipe for running the analyzers outside Unity, is in `docs/code-review-findings.md`.

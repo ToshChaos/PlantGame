@@ -6,10 +6,11 @@ In Blender (via MCP execute_blender_code):
     exec(open(S + 'plants_platform.py').read())
     build_all()            # node group, 6 baked variants Plant_Platform_01..06, jump check, saves plants.blend
 
-The plant grows along Blender +Z (= Unity +Y). A thin tapered stem rises through the middle; N pads (shallow dishes: rim at pad height, middle DISH lower, T48) spiral
-out from it: pad k sits at height (k+1)/N * Rise, angle start + k*Twist (+ wobble), radius Reach * (0.25 + 0.75 k/(N-1)).
-Each pad hangs off the stem on a short arm; rim spots (cyan accent, part id 1) ring every pad.
-growth_t: R = z / Rise (0..1), G = part id (.67 main stem, 1 mushroom stalks + white spots, .92 caps = red in the shader), B = random tint.
+The plant grows along Blender +Z (= Unity +Y) as a mushroom patch: N convex caps (apex at the pad height, rim DOME lower) spiral outward and upward,
+pad k at height (k+1)/N * Rise, angle start + k*Twist (+ wobble), radius Reach * (0.25 + 0.75 k/(N-1)). There is no central stem: every cap has
+its own stalk, added at bake time (`add_stalks`), which rises from the planting spot and leans out to its cap. White spots sit on every cap;
+variants with two caps get a small decorative mushroom (padi -1, no collider). The sprout is two puffballs at the planting spot.
+growth_t: R = 0.085 + 0.915 * z / Rise (the sprout owns R <= 0.075), G = part id (1 stalks + white spots, .92 caps = red in the shader), B = random tint.
 Extra float attribute `padi` (pad index, pads only) is used by the bake to build COL_ boxes and by the jump check; FBX does not export it.
 Reuses the node helpers and preview material of plants_bridge.py.
 """
@@ -25,6 +26,7 @@ exec(open(_S + 'plants_bridge.py').read(), _ns)
 _B = _ns['_B']
 make_material = _ns['make_material']
 _empty = _ns['_empty']
+shade_by_angle = _ns['shade_by_angle']
 MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Platform'
@@ -407,11 +409,10 @@ def bake_variant(n, offset_x=0.0):
     bm.free()
     me.materials.clear()
     me.materials.append(bpy.data.materials[MAT])
-    for poly in me.polygons:
-        poly.use_smooth = False
     pads = pad_info(me)
     cut_hole(me)
     add_stalks(me, pads, p['RiseTotal'])
+    shade_by_angle(me)
     mk = lambda nm, loc: _empty(nm, loc, main, coll)
     last = pads[-1]
     tip = mathutils.Vector((last['centre'][0], last['centre'][1], last['top']))

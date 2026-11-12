@@ -95,6 +95,25 @@ class _B:
         return nd.outputs[0]
 
 
+def two_sided(b, tree, geo):
+    """A card (leaf blade) plus a flipped copy of itself. The grow shader culls back faces, so a single-sided card is invisible from behind:
+    the leaves vanished for anyone looking up at a beanstalk or at a bridge from below."""
+    flipped = b.make('GeometryNodeFlipFaces', {'Mesh': geo})
+    both = b.make('GeometryNodeJoinGeometry')
+    tree.links.new(b.out(geo), both.inputs[0])
+    tree.links.new(flipped.outputs[0], both.inputs[0])
+    return both
+
+
+def shade_by_angle(me, deg=80.0):
+    """Smooth shading, with a sharp edge wherever two faces meet at more than `deg`: tubes of five or more sides, pods, caps and leaf blades
+    read as round, while slats, petals and cap rims stay crisp. Smooth normals also let the shader taper the growing tip without tearing
+    the faces apart, and Unity shares the vertices (about half as many as with flat shading)."""
+    me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
+    me.set_sharp_from_angle(angle=math.radians(deg))
+    me.update()
+
+
 def _interface(tree):
     it = tree.interface
     it.new_socket('Geometry', in_out='OUTPUT', socket_type='NodeSocketGeometry')
@@ -196,7 +215,7 @@ def build_group():
 
     # ---- deck: a braid of fat vine strands running along the path (no solid slab; the collision proxies are added at bake time)
     strand_circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.15})
-    wrap_circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 4, 'Radius': 0.09})
+    wrap_circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.09})   # six sides: with smooth shading it reads as a round vine (four looked like a square beam)
     deck_parts = []
     ph_d = b.m('MULTIPLY', t, b.m('MULTIPLY', length, 1.5))   # slow braid
     n_str = 3   # user request: one fewer main vine (was 4)
@@ -228,8 +247,8 @@ def build_group():
     ribs = store_part(ribs, 0.34, 'INSTANCE')
 
     # ---- rails and braided strands, both sides
-    circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 4, 'Radius': 0.045})
-    circ_thin = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 4, 'Radius': 0.075})
+    circ = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 5, 'Radius': 0.045})
+    circ_thin = b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 6, 'Radius': 0.075})
     parts = [deck.outputs[0], ribs.outputs[0]]
     rails = []
     ph = b.m('MULTIPLY', t, b.m('MULTIPLY', length, 2.6))  # braid phase (tighter twist: reads as woven vines)
@@ -239,7 +258,7 @@ def build_group():
         off = b.vm('ADD', edge, b.vm('SCALE', up, 0.85))
         hr = b.make('GeometryNodeSetPosition', {'Geometry': base, 'Offset': off})
         rails.append(hr)
-        m = b.make('GeometryNodeCurveToMesh', {'Curve': hr, 'Profile Curve': circ})
+        m = b.make('GeometryNodeCurveToMesh', {'Curve': hr, 'Profile Curve': circ, 'Fill Caps': True})   # capped: an open end shows the inside as a hole
         parts.append(store_part(m, 0.34).outputs[0])
         # two twisting strands at the deck edge
         for k in (0.0, math.pi):
@@ -247,7 +266,7 @@ def build_group():
             wob = b.vm('ADD', b.vm('SCALE', side, b.m('MULTIPLY', b.m('COSINE', ang), 0.15)),
                        b.vm('SCALE', up, b.m('MULTIPLY', b.m('SINE', ang), 0.15)))
             st = b.make('GeometryNodeSetPosition', {'Geometry': base, 'Offset': b.vm('ADD', edge, wob)})
-            m = b.make('GeometryNodeCurveToMesh', {'Curve': st, 'Profile Curve': circ_thin})
+            m = b.make('GeometryNodeCurveToMesh', {'Curve': st, 'Profile Curve': circ_thin, 'Fill Caps': True})
             parts.append(store_part(m, 0.34).outputs[0])
 
     # ---- leaves and blossoms scattered on the handrails
@@ -261,6 +280,7 @@ def build_group():
     ly = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['Y']
     lx = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['X']
     leaf_geo = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.3), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.4)))})
+    leaf_geo = two_sided(b, tree, leaf_geo)
     def flower(outer_part, inner_part, centre_part):
         # T40: two rings of flattened, cupped petals (7 outer, 5 inner turned half a step) round a glowing bead; `part` is stored per vertex
         # so the outer petals, inner petals and centre can differ (shader PlantGrow: .995 glow centre, .985 white petals, .975 mist-blue petals; 1.0 stays plain white)
@@ -401,14 +421,13 @@ def bake_variant(n, offset_x=0.0):
     main.location = (offset_x, 0, 0)
     bm = bmesh.new()
     bm.from_mesh(me)
-    closed = [f for f in bm.faces if all(len(e.link_faces) == 2 for e in f.edges)]  # skip single-sided leaf cards
+    closed = [f for f in bm.faces if all(len(e.link_faces) == 2 for e in f.edges)]  # skip the leaf cards (front and back are separate faces)
     bmesh.ops.recalc_face_normals(bm, faces=closed)
     bm.to_mesh(me)
     bm.free()
     me.materials.clear()
     me.materials.append(bpy.data.materials[MAT])  # contract: one material slot
-    for poly in me.polygons:
-        poly.use_smooth = False
+    shade_by_angle(me)
     # deck centreline from vertices with part id 0 (G channel)
     ca = me.color_attributes['growth_t']
     deck = [(v.co.copy(), ca.data[i].color[0]) for i, v in enumerate(me.vertices) if ca.data[i].color[1] < 0.1]

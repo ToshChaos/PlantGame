@@ -163,6 +163,7 @@ Each exported mesh variant `Plant_<Kind>_<NN>` (NN = 01..06, = Blender seed) mus
   0..1 for the fill level), empties `WaterMin` / `WaterMax`, and one interaction trigger `INTERACT_NN` (layer `Interactable`). No
   `COL_`/`CLIMB_` needed beyond a small body collider. `growth_t` still runs 0->1 base to rim.
 - Tri budget: <= 10k tris per variant (v2.8; was 4k). One material slot (`M_PlantGrow` instance via vertex colours for look).
+- `M_PlantGrow` culls back faces: a flat card (leaf blade) needs faces on both sides (`two_sided` in `plants_bridge.py`). Ladder steps are on the side the player climbs (Blender -Y, Unity -Z of the prefab); foliage stays out of that column (v4.1).
 
 ### 5.4 Island kit contract (A4 -> A5)
 - Pieces snap to a 4 m grid, pivot at bottom centre. Names `Kit_<Category>_<Name>_<NN>`.
@@ -304,6 +305,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v4.1 (2026-11-12, plant assets): all 24 plant variants rebaked. Beanstalk steps are on the climber's side (prefab -Z, the start island) and the foliage on the flanks; bridge and beanstalk leaves are two-sided; plants are smooth-shaded with sharp edges above 80 degrees (`shade_by_angle`); the collector `Reservoir` is a cone and `WaterCollector.ApplyFill` scales its width with the fill as well as its height. Colliders, `Anchor` / `Tip` / `Land` and reaches are unchanged. Rebuild recipe: `docs/pipeline.md`.
 - v4.0 (2026-11-12, cleanup): `GameSettings` reads each value from PlayerPrefs once and keeps it: change options through its setters only (a direct `PlayerPrefs.Set*` on one of its keys is not seen until the next launch). `InteractionSensor.CanReach(Collider)` (the unused `Target` argument is gone), `GoalBuilder.Build` takes no theme, `PlayerOutfitApplier.SetOutfit` removed (set `outfit`, call `Apply`). Comments carry task numbers of open tasks only. What the review left undone is in `docs/code-review-findings.md`.
 - v3.9 (2026-11-04, Android): `AndroidBuild.Configure` sets IL2CPP `OptimizeSize` and R8 (`minifyRelease`): a Java class reached only from C# through JNI now needs a keep rule. `DropUnusedAndroidLibraries` removes `libAppUITextMateLib.so`; delete it if a player ever uses App UI. Plant models import without tangents and with Read/Write off, so runtime code cannot read their vertices.
 - v3.8 (2026-11-04, Android): `AndroidBuild.Configure` sets Medium managed stripping too, so the `link.xml` rule of v3.7 applies to Android. The Mac player stays Mono with stripping Disabled, so a Mac run does not test stripping.

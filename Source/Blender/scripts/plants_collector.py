@@ -10,8 +10,9 @@ Deviation from the task text: built with bmesh from per-seed parameters instead 
 variants are still fully procedural and deterministic per seed). Each variant: a curved stem, a double-walled bowl, 5-8 curled
 petals around the rim, 4-6 broad base leaves and cyan dew dots on the rim.
 growth_t (point colour): R = z / height (base -> rim/petal tips), G = part id for the shader palette (.67 stem and leaves, .92 bowl,
-.8 dew dots, 1.0 petals), B = random tint. Reservoir is a separate mesh (flat cylinder from WaterMin up to WaterMax, pivot at its base)
-that Unity scales 0..1 for the fill level. INTERACT_NN is a trigger box around the bowl. Pivot at Anchor (the soil).
+.8 dew dots, 1.0 petals), B = random tint. Reservoir is a separate mesh (a cone frustum from WaterMin up to WaterMax, pivot at its base: 0.45 R
+wide at the bottom, 0.9 R at the top) that Unity scales with the fill level: taller, and wider as well (`WaterCollector.ApplyFill`), because the
+basin is narrow at the bottom. At every fill the water stays inside the basin's outer wall and its edge is hidden in the wall. INTERACT_NN is a trigger box around the bowl. Pivot at Anchor (the soil).
 """
 import math
 import random
@@ -36,6 +37,7 @@ VARIANTS = [
     (2.3, 0.78, 7, 0.45, 6, 0.13),
 ]
 SEG = 24
+RES_BOTTOM, RES_TOP = 0.45, 0.9     # Reservoir radius at WaterMin / WaterMax, as a fraction of the bowl radius (inside the outer wall: 0.63 R / 0.97 R)
 
 
 def variant_params(n):
@@ -220,9 +222,10 @@ def bake_variant(n, offset_x=0.0):
     mk('Tip_%s@C' % nn, mathutils.Vector((cx, cy, info['rim_z'])))
     mk('WaterMin_%s@C' % nn, mathutils.Vector((cx, cy, zmin)))
     mk('WaterMax_%s@C' % nn, mathutils.Vector((cx, cy, zmax)))
-    # Reservoir: flat cylinder, pivot at its base (WaterMin); Unity scales its local Y (Blender Z) 0..1
+    # Reservoir: cone frustum, pivot at its base (WaterMin); Unity scales its height 0..1 and its width with it. The old one was 0.78 R wide
+    # at the bottom, wider than the basin there (0.63 R), so a blue ring stuck out under the bowl.
     bm = bmesh.new()
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=16, radius1=R * 0.78, radius2=R * 0.84, depth=(zmax - zmin))
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=24, radius1=R * RES_BOTTOM, radius2=R * RES_TOP, depth=(zmax - zmin))
     for v in bm.verts:
         v.co.z += (zmax - zmin) / 2
     res_me = bpy.data.meshes.new('Reservoir_' + nn)

@@ -22,9 +22,24 @@ Each Blender call is a fresh Python namespace, so re-run the `exec` lines in eve
 | `use_selection` | `True` (the exporter selects the collection) |
 | `object_types` | `EMPTY`, `MESH` |
 | `colors_type` | `LINEAR` (growth_t is data, no sRGB curve), `prioritize_active_color=False` |
-| `mesh_smooth_type` / modifiers | `FACE` / applied |
+| `mesh_smooth_type` / modifiers | `FACE` / applied (Unity reads the exported normals, so smooth faces and sharp edges set in Blender carry over) |
 | `add_leaf_bones`, `bake_anim` | `False` |
 Settings the running Blender does not know are dropped with a printed note, so upgrades do not crash the export.
+
+## Rebuilding the plants
+Every plant kind is rebuilt from its script (`build_all()` bakes six variants into `plants.blend` and saves it); all four kinds live in the one file.
+```python
+S = '/Users/anton.podkletnov/Projects/PlantGame/Source/Blender/scripts/'
+for f in ('plants_bridge.py', 'plants_ladder.py', 'plants_platform.py', 'plants_collector.py'):
+    ns = {'__name__': f}; exec(open(S + f).read(), ns); ns['build_all']()
+exec(open(S + 'export_fbx.py').read())
+export_collections(sorted(c.name for c in bpy.data.collections if c.name.startswith('Plant_')))
+```
+Then `sync_to_unity.py` and the four `PlantGame > Plants > ... Prefabs` menus. Rules the bakes follow:
+- **Cards are two-sided.** `PlantGrow` culls back faces, so a leaf made of one layer of faces is invisible from behind. Leaf blades are joined with a flipped copy (`two_sided` in `plants_bridge.py`).
+- **Shading:** `shade_by_angle` (smooth, sharp above 80 degrees). A tube needs five or more sides to shade round.
+- **Beanstalk:** the steps are on Blender -Y (the side the player climbs, Unity -Z); foliage goes to the flanks and stays out of the climb column.
+- **Collector:** the `Reservoir` must stay inside the basin's outer wall at every fill; `WaterCollector.ApplyFill` widens it as it rises.
 
 ## Naming
 - Meshes and collections `Type_Name_Variant`, e.g. `Plant_Bridge_03`, `Kit_Terrain_Flat_01`. Plant variants: `Plant_<Bridge|Ladder|Platform|Collector>_<01..06>`; one collection per variant, same name as its main mesh.
@@ -32,7 +47,7 @@ Settings the running Blender does not know are dropped with a printed note, so u
 - `COL_<NN>_<idx>` and `INTERACT_<NN>` keep their number (contract 5.3). Empties must be parented to the main mesh; the mesh pivot sits on `Anchor`.
 
 ## Validation (`validate_export.py`)
-Checks: collection/mesh names, `growth_t` colour attribute (0..1 range), tri budget (<= 4000 per variant), `Anchor`/`Tip`, pivot on Anchor, `COL_*`, `CLIMB_*` for ladders, collector extras. `export_collections` stops on errors; call `print_report(name, 'plant')` to see them. Profile `'generic'` (kit pieces, tests) only checks scale.
+Checks: collection/mesh names, `growth_t` colour attribute (0..1 range), tri budget (<= 10000 per variant, `pipeline_common.MAX_TRIS`), `Anchor`/`Tip`, pivot on Anchor, `COL_*`, `CLIMB_*` for ladders, collector extras. `export_collections` stops on errors; call `print_report(name, 'plant')` to see them. Profile `'generic'` (kit pieces, tests) only checks scale.
 
 ### Parented hierarchies (characters, T31)
 `bake_space_transform=True` breaks child objects (meshes under empties land rotated and offset in Unity). Character

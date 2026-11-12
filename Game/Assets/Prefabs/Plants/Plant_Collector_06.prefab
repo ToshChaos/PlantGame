@@ -352,6 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Plants.WaterCollector
   secondsPerCharge: 30
   capacity: 1
+  oneShot: 0
   reservoir: {fileID: 5813473618903848506}
 --- !u!1 &7835294075684856860
 GameObject:
