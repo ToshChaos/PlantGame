@@ -11,7 +11,7 @@ namespace PlantGame.Core
     {
         // Inventory / items
         public static event Action<ItemDefinition> ItemPickedUp, ItemDropped, ItemUsed;
-        // Interaction (T04/T05 additions, contract v1.5)
+        // Interaction
         public static event Action<ItemDefinition> InventoryFull;             // pickup refused
         public static event Action<string> HintRequested;                     // short transient HUD hint (a few seconds)
         public static event Action UseRejected;                               // E / Q with nothing to act on

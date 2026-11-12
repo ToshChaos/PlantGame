@@ -74,7 +74,7 @@ namespace PlantGame.World
 
         public static GameObject[] Plants(PlantKind k)
         {
-            var a = Asset; if (a == null) return new GameObject[0];
+            var a = Asset; if (a == null) return System.Array.Empty<GameObject>();
             switch (k) { case PlantKind.Bridge: return a.bridges; case PlantKind.Ladder: return a.ladders; case PlantKind.Platform: return a.platforms; default: return a.collectors; }
         }
     }

@@ -11,7 +11,7 @@ namespace PlantGame.World
         public Material waterMat; public Transform waterRoot;
         public bool murky; public Material murkyMat; public Transform murkyRoot;                                         // the pond is green swamp water: it carves a hollow and shows a surface but is no WaterSource
         public readonly List<Vector4> pondDiscs = new List<Vector4>();   // x, y(unused), z, radius of the pond lobes (water plants grow on them)
-        public bool frozen;                                        // T50: the pond is iced over until a Heat Seed melts it
+        public bool frozen;                                        // the pond is iced over until a Heat Seed melts it
         public Vector2 slope;                                      // tilt: surface height gradient (m per m) in world x, z; 0 = level
         public int parent = -1; public float entryAngle;           // direction (deg, 0 = +X, + toward +Z) from this island toward its parent
         public readonly List<float> outHeadings = new List<float>();
@@ -24,7 +24,7 @@ namespace PlantGame.World
     /// </summary>
     public class LevelLayout
     {
-        public const float BaseRadius = 10.5f, LadderPadReach = 1.2f, LadderPadGap = 0f, LadderEdgeInset = 1.6f;   // T51: no top pad: the target rim lies LadderPadReach in front of the stalk top
+        public const float BaseRadius = 10.5f, LadderPadReach = 1.2f, LadderPadGap = 0f, LadderEdgeInset = 1.6f;   // no top pad: the target rim lies LadderPadReach in front of the stalk top
         public const float BridgeAnchorInset = 1.8f, Wobble = 0.55f;
         public const int LadderVariant = 3, PlatformVariant = 3;   // Plant_Ladder_03: 11 m; Plant_Platform_03: 3 pads, 3.6 m rise, ~5 m reach
         public const float GlideGap = 19f, GlideDrop = 8f;
@@ -67,7 +67,7 @@ namespace PlantGame.World
                 {
                     float h = h0 + (t == 0 ? 0f : (t % 2 == 1 ? 1f : -1f) * ((t + 1) / 2) * 12f);
                     var dir = Dir(h);
-                    float soilFwd, dist, dy = 0f, reach = 0f;
+                    float soilFwd, dist, dy, reach = 0f;
                     float fromE = from.Edge(h), toE = toShape.EdgeDeg(h + 180f);   // rim distances along the heading (islands are not circles)
                     if (L.kind == PlantKind.Glider)
                     {

@@ -57,7 +57,7 @@ namespace PlantGame.Editor
             var back = Level("level_6", "6: There and Back", "Something precious waits far away. Bring it home.", 6619, 3, LevelTheme.Sunrise, GoalKind.Gate, WaterMode.Sources, new[] { B, L });
             back.roundTrip = true; EditorUtility.SetDirty(back);
             levels.Add(back);
-            // T50: ten levels
+            // ten levels
             var snowy = Level("level_7", "7: Snowed In", "Snow on every ledge. The campfire waits at the end of the white.", 7719, 5, LevelTheme.Snow, GoalKind.Fire, WaterMode.Sources, new[] { B, L, P, B });
             var windy = Level("level_8", "8: Windy Summit", "Climb to the top. The wind pushes harder the higher you go.", 8843, 6, LevelTheme.Sunny, GoalKind.Flag, WaterMode.Sources, new[] { B, L, L, B, L });
             windy.wind = true; windy.spiral = true; EditorUtility.SetDirty(windy);

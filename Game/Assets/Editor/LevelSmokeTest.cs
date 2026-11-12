@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -9,7 +8,7 @@ using PlantGame.Player;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T22: PlantGame > Smoke Test Levels. Plays each curated level in the Main scene for a few seconds
+    /// PlantGame > Smoke Test Levels. Plays each curated level in the Main scene for a few seconds
     /// and checks that a player, a goal and a run exist and the console stays free of errors. Result lines go to Logs/smoke.txt.
     /// State lives in EditorPrefs so it survives the domain reloads of entering play mode (SessionState was lost mid-run).
     /// </summary>

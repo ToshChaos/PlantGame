@@ -12,7 +12,7 @@ namespace PlantGame.World
         {
             outward.y = 0f; outward.Normalize();
             var root = new GameObject("Waterfall"); root.transform.SetParent(parent, true); root.transform.position = rim;
-            if (!frozen) { var wr = root.AddComponent<Audio.LoopEmitter>(); wr.clipName = "waterfall_rush"; wr.volume = 0.55f; wr.minDistance = 4f; wr.maxDistance = 34f; }   // T43: a waterfall roars
+            if (!frozen) { var wr = root.AddComponent<Audio.LoopEmitter>(); wr.clipName = "waterfall_rush"; wr.volume = 0.55f; wr.minDistance = 4f; wr.maxDistance = 34f; }   // a waterfall roars
             root.transform.rotation = Quaternion.LookRotation(outward);
 
             // the stream on the island is carved into the terrain by the generator (same water as the ponds); here: foam and the sheet

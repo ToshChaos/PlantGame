@@ -9,7 +9,7 @@ namespace PlantGame.World
     /// </summary>
     public class ButterflyBush : MonoBehaviour
     {
-        class Fly { public Transform body, left, right; public float phase, speed, radius, height, wing, drift; public Vector3 offset; }
+        class Fly { public Transform body, left, right; public float phase, speed, radius, height, wing, drift; }
 
         public int count = 4;
         readonly List<Fly> _flies = new List<Fly>();

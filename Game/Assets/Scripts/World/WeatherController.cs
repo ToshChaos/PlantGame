@@ -38,7 +38,7 @@ namespace PlantGame.World
             WindLeaves = null;
             if (_theme == LevelTheme.Sunny)
             {
-                if (_wind) { _fxRoot = new GameObject("WeatherFx").transform; _fxRoot.SetParent(transform, false); Leaves(); }   // T50: blown leaves show the wind
+                if (_wind) { _fxRoot = new GameObject("WeatherFx").transform; _fxRoot.SetParent(transform, false); Leaves(); }   // blown leaves show the wind
                 return;
             }
 
@@ -97,7 +97,7 @@ namespace PlantGame.World
             }
             RenderSettings.fogColor = mid; RenderSettings.fogEndDistance = fogEnd;
             if (rain) RenderSettings.fogStartDistance = 30f;
-            if (fog) { RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogStartDistance = 1f; }   // T50: dense fog, visibility about 40 m
+            if (fog) { RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogStartDistance = 1f; }   // dense fog, visibility about 40 m
             RenderSettings.ambientSkyColor = ambSky; RenderSettings.ambientEquatorColor = ambEq; RenderSettings.ambientGroundColor = ambGround;
             var light = RenderSettings.sun;
             if (light != null)

@@ -4,7 +4,7 @@ using PlantGame.Core;
 namespace PlantGame.Inventory
 {
     /// <summary>
-    /// T04: an item lying in the world (layer Interactable). Q picks it up into the actor's Inventory and destroys it.
+    /// An item lying in the world (layer Interactable). Q picks it up into the actor's Inventory and destroys it.
     /// The world prefab of an ItemDefinition carries this component with `item` pointing back at the definition.
     /// </summary>
     public class WorldItem : MonoBehaviour, IInteractable

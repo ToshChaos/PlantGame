@@ -5,7 +5,7 @@ using PlantGame.Core;
 
 namespace PlantGame.Editor
 {
-    /// <summary>T30: ripple texture and the three water materials (light, mid, dark) used by ponds, streams and the collector reservoir.</summary>
+    /// <summary>Ripple texture and the three water materials (light, mid, dark) used by ponds, streams and the collector reservoir.</summary>
     public static class WaterMaterialBuilder
     {
         public static Material Light => Load("M_Water"); public static Material Mid => Load("M_WaterMid"); public static Material Dark => Load("M_WaterDeep");

@@ -2,14 +2,13 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using PlantGame.Core;
-using PlantGame.Inventory;
 using PlantGame.Player;
 using PlantGame.World;
 
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T03: builds Sandbox with the tuning course from the task:
+    /// Builds Sandbox with the tuning course from the task:
     /// start floor, 5 m gap (jumpable, +Z), 7 m gap (not jumpable, +X), 1.6 m ledge (-Z), stairs, a 30 degree ramp
     /// and a 6 m tower with a ladder (W/S climb, Space jumps off). Menu: PlantGame > 5 Build Sandbox.
     /// </summary>
@@ -29,7 +28,6 @@ namespace PlantGame.Editor
             var terrain = MaterialBuilder.Load("M_Terrain");
             var stone = MaterialBuilder.Load("M_Stone");
             var foliage = MaterialBuilder.Load("M_Foliage");
-            var crystal = MaterialBuilder.Load("M_Crystal");
 
             // Floors (top surface at y = 0)
             TexturedBox.Create("Floor_Start", new Vector3(-7.5f, -0.5f, -3f), new Vector3(25f, 1f, 16f), terrain, stone);      // x -20..5, z -11..5

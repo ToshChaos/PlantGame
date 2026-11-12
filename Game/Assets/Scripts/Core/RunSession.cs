@@ -8,7 +8,7 @@ namespace PlantGame.Core
     /// Contract 5.5: owns the run timer and state, raises events through GameEvents.
     /// The clock counts up and the run never fails (falling just respawns).
     /// The clock uses unscaled time but stops while Time.timeScale is 0 (pause menu, end panel).
-    /// Sandbox: starts itself in Start (startOnAwake); T15/T26 call StartRun with the menu's RunConfig instead.
+    /// Sandbox: starts itself in Start (startOnAwake); in Main, GameBootstrap turns that off and the HUD calls StartRun with the menu's RunConfig.
     /// </summary>
     public class RunSession : MonoBehaviour
     {

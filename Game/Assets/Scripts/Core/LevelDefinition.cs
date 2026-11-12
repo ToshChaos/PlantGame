@@ -19,7 +19,7 @@ namespace PlantGame.Core
         public GoalKind goal;
         [Tooltip("Go out to the last island, pick up the Heart Seed and bring it back to the goal on the start island.")]
         public bool roundTrip;
-        [Tooltip("T46: the islands curl round in a spiral ascent.")] public bool spiral;
+        [Tooltip("The islands curl round in a spiral ascent.")] public bool spiral;
         [Tooltip("Fixed order of gaps (empty = generated from the seed). Glider = a leaf glide down to a lower island.")]
         public PlantKind[] sequence;
         [Tooltip("Optional dead-end islands off the main chain (not needed to finish, with a bonus). Random levels add their own.")]

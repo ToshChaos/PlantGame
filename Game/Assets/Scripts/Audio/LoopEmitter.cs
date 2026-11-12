@@ -3,7 +3,7 @@ using PlantGame.Core;
 
 namespace PlantGame.Audio
 {
-    /// <summary>T43: a quiet, distance-limited 3D loop on something that makes that sound (a pond, a waterfall, leafy trees). Silent on the title screen; follows the Sound setting.</summary>
+    /// <summary>A quiet, distance-limited 3D loop on something that makes that sound (a pond, a waterfall, leafy trees). Silent on the title screen; follows the Sound setting.</summary>
     public class LoopEmitter : MonoBehaviour
     {
         public string clipName; public float volume = 0.4f, minDistance = 2f, maxDistance = 18f;

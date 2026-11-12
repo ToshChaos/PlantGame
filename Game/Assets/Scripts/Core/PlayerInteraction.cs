@@ -7,12 +7,12 @@ using PlantGame.Player;
 namespace PlantGame.Core
 {
     /// <summary>
-    /// T04: resolves Q / E / F / Tab exactly as AGENTS.md 5.8 says, using InteractionSensor focus and the Inventory.
+    /// Resolves Q / E / F / Tab exactly as AGENTS.md 5.8 says, using InteractionSensor focus and the Inventory.
     /// Q: focused Pickup interactable + free slot -> pick up; otherwise drop the selected item.
     /// E: selected item + focused IUsableTarget -> UseItem; otherwise focused Use interactable; otherwise UseRejected.
     /// F: focused IWaterable within 3 m that NeedsWater -> spend a charge and Water; empty can -> CanEmptyTried.
     /// Auto water option (GameSettings.AutoWater): the same F actions run by themselves when water or a thirsty sprout is within reach.
-    /// CurrentPrompt / CurrentPromptKey hold the prompt the HUD shows (T19).
+    /// CurrentPrompt / CurrentPromptKey hold the prompt the HUD shows.
     /// </summary>
     [RequireComponent(typeof(Inventory.Inventory))]
     [RequireComponent(typeof(InteractionSensor))]
@@ -39,8 +39,11 @@ namespace PlantGame.Core
             Inventory = GetComponent<Inventory.Inventory>();
             Sensor = GetComponent<InteractionSensor>();
             Can = GetComponent<WateringCan>();
+            _pc = GetComponent<PlayerController>();
             if (input == null) input = GetComponent<PlayerInputReader>();
         }
+
+        PlayerController _pc;
 
         void Update()
         {
@@ -59,21 +62,22 @@ namespace PlantGame.Core
             }
             AutoGlide();
             int n = OverlapNear();
-            AutoWater(n);
-            UpdatePrompt(n);
+            var thirsty = NearbyWaterable();   // one lookup a frame, shared by auto water and the prompt
+            if (AutoWater(n, thirsty)) thirsty = NearbyWaterable();
+            UpdatePrompt(n, thirsty);
         }
 
         const float AutoWaterPause = 0.6f;   // between two automatic waterings / refills, so the can tip and the sounds do not overlap
         float _autoWaterAt;
 
-        /// <summary>Auto water option: waters the nearest thirsty sprout within reach (if the can holds water), else refills the can at water within reach.</summary>
-        void AutoWater(int n)
+        /// <summary>Auto water option: waters `thirsty`, the nearest thirsty sprout within reach (if the can holds water), else refills the can at water within reach. True when it watered.</summary>
+        bool AutoWater(int n, IWaterable thirsty)
         {
-            if (!GameSettings.AutoWater || Can == null || Time.timeScale <= 0f || Time.time < _autoWaterAt) return;
-            var w = Can.Charges > 0 ? NearbyWaterable(n) : null;
-            if (w != null && Can.TryConsume()) { w.Water(gameObject); GameEvents.RaiseWatered(); _autoWaterAt = Time.time + AutoWaterPause; return; }
+            if (!GameSettings.AutoWater || Can == null || Time.timeScale <= 0f || Time.time < _autoWaterAt) return false;
+            if (thirsty != null && Can.TryConsume()) { thirsty.Water(gameObject); GameEvents.RaiseWatered(); _autoWaterAt = Time.time + AutoWaterPause; return true; }
             var refill = Can.IsFull ? null : FindRefillSource(n);
             if (refill != null && refill.CanInteract(gameObject)) { refill.Interact(gameObject); _autoWaterAt = Time.time + AutoWaterPause; }
+            return false;
         }
 
         /// <summary>
@@ -84,7 +88,7 @@ namespace PlantGame.Core
         {
             var sel = Inventory.SelectedItem;
             if (sel == null || sel.id != "parachute_leaf" || Time.timeScale <= 0f) return;
-            var pc = GetComponent<PlayerController>();
+            var pc = _pc;
             if (pc == null || !pc.IsAirborne || pc.IsGliding) return;
             Vector3 v = pc.Velocity;
             if (v.y > -6f) return;   // ordinary jumps come down at up to about -12 m/s, so the ground check below is what tells a drop from a hop
@@ -108,7 +112,7 @@ namespace PlantGame.Core
         void TryGlideOnTouch()
         {
             var sel = Inventory.SelectedItem;
-            var pc = GetComponent<PlayerController>();
+            var pc = _pc;
             if (sel != null && sel.id == "parachute_leaf" && pc != null && pc.IsAirborne && !pc.IsGliding) Use();
         }
 
@@ -183,7 +187,7 @@ namespace PlantGame.Core
         /// <summary>E near a grown mushroom patch: hop onto the cap best in line with the view.</summary>
         bool TryCapHop()
         {
-            var pc = GetComponent<PlayerController>();
+            var pc = _pc;
             if (pc == null || pc.IsHopping || pc.IsClimbing) return false;
             CapHops.Find(transform.position, _hops);
             var f = Sensor.facing != null ? Sensor.facing : (Camera.main != null ? Camera.main.transform : transform);
@@ -199,7 +203,7 @@ namespace PlantGame.Core
             if (item != null && item.id == "parachute_leaf")
             {
                 // E in mid-air with a leaf: glide. The leaf is spent on activation (never reusable); on the ground it is kept.
-                var pc = GetComponent<PlayerController>();
+                var pc = _pc;
                 if (pc != null && pc.TryStartGlide()) { Inventory.Remove(Inventory.Selected); Inventory.SelectNextFilled(); GameEvents.RaiseItemUsed(item); return; }
                 // on the ground E does nothing with the leaf, except at the goal: that still completes the level
                 var goal = Sensor.Interactable as GoalFlag;
@@ -249,7 +253,7 @@ namespace PlantGame.Core
         const float SoilHalf = 0.7f;   // a soil patch is 1.2 m wide: a seed planted at its edge must still count as in reach
 
         /// <summary>The nearest sprout that still needs water (distance to its collider or to the edge of its soil patch, whichever is closer: planting is judged by the patch, watering by the sprout), or null.</summary>
-        IWaterable NearbyWaterable(int n)
+        IWaterable NearbyWaterable()
         {
             var chest = Sensor.Chest;
             int m = Physics.OverlapSphereNonAlloc(chest, Sensor.range + SoilHalf + 1.5f, _sproutHits, Layers.InteractMask, QueryTriggerInteraction.Collide);
@@ -272,7 +276,7 @@ namespace PlantGame.Core
             var refill = Sensor.Interactable;
             if (refill != null && IsRefillTarget(refill) && refill.CanInteract(gameObject)) { refill.Interact(gameObject); return; }   // F at water refills the can
             int n = OverlapNear();
-            var w = NearbyWaterable(n);   // F waters the nearest thirsty sprout around the player, no aiming needed
+            var w = NearbyWaterable();   // F waters the nearest thirsty sprout around the player, no aiming needed
             if (w == null)
             {
                 var bare = PlantGame.World.LeaflessTree.Nearest(Sensor.Chest);   // a leafless tree: F brings its leaves back, free of charge
@@ -285,7 +289,7 @@ namespace PlantGame.Core
             GameEvents.RaiseWatered();
         }
 
-        /// <summary>T50: a frozen pond within reach (null when none).</summary>
+        /// <summary>A frozen pond within reach (null when none).</summary>
         WaterSource FindFrozenSource(int n)
         {
             for (int i = 0; i < n; i++) { if (!OnLayers(_waterHits[i], WaterLayers)) continue; var ws = _waterHits[i].GetComponentInParent<WaterSource>(); if (ws != null && ws.frozen && ws.FrozenNear(Sensor.Chest)) return ws; }
@@ -320,18 +324,22 @@ namespace PlantGame.Core
             return null;
         }
 
-        void UpdatePrompt(int n)
+        ItemDefinition _plantItem; string _plantPrompt;   // "Plant <seed>" is built once per selected seed, not every frame
+
+        void UpdatePrompt(int n, IWaterable thirsty)
         {
             NearRefillSource = FindRefillSource(n) != null;
             string p = "", k = "";
-            var thirsty = NearbyWaterable(n);
             var target = Sensor.Interactable;
             CurrentPromptIsGoal = target is GoalFlag && target.CanInteract(gameObject);
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
             else if (Sensor.Usable is SandboxTarget { frozen: true } && Inventory.SelectedItem != null && Inventory.SelectedItem.id == "heat_seed")
             { p = "Thaw the frozen soil"; k = "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
-            { p = "Plant " + Inventory.SelectedItem.displayName; k = "Use"; }
+            {
+                if (_plantItem != Inventory.SelectedItem) { _plantItem = Inventory.SelectedItem; _plantPrompt = "Plant " + _plantItem.displayName; }
+                p = _plantPrompt; k = "Use";
+            }
             else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
             else if (World.LeaflessTree.Nearest(Sensor.Chest) != null) { p = "Grow leaves"; k = "Water"; }

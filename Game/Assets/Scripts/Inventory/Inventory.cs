@@ -5,7 +5,7 @@ using PlantGame.Core;
 namespace PlantGame.Inventory
 {
     /// <summary>
-    /// T05: 4 slots, no stacking (contract 5.5). Lives on the Player. Pure data + selection; input is read by
+    /// 4 slots, no stacking (contract 5.5). Lives on the Player. Pure data + selection; input is read by
     /// PlayerInteraction (Tab / Shift+Tab / 1-4 / wheel), which calls Cycle / Select.
     /// TryAdd fills the first empty slot; the selection always moves to the slot the item went into.
     /// A refused add raises GameEvents.InventoryFull.

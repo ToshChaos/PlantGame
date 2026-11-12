@@ -1,14 +1,11 @@
-using System;
 using UnityEngine;
-using PlantGame.Core;
 
 namespace PlantGame.Inventory
 {
     /// <summary>
-    /// A tree on the start island that drops its seeds when the level starts (user request, T12/T14).
+    /// A seed source (a tree or a patch) that drops its seeds when the level starts and, with regrowSeconds, grows new ones.
     /// Drop(seed) is deterministic: System.Random(seed ^ salt) picks the seed types and the spots around the trunk.
-    /// With dropOnStart the tree drops once in Start (sandbox / no RunSession yet); T15 turns that off and calls Drop(worldSeed)
-    /// from RunStarted so a restarted run gets its seeds again (call Clear first to remove leftovers).
+    /// It drops once in Start with sandboxSeed (the generator gives every source its own); a restart reloads the scene, so the seeds come back.
     /// </summary>
     public class SeedTree : MonoBehaviour
     {

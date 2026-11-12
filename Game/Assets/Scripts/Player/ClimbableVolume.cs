@@ -4,12 +4,12 @@ using UnityEngine;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T03: put on a trigger BoxCollider (layer Climbable) that covers a ladder / vine.
+    /// Put on a trigger BoxCollider (layer Climbable) that covers a ladder / vine.
     /// Orientation: the volume's local +Z (forward) points AWAY from the climb surface, towards where the player stands.
     /// The climb line runs vertically through the box centre (plus 'standOff' along forward).
     /// 'land' is where the player is placed when reaching the top; the box should extend above Land height and
     /// horizontally cover Land, so S at the top edge can start a descent.
-    /// T11 adds this component to the CLIMB_* trigger boxes of ladder plants.
+    /// LadderPrefabBuilder adds this component to the CLIMB_* trigger boxes of ladder plants.
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
     public class ClimbableVolume : MonoBehaviour

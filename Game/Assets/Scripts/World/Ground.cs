@@ -12,23 +12,20 @@ namespace PlantGame.World
         public static GroundKind[] Assign(int layoutSeed, int count)
         {
             var g = new GroundKind[count];
-            bool bare = false;
             for (int i = 1; i < count; i++)
             {
                 double d = new System.Random(unchecked(layoutSeed * 40503 + i * 7919 + 3)).NextDouble();
                 g[i] = d < 0.45 ? GroundKind.Grass : d < 0.75 ? GroundKind.Mud : GroundKind.Rock;
-                if (g[i] != GroundKind.Grass) bare = true;
             }
             int nBare = 0; for (int i = 0; i < count; i++) if (g[i] != GroundKind.Grass) nBare++;
             for (int i = 1; i < count && nBare > count / 2; i += 2) if (g[i] != GroundKind.Grass) { g[i] = GroundKind.Grass; nBare--; }   // at most half the islands are bare
             for (int i = count - 1; i >= 1 && nBare > count / 2; i--) if (g[i] != GroundKind.Grass) { g[i] = GroundKind.Grass; nBare--; }
-            bare = nBare > 0;
-            if (!bare && count >= 4) g[1 + (layoutSeed & 0xFF) % (count - 2)] = (layoutSeed & 0x100) == 0 ? GroundKind.Mud : GroundKind.Rock;
+            if (nBare == 0 && count >= 4) g[1 + (layoutSeed & 0xFF) % (count - 2)] = (layoutSeed & 0x100) == 0 ? GroundKind.Mud : GroundKind.Rock;
             return g;
         }
 
         static Material _snow;
-        /// <summary>T50: snow-covered ground: the grass material without its texture, tinted white-blue.</summary>
+        /// <summary>Snow-covered ground: the grass material without its texture, tinted white-blue.</summary>
         static Material SnowMat()
         {
             if (_snow != null) return _snow;

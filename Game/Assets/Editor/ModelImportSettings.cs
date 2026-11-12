@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T02: applies the pipeline import settings to every model under Assets/Art/Models (docs/pipeline.md).
+    /// Applies the pipeline import settings to every model under Assets/Art/Models (docs/pipeline.md).
     /// Scale 1 m, no material import (project materials are assigned in prefabs), mesh compression off, read/write off
     /// (nothing reads plant vertices at runtime; colliders are the baked COL_ boxes), no tangents on plants (no UVs, no normal maps, PlantGrow does not
     /// use them), empties preserved (Anchor/Tip/COL_*).
@@ -26,7 +26,7 @@ namespace PlantGame.Editor
         {
             m.globalScale = 1f;
             m.useFileScale = true;                       // FBX_SCALE_UNITS export: file unit -> metres
-            m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/") || m.assetPath.StartsWith(Root + "Plants/");   // hierarchies exported without bake_space_transform (T31)
+            m.bakeAxisConversion = m.assetPath.StartsWith(Root + "Characters/") || m.assetPath.StartsWith(Root + "Plants/");   // hierarchies exported without bake_space_transform
             m.materialImportMode = ModelImporterMaterialImportMode.None;
             m.meshCompression = ModelImporterMeshCompression.Off;
             m.isReadable = false;

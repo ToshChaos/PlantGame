@@ -7,12 +7,12 @@ namespace PlantGame.Plants
 
     /// <summary>
     /// Contract 5.5: unlimited water (lake, waterfall, sandbox puddle). F (Water) fills the watering can instantly.
-    /// Minimal version for the sandbox; T27/T29 add the kit pieces and feedback. Layer Water, trigger collider.
+    /// Layer Water, trigger collider.
     /// </summary>
     public class WaterSource : MonoBehaviour, IInteractable
     {
         public WaterKind kind;
-        [Tooltip("T45/T50: frozen water cannot refill the can and gives no refill hint until a Heat Seed melts it. A Heat Seed melts one patch (one disc of the pond or stream) only.")] public bool frozen;
+        [Tooltip("Frozen water cannot refill the can and gives no refill hint until a Heat Seed melts it. A Heat Seed melts one patch (one disc of the pond or stream) only.")] public bool frozen;
         [System.NonSerialized] public Renderer surface; [System.NonSerialized] public Material liquid;
 
         /// <summary>One disc of the pond / stream (a child BoxCollider): frozen patches wear an ice cap.</summary>

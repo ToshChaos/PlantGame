@@ -4,9 +4,9 @@ using UnityEngine;
 namespace PlantGame.Plants
 {
     /// <summary>
-    /// Minimal runtime plant (T11 will extend): shows a sprout, then grows by sweeping the shader's _Growth
+    /// A planted plant: shows a sprout, then grows by sweeping the shader's _Growth
     /// (M_PlantGrow, vertex colour R = growth_t) and enables the COL_* collision boxes base-to-tip as the growth passes them.
-    /// Built from the baked Blender variants by `PlantGame > 7 Build Bridge Prefabs`.
+    /// The prefabs are built from the baked Blender variants by the Bridge / Ladder / Platform / Collector prefab builders.
     /// </summary>
     public class PlantInstance : MonoBehaviour
     {
@@ -16,7 +16,7 @@ namespace PlantGame.Plants
         public float growSeconds = 6f;
         public AnimationCurve curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        /// <summary>Static hooks for audio / VFX (T18, T20): a plant was sprouted, started growing, finished growing.</summary>
+        /// <summary>Static hooks for audio / VFX: a plant was sprouted, started growing, finished growing.</summary>
         public static event System.Action<PlantInstance> Sprouted, GrowthStarted, Grown;
 
         public PlantKind kind;

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PlantGame.Core;
-using PlantGame.World;
 
 namespace PlantGame.World
 {
@@ -21,7 +20,7 @@ namespace PlantGame.World
         /// <summary>Well-spread 0..1 value from two ints (the first draw of System.Random with nearby seeds is nearly the same, so it is not used for per-island coin flips).</summary>
         public static float Hash01(int a, int salt) { unchecked { uint h = (uint)a * 2654435761u ^ (uint)salt * 40503u; h ^= h >> 15; h *= 2246822519u; h ^= h >> 13; return (h & 0xFFFFu) / 65535f; } }
 
-        static List<Vector4> _leafTrees;   // x, y, z, height of the leaf trees of the island being decorated (T39 falling leaves)
+        static List<Vector4> _leafTrees;   // x, y, z, height of the leaf trees of the island being decorated (for the falling leaves)
 
         static readonly Dictionary<string, Material> _snowFoliage = new Dictionary<string, Material>();
         /// <summary>Snow levels: green plant parts turn frosted white (dark foliage a frosty grey-brown) instead of staying green.</summary>
@@ -142,13 +141,13 @@ namespace PlantGame.World
             // big trees (about 2x the usual height) only grow where the island has water
             int bigTrees = water && vegetation > 0.5f && rnd.NextDouble() < 0.65 ? 1 + (area > 1.8f && rnd.NextDouble() < 0.4 ? 1 : 0) : 0;
             var bigTreeSpots = new List<Vector3>();   // x, z, height: thick roots hang from the underside below them (SideDecor)
-            if (bigTrees > 0) Scatter(bigTrees, 80, 0.45f, 0.85f, 8f, 6f, p => { float h = 12f + (float)rnd.NextDouble() * 3f; Tree(root.transform, World(p), h, rnd, PickKind(weights, rnd)); bigTreeSpots.Add(new Vector3(p.x, p.y, h)); }, 6f);   // T38: normal trees are 2x, big ones stay above them
+            if (bigTrees > 0) Scatter(bigTrees, 80, 0.45f, 0.85f, 8f, 6f, p => { float h = 12f + (float)rnd.NextDouble() * 3f; Tree(root.transform, World(p), h, rnd, PickKind(weights, rnd)); bigTreeSpots.Add(new Vector3(p.x, p.y, h)); }, 6f);   // normal trees are 2x, big ones stay above them
             if (index == HugeTreeIsland) Scatter(1, 120, 0.4f, 0.8f, 10f, 8f, p => { Tree(root.transform, World(p), 20f, rnd, PickKind(weights, rnd)); bigTreeSpots.Add(new Vector3(p.x, p.y, 20f)); }, 8f);   // one tree three times a normal one
             Scatter(Count(14), 160, 0.6f, 0.92f, 4.5f, 3.2f, p => Tree(root.transform, World(p), 4.8f + (float)rnd.NextDouble() * 4.0f, rnd, PickKind(weights, rnd)), 3.2f);
             Scatter(Count(10), 120, 0.35f, 0.92f, 1.8f, 1.2f, p => Bush(root.transform, World(p), 0.7f + (float)rnd.NextDouble() * 0.7f, rnd), 1.2f);
             Scatter(Mathf.RoundToInt(Count(18) * (vegetation < 0.3f ? 0.5f : 1f)), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
 
-            // T39: ferns and tall grass fill the gaps (own picks so the trees and bushes above keep their layout)
+            // ferns and tall grass fill the gaps (own picks so the trees and bushes above keep their layout)
             if (Kit.Prop("Fern_1") != null || Kit.Prop("grass_large") != null)
                 Scatter(Count(12), 200, 0.2f, 0.94f, 1.0f, 0.8f, p => { var m = Model(root.transform, FirstAvailable(rnd, "Fern_1", "grass_large", "grass"), World(p), (float)rnd.NextDouble() * 360f, 0.5f + (float)rnd.NextDouble() * 0.7f, false); }, 0.5f);
 
@@ -172,7 +171,7 @@ namespace PlantGame.World
                 var near = new List<Vector4>();   // leaf trees within 6 m of the rim may shed a leaf over the edge now and then
                 foreach (var lt in _leafTrees) { var rel = new Vector2(lt.x - c2.x, lt.z - c2.y); if (edge(Mathf.Atan2(rel.y, rel.x)) - rel.magnitude < 6f) near.Add(lt); }
                 if (near.Count > 0 && Hash01(index, 131) < 0.7) FallingBits.AddLeaves(isle, centre, near, Overgrowth.LeafColour(Theme, index));
-                // T43: sounds that match their source: wind in the leaves of leafy islands, whispers and drones near some ruins
+                // sounds that match their source: wind in the leaves of leafy islands, whispers and drones near some ruins
                 if (_leafTrees.Count >= 3)
                 {
                     Vector3 cen = Vector3.zero; foreach (var lt in _leafTrees) cen += new Vector3(lt.x, lt.y + lt.w * 0.7f, lt.z); cen /= _leafTrees.Count;
@@ -202,7 +201,7 @@ namespace PlantGame.World
         }
 
 
-        // ------------------------------------------------------------------ island sides (T39 follow-up)
+        // ------------------------------------------------------------------ island sides
         static readonly float[] WallScale = { 1f, 0.997f, 0.97f, 0.85f, 0.64f, 0.38f, 0f };
 
         /// <summary>Point on the island's side wall at angle `a` and local height `y` (negative below the top), slightly buried; also the outward normal.</summary>
@@ -394,7 +393,7 @@ namespace PlantGame.World
         public static GameObject LeafCrown(Transform parent, Vector3 centre, float radius, float squash, Color tint, System.Random rnd, int cards = 38)
         {
             var mat = LeafMat(tint); if (mat == null) return null;
-            var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>(); var cols = new List<Color>();
+            var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
             for (int i = 0; i < cards; i++)
             {
                 var dir = new Vector3((float)(rnd.NextDouble() * 2 - 1), (float)(rnd.NextDouble() * 2 - 1), (float)(rnd.NextDouble() * 2 - 1)); if (dir.sqrMagnitude < 0.05f) dir = Vector3.up; dir.Normalize();
@@ -490,16 +489,14 @@ namespace PlantGame.World
                     lg.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
             }
-            // shiny debris outside the island: chips of marble and gems hovering just past the rim and under it
+            // debris outside the island: chips of marble hovering just past the rim and under it
             for (int k = 0, n = 6 + rnd.Next(6); k < n; k++)
             {
                 float a = (float)(rnd.NextDouble() * 6.283), r = edge(a) + 1.2f + (float)rnd.NextDouble() * 5f;
                 var pos = new Vector3(centre.x + Mathf.Cos(a) * r, centre.y + IslandTerrain.Shoulder - 5f + (float)rnd.NextDouble() * 7f, centre.z + Mathf.Sin(a) * r);
-                float sz = 0.15f + (float)rnd.NextDouble() * 0.35f; bool gem = false; rnd.NextDouble();   // floating gems removed: distracting
-                var g = MeshPrim(gem ? "FloatGem" : "FloatChip", gem ? DebrisMeshes.Crystal(rnd.Next(4)) : DebrisMeshes.Tile(rnd.Next(8)), root.transform, pos,
-                                 gem ? new Vector3(sz, sz * 1.5f, sz) : new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), gem ? crystal : marble, false);
+                float sz = 0.15f + (float)rnd.NextDouble() * 0.35f; rnd.NextDouble();   // a spare draw, so the layout of everything after it stays the same
+                var g = MeshPrim("FloatChip", DebrisMeshes.Tile(rnd.Next(8)), root.transform, pos, new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), marble, false);
                 var b = g.AddComponent<FloatBob>(); b.amplitude = 0.25f + sz; b.period = 3f + (float)rnd.NextDouble() * 4f; b.wobble = 10f; b.spin = (rnd.NextDouble() < 0.5 ? -1f : 1f) * (10f + (float)rnd.NextDouble() * 30f);
-                if (gem) g.AddComponent<GemSparkle>().baseLevel = 0.3f;
                 g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
@@ -753,7 +750,7 @@ namespace PlantGame.World
         /// <summary>Ground disc under a seed source: snow-white on snowy levels, otherwise the given foliage material.</summary>
         static Material PatchBase(Material foliage) => Theme == LevelTheme.Snow ? Ground.Top(GroundKind.Grass) : foliage;
 
-        /// <summary>T33: a copy of the seed's shape (its pickup mesh and material) used as fruit on the seed sources.</summary>
+        /// <summary>A copy of the seed's shape (its pickup mesh and material) used as fruit on the seed sources.</summary>
         static GameObject Fruit(Transform parent, string name, Vector3 pos, float scale, Mesh mesh, Material mat, Quaternion rot)
         {
             var g = new GameObject(name); g.transform.SetParent(parent, true);
@@ -830,7 +827,7 @@ namespace PlantGame.World
             for (int i = 0; i < n; i++)
             {
                 float a = i * 6.28f / n + (float)rnd.NextDouble() * 0.5f, d = i == 0 ? 0f : 0.55f + (float)rnd.NextDouble() * 0.45f;
-                int tier = (i + rnd.Next(3)) % 3;   // T40: short, medium and tall culms in one grove
+                int tier = (i + rnd.Next(3)) % 3;   // short, medium and tall culms in one grove
                 float h = tier == 0 ? 2.2f + (float)rnd.NextDouble() * 0.9f : tier == 1 ? 3.5f + (float)rnd.NextDouble() * 1.1f : 5.0f + (float)rnd.NextDouble() * 1.3f;
                 var cp = pos + new Vector3(Mathf.Cos(a) * d, -0.18f, Mathf.Sin(a) * d);   // culm feet sunk into the ground
                 var culm = new GameObject("Culm" + i); culm.transform.SetParent(parent, true); culm.transform.position = cp;
@@ -852,7 +849,7 @@ namespace PlantGame.World
                     Fruit(parent, "Fruit" + f, pos + new Vector3(Mathf.Cos(a) * d, y, Mathf.Sin(a) * d), 0.55f, fruitMesh, fruit,
                         Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 70f + (float)rnd.NextDouble() * 20f));   // short pieces hanging almost upright
                 }
-            // T67: two flowers grow on the culms like the ones on the vine bridges (one white with mist-blue inner petals, one yellow), facing outwards
+            // two flowers grow on the culms like the ones on the vine bridges (one white with mist-blue inner petals, one yellow), facing outwards
             var blue = _flowerBlue != null ? _flowerBlue : _flowerBlue = RuntimeMats.NewLit("M_FlowerBlue", new Color(0.75f, 0.85f, 0.95f));
             var tall = new List<(Transform t, float h)>(culms); tall.Sort((x, y) => y.h.CompareTo(x.h));
             for (int fl = 0; fl < 2 && fl < tall.Count; fl++)
@@ -895,7 +892,7 @@ namespace PlantGame.World
                 var p = pos + new Vector3(Mathf.Cos(a) * d, 0.12f + 0.14f * sc[i], Mathf.Sin(a) * d);
                 if (fruitMesh != null) Fruit(parent, "Rosette" + i, p, sc[i], fruitMesh, fruit, Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0));
                 else Prim("Rosette" + i, PrimitiveType.Sphere, parent, p, new Vector3(sc[i] * 0.5f, sc[i] * 0.25f, sc[i] * 0.5f), fruit, false);
-                // T67: dew pooled in the middle of each rosette: a small water disc with a bright dewdrop on it
+                // dew pooled in the middle of each rosette: a small water disc with a bright dewdrop on it
                 var water = Kit.Mat("M_Water");
                 if (water != null)
                 {
@@ -938,11 +935,11 @@ namespace PlantGame.World
         }
 
         /// <summary>Parachute leaf plant: a short pale stalk carrying three huge leaves (the parachute leaves) on curved stems, plus a soft glow so it stands out on the island.</summary>
-        public static void LeafPlant(Transform parent, Vector3 pos, Material fruit, System.Random rnd)
+        public static void LeafPlant(Transform parent, Vector3 pos, System.Random rnd)
         {
             EnsureMaterials();
             var stem = Mat("M_FoliageLight"); var light = Mat("M_FoliageLight"); var dark = Mat("M_Foliage"); var glow = Kit.Mat("M_PortalGlow");
-            // T67: a knobbly stalk (stacked tapering segments with node rings), a swollen root and a few leaflets low down
+            // a knobbly stalk (stacked tapering segments with node rings), a swollen root and a few leaflets low down
             for (int k = 0; k < 6; k++)
             {
                 float w = 0.2f - k * 0.016f;
@@ -964,8 +961,8 @@ namespace PlantGame.World
                 var armEnd = pos + Vector3.up * (1.9f + i * 0.12f) + outward * 0.9f;
                 var arm = Prim("Arm" + i, PrimitiveType.Cylinder, parent, (pos + Vector3.up * 1.7f + armEnd) * 0.5f, new Vector3(0.07f, 0.55f, 0.07f), stem, false);
                 arm.transform.rotation = Quaternion.FromToRotation(Vector3.up, armEnd - (pos + Vector3.up * 1.7f));
-                Prim("Bud" + i, PrimitiveType.Sphere, parent, armEnd, Vector3.one * 0.16f, dark, false);   // T67: knuckle where the arm meets the canopy
-                // T67: the plant grows big leaves (not canopies): a blade at the end of the arm, its stem on the near side, tip up and outward
+                Prim("Bud" + i, PrimitiveType.Sphere, parent, armEnd, Vector3.one * 0.16f, dark, false);   // knuckle where the arm meets the canopy
+                // the plant grows big leaves (not canopies): a blade at the end of the arm, its stem on the near side, tip up and outward
                 float L = R * 1.9f, W = R * 1.2f;
                 var dirUp = (outward * Mathf.Cos(0.35f) + Vector3.up * Mathf.Sin(0.35f)).normalized;
                 var leaf = new GameObject("Leaf" + i); leaf.transform.SetParent(parent, true);
@@ -998,7 +995,7 @@ namespace PlantGame.World
                 if (fruitMesh != null) Fruit(parent, "Puffball" + i, p, sc[i], fruitMesh, fruit != null ? fruit : _white, Quaternion.Euler((float)(rnd.NextDouble() - 0.5) * 14f, (float)rnd.NextDouble() * 360f, (float)(rnd.NextDouble() - 0.5) * 14f));
                 else Prim("Puffball" + i, PrimitiveType.Sphere, parent, p, Vector3.one * 0.45f * sc[i], fruit != null ? fruit : _white, false);
             }
-            // T67: red toadstools with white spots among the puffballs, like the grown mushroom patch
+            // red toadstools with white spots among the puffballs, like the grown mushroom patch
             var red = Kit.Mat("M_BerryRed") ?? _pink;
             float[] rs = { 1.6f, 1.2f, 0.9f };
             for (int i = 0; i < rs.Length; i++)
@@ -1012,7 +1009,7 @@ namespace PlantGame.World
                 {
                     float ka = k * 1.047f + i, kr = k == 5 ? 0f : capR * 0.55f;
                     float ky = capY + capH * Mathf.Sqrt(Mathf.Max(0f, 1f - (kr / capR) * (kr / capR)));
-                    var sp = Prim("Spot", PrimitiveType.Sphere, parent, b + new Vector3(Mathf.Cos(ka) * kr, ky - 0.01f * s, Mathf.Sin(ka) * kr), new Vector3(0.16f, 0.06f, 0.16f) * s, _white, false);
+                    Prim("Spot", PrimitiveType.Sphere, parent, b + new Vector3(Mathf.Cos(ka) * kr, ky - 0.01f * s, Mathf.Sin(ka) * kr), new Vector3(0.16f, 0.06f, 0.16f) * s, _white, false);
                 }
             }
         }
@@ -1075,7 +1072,7 @@ namespace PlantGame.World
             if (!broken)
             {
                 Prim("Cap", PrimitiveType.Cube, go.transform, pos + Vector3.up * (0.3f + h + 0.12f), new Vector3(1.05f, 0.25f, 1.05f), _marble, false);
-                var ring = Prim("Rune", PrimitiveType.Cylinder, go.transform, pos + Vector3.up * (0.3f + h * 0.62f), new Vector3(0.82f, 0.05f, 0.82f), _gold, false);
+                Prim("Rune", PrimitiveType.Cylinder, go.transform, pos + Vector3.up * (0.3f + h * 0.62f), new Vector3(0.82f, 0.05f, 0.82f), _gold, false);
                 Prim("Rune2", PrimitiveType.Cylinder, go.transform, pos + Vector3.up * (0.3f + h * 0.8f), new Vector3(0.8f, 0.03f, 0.8f), _gold, false);
             }
         }
@@ -1348,7 +1345,7 @@ namespace PlantGame.World
                     g = new GameObject("Pillar" + i); g.transform.SetParent(rocks.transform, true); g.transform.position = pos;
                     Prim("Drum", PrimitiveType.Cylinder, g.transform, pos, new Vector3(s * 0.55f, s * (0.7f + (float)rnd.NextDouble()), s * 0.55f), _marble, false);
                     var chunk = MeshPrim("Chunk", DebrisMeshes.Tile(i), g.transform, pos + new Vector3(s * 0.9f, -s * 0.5f, s * 0.2f), new Vector3(s * 0.5f, s * 0.35f, s * 0.45f), _marble, false);
-                    chunk.transform.rotation = Quaternion.Euler(i * 37 % 360, i * 91 % 360, i * 53 % 360);   // fixed per piece (was UnityEngine.Random: every rebuild differed)
+                    chunk.transform.rotation = Quaternion.Euler(i * 37 % 360, i * 91 % 360, i * 53 % 360);   // fixed per piece, so every rebuild is the same
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 40f - 20f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 40f - 20f);
                 }
                 else if (kind < 0.84)       // flat carved slab

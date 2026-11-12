@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PlantGame.Core
 {
     /// <summary>
-    /// T04: glow-cyan pulse on the focused object (base colour tint + emission via MaterialPropertyBlock, so shared
+    /// Glow-cyan pulse on the focused object (base colour tint + emission via MaterialPropertyBlock, so shared
     /// materials are never touched). Added on demand by InteractionSensor; disabled when focus leaves.
     /// </summary>
     public class FocusHighlight : MonoBehaviour

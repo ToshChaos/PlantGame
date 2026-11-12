@@ -8,7 +8,7 @@ using PlantGame.World;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T05: builds the ItemDefinition assets (ScriptableObjects/Items) and world prefabs (Prefabs/Items):
+    /// Builds the ItemDefinition assets (ScriptableObjects/Items) and world prefabs (Prefabs/Items):
     /// a shaped, softly glowing pickup mesh (SeedMeshes) with a trigger collider on layer Interactable and a WorldItem.
     /// Menu: PlantGame > 6 Build Items. Idempotent (assets updated in place so references survive).
     /// </summary>
@@ -119,7 +119,7 @@ namespace PlantGame.Editor
             return prefab;
         }
 
-        /// <summary>T33: bamboo / bean / puffball / succulent pickups. The mesh is centred on the origin, a small sphere collider lets it rest on the ground.</summary>
+        /// <summary>Bamboo / bean / puffball / succulent pickups. The mesh is centred on the origin, a small sphere collider lets it rest on the ground.</summary>
         static GameObject BuildShapedPrefab(string name, ItemDefinition item, Color color)
         {
             Directory.CreateDirectory("Assets/Art/Models/Items");

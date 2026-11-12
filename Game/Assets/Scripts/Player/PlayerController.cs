@@ -6,11 +6,11 @@ using PlantGame.Core;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T03: CharacterController with a tight state machine: Grounded, Airborne, Climbing.
-    /// T31: third-person orbit camera. The mouse orbits cameraPivot (yaw/pitch, independent of the body), WASD moves relative
+    /// CharacterController with a tight state machine: Grounded, Airborne, Climbing.
+    /// Third-person orbit camera. The mouse orbits cameraPivot (yaw/pitch, independent of the body), WASD moves relative
     /// to the camera yaw and the visual `model` turns toward the move direction. The root transform itself is not rotated by look.
-    /// Numbers from AGENTS.md 5.1: walk 4 m/s, run 6 m/s, jump height 4.8 m (3x the original 1.6 m, user request day 1), coyote 0.12 s, jump buffer 0.12 s.
-    /// With gravity 20 m/s^2 the jump is ~13.9 m/s up, ~1.39 s in the air: ~8.3 m flat gap at run speed (+ coyote).
+    /// Numbers from AGENTS.md 5.1: walk 4 m/s, run 6 m/s, jump height 3.6 m, coyote 0.12 s, jump buffer 0.12 s.
+    /// With gravity 20 m/s^2 the jump is 12 m/s up, 1.2 s in the air: a 7.2 m flat gap at run speed (+ coyote).
     /// Controls (5.8): W/S climb, Space jumps off the vine (+~2 m/s away, 0.3 s re-grab cooldown).
     /// Self-contained: needs CharacterController + PlayerInputReader on the same object and a camera pivot child.
     /// </summary>
@@ -51,7 +51,7 @@ namespace PlantGame.Player
         public Transform cameraPivot;
         [Tooltip("Camera transform, child of cameraPivot; pulled toward the pivot when geometry is in the way.")]
         public Transform cameraTransform;
-        public float lookSensitivity = 0.2f;   // degrees per mouse count (2x the T03 default)
+        public float lookSensitivity = 0.2f;   // degrees per mouse count
         public float pitchMin = -35f;           // looking up
         public float pitchMax = 70f;            // looking down
         [Tooltip("Degrees per second the camera turns with A / D while walking forward (GameSettings.CameraFollow).")]
@@ -63,12 +63,12 @@ namespace PlantGame.Player
         [Header("Model")]
         [Tooltip("Visual model root; turned toward the move direction (faces the ladder while climbing).")]
         public Transform model;
-        public float turnSpeed = 300f;          // degrees per second (slower turning, was 720)
+        public float turnSpeed = 300f;          // degrees per second
 
         [Header("Falling")]
-        [Tooltip("Respawn when y drops below this. T15 sets it per world: island bottom - 30 m.")]
+        [Tooltip("Respawn when y drops below this. GameBootstrap sets it per world: island bottom - 30 m.")]
         public float killPlaneY = -50f;
-        [Tooltip("T15 assigns the last visited island Spawn. Falls back to the 'Respawn' tag, then the start position.")]
+        [Tooltip("GameBootstrap assigns the last visited island Spawn. Falls back to the 'Respawn' tag, then the start position.")]
         public Transform respawnPoint;
 
         [Header("Misc")]
@@ -83,7 +83,7 @@ namespace PlantGame.Player
         public bool CanDescend => CurrentState == State.Grounded && _touching != null && _regrab <= 0f && _touching.IsOnClimbSide(transform.position) && transform.position.y >= _touching.TopY - topZone;
         public void Descend() { if (CanDescend) StartClimb(_touching); }
         public bool IsGliding { get; private set; }
-        /// <summary>T50: extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
+        /// <summary>Extra horizontal velocity from wind gusts (set each frame by WindGusts; ignored while climbing).</summary>
         public Vector3 WindVelocity;
         public bool IsAirborne => CurrentState == State.Airborne;
         float _glideTime;
@@ -125,7 +125,7 @@ namespace PlantGame.Player
         public Vector3 Velocity => CurrentState == State.Climbing ? Vector3.up * _climbVel : _hVel + Vector3.up * _vVel;
         public PlayerInputReader Input { get; private set; }
         public bool CursorLocked { get; private set; }
-        /// <summary>Raised when R was held for restartHoldSeconds. T15 wires this to RunSession.Restart.</summary>
+        /// <summary>Raised when R was held for restartHoldSeconds. GameBootstrap restarts the run on it.</summary>
         public event Action RestartRequested;
 
         public float JumpVelocity => Mathf.Sqrt(2f * gravity * jumpHeight);
@@ -166,8 +166,8 @@ namespace PlantGame.Player
                 cameraTransform.gameObject.AddComponent<CameraOcclusionFade>().target = cameraPivot != null ? cameraPivot : transform;   // scenery between the camera and the player turns see-through
         }
 
-        void OnEnable() { _instance = this; }
-        void OnDisable() { SetCursorLocked(false); if (_instance == this) _instance = null; }
+        void OnEnable() { _instance = this; GameEvents.WorldGenerated += ForgetScenery; }
+        void OnDisable() { SetCursorLocked(false); if (_instance == this) _instance = null; GameEvents.WorldGenerated -= ForgetScenery; }
 
         void Update() { Tick(Time.deltaTime); }
 
@@ -228,15 +228,20 @@ namespace PlantGame.Player
 
         // ---------------------------------------------------------------- ground + air
 
-        Transform _ride; Vector3 _ridePos;
+        Transform _ride, _groundIsland; Vector3 _ridePos; Collider _ground;
         /// <summary>Islands drift on kinematic bodies (FloatBob), which a CharacterController does not follow: carry the player by the island's own movement since the last frame.</summary>
         void RideIsland(bool grounded)
         {
             Transform island = null;
             if (grounded && Physics.Raycast(transform.position + Vector3.up * 0.3f, Vector3.down, out var hit, 1.1f, Layers.SolidMask, QueryTriggerInteraction.Ignore))
             {
-                var bob = hit.collider.GetComponentInParent<World.FloatBob>();
-                if (bob != null && bob.physics) island = bob.transform;
+                if (hit.collider != _ground)   // the island lookup walks up the hierarchy: once per ground collider, not every frame
+                {
+                    _ground = hit.collider;
+                    var bob = _ground.GetComponentInParent<World.FloatBob>();
+                    _groundIsland = bob != null && bob.physics ? bob.transform : null;
+                }
+                island = _groundIsland;
             }
             if (island != null && island == _ride) { var d = island.position - _ridePos; if (d.sqrMagnitude < 4f) _cc.Move(d); }
             _ride = island; _ridePos = island != null ? island.position : Vector3.zero;
@@ -278,7 +283,7 @@ namespace PlantGame.Player
             {
                 _vVel = JumpVelocity;
                 _jumpBuffer = 0f; _coyote = 0f;
-                CurrentState = State.Airborne; _airTime = 0f; grounded = false;
+                CurrentState = State.Airborne; _airTime = 0f;
                 GameEvents.RaisePlayerJumped();
             }
             else if (grounded) _vVel = -2f;                       // keep isGrounded true on flat ground and slopes
@@ -461,7 +466,7 @@ namespace PlantGame.Player
             else if (look.sqrMagnitude >= 0.01f) _followFacing = false;
         }
 
-        // ---------------------------------------------------------------- third-person model + camera (T31)
+        // ---------------------------------------------------------------- third-person model + camera
 
         void UpdateModelFacing(float dt)
         {
@@ -478,7 +483,17 @@ namespace PlantGame.Player
         }
 
         readonly RaycastHit[] _camHits = new RaycastHit[16];
-        static bool IsFadeScenery(Transform t) { for (; t != null; t = t.parent) if (t.name == "Scenery") return true; return false; }
+        readonly System.Collections.Generic.Dictionary<Collider, bool> _fadeScenery = new System.Collections.Generic.Dictionary<Collider, bool>();
+        void ForgetScenery(int seed) { _fadeScenery.Clear(); }
+
+        /// <summary>The collider belongs to an island's "Scenery" (remembered per collider: reading a Transform's name allocates, and the camera asks every frame).</summary>
+        bool IsFadeScenery(Collider c)
+        {
+            if (_fadeScenery.TryGetValue(c, out bool known)) return known;
+            bool scenery = false;
+            for (var t = c.transform; t != null && !scenery; t = t.parent) scenery = t.name == "Scenery";
+            return _fadeScenery[c] = scenery;
+        }
 
         void UpdateCamera()
         {
@@ -491,7 +506,7 @@ namespace PlantGame.Player
             int hits = Physics.SphereCastNonAlloc(cameraPivot.position, cameraRadius, back, _camHits, cameraDistance, Layers.WalkableMask, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < hits; i++)
             {
-                if (IsFadeScenery(_camHits[i].collider.transform)) continue;   // trees, rocks and ruins fade instead of pulling the camera in
+                if (IsFadeScenery(_camHits[i].collider)) continue;   // trees, rocks and ruins fade instead of pulling the camera in
                 dist = Mathf.Min(dist, Mathf.Max(cameraMinDistance, _camHits[i].distance));
             }
             cameraTransform.localPosition = new Vector3(0f, 0f, -dist);

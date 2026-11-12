@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T03: thin wrapper over the "Player" action map in PlantGameInput.inputactions (bindings per AGENTS.md 5.8).
-    /// Other systems (T04 interaction, T05 inventory, T19 UI) read input from here instead of touching devices.
+    /// Thin wrapper over the "Player" action map in PlantGameInput.inputactions (bindings per AGENTS.md 5.8).
+    /// Other systems (interaction, inventory, UI) read input from here instead of touching devices.
     /// Reads are polled per frame: call from Update.
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
@@ -13,7 +13,7 @@ namespace PlantGame.Player
         [SerializeField] InputActionAsset actions;
 
         InputActionMap _map;
-        InputAction _move, _look, _jump, _run, _pickupDrop, _cycle, _use, _water, _pause, _restart, _scroll;
+        InputAction _move, _look, _jump, _run, _pickupDrop, _cycle, _use, _water, _pause, _restart;
         InputAction[] _slots;
 
         /// <summary>When false every read returns "nothing pressed" (pause menu, win screen, ...).</summary>
@@ -34,7 +34,6 @@ namespace PlantGame.Player
             _water = _map.FindAction("Water", true);
             _pause = _map.FindAction("Pause", true);
             _restart = _map.FindAction("RestartHold", true);
-            _scroll = _map.FindAction("Scroll", true);
             _slots = new[] { _map.FindAction("Slot1", true), _map.FindAction("Slot2", true), _map.FindAction("Slot3", true), _map.FindAction("Slot4", true) };
             if (GetComponent<TouchControls>() == null) gameObject.AddComponent<TouchControls>();   // T57: draws and reads the on-screen controls on touch devices only
         }
@@ -65,7 +64,7 @@ namespace PlantGame.Player
         public Vector2 Look => !Enabled || _look == null ? Vector2.zero : TouchInput.Active ? TouchInput.Look : _look.ReadValue<Vector2>();
         public bool JumpPressed => Enabled && (TouchInput.JumpPressed || _jump != null && _jump.WasPressedThisFrame());
         public bool RunHeld => Enabled && (_run != null && _run.IsPressed());
-        /// <summary>Q: pick up the focused item, or drop the selected one (resolution in T04).</summary>
+        /// <summary>Q: pick up the focused item, or drop the selected one (PlayerInteraction resolves which).</summary>
         public bool PickupDropPressed => Enabled && _pickupDrop != null && _pickupDrop.WasPressedThisFrame();
         /// <summary>E: use the selected item on the focused target, or interact with the focused Use-interactable.</summary>
         public bool UsePressed => Enabled && _use != null && _use.WasPressedThisFrame();

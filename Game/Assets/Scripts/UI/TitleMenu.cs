@@ -11,7 +11,7 @@ using PlantGame.World;
 namespace PlantGame.UI
 {
     /// <summary>
-    /// T26: title screen and level select, built at runtime. Home (Play / Quit), then the level screen: curated level cards with best times,
+    /// Title screen and level select, built at runtime. Home (Play / Quit), then the level screen: curated level cards with best times,
     /// a Random Level block (difficulty, its seed code is shown before you start and can be copied), a seed code field (type or Paste) with live
     /// validation. Start puts the RunConfig in GameBootstrap.PendingRun and loads Main.
     /// </summary>
@@ -251,7 +251,7 @@ namespace PlantGame.UI
             cgo.AddComponent<GraphicRaycaster>();
             var root = (RectTransform)cgo.transform;
 
-            var levels = Kit.Asset != null ? Kit.Asset.levels : new LevelDefinition[0];
+            var levels = Kit.Asset != null ? Kit.Asset.levels : System.Array.Empty<LevelDefinition>();
             _home = Screen("Home", root, 0.15f);
             if (UiLayout.WideTouch)
             {
@@ -305,7 +305,7 @@ namespace PlantGame.UI
             _levels = Screen("Levels", root, 0.82f);
             Label(_levels.transform, "Select level", 70, new Vector2(0, 450), 1200, Lime);
             _cardInfo = new Text[levels.Length]; _cardPlay = new GameObject[levels.Length]; _cardLock = new Text[levels.Length];
-            int perRow = levels.Length > 6 ? (levels.Length + 1) / 2 : Mathf.Max(1, levels.Length);   // T50: ten levels go in two rows of five
+            int perRow = levels.Length > 6 ? (levels.Length + 1) / 2 : Mathf.Max(1, levels.Length);   // ten levels go in two rows of five
             bool two = levels.Length > 6;
             for (int i = 0; i < levels.Length; i++)
             {

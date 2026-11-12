@@ -12,14 +12,13 @@ using PlantGame.Player;
 namespace PlantGame.UI
 {
     /// <summary>
-    /// MVP HUD (built at runtime, no prefab): 4-slot hotbar with the selected slot highlighted, water charges, the interaction
+    /// The HUD (built at runtime, no prefab): 4-slot hotbar with the selected slot highlighted, water charges, the interaction
     /// prompt with its key, and an Esc pause menu (Resume / Restart / Quit) that freezes time and frees the cursor.
-    /// Full HUD styling is T19; this is the functional version.
     /// </summary>
     [DefaultExecutionOrder(40)]
     public class PlayerHud : MonoBehaviour
     {
-        static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots (T60)
+        static float SlotSize => TouchInput.Active ? 130f : 92f;   // touch: thumb-sized slots
         const float Gap = 28f;
         const string PauseTip = "Tip: the plants for later gaps grow on other islands.\nYour bag holds only 4, so plan ahead - or walk back.";
 
@@ -30,7 +29,6 @@ namespace PlantGame.UI
         Font _font;
 
         Image[] _slotBg, _slotIcon;
-        Text[] _slotNum;
         Text _selName, _prompt, _waterLabel, _waterWarn, _hints, _hintsButtonLabel;
         Text _timer, _endTitle, _endBody;
         GameObject _endPanel, _nextButton;
@@ -259,19 +257,9 @@ namespace PlantGame.UI
                 _drops[i].color = new Color(0.44f, 0.66f, 0.86f, 0.22f);   // the empty drop; the child fills it from the bottom as the can fills
                 _dropFill[i].fillAmount = Mathf.Clamp01(shown - i);
             }
-            _waterLabel.supportRichText = true;
             _waterLabel.text = empty ? _emptyLabel ??= "Water      <color=#" + ColorUtility.ToHtmlStringRGB(Palette.TextOrange) + ">EMPTY</color>" : "Water";
-            bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && GameSettings.Hints && !Paused;
-            if (nearWater)
-            {   // at the water with room in the can: refill hint
-                _waterWarn.enabled = true; _waterWarn.text = "Refill water at source (pond, stream, plant)";
-            }
-            else
-            {
-                _waterWarn.enabled = empty && GameSettings.Hints;
-                _waterWarn.text = "Refill water at source (pond, stream, plant)";
-               
-            }
+            bool nearWater = _pi != null && InteractionMarkers.RefillRingThick && _can != null && !_can.IsFull && !Paused;
+            _waterWarn.enabled = GameSettings.Hints && (empty || nearWater);   // an empty can, or at the water with room in the can
 
             _hints.enabled = GameSettings.Hints && !TouchInput.Active;   // key hints make no sense on the touch layout
             if (_hints.enabled)
@@ -286,27 +274,29 @@ namespace PlantGame.UI
             if (rs == null || rs.State == RunState.Idle) { _timer.text = ""; _timerSecond = -1; }
             else if ((int)rs.Elapsed != _timerSecond) { _timerSecond = (int)rs.Elapsed; _timer.text = Fmt(rs.Elapsed); }
 
+            // the line is worked out first and assigned once: every change of a Text's string rebuilds it, and with Hints off the result is mostly ""
             string p = Paused ? "" : _pi.CurrentPrompt, key = _pi.CurrentPromptKey;
-            _prompt.text = PromptText(p, key, empty);
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
-                _prompt.text = TouchInput.Active ? "Tap Jump to open the leaf" : "Press [" + Key("Use", "E") + "] to glide";
-            if (string.IsNullOrEmpty(_prompt.text) && Time.unscaledTime < _hintUntil) _prompt.text = _hint;
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null && TouchInput.Active)   // touch ladder hints: tap the stalk
+            string line = PromptText(p, key, empty);
+            if (string.IsNullOrEmpty(line) && _pc != null && _pc.IsAirborne && !_pc.IsGliding && _pi.Inventory.SelectedItem != null && _pi.Inventory.SelectedItem.id == "parachute_leaf")
+                line = TouchInput.Active ? "Tap Jump to open the leaf" : _glideHint ??= "Press [" + Key("Use", "E") + "] to glide";
+            if (string.IsNullOrEmpty(line) && Time.unscaledTime < _hintUntil) line = _hint;
+            if (string.IsNullOrEmpty(line) && _pc != null && TouchInput.Active)   // touch ladder hints: tap the stalk
                 switch (_pc.CurrentClimbHint)
                 {
-                    case PlayerController.ClimbHint.Climb: _prompt.text = "Tap the circle to climb the beanstalk"; break;
-                    case PlayerController.ClimbHint.Descend: _prompt.text = "Tap the circle to climb down"; break;
-                    case PlayerController.ClimbHint.Climbing: _prompt.text = "Tap above or below to climb    Jump to let go"; break;
+                    case PlayerController.ClimbHint.Climb: line = "Tap the circle to climb the beanstalk"; break;
+                    case PlayerController.ClimbHint.Descend: line = "Tap the circle to climb down"; break;
+                    case PlayerController.ClimbHint.Climbing: line = "Tap above or below to climb    Jump to let go"; break;
                 }
-            if (string.IsNullOrEmpty(_prompt.text) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
+            if (string.IsNullOrEmpty(line) && _pc != null)   // ladder hints (W / S climb are fixed by the controls spec)
                 switch (_pc.CurrentClimbHint)
                 {
-                    case PlayerController.ClimbHint.Climb: _prompt.text = "Press [W] or [Up] to climb"; break;
-                    case PlayerController.ClimbHint.Descend: _prompt.text = "Press [S] or [Down] to climb down"; break;
-                    case PlayerController.ClimbHint.Climbing: _prompt.text = "[W / Up] up    [S / Down] down    [Space] jump off"; break;
+                    case PlayerController.ClimbHint.Climb: line = "Press [W] or [Up] to climb"; break;
+                    case PlayerController.ClimbHint.Descend: line = "Press [S] or [Down] to climb down"; break;
+                    case PlayerController.ClimbHint.Climbing: line = "[W / Up] up    [S / Down] down    [Space] jump off"; break;
                 }
             // one rule: with Hints off only the level goal and its interaction stay (the objective line above is never gated)
-            if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) _prompt.text = "";
+            if (!GameSettings.Hints && !_pi.CurrentPromptIsGoal) line = "";
+            _prompt.text = line;
         }
 
         /// <summary>The interaction prompt line for the sensor's prompt and key; rebuilt only when one of its inputs changes.</summary>
@@ -321,7 +311,7 @@ namespace PlantGame.UI
             if (key == "Frozen") return _memoText = p;
             return _memoText = "[" + Key(key, "E") + "]  " + p;
         }
-        string _memoP, _memoKey, _memoText, _emptyLabel, _hintsWalk, _hintsClimb; bool _memoEmpty, _memoRefill, _memoTouch; int _timerSecond = -1;
+        string _memoP, _memoKey, _memoText, _emptyLabel, _hintsWalk, _hintsClimb, _glideHint; bool _memoEmpty, _memoRefill, _memoTouch; int _timerSecond = -1;
 
         static readonly Dictionary<ItemDefinition, Color> ItemColors = new Dictionary<ItemDefinition, Color>();
 
@@ -337,7 +327,7 @@ namespace PlantGame.UI
             if (it.id == "parachute_leaf") return Palette.LeafYellow;   // the glide leaf is yellow in the hotbar as well as in the world
             if (it.id == "heat_seed") return new Color(1f, 0.66f, 0.14f);   // orange pumpkin
             if (it.id == "heart_seed") return new Color(0.9f, 0.14f, 0.2f);   // the Heart Seed is a red heart
-            if (it.id == "shelf_seed") return Palette.CloudWhite;       // T33: seeds keep their pickup colour in the hotbar
+            if (it.id == "shelf_seed") return Palette.CloudWhite;       // seeds keep their pickup colour in the hotbar
             if (it.worldPrefab != null)
             {
                 var r = it.worldPrefab.GetComponentInChildren<Renderer>();
@@ -367,7 +357,7 @@ namespace PlantGame.UI
             var bar = touch ? Rect("Hotbar", root, new Vector2(1f, 1f), new Vector2(total, SlotSize), new Vector2(-(total * 0.5f + 40f), -(SlotSize * 0.5f + 30f)))
                             : Rect("Hotbar", root, new Vector2(0.5f, 0f), new Vector2(total, SlotSize), new Vector2(0, 90));
             _hotbarRect = bar;
-            _slotBg = new Image[n]; _slotIcon = new Image[n]; _slotNum = new Text[n];
+            _slotBg = new Image[n]; _slotIcon = new Image[n];
             for (int i = 0; i < n; i++)
             {
                 var slot = Rect("Slot" + (i + 1), bar, new Vector2(0f, 0.5f), new Vector2(SlotSize, SlotSize), new Vector2(i * (SlotSize + Gap) + SlotSize * 0.5f, 0));
@@ -396,6 +386,7 @@ namespace PlantGame.UI
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
             _waterWarn = Label("WaterWarn", root, "", 26, touch ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft, touch ? new Vector2(0, 110) : new Vector2(370, 86), touch ? new Vector2(900, 60) : new Vector2(660, 36), touch ? new Vector2(0.5f, 0f) : new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             Hint(_waterWarn);
+            _waterWarn.text = "Refill water at source (pond, stream, plant)";
             _drops = new Image[WateringCan.MaxCharges];
             _dropFill = new Image[WateringCan.MaxCharges];
             for (int i = 0; i < _drops.Length; i++)
@@ -499,7 +490,7 @@ namespace PlantGame.UI
 
         Text Label(string name, Transform parent, string text, int size, TextAnchor align, Vector2 pos, Vector2 box, Vector2? anchor = null, bool scale = true, bool menu = false)
         {
-            var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : (Vector2?)null);
+            var rt = Rect(name, parent, anchor ?? new Vector2(0f, 1f), box, pos, anchor == null ? new Vector2(0f, 1f) : null);
             var t = rt.gameObject.AddComponent<Text>();
             t.font = _font; t.text = text; if (scale) UiLayout.Fit(t, size, menu); else t.fontSize = size; t.alignment = align; t.raycastTarget = false;
             t.color = Palette.TextBlue;   // HUD indicators are dark blue; Hint() makes hints orange, OnDark() white (no text outlines)

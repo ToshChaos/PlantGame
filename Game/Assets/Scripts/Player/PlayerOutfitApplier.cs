@@ -9,8 +9,6 @@ namespace PlantGame.Player
 
         void Awake() { Apply(); }
 
-        public void SetOutfit(PlayerOutfit o) { outfit = o; Apply(); }
-
         public void Apply()
         {
             if (outfit == null) return;

@@ -12,7 +12,7 @@ using PlantGame.World;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T15/T16/T17/T18/T20 builder. Atmosphere prefab (sky, cloud sea, cloud cards, far islands, post volume), audio import settings,
+    /// Atmosphere prefab (sky, cloud sea, cloud cards, far islands, post volume), audio import settings,
     /// and the systems that live in Main (bootstrap, AudioManager, SfxBinder, GrowthVfx).
     /// Menus: PlantGame > 11 Build Atmosphere, PlantGame > 12 Build Main.
     /// </summary>
@@ -309,7 +309,7 @@ namespace PlantGame.Editor
         {
             am.menuMusic = Clip("Music/music_menu"); am.gameplayMusic = Clip("Music/music_gameplay"); am.windAmbience = Clip("Music/amb_wind");
             am.winMusic = Clip("Music/music_win"); am.rainMusic = Clip("Music/music_rain"); am.autumnMusic = Clip("Music/music_autumn"); am.rainAmbience = Clip("Music/amb_rain");
-            // T53: one tune per curated level (level 1 and generated levels keep gameplayMusic)
+            // one tune per curated level (level 1 and generated levels keep gameplayMusic)
             string[] tunes = { "level_2:music_autumn", "level_3:music_rain", "level_4:music_l4", "level_5:music_l5", "level_6:music_l6", "level_7:music_l7", "level_8:music_l8", "level_9:music_l9", "level_10:music_l10" };
             foreach (var tn in tunes) { var kv = tn.Split(':'); var c = Clip("Music/" + kv[1]); if (c != null) am.levelMusic.Add(new AudioManager.Entry { name = kv[0], clips = new[] { c } }); }
             var groups = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<AudioClip>>();

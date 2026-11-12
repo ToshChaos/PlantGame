@@ -8,7 +8,7 @@ using PlantGame.Core;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T01: builds the shared materials in Assets/Art/Materials from the palette (exact hexes).
+    /// Builds the shared materials in Assets/Art/Materials from the palette (exact hexes).
     /// Menu: PlantGame > 2 Build Materials. Idempotent: existing materials are updated in place so references survive.
     /// </summary>
     public static class MaterialBuilder
@@ -50,7 +50,7 @@ namespace PlantGame.Editor
             Make("M_Crystal", lit, m =>
             {
                 SetLit(m, Palette.GlowCyan, 0.8f);
-                SetEmission(m, Palette.GlowCyan * 1.0f);   // 1.0 keeps the hex readable without tonemapping; T16 raises it once bloom/tonemapping exist
+                SetEmission(m, Palette.GlowCyan * 1.0f);
             });
             Make("M_CrystalShard", lit, m =>   // gems and floating crystals: deep teal glass, see-through, a faint glow (GemSparkle adds the glints)
             {
@@ -97,7 +97,7 @@ namespace PlantGame.Editor
             Debug.Log("[PlantGame] Materials built in " + Dir);
         }
 
-        /// <summary>T67: give every PlantGrow material the bark / leaf / cap maps.</summary>
+        /// <summary>Give every PlantGrow material the bark / leaf / cap maps.</summary>
         public static void AssignPlantTextures()
         {
             if (TextureBuilder.Albedo("T_PlantBark") == null) TextureBuilder.Build();

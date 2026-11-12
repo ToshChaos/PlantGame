@@ -56,7 +56,7 @@ namespace PlantGame.UI
         });
 
 
-        /// <summary>Hotbar icon of an item (T33). Null = no special sprite, callers fall back to Disc.</summary>
+        /// <summary>Hotbar icon of an item. Null = no special sprite, callers fall back to Disc.</summary>
         public static Sprite ForItem(string id)
         {
             switch (id)

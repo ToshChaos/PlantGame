@@ -6,7 +6,7 @@ using PlantGame.Audio;
 namespace PlantGame.World
 {
     /// <summary>
-    /// T50: gusts of wind on windy levels. Every 6-13 s a gust ramps up, blows for about 3 s along a slowly turning direction and fades;
+    /// Gusts of wind on windy levels. Every 6-13 s a gust ramps up, blows for about 3 s along a slowly turning direction and fades;
     /// it pushes the player (gliding more, standing still little) and is stronger the higher above the start island they are. Not applied
     /// while climbing. A short hint appears at the first gust. Cosmetic sound: the gust raises the wind ambience.
     /// </summary>
@@ -48,7 +48,7 @@ namespace PlantGame.World
                 var em = wl.emission; em.rateOverTime = 14f + gust * 110f;
             }
             _pc.WindVelocity = _pc.IsClimbing ? Vector3.zero : d * push;
-            var am = AudioManager.Instance;   // T46: the wind roars louder, higher and with each gust the higher you are
+            var am = AudioManager.Instance;   // the wind roars louder, higher and with each gust the higher you are
             if (am != null) { am.AmbienceBoost = Mathf.Lerp(0.55f, 1.7f, height) * (1f + 0.5f * gust); am.AmbiencePitch = Mathf.Lerp(0.88f, 1.18f, height) + 0.06f * gust; }
         }
 

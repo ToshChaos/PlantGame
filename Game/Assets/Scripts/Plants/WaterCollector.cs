@@ -4,7 +4,7 @@ using PlantGame.Core;
 namespace PlantGame.Plants
 {
     /// <summary>
-    /// Water Collector plant (contract 5.5, T28): once grown it catches dew and produces one charge of water every
+    /// Water Collector plant (contract 5.5): once grown it catches dew and produces one charge of water every
     /// `secondsPerCharge` (capacity `capacity`, default 1). F (Water) hands the stored charge to the watering can. The Reservoir child mesh
     /// rises with the fill (stored + progress). It needs no water to grow. Put on the plant root next to PlantInstance;
     /// the INTERACT_NN trigger box (layer Interactable) is what the player looks at.

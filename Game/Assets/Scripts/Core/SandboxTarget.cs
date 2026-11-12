@@ -6,8 +6,8 @@ using PlantGame.Plants;
 namespace PlantGame.Core
 {
     /// <summary>
-    /// Sandbox soil patch (T04 dummy, replaced by SoilPatch / PlantInstance wiring in T11): accepts a seed with E, shows a sprout,
-    /// grows the baked bridge when watered. The bridge is turned to point along `growDirection` and nudged so its two ends sit
+    /// A soil patch (every level uses it, not only the sandbox): accepts a seed with E, shows a sprout,
+    /// grows the baked plant when watered. A bridge is turned to point along `growDirection` and nudged so its two ends sit
     /// about level with the start floor.
     /// </summary>
     public class SandboxTarget : MonoBehaviour, IUsableTarget, IWaterable

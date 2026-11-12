@@ -5,12 +5,11 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
 
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T00: idempotent project setup. Menu: PlantGame > 1 Setup Project.
+    /// Idempotent project setup. Menu: PlantGame > 1 Setup Project.
     /// Sets Linear colour space, creates layers/tags (AGENTS.md 5.6), the physics matrix and the empty scenes.
     /// Safe to run repeatedly.
     /// </summary>

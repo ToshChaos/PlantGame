@@ -78,13 +78,14 @@ namespace PlantGame.World
             if (_anchor == null) { var c = Camera.main; if (c == null) return; _anchor = c.transform; }
             Vector3 centre = Focus ?? _anchor.position;
             float t = Time.time;
+            var floor = new Vector3(centre.x, FloorY(centre), centre.z);   // one ground probe a frame, shared by every butterfly
             foreach (var f in _flies)
             {
                 if (f.pos == Vector3.zero) f.pos = centre + Random.insideUnitSphere * radius * 0.5f;
                 // wander: a target that drifts on noise, the butterfly eases toward it
                 float n1 = Mathf.PerlinNoise(f.seed, t * 0.07f) - 0.5f, n2 = Mathf.PerlinNoise(f.seed + 11f, t * 0.07f) - 0.5f, n3 = Mathf.PerlinNoise(f.seed + 23f, t * 0.12f);
                 Vector3 off = new Vector3(n1 * 2f * radius, Mathf.Lerp(heightMin, heightMax, n3), n2 * 2f * radius);
-                f.target = new Vector3(centre.x, FloorY(centre), centre.z) + off;
+                f.target = floor + off;
                 Vector3 to = f.target - f.pos;
                 f.pos += to.normalized * Mathf.Min(to.magnitude, f.speed * Time.deltaTime * 2f);
                 Vector3 dir = to; dir.y = 0f;

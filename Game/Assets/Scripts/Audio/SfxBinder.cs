@@ -7,7 +7,7 @@ using PlantGame.Player;
 namespace PlantGame.Audio
 {
     /// <summary>
-    /// T18: listens to GameEvents (and PlantInstance hooks) and plays the matching SFX through AudioManager.
+    /// Listens to GameEvents (and PlantInstance hooks) and plays the matching SFX through AudioManager.
     /// Footsteps are driven by distance walked (surface from the island material under the feet), climbing by height gained.
     /// </summary>
     public class SfxBinder : MonoBehaviour

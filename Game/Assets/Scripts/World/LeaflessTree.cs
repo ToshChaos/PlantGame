@@ -30,7 +30,7 @@ namespace PlantGame.World
                 for (int i = 0; i < src.subMeshCount; i++)
                 {
                     bool leaf = i < mats.Length && mats[i] != null && mats[i].name.Contains("Leaves");
-                    m.SetIndices(leaf ? new int[0] : src.GetIndices(i), MeshTopology.Triangles, i);
+                    m.SetIndices(leaf ? System.Array.Empty<int>() : src.GetIndices(i), MeshTopology.Triangles, i);
                 }
                 m.RecalculateBounds();
                 fs.Add(mf); leafy.Add(src); bare.Add(m);

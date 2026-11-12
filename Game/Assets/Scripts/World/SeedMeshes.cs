@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PlantGame.World
 {
     /// <summary>
-    /// T33: procedural shapes of the seeds (pickup, fruit on the seed sources). All meshes are centred on the origin and lie flat
+    /// Procedural shapes of the seeds (pickup, fruit on the seed sources). All meshes are centred on the origin and lie flat
     /// (bamboo along X) so they rest on the ground and spin about Y. Built from ellipsoids and lathes, smooth shaded.
     /// </summary>
     public static class SeedMeshes
@@ -47,7 +47,7 @@ namespace PlantGame.World
         /// <summary>A bamboo piece: two joints with ring bulges and a short cut stub at each end, 0.8 m long, along X.</summary>
         public static Mesh Bamboo()
         {
-            // T67: the culm plus a short sprouting twig with two blades at each joint, and ring scars
+            // the culm plus a short sprouting twig with two blades at each joint, and ring scars
             var culm = Culm(0.8f, 0.085f, 2, true);
             var b = new Builder();
             for (int j = 0; j < 2; j++)
@@ -56,7 +56,6 @@ namespace PlantGame.World
                 for (int k = 0; k < 2; k++)
                 {
                     float side = k == 0 ? 1f : -1f;
-                    var rot = Quaternion.Euler(0, 0, 0) * Quaternion.AngleAxis(side * (35f + 20f * j), Vector3.right);
                     b.Ellipsoid(new Vector3(x, 0.02f, side * 0.1f), Quaternion.Euler(side * 60f, 0, 20f), new Vector3(0.012f, 0.07f, 0.012f), 6, 4);   // twig
                     b.Ellipsoid(new Vector3(x + 0.05f * side, 0.1f, side * 0.17f), Quaternion.Euler(side * 55f, 0, 35f * side), new Vector3(0.01f, 0.1f, 0.03f), 8, 5);   // blade
                     b.Ellipsoid(new Vector3(x - 0.05f * side, 0.1f, side * 0.16f), Quaternion.Euler(side * 55f, 0, -25f * side), new Vector3(0.009f, 0.08f, 0.026f), 8, 5);
@@ -111,7 +110,7 @@ namespace PlantGame.World
         {
             var b = new Builder();
             b.Ellipsoid(Vector3.zero, Quaternion.identity, new Vector3(0.23f, 0.125f, 0.1f), 32, 20);
-            b.Displace(0.012f, 14f, 3f);                                                      // T67: wrinkled skin
+            b.Displace(0.012f, 14f, 3f);                                                      // wrinkled skin
             var m = b.ToMesh("Seed_Bean", false);
             var v = m.vertices;
             for (int i = 0; i < v.Length; i++)
@@ -139,7 +138,7 @@ namespace PlantGame.World
             var b = new Builder();
             b.Ellipsoid(new Vector3(0, 0.07f, 0), Quaternion.identity, new Vector3(0.22f, 0.21f, 0.22f), 32, 20);       // cap
             b.Displace(0.008f, 9f, 5f);
-            for (int i = 0; i < 16; i++)                                                                                   // T67: warty scales on the cap
+            for (int i = 0; i < 16; i++)                                                                                   // warty scales on the cap
             {
                 float a = i * 2.39996f, yy = 0.97f - i * 0.058f, r = Mathf.Sqrt(1f - yy * yy);
                 var dir = new Vector3(Mathf.Cos(a) * r, yy, Mathf.Sin(a) * r);
@@ -158,7 +157,7 @@ namespace PlantGame.World
         {
             var b = new Builder();
             b.Ellipsoid(Vector3.zero, Quaternion.identity, new Vector3(0.18f, 0.2f, 0.18f), 32, 22);                  // husk
-            b.Displace(0.01f, 11f, 9f);                                                                                 // T67: fibrous, uneven husk
+            b.Displace(0.01f, 11f, 9f);                                                                                 // fibrous, uneven husk
             b.Ellipsoid(new Vector3(0, -0.17f, 0), Quaternion.identity, new Vector3(0.07f, 0.06f, 0.07f), 14, 8);     // blunt bottom tip
             b.Ellipsoid(new Vector3(0, 0.185f, 0), Quaternion.identity, new Vector3(0.1f, 0.05f, 0.1f), 14, 8);       // shoulder where the eyes sit
             for (int i = 0; i < 3; i++)
@@ -179,7 +178,7 @@ namespace PlantGame.World
         public static Mesh Succulent()
         {
             var b = new Builder();
-            // T67: an open cup (no centre leaves, no bud) so the source patch can hold a little pool of water in the middle
+            // an open cup (no centre leaves, no bud) so the source patch can hold a little pool of water in the middle
             Ring(b, 12, 0.19f, -0.08f, 70f, new Vector3(0.085f, 0.2f, 0.045f), 0f);
             Ring(b, 9, 0.14f, -0.04f, 52f, new Vector3(0.075f, 0.19f, 0.045f), 0.5f);
             Ring(b, 7, 0.10f, 0.0f, 36f, new Vector3(0.07f, 0.17f, 0.045f), 0.2f);
@@ -256,7 +255,7 @@ namespace PlantGame.World
                     }
             }
 
-            /// <summary>T67: push vertices along their normals by a 3D noise (wrinkles, pits), amplitude in metres. Optional per-vertex mask.</summary>
+            /// <summary>Push vertices along their normals by a 3D noise (wrinkles, pits), amplitude in metres. Optional per-vertex mask.</summary>
             public void Displace(float amp, float freq, float seed, System.Func<Vector3, float> mask = null, int from = 0)
             {
                 for (int i = from; i < _v.Count; i++)

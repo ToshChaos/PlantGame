@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PlantGame.Editor
 {
-    /// <summary>T23: PlantGame > Build Standalone (macOS). Title + Main only; output goes to the git-ignored Builds/ folder at the repo root.</summary>
+    /// <summary>PlantGame > Build Standalone (macOS). Title + Main only; output goes to the git-ignored Builds/ folder at the repo root.</summary>
     public static class StandaloneBuild
     {
         public const string OutDir = "../Builds/Overgrown-mac", AppName = "Overgrown.app";

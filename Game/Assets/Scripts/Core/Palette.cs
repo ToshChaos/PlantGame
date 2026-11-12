@@ -11,7 +11,7 @@ namespace PlantGame.Core
         public static readonly Color DeepBlue   = Hex("2C5E8F");
         public static readonly Color LeafGreen  = Hex("5DB46B");
         public static readonly Color Moss       = Hex("2F7D4F");
-        /// <summary>T33 seed colours: bamboo (vine seed), bean (beanstalk seed), succulent (dew seed); the puffball (shelf seed) is cloud white.</summary>
+        /// <summary>Seed colours: bamboo (vine seed), bean (beanstalk seed), succulent (dew seed); the puffball (shelf seed) is cloud white.</summary>
         public static readonly Color SeedBamboo = Hex("6BE23B");
         public static readonly Color SeedBean = Hex("8B4FD6");
         public static readonly Color SeedSucculent = Hex("2DBDAA");
@@ -25,7 +25,7 @@ namespace PlantGame.Core
         public static readonly Color Bark       = Hex("7B5638");
         /// <summary>Furrowed earth of the soil patches (planting spots).</summary>
         public static readonly Color Soil       = Hex("7A5230");
-        /// <summary>HUD text accents: prompts and warnings in orange, labels in purple (user request).</summary>
+        /// <summary>HUD text accents: prompts and warnings in orange, labels in purple.</summary>
         public static readonly Color TextOrange = Hex("FF9A3C");
         public static readonly Color TextPurple = Hex("B58CFF");   // world focus highlight only
         public static readonly Color TextBlue = Hex("12365C");   // HUD indicator text

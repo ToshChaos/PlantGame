@@ -31,7 +31,7 @@ namespace PlantGame.World
                     float t = i / (float)segments;
                     float x = (t - 0.5f) * length;
                     float hw = width * 0.5f * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.PI * Mathf.Pow(t, 0.82f))), 0.75f);   // widest a bit before the middle, pointed at both ends
-                    hw *= 1f + 0.04f * Mathf.Sin(t * 70f) * Mathf.Sin(Mathf.PI * t);   // T67: slightly serrated edge
+                    hw *= 1f + 0.04f * Mathf.Sin(t * 70f) * Mathf.Sin(Mathf.PI * t);   // slightly serrated edge
                     float e = 2f * t - 1f;
                     float y = arch * (1f - e * e);
                     float ye = y + fold * hw;

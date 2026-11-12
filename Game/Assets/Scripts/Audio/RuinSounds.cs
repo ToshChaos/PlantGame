@@ -4,7 +4,7 @@ using PlantGame.Core;
 namespace PlantGame.Audio
 {
     /// <summary>
-    /// T43: faint, mysterious sounds near ruins: a low drone, a whisper, stone resonating, distant chimes. One at a time, on a slow random
+    /// Faint, mysterious sounds near ruins: a low drone, a whisper, stone resonating, distant chimes. One at a time, on a slow random
     /// schedule, and only while the player is within `radius` of the ruin.
     /// </summary>
     public class RuinSounds : MonoBehaviour

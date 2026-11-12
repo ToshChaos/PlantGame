@@ -16,7 +16,7 @@ namespace PlantGame.World
         /// <summary>World radius of a goal's base (pedestal, plinth, arch steps, benches): WorldGenerator flattens the terrain under it.</summary>
         public static float Footprint(GoalKind kind) => kind == GoalKind.Fruit ? 1.95f : kind == GoalKind.Gate ? 3.2f : kind == GoalKind.Fire ? 3.0f : 1.45f;
 
-        public static GoalFlag Build(Transform parent, Vector3 pos, GoalKind kind, LevelTheme theme)
+        public static GoalFlag Build(Transform parent, Vector3 pos, GoalKind kind)
         {
             var stone = Kit.Mat("M_Stone"); var marble = Kit.Mat("M_Marble") ?? stone; var gold = Kit.Mat("M_RuneGold"); var crystal = Kit.Mat("M_Crystal");
             var bark = Kit.Mat("M_Bark"); var leaf = Scenery.Mat("M_FoliageLight"); var leaf2 = Scenery.Mat("M_Foliage");
@@ -299,7 +299,7 @@ namespace PlantGame.World
                 if (i == 1) y += 0.03f; if (i == rings - 1) y -= 0.05f;
                 prof.Add(new Vector2(r, y));
             }
-            return ShapeMeshes.Lathe(prof, 40, false, (ang, p) => 1f + 0.035f * Mathf.Cos(ang * 5f) * Mathf.Sin(Mathf.PI * p / (float)rings), "GoldenFruit");
+            return ShapeMeshes.Lathe(prof, 40, false, (ang, p) => 1f + 0.035f * Mathf.Cos(ang * 5f) * Mathf.Sin(Mathf.PI * p / rings), "GoldenFruit");
         }
 
         static Material PortalMat()

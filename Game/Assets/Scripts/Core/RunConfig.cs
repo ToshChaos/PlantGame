@@ -25,7 +25,7 @@ namespace PlantGame.Core
             return (unchecked((int)((uint)c.seed * 3266489917u) >> 11) & 1) == 0 ? WaterMode.CollectorOnly : c.waterMode;
         }
 
-        /// <summary>T50: wind gusts are an extra on top of any theme: set per curated level, about one random level in five.</summary>
+        /// <summary>Wind gusts are an extra on top of any theme: set per curated level, about one random level in five.</summary>
         public static bool ResolveWind(RunConfig c)
         {
             if (!string.IsNullOrEmpty(c.levelId)) return c.wind;
@@ -53,10 +53,10 @@ namespace PlantGame.Core
         public string levelId;
         public WaterMode waterMode;
         public LevelTheme theme;
-        /* T50: gusts of wind push the player (stronger higher up). */ public bool wind;
+        /* Gusts of wind push the player (stronger higher up). */ public bool wind;
         public GoalKind goal;
         /* Round trip: the goal is back on the start island and needs the Heart Seed from the farthest island. */ public bool roundTrip;
-        /* T46: the islands wind round in a spiral (each heading turns a fixed 50 degrees) instead of a random walk. */ public bool spiral;
+        /* The islands wind round in a spiral (each heading turns a fixed 50 degrees) instead of a random walk. */ public bool spiral;
         /* Extra optional dead-end islands (curated levels; random levels add their own from the island count). */ public int sideIslands;
         /* Fixed order of gaps for curated levels (null = generated). Includes PlantKind.Glider. */ public PlantKind[] sequence;
     }

@@ -6,7 +6,7 @@ using PlantGame.Inventory;
 namespace PlantGame.Plants
 {
     /// <summary>
-    /// T20: particles for planting, growing, finishing a plant, picking up an item and winning. Everything is built at runtime
+    /// Particles for planting, growing, finishing a plant, picking up an item and winning. Everything is built at runtime
     /// from one soft-dot material (no prefabs, no textures): palette cyan / white / soft green. Cheap: short-lived bursts, one
     /// following emitter per growing plant.
     /// </summary>
@@ -139,7 +139,7 @@ namespace PlantGame.Plants
         {
             var pl = Player(); if (pl == null) return;
             var petals = Make("VFX_WinPetals", pl.position + Vector3.up * 5f, Green, White, 0.18f, 3.5f, 1.5f, 0, 0f, 0.15f, 5f, false);
-            var em = petals.emission; em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)90), new ParticleSystem.Burst(0.4f, (short)40) });
+            var em = petals.emission; em.SetBursts(new[] { new ParticleSystem.Burst(0f, 90), new ParticleSystem.Burst(0.4f, 40) });
             var main = petals.main; main.maxParticles = 160;
             petals.Play(); Destroy(petals.gameObject, 6f);
         }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using PlantGame.Core;
 
 namespace PlantGame.World
 {
@@ -155,9 +154,7 @@ namespace PlantGame.World
             _mesh.RecalculateNormals(); _mesh.RecalculateBounds(); _mesh.RecalculateTangents();
             GetComponent<MeshFilter>().sharedMesh = _mesh;
             var mc = GetComponent<MeshCollider>(); mc.sharedMesh = null; mc.sharedMesh = _mesh;
-            _ringStart = ringStart;
         }
-        int[] _ringStart;
 
         /// <summary>Flat water surface (local y = WaterLevel) made of the top-grid triangles that dip below it; terrain hides the rest.</summary>
         public Mesh BuildWaterSurface()

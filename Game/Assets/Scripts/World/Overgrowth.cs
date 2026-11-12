@@ -5,7 +5,7 @@ using PlantGame.Core;
 namespace PlantGame.World
 {
     /// <summary>
-    /// T39: the "overgrown" dressing of an island: leaf litter under the trees (tinted by theme), moss patches on the ground and around
+    /// The "overgrown" dressing of an island: leaf litter under the trees (tinted by theme), moss patches on the ground and around
     /// ruins, and hanging vines on the rim and on ruin walls. Everything is merged into a few small static meshes per island (one per
     /// colour), has no collider, and is deterministic from the island index. Lives under a child called "Overgrowth" that the island's
     /// terrain Lift skips (the meshes carry their own heights from the terrain).
@@ -263,7 +263,7 @@ namespace PlantGame.World
             void Moss(Vector2 p, float r)
             {
                 if (!Dry(p)) return;
-                var b = moss[rnd.Next(2)]; int segs = 20; float ph = (float)(rnd.NextDouble() * 6.283);   // 20 segments: a round, soft outline (was 9 corners)
+                var b = moss[rnd.Next(2)]; int segs = 20; float ph = (float)(rnd.NextDouble() * 6.283);   // 20 segments: a round, soft outline
                 var o = new Vector3(p.x, 0, p.y);
                 for (int s = 0; s < segs; s++)
                 {

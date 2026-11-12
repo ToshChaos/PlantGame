@@ -24,7 +24,7 @@ namespace PlantGame.World
         public int attempt;
         /// <summary>Island that holds the goal (-1 = the last island). Optional side islands come after it in the list.</summary>
         public int goalIsland = -1;
-        /// <summary>T38: index of one island built much larger (radius about 1.9x), -1 for none.</summary>
+        /// <summary>Index of one island built much larger (radius about 1.9x), -1 for none.</summary>
         public int bigIsland = -1;
         /// <summary>Index of the island that carries one huge tree (3x a normal tree), -1 for none.</summary>
         public int hugeTreeIsland = -1;
@@ -104,7 +104,7 @@ namespace PlantGame.World
                     if (k == prev && run >= 2 && kinds.Count > 1) { var others = kinds.FindAll(x => x != prev); k = others[rnd.Next(others.Count)]; }
                 }
                 run = k == prev ? run + 1 : 1; prev = k;
-                if (c.spiral) { heading += 50f; rnd.NextDouble(); }   // T46: a steady turn, curling round the start (the draw is kept so other layouts are unchanged)
+                if (c.spiral) { heading += 50f; rnd.NextDouble(); }   // a steady turn, curling round the start (the draw is kept so other layouts are unchanged)
                 else heading = Mathf.Clamp(heading + ((float)rnd.NextDouble() - 0.5f) * 130f, -100f, 100f);   // wide turns: the chain winds across the sky instead of running in a line
                 p.links.Add(new LinkPlan { from = i, kind = k, heading = heading, seedItem = SeedItems.For(k) });
             }
@@ -140,7 +140,7 @@ namespace PlantGame.World
                 int isl = l.kind == PlantKind.Glider || i >= p.mainLinks ? at : Mathf.Max(0, at - rnd.Next(3));   // the leaf waits on the island you glide from
                 p.sources.Add(new SeedSourcePlan { island = isl, item = l.seedItem, index = idx++, drop = l.seedItem == "vine_seed" ? 3 : 2, maxAlive = l.seedItem == "vine_seed" ? 3 : 2 });
             }
-            // the start island has two or three trees / patches (user request): pad with the kinds of the first gaps, then a decoy
+            // the start island has two or three trees / patches: pad with the kinds of the first gaps, then a decoy
             int onStart = p.sources.FindAll(s => s.island == 0).Count;
             int startWant = c.levelId == GameBootstrap.Level1Id ? 1 : 2;   // Level 1: just the vine tree on the first island (no bean patch)
             for (int j = 0; onStart < startWant && j < p.links.Count + kinds.Count; j++)

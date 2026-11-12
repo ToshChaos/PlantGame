@@ -14,13 +14,13 @@ namespace PlantGame.Player
         public Transform target;                  // the player's head / chest
         public float fadedAlpha = 0.22f, fadeSpeed = 6f, checkInterval = 0.1f, margin = 0.4f, maxBoundsSize = 22f;
 
-        class State { public Material[] original; public Material[] clones; public float alpha = 1f; public bool wanted; }
+        class State { public Material[] original; public Material[] clones; public float alpha = 1f, applied = -1f; public bool wanted; }
         readonly Dictionary<Renderer, State> _active = new Dictionary<Renderer, State>();
         static readonly Dictionary<Material, Material> Clones = new Dictionary<Material, Material>();
         readonly List<Renderer> _candidates = new List<Renderer>();
         readonly List<Renderer> _drop = new List<Renderer>();
         float _next, _nextRefresh;
-        static readonly int BaseColor = Shader.PropertyToID("_BaseColor"), Color_ = Shader.PropertyToID("_Color"), Surface = Shader.PropertyToID("_Surface");
+        static readonly int BaseColor = Shader.PropertyToID("_BaseColor"), Color_ = Shader.PropertyToID("_Color"), Surface = Shader.PropertyToID("_Surface"), Cutoff = Shader.PropertyToID("_Cutoff");
 
         void OnEnable() { GameEvents.WorldGenerated += OnWorld; }
         void OnDisable() { GameEvents.WorldGenerated -= OnWorld; RestoreAll(); }
@@ -77,7 +77,11 @@ namespace PlantGame.Player
                 var st = kv.Value; var r = kv.Key;
                 if (r == null) { Release(st); _drop.Add(r); continue; }
                 st.alpha = Mathf.MoveTowards(st.alpha, st.wanted ? fadedAlpha : 1f, fadeSpeed * Time.deltaTime);
-                foreach (var m in st.clones) if (m != null) SetAlpha(m, st.alpha);
+                if (st.alpha != st.applied)   // a fully faded renderer keeps its alpha: nothing to write until it changes
+                {
+                    st.applied = st.alpha;
+                    for (int i = 0; i < st.clones.Length; i++) if (st.clones[i] != null && st.clones[i] != st.original[i]) SetAlpha(st.clones[i], st.alpha);
+                }
                 if (!st.wanted && st.alpha >= 0.999f) { r.sharedMaterials = st.original; Release(st); _drop.Add(r); }
             }
             foreach (var r in _drop) _active.Remove(r);
@@ -111,7 +115,7 @@ namespace PlantGame.Player
 
         static void SetAlpha(Material m, float a)
         {
-            if (m.IsKeywordEnabled("_ALPHATEST_ON")) m.SetFloat("_Cutoff", 0.5f * a);   // the clip tests alpha * fade: scaling the cutoff keeps the card's shape
+            if (m.IsKeywordEnabled("_ALPHATEST_ON")) m.SetFloat(Cutoff, 0.5f * a);   // the clip tests alpha * fade: scaling the cutoff keeps the card's shape
             if (m.HasProperty(BaseColor)) { var c = m.GetColor(BaseColor); c.a = a; m.SetColor(BaseColor, c); }
             else if (m.HasProperty(Color_)) { var c = m.GetColor(Color_); c.a = a; m.SetColor(Color_, c); }
         }

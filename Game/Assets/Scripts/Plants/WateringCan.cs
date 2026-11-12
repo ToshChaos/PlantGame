@@ -4,8 +4,7 @@ using PlantGame.Core;
 namespace PlantGame.Plants
 {
     /// <summary>
-    /// STUB from T04 (contract 5.5) so F / refill can be wired and tested. Owner A2 extends this in T27
-    /// (WaterSettings, respawn persistence, feedback). On the Player, not an inventory item; starts empty (user request).
+    /// The watering can (contract 5.5): 2 charges, on the Player, not an inventory item. Starts empty; charges survive a respawn.
     /// </summary>
     public class WateringCan : MonoBehaviour
     {

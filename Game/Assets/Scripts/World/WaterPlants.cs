@@ -94,7 +94,7 @@ namespace PlantGame.World
                 }
 
             // reeds and cattails along the shore: tufts of tall thin blades, some topped with a brown head
-            int nReeds = Mathf.RoundToInt(discs.Count * (murky ? 7f : 2.5f) + 4);   // clear ponds: a lighter fringe (was 4 per lobe + 6)
+            int nReeds = Mathf.RoundToInt(discs.Count * (murky ? 7f : 2.5f) + 4);   // clear ponds: a lighter fringe
             for (int k = 0; k < nReeds; k++)
             {
                 var d = discs[rnd.Next(discs.Count)]; float a = (float)(rnd.NextDouble() * 6.283);

@@ -34,7 +34,6 @@ namespace PlantGame.World
         static readonly string[] TextureProps = { "_BaseMap", "_BumpMap", "_Ripple" };
         static readonly int WaterFx = Shader.PropertyToID("_PG_Fx");
 
-        static SurfaceFx _inst;
         bool _filterOn, _detailOn;
         bool _forced;
         readonly List<(Material live, Material backup, bool hadDetail, bool specOff, bool envOff)> _mats = new List<(Material, Material, bool, bool, bool)>();
@@ -50,7 +49,7 @@ namespace PlantGame.World
             foreach (var old in Resources.FindObjectsOfTypeAll<SurfaceFx>()) if (old != null) { old.OnDisable(); if (Application.isPlaying) Destroy(old.gameObject); else DestroyImmediate(old.gameObject); }
             var go = new GameObject("SurfaceFx");
             DontDestroyOnLoad(go);
-            _inst = go.AddComponent<SurfaceFx>();
+            go.AddComponent<SurfaceFx>();
         }
 
         void OnEnable() { GameSettings.Changed += Apply; Apply(); }

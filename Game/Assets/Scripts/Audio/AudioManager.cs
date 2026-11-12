@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PlantGame.Core;
@@ -7,7 +6,7 @@ using PlantGame.Core;
 namespace PlantGame.Audio
 {
     /// <summary>
-    /// T17: music crossfade (menu / gameplay), looping ambience and pooled one-shot SFX. Clips are looked up by name
+    /// Music crossfade (menu / gameplay), looping ambience and pooled one-shot SFX. Clips are looked up by name
     /// (`footstep_grass` picks randomly among `footstep_grass_1..n`). Music and Sound follow GameSettings.
     /// Volumes are plain per-bus floats here (no AudioMixer asset: the editor API to author one is internal).
     /// </summary>
@@ -20,9 +19,9 @@ namespace PlantGame.Audio
         public AudioClip menuMusic, gameplayMusic, windAmbience;
         [Tooltip("Per-theme tracks (LevelTheme.Rain / Autumn); Sunny uses gameplayMusic + windAmbience.")]
         public AudioClip rainMusic, autumnMusic, rainAmbience;
-        [Tooltip("T37: calm one-shot piece played (not looped) when the goal is reached.")]
+        [Tooltip("Calm one-shot piece played (not looped) when the goal is reached.")]
         public AudioClip winMusic;
-        [Tooltip("T53: one tune per curated level (Entry.name = levelId, first clip). Level 1, random and seed-code levels use gameplayMusic.")]
+        [Tooltip("One tune per curated level (Entry.name = levelId, first clip). Level 1, random and seed-code levels use gameplayMusic.")]
         public List<Entry> levelMusic = new List<Entry>();
         public List<Entry> sfx = new List<Entry>();
         [Range(0, 1)] public float masterVolume = 1f, musicVolume = 0.55f, sfxVolume = 0.8f, ambienceVolume = 0.0875f;
@@ -31,9 +30,9 @@ namespace PlantGame.Audio
 
         readonly Dictionary<string, AudioClip[]> _lib = new Dictionary<string, AudioClip[]>();
         readonly Dictionary<string, float> _last = new Dictionary<string, float>();
-        AudioSource[] _music = new AudioSource[2];
+        readonly AudioSource[] _music = new AudioSource[2];
         AudioSource _amb;
-        /// <summary>T46: windy levels scale the ambience loop with altitude and gusts (1 = normal).</summary>
+        /// <summary>Windy levels scale the ambience loop with altitude and gusts (1 = normal).</summary>
         public float AmbienceBoost = 1f, AmbiencePitch = 1f;
         AudioSource[] _pool;
         int _poolNext, _active;
@@ -51,7 +50,17 @@ namespace PlantGame.Audio
             ApplyThemeAmbience();
         }
 
-        public static bool OnTitle => UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == UI.PlayerHud.TitleScene;
+        static UnityEngine.SceneManagement.Scene _scene; static bool _onTitle;
+        /// <summary>The title scene is the active one (looked up once per scene: reading a scene's name allocates, and Update asks every frame).</summary>
+        public static bool OnTitle
+        {
+            get
+            {
+                var s = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                if (s != _scene) { _scene = s; _onTitle = s.name == UI.PlayerHud.TitleScene; }
+                return _onTitle;
+            }
+        }
 
         LevelTheme Theme => WorldTheme.Resolve(GameBootstrap.Current);
 
@@ -73,7 +82,7 @@ namespace PlantGame.Audio
         {
             var t = Theme;
             string id = GameBootstrap.Current.levelId;
-            if (!string.IsNullOrEmpty(id)) foreach (var e in levelMusic) if (e.name == id && e.clips != null && e.clips.Length > 0 && e.clips[0] != null) return e.clips[0];   // T53
+            if (!string.IsNullOrEmpty(id)) foreach (var e in levelMusic) if (e.name == id && e.clips != null && e.clips.Length > 0 && e.clips[0] != null) return e.clips[0];
             // random / seed-code levels: match the tune to the theme (reusing the curated level tunes)
             switch (t)
             {
@@ -152,18 +161,17 @@ namespace PlantGame.Audio
         float _duckSmooth = 1f;
 
         /// <summary>Music / ambience volumes from the settings; also runs the moment an option changes (the pause menu is open with the game frozen).</summary>
-        /// <summary>The wind bed is halved (50% of the old level), 30% quieter again on calm levels; rain keeps its own bed.</summary>
-        float WindLevelScale => Theme == LevelTheme.Rain ? 1f : WorldTheme.ResolveWind(GameBootstrap.Current) ? 0.5f : 0.35f;
-
         void ApplyVolumes()
         {
+            var run = GameBootstrap.Current; bool rain = WorldTheme.Resolve(run) == LevelTheme.Rain;
+            float bed = rain ? 1f : WorldTheme.ResolveWind(run) ? 0.5f : 0.35f;   // the wind bed plays at half level on windy levels and lower still on calm ones; rain keeps its own bed
             float level = (GameSettings.Music ? 1f : 0f) * GameSettings.MusicGain * musicVolume * masterVolume;
             _duckSmooth = Mathf.MoveTowards(_duckSmooth, _musicDuck, Time.unscaledDeltaTime * 0.5f);
             var cur = _music[_active]; var old = _music[1 - _active];
             cur.volume = Mathf.Sqrt(_fade) * level * _duckSmooth;
             old.volume = Mathf.Sqrt(1f - _fade) * level;
             if (_fade >= 1f && old.isPlaying) old.Stop();
-            float amb = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (Theme == LevelTheme.Rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain * WindLevelScale;
+            float amb = Mathf.Clamp01(ambienceVolume * AmbienceBoost) * (rain ? Mathf.Lerp(0.25f, 1f, WeatherState.Intensity) : 1f) * masterVolume * GameSettings.SoundGain * bed;
             _amb.volume = GameSettings.Sound && !float.IsNaN(amb) ? amb : 0f;   // a NaN would be ignored by the source and leave the old volume playing
             _amb.mute = !GameSettings.Sound;
             _music[0].mute = _music[1].mute = !GameSettings.Music;

@@ -6,7 +6,7 @@ using PlantGame.Core;
 namespace PlantGame.World
 {
     /// <summary>
-    /// T16: drop-in sky for any scene (Prefabs/Environment/Atmosphere.prefab). Applies the skybox, ambient gradient, fog and sun
+    /// Drop-in sky for any scene (Prefabs/Environment/Atmosphere.prefab). Applies the skybox, ambient gradient, fog and sun
     /// direction, follows the camera with the cloud sea so it has no visible edge, and switches the post effects (bloom, distance blur, vignette, SMAA) with GameSettings.Bloom.
     /// </summary>
     [DefaultExecutionOrder(-40)]

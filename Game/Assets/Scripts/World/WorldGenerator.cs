@@ -61,7 +61,7 @@ namespace PlantGame.World
             var isles = lay.isles; var links = plan.links; var heads = lay.heads.ToArray();
             int goalIsle = plan.GoalIsland(isles.Count);
             var grounds = Ground.Assign(plan.layoutSeed, isles.Count);
-            bool summitSnow = config.spiral && config.wind && !showcaseWater;   // T46: the top of the windy spiral is snow-covered
+            bool summitSnow = config.spiral && config.wind && !showcaseWater;   // the top of the windy spiral is snow-covered
             Theme = WorldTheme.Resolve(config); Scenery.Theme = Theme; Scenery.Coconuts = config.levelId != GameBootstrap.Level1Id; Scenery.Leafless = config.levelId != GameBootstrap.Level1Id && config.levelId != "level_2"; Scenery.HugeTreeIsland = plan.hugeTreeIsland;
             var terrain = Scenery.Mat("M_Terrain"); var stone = Kit.Mat("M_Stone");
             foreach (var pr in lay.problems) Debug.LogWarning("[PlantGame] " + pr);
@@ -90,11 +90,11 @@ namespace PlantGame.World
                 {
                     if (links[k].from != i || links[k].kind == PlantKind.Glider) continue;
                     var dir = LevelLayout.Dir(heads[k]); var L = links[k];
-                    MakeSoil(I, L, k, I.centre + dir * lay.soilFwds[k], dir, "Soil_" + L.kind + "_" + k, terrain, lay.reaches[k], lay.rises[k]);
+                    MakeSoil(I, L, I.centre + dir * lay.soilFwds[k], dir, "Soil_" + L.kind + "_" + k, terrain, lay.reaches[k], lay.rises[k]);
                 }
                 // water: only on some islands (the first always has it): a pond or a winding stream, away from the lanes
-                if (!collectorOnly && (plan.waterIslands.Contains(i) || (showcaseWater && i == 1))) WaterFeature(I, rnd, heads, showcaseWater && i == 1, Theme == LevelTheme.Fog);
-                else if (i > 0 && !showcaseWater && Theme != LevelTheme.Snow && Scenery.Hash01(plan.layoutSeed + i, 303) < 0.3) WaterFeature(I, new System.Random(plan.layoutSeed * 31 + i * 7 + 3), heads, false, false, true);   // swamp pond: green, not drinkable (own random)
+                if (!collectorOnly && (plan.waterIslands.Contains(i) || (showcaseWater && i == 1))) WaterFeature(I, rnd, showcaseWater && i == 1, Theme == LevelTheme.Fog);
+                else if (i > 0 && !showcaseWater && Theme != LevelTheme.Snow && Scenery.Hash01(plan.layoutSeed + i, 303) < 0.3) WaterFeature(I, new System.Random(plan.layoutSeed * 31 + i * 7 + 3), false, false, true);   // swamp pond: green, not drinkable (own random)
                 if (I.waterRoot != null && Theme == LevelTheme.Snow && !showcaseWater)   // snowy levels freeze every pond and waterfall (start island included); the two Heat Seeds on the start island melt them
                 {
                     I.frozen = true; frozenPonds++;
@@ -134,21 +134,21 @@ namespace PlantGame.World
                     }
                 }
                 var spawnPos = spawn.transform.position;
-                if (collectorOnly && i == 0) CollectorSpot(I, rnd, heads, spawnPos, true, Theme == LevelTheme.Rain);   // one charge in a single-use dew patch: enough for the first plant
-                if (collectorOnly && i == 1) CollectorSpot(I, rnd, heads, spawnPos, false);   // the dew seed and its soil: the water that refills
+                if (collectorOnly && i == 0) CollectorSpot(I, rnd, spawnPos, true, Theme == LevelTheme.Rain);   // one charge in a single-use dew patch: enough for the first plant
+                if (collectorOnly && i == 1) CollectorSpot(I, rnd, spawnPos, false);   // the dew seed and its soil: the water that refills
                 foreach (var s in plan.sources)
                 {
                     if (s.island != i) continue;
                     var item = Kit.Item(s.item);
                     if (item == null || item.worldPrefab == null) { Debug.LogWarning("[PlantGame] Missing seed item " + s.item); continue; }
                     bool tree = s.item == "vine_seed";
-                    var pos = i == 0 ? Spot(I, rnd, 0.3f, 0.75f, 5.5f, heads, spawnPos, SeedFromSpawn) : Spot(I, rnd, 0.3f, 0.6f, 5.5f, heads);
-                    SeedSource(I.go.transform, pos, item, tree, s.index, s.drop, s.maxAlive, I, spawnPlayer);
+                    var pos = i == 0 ? Spot(I, rnd, 0.3f, 0.75f, 5.5f, spawnPos, SeedFromSpawn) : Spot(I, rnd, 0.3f, 0.6f, 5.5f);
+                    SeedSource(I.go.transform, pos, item, tree, s.index, s.drop, s.maxAlive, spawnPlayer);
                 }
                 if (i == (plan.roundTrip ? 0 : goalIsle))
                 {
                     // round trip: the goal waits on the start island, away from the spawn and the lanes
-                    var gpos = plan.roundTrip ? Spot(I, rnd, 0.3f, 0.7f, 5f, heads, spawnPos, 9f) : I.centre;
+                    var gpos = plan.roundTrip ? Spot(I, rnd, 0.3f, 0.7f, 5f, spawnPos, 9f) : I.centre;
                     var gkind = WorldTheme.ResolveGoal(config);
                     var gt = I.go.GetComponent<IslandTerrain>();
                     if (gt != null)   // a flat pad at the mean ground height under the goal's base, so it neither floats on a slope nor sinks into a bump
@@ -157,10 +157,10 @@ namespace PlantGame.World
                         for (int q = 0; q < 8; q++) bed += gt.HeightAtWorld(gpos + Quaternion.Euler(0f, q * 45f, 0f) * Vector3.forward * foot);
                         gt.carves.Add(new Vector4(gpos.x, gpos.z, foot + 1f, bed / 9f));   // fully flat up to about 1 m inside the carve radius (shore wobble)
                     }
-                    var goal = GoalBuilder.Build(I.go.transform, gpos, gkind, Theme);
+                    var goal = GoalBuilder.Build(I.go.transform, gpos, gkind);
                     if (showcaseWater) goal.ShowRaised();   // the title island shows the flag already up and waving
                     if (summitSnow) goal.transform.localScale *= 0.8f;   // windy summit: a smaller flag (GoalBuilder already sinks its base)
-                    if (Theme == LevelTheme.Fog) { var bl = new GameObject("FogBeacon"); bl.transform.SetParent(goal.transform, false); bl.transform.localPosition = Vector3.up * 3f; var lt = bl.AddComponent<Light>(); lt.type = LightType.Point; lt.color = new Color(1f, 0.85f, 0.5f); lt.range = 26f; lt.intensity = 4f; }   // T50: a warm glow you can find in the mist
+                    if (Theme == LevelTheme.Fog) { var bl = new GameObject("FogBeacon"); bl.transform.SetParent(goal.transform, false); bl.transform.localPosition = Vector3.up * 3f; var lt = bl.AddComponent<Light>(); lt.type = LightType.Point; lt.color = new Color(1f, 0.85f, 0.5f); lt.range = 26f; lt.intensity = 4f; }   // a warm glow you can find in the mist
                     if (plan.roundTrip)
                     {
                         goal.requiresItemId = "heart_seed";
@@ -175,7 +175,7 @@ namespace PlantGame.World
                     var heart = Kit.Item("heart_seed");
                     if (heart != null && heart.worldPrefab != null)
                     {
-                        var src = SeedSource(I.go.transform, Spot(I, rnd, 0.2f, 0.5f, 5f, heads), heart, false, 90, 1, 1, I);
+                        var src = SeedSource(I.go.transform, Spot(I, rnd, 0.2f, 0.5f, 5f), heart, false, 90, 1, 1);
                         src.regrowSeconds = 0f;   // exactly one heart seed
                     }
                 }
@@ -187,7 +187,7 @@ namespace PlantGame.World
                     int alt = 0;
                     foreach (var a in lay.Alternatives(plan, k, I.keep))
                     {
-                        MakeSoil(I, links[k], k, a.pos, a.dir, "Soil_" + links[k].kind + "_" + k + "_alt" + (++alt), terrain, a.reach, a.rise);
+                        MakeSoil(I, links[k], a.pos, a.dir, "Soil_" + links[k].kind + "_" + k + "_alt" + (++alt), terrain, a.reach, a.rise);
                     }
                 }
                 if (decoyIsles.Contains(i))   // a patch no route needs: a seed planted here only costs the seed
@@ -196,9 +196,9 @@ namespace PlantGame.World
                     if (kinds.Count > 0)
                     {
                         var lk = kinds[decoyRnd.Next(kinds.Count)];
-                        var spot = Spot(I, decoyRnd, 0.5f, 0.78f, 3.5f, heads);
+                        var spot = Spot(I, decoyRnd, 0.5f, 0.78f, 3.5f);
                         var outward = spot - I.centre; outward.y = 0f; outward = outward.sqrMagnitude > 0.01f ? outward.normalized : Vector3.forward;
-                        MakeSoil(I, lk, -1, spot, outward, "Soil_" + lk.kind + "_decoy", terrain, lk.kind == PlantKind.Bridge ? 9.5f : 0f, 0f);
+                        MakeSoil(I, lk, spot, outward, "Soil_" + lk.kind + "_decoy", terrain, lk.kind == PlantKind.Bridge ? 9.5f : 0f, 0f);
                     }
                 }
             }
@@ -207,7 +207,7 @@ namespace PlantGame.World
             bool windy = WorldTheme.ResolveWind(config) && !showcaseWater;
             weather.Apply(Theme, windy);
             var oldWind = GetComponent<WindGusts>(); if (oldWind != null) Destroy(oldWind);
-            if (windy) gameObject.AddComponent<WindGusts>();   // T50
+            if (windy) gameObject.AddComponent<WindGusts>();
 
             Isle extra = showcaseWater && isles.Count >= 3 ? PlanShowcaseIslet(isles, terrain) : null;   // before the scenery: its bridge lane stays clear
             // scenery goes in last so it keeps clear of everything else
@@ -219,7 +219,7 @@ namespace PlantGame.World
                 var e = LevelLayout.Dir(I.entryAngle);
                 lanes.Add(new Scenery.Lane { origin = new Vector2(I.centre.x, I.centre.z), dir = new Vector2(e.x, e.z), length = I.Edge(I.entryAngle) * 0.95f, halfWidth = 3.6f });
                 Scenery.Decorate(I.go.transform, I.centre, I.radius, a => I.shape.Edge(a), i, i == 0, i == goalIsle, I.keep, lanes, summitSnow && i == goalIsle ? 0.45f : Ground.Vegetation(grounds[i]), Ground.Boulders(grounds[i]), !collectorOnly && (plan.waterIslands.Contains(i) || (showcaseWater && i == 1)));
-                // T39: some bare islands crumble at the rim, shedding small rocks (own random)
+                // some bare islands crumble at the rim, shedding small rocks (own random)
                 if (grounds[i] != GroundKind.Grass)
                 {
                     var cr = new System.Random(unchecked(plan.layoutSeed * 17 + i * 104729));
@@ -235,13 +235,13 @@ namespace PlantGame.World
                         }
                 }
             }
-            if (frozenPonds > 0)   // T50: Heat Seeds on the start island, one per frozen pond (the source regrows them)
+            if (frozenPonds > 0)   // Heat Seeds on the start island, one per frozen pond (the source regrows them)
             {
                 var hs = Kit.Item("heat_seed");
                 if (hs != null && hs.worldPrefab != null)
                 {
-                    var hp = Spot(isles[0], new System.Random(plan.layoutSeed + 77), 0.3f, 0.75f, 5.5f, heads);
-                    SeedSource(isles[0].go.transform, hp, hs, false, 9, 2, 2, isles[0]);
+                    var hp = Spot(isles[0], new System.Random(plan.layoutSeed + 77), 0.3f, 0.75f, 5.5f);
+                    SeedSource(isles[0].go.transform, hp, hs, false, 9, 2, 2);
                     var warm = GameObject.CreatePrimitive(PrimitiveType.Cylinder); warm.name = "UnfrozenGround";   // grass around the Heat Seeds: never snowed over
                     Object.DestroyImmediate(warm.GetComponent<Collider>()); warm.transform.SetParent(isles[0].go.transform, true);
                     warm.transform.position = hp + Vector3.up * 0.06f; warm.transform.localScale = new Vector3(4.6f, 0.02f, 4.6f);
@@ -287,7 +287,7 @@ namespace PlantGame.World
             if (!Clear(X)) X = At(-1f, out head, out fwd, out soilH);
             hub.outHeadings.Add(head);
             var dir = LevelLayout.Dir(head);
-            MakeSoil(hub, new LinkPlan { from = 1, kind = PlantKind.Bridge, heading = head, seedItem = SeedItems.For(PlantKind.Bridge) }, -1, hub.centre + dir * fwd, dir, "Soil_Bridge_extra", terrain, reach, rise - soilH);   // the bridge rises from the soil to the island, not from the hub centre
+            MakeSoil(hub, new LinkPlan { from = 1, kind = PlantKind.Bridge, heading = head, seedItem = SeedItems.For(PlantKind.Bridge) }, hub.centre + dir * fwd, dir, "Soil_Bridge_extra", terrain, reach, rise - soilH);   // the bridge rises from the soil to the island, not from the hub centre
             return X;
         }
 
@@ -311,7 +311,7 @@ namespace PlantGame.World
         const float BridgeSoilSink = 0.09f;   // the bridge's squircle bed sinks 6 cm deeper than the other beds so it sticks out less
 
         /// <summary>A soil patch for the gap `k` at `pos`, growing towards `dir`; keeps scenery clear of it.</summary>
-        static void MakeSoil(Isle I, LinkPlan L, int k, Vector3 pos, Vector3 dir, string name, Material terrain, float reach, float rise)
+        static void MakeSoil(Isle I, LinkPlan L, Vector3 pos, Vector3 dir, string name, Material terrain, float reach, float rise)
         {
             var soil = Box(name, pos - Vector3.up * (L.kind == PlantKind.Ladder ? 0.1f : L.kind == PlantKind.Bridge ? BridgeSoilSink : 0.03f), new Vector3(1.2f, 0.3f, 1.2f), terrain);   // sunk into the ground: only the top ~0.12 m shows (~0.05 m for the beanstalk's round patch, so it sits lower on uneven ground)
             soil.transform.rotation = Quaternion.LookRotation(dir);
@@ -342,7 +342,7 @@ namespace PlantGame.World
         }
 
         /// <summary>A random free spot on an island between rMin..rMax of its radius, clear of lanes and earlier spots.</summary>
-        static Vector3 Spot(Isle I, System.Random rnd, float rMin, float rMax, float clear, float[] heads, Vector3? farFrom = null, float farDist = 0f)
+        static Vector3 Spot(Isle I, System.Random rnd, float rMin, float rMax, float clear, Vector3? farFrom = null, float farDist = 0f)
         {
             Vector3 best = I.centre; float bestScore = -1f;
             for (int t = 0; t < 60; t++)
@@ -366,7 +366,7 @@ namespace PlantGame.World
         }
 
         /// <summary>Seed producer: a tree (trunk + crown) or a low patch of mounds, with fruit in the seed's colour. Drops 2 seeds at start, one more every 60 s while fewer than 2 lie around.</summary>
-        static SeedTree SeedSource(Transform parent, Vector3 pos, ItemDefinition item, bool tree, int index, int drop, int maxAlive, Isle isle, bool ambience = true)
+        static SeedTree SeedSource(Transform parent, Vector3 pos, ItemDefinition item, bool tree, int index, int drop, int maxAlive, bool ambience = true)
         {
             var foliage = item.id == "heat_seed" ? Kit.Mat("M_Foliage") : Scenery.Mat("M_Foliage");   // the Heat Seed mounds stay green: they sit on warm, unfrozen ground
             var root = new GameObject(tree ? "SeedTree_" + item.id : "SeedPatch_" + item.id);
@@ -384,7 +384,7 @@ namespace PlantGame.World
                 return g;
             }
             var rnd = new System.Random(index * 31 + 5);
-            Mesh fruitMesh = SeedMeshes.For(item.id) != null ? item.worldPrefab.GetComponentInChildren<MeshFilter>()?.sharedMesh : null;   // T33: the seed's own shape
+            Mesh fruitMesh = SeedMeshes.For(item.id) != null ? item.worldPrefab.GetComponentInChildren<MeshFilter>()?.sharedMesh : null;   // the seed's own shape
             if (fruitMesh != null && QualityTier.Lite) fruitMesh = SeedMeshes.Lite(item.id);   // T63: decoration only, the pickups keep the full mesh
             if (tree && item.id == "vine_seed")
             {
@@ -426,7 +426,7 @@ namespace PlantGame.World
             else if (item.id == "beanstalk_seed") { Scenery.BeanPatch(root.transform, pos, fruitMat, fruitMesh, rnd); }
             else if (item.id == "shelf_seed") { Scenery.ShelfPatch(root.transform, pos, fruitMat, fruitMesh, rnd); }
             else if (item.id == "dew_seed") { Scenery.SucculentPatch(root.transform, pos, fruitMat, fruitMesh, rnd); }
-            else if (item.id == "parachute_leaf") { Scenery.LeafPlant(root.transform, pos, fruitMat, rnd); }
+            else if (item.id == "parachute_leaf") { Scenery.LeafPlant(root.transform, pos, rnd); }
             else if (item.id == "heat_seed" && fruitMat != null) { Scenery.PumpkinPatch(root.transform, pos, fruitMat, rnd); }
             else
             {
@@ -449,10 +449,10 @@ namespace PlantGame.World
         /// Collector-only levels. singleUse (first island): a Water Collector already grown with one charge (never refills, except in the rain where it fills like any dew plant).
         /// Otherwise (second island): a soil patch for the Water Collector plus the dew seed lying next to it.
         /// </summary>
-        static void CollectorSpot(Isle I, System.Random rnd, float[] heads, Vector3 spawnPos, bool singleUse, bool refills = false)
+        static void CollectorSpot(Isle I, System.Random rnd, Vector3 spawnPos, bool singleUse, bool refills = false)
         {
             var terrain = Scenery.Mat("M_Terrain");
-            var pos = Spot(I, rnd, 0.3f, 0.75f, 4.5f, heads, spawnPos, SeedFromSpawn);
+            var pos = Spot(I, rnd, 0.3f, 0.75f, 4.5f, spawnPos, SeedFromSpawn);
             var soil = Box("Soil_Collector", pos + Vector3.up * 0.05f, new Vector3(1.2f, 0.3f, 1.2f), terrain);
             soil.transform.rotation = Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0);
             SoilPatchMesh.Apply(soil, PlantKind.Collector);
@@ -464,7 +464,7 @@ namespace PlantGame.World
             if (interactable >= 0) soil.layer = interactable;
             var item = Kit.Item("dew_seed");
             if (singleUse) { target.PlantSingleUse(refills); return; }   // in the rain the first collector keeps filling
-            if (item != null && item.worldPrefab != null) SeedSource(I.go.transform, Spot(I, rnd, 0.3f, 0.75f, 4f, heads, spawnPos, SeedFromSpawn), item, false, 9, 1, 1, I);
+            if (item != null && item.worldPrefab != null) SeedSource(I.go.transform, Spot(I, rnd, 0.3f, 0.75f, 4f, spawnPos, SeedFromSpawn), item, false, 9, 1, 1);
         }
 
         /// <summary>
@@ -472,7 +472,7 @@ namespace PlantGame.World
         /// The shape is a list of discs: they carve a hollow into the island terrain (IslandTerrain) and the water surface fills it,
         /// so the shore is irregular. One WaterSource trigger covers the whole feature.
         /// </summary>
-        static void WaterFeature(Isle I, System.Random rnd, float[] heads, bool forceLake = false, bool nearRim = false, bool murky = false)   // nearRim: the pond sits close to the edge so its waterfall can pour over (heard in the fog)
+        static void WaterFeature(Isle I, System.Random rnd, bool forceLake = false, bool nearRim = false, bool murky = false)   // nearRim: the pond sits close to the edge so its waterfall can pour over (heard in the fog)
         {
             double pick = rnd.NextDouble();   // some water is darker (deeper) than other
             var wmat = murky ? MurkyMat() : pick < 0.35 ? Kit.Mat("M_Water") : pick < 0.7 ? Kit.Mat("M_WaterMid") : Kit.Mat("M_WaterDeep");
@@ -503,7 +503,7 @@ namespace PlantGame.World
             var discs = new List<Vector4>();   // x, y(unused), z, r
             for (int attempt = 0; attempt < 80; attempt++)
             {
-                var c = Spot(I, rnd, forceLake ? 0.42f : nearRim ? 0.5f : 0.2f, nearRim ? 0.75f : 0.6f, 4f, heads); I.keep.RemoveAt(I.keep.Count - 1);   // only the centre is wanted here
+                var c = Spot(I, rnd, forceLake ? 0.42f : nearRim ? 0.5f : 0.2f, nearRim ? 0.75f : 0.6f, 4f); I.keep.RemoveAt(I.keep.Count - 1);   // only the centre is wanted here
                 c.y = I.centre.y;
                 discs.Clear();
                 float yaw = (float)(rnd.NextDouble() * 360.0), shrink = 1f - attempt * 0.008f;
@@ -553,7 +553,7 @@ namespace PlantGame.World
             }
             if (discs.Count == 0)   // nothing fitted: a plain pond at a free spot
             {
-                var f = Spot(I, rnd, 0.3f, 0.6f, 4f, heads);
+                var f = Spot(I, rnd, 0.3f, 0.6f, 4f);
                 discs.Add(new Vector4(f.x, 0, f.z, 2.2f));
             }
 
@@ -574,7 +574,7 @@ namespace PlantGame.World
             }
             if (murky) { I.murky = true; I.murkyMat = wmat; I.murkyRoot = root.transform; return; }
             var ws = new GameObject("WaterSound"); ws.transform.SetParent(root.transform, true); ws.transform.position = new Vector3(discs[0].x, I.centre.y, discs[0].z);
-            var we = ws.AddComponent<Audio.LoopEmitter>(); we.clipName = "water_babble"; we.volume = 0.35f; we.maxDistance = 16f;   // T43: ponds and streams babble
+            var we = ws.AddComponent<Audio.LoopEmitter>(); we.clipName = "water_babble"; we.volume = 0.35f; we.maxDistance = 16f;   // ponds and streams babble
             I.waterMat = wmat; I.waterRoot = root.transform;
         }
 

@@ -2,6 +2,10 @@
 
 Long per-task notes live here (keep the boards and task files short). Newest first.
 
+## Code review: unused code, per-frame work, stale comments (2026-11-12)
+- Analyzer findings fixed, a handful of per-frame costs removed (`GameSettings` keeps its values, one sprout lookup and one butterfly raycast a frame, the HUD prompt is set once a frame), finished-task numbers and history notes taken out of the comments. Checked with the edit-mode tests (50 pass) and a play-mode run of levels 1 and 4; no player build was made.
+- The list of what was not done, and the recipe for running the analyzers outside Unity, is in `docs/code-review-findings.md`.
+
 ## Island shapes, start away from seeds, pause orbit (last pass, partly verified)
 - `IslandShape` (in `RoundIsland.cs`): ellipse + lobes + optional bay + wobble; layout, soils, bridges, spawn, water and `Scenery.Decorate` use `Edge(angle)` instead of a circle. The start spawn sits at 0.68 of the rim and the start island's seed sources (and the collector soil) lie at least 10 m from it (`SeedFromSpawn`): measured 10.5 / 16.4 m to the shelf patch / vine tree. Layout shot `docs/shots/level1_layout.png` shows varied outlines.
 - Pause / start menu / end panel: `PlayerController.PauseOrbit` slowly circles the camera (9 deg/s) and restores the view on resume.

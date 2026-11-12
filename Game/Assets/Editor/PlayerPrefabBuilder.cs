@@ -8,7 +8,7 @@ using PlantGame.Player;
 namespace PlantGame.Editor
 {
     /// <summary>
-    /// T03/T31: builds Assets/Prefabs/Player/Player.prefab (CharacterController + input + third-person orbit camera + model).
+    /// Builds Assets/Prefabs/Player/Player.prefab (CharacterController + input + third-person orbit camera + model).
     /// The model is Art/Models/Characters/Char_Player_01.fbx (Source/Blender/scripts/char_player.py); mesh name suffix picks
     /// the PlayerRole (Skin, Hair, Cloth, Cloak, Gear, Trim, Glow, Leaf, Dark); PlayerOutfit assets map roles to materials. Without the FBX the prefab still builds (no model).
     /// Menu: PlantGame > 4 Build Player Prefab. Needs layers from "1 Setup Project" (tag/layer fall back gracefully).
@@ -48,7 +48,7 @@ namespace PlantGame.Editor
             camGo.transform.localPosition = new Vector3(0f, 0f, -4.5f);
             var cam = camGo.AddComponent<Camera>();
             cam.nearClipPlane = 0.1f; cam.farClipPlane = 600f; cam.fieldOfView = 60f;
-            cam.clearFlags = CameraClearFlags.Skybox;       // T16: the Atmosphere assigns the skybox
+            cam.clearFlags = CameraClearFlags.Skybox;       // the Atmosphere assigns the skybox
             cam.backgroundColor = Palette.MistBlue;
             camGo.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>().renderPostProcessing = true;
             camGo.AddComponent<AudioListener>();
@@ -59,7 +59,7 @@ namespace PlantGame.Editor
 
             var model = BuildModel(root.transform, layer);
 
-            // T04/T05: interaction, inventory, watering can (stub until T27)
+            // interaction, inventory, watering can
             root.AddComponent<PlantGame.Inventory.Inventory>();
             root.AddComponent<PlantGame.Plants.WateringCan>();
             var sensor = root.AddComponent<InteractionSensor>();

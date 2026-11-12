@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PlantGame.Player
 {
     /// <summary>
-    /// T31: procedural limb swing for the blocky player model (no rig, no Animator). Rotates the joint transforms exported
+    /// Procedural limb swing for the blocky player model (no rig, no Animator). Rotates the joint transforms exported
     /// from Blender (Joint_ArmL/R, Joint_LegL/R, Joint_Head) around their local X axis from PlayerController state:
     /// idle sway, walk/run swing (scaled by speed), an airborne pose and a hand-over-hand climb.
     /// Limbs hang along -Y, so a negative X angle swings them forward.

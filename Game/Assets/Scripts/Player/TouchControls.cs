@@ -211,7 +211,7 @@ namespace PlantGame.Player
         bool InReach(Collider c, InteractionSensor.Target t)
         {
             if (t.interactable is WaterSource ws) { Vector3 chest = _pi.Sensor.Chest; return ws.WaterNear(chest) || ws.FrozenNear(chest); }
-            return _pi.Sensor.CanReach(c, t);
+            return _pi.Sensor.CanReach(c);
         }
 
         /// <summary>A tap on a beanstalk (its circle or the stalk): climb it all the way, walking up to it first when needed.</summary>

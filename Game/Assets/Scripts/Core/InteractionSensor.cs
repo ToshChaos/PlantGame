@@ -4,7 +4,7 @@ using PlantGame.Plants;
 namespace PlantGame.Core
 {
     /// <summary>
-    /// T04: finds what the player is looking at. Third person (T31): the camera is ~4.5 m behind the player, so the
+    /// Finds what the player is looking at. Third person: the camera is ~4.5 m behind the player, so the
     /// camera-forward SphereCast starts near the point on the camera ray closest to the player's chest, and every hit is
     /// filtered by distance to the chest (range 3 m), not to the camera. If the ray finds nothing, a small aim-assist cone
     /// around the camera ray picks the best target within range (looking roughly at a seed at your feet is enough).
@@ -86,7 +86,7 @@ namespace PlantGame.Core
         }
 
         /// <summary>
-        /// T58: touch has no crosshair, so the player's facing picks the target: everything in range inside a cone in front of
+        /// Touch has no crosshair, so the player's facing picks the target: everything in range inside a cone in front of
         /// the player (or right at the feet) is scored by distance plus angle; the current focus gets a bonus so it does not flicker.
         /// </summary>
         void SenseByFacing()
@@ -122,7 +122,7 @@ namespace PlantGame.Core
         }
 
         /// <summary>Touch tap on a marker: the collider is close enough to act on (the same range as the focus) and nothing blocks it.</summary>
-        public bool CanReach(Collider c, Target t)
+        public bool CanReach(Collider c)
         {
             Vector3 chest = Chest;
             return (c.bounds.ClosestPoint(chest) - chest).sqrMagnitude <= range * range;   // no line-of-sight test: a sprout sits in a soil patch whose own collider would block it
@@ -147,7 +147,7 @@ namespace PlantGame.Core
             t.usable = c.GetComponentInParent<IUsableTarget>();
             t.waterable = c.GetComponentInParent<IWaterable>();
             // The component nearest to the collider wins as the "object" (for highlight and identity).
-            t.component = (Component)(t.interactable as Component) ?? (t.usable as Component) ?? (t.waterable as Component);
+            t.component = (t.interactable as Component) ?? (t.usable as Component) ?? (t.waterable as Component);
             return t.component != null;
         }
 

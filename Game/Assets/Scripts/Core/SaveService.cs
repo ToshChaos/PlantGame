@@ -7,7 +7,7 @@ namespace PlantGame.Core
 {
     /// <summary>
     /// Contract 5.5: JSON in Application.persistentDataPath/save.json. Best times per key, last seed code.
-    /// Tolerant to a missing or corrupt file (starts empty); writes atomically (temp file, then move). T25 extends it (audio settings).
+    /// Tolerant to a missing or corrupt file (starts empty); writes atomically (temp file, then move).
     /// </summary>
     public static class SaveService
     {
@@ -51,7 +51,7 @@ namespace PlantGame.Core
         public static float? BestTime(string key)
         {
             var e = Load().times.Find(x => x.key == key && x.mode == 0);
-            return e != null ? e.seconds : (float?)null;
+            return e?.seconds;
         }
 
         /// <summary>Forgets every saved best time (the seed code is kept).</summary>

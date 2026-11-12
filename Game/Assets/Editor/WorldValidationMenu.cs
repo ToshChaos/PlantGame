@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text;
 using UnityEditor;
 using PlantGame.Core;
-using PlantGame.Plants;
 using PlantGame.World;
 
 namespace PlantGame.Editor

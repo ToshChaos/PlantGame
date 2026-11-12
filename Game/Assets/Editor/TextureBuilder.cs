@@ -112,7 +112,7 @@ namespace PlantGame.Editor
                 c = new Color(lum, lum * 0.96f, lum * 0.9f, 1f);
                 return (c, h);
             });
-            // T67: tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
+            // tileable plant maps for PlantGrow (sampled triplanar): bark / fibre, leaf veins, mushroom cap mottling
             Make("T_PlantBark", 256, normalMap: false, gen: (u, v, c, h) =>
             {
                 float grain = ValueNoise(u * 24f, v * 4f, 24, 111), fis = Mathf.Clamp01((0.5f - Mathf.Abs(ValueNoise(u * 12f, v * 3f, 12, 112) - 0.5f)) * 6f);
@@ -133,7 +133,7 @@ namespace PlantGame.Editor
                 float lum = Mathf.Clamp01((0.72f + 0.5f * blot) * (0.9f + 0.18f * flake) * (1f - 0.12f * Mathf.Clamp01((f2 - f1) * 4f)));
                 h = blot * 0.5f + flake * 0.3f; c = new Color(lum, lum, lum, 1f); return (c, h);
             });
-            // T67: seed pickup textures (u wraps round the seed, v runs along it). Grey values multiply the item colour.
+            // seed pickup textures (u wraps round the seed, v runs along it). Grey values multiply the item colour.
             Make("T_SeedBamboo", 256, (u, v, c, h) =>
             {
                 float fibre = ValueNoise(u * 60f, v * 4f, 60, 91), band = Mathf.Abs(Mathf.Sin(v * Mathf.PI * 3f));
