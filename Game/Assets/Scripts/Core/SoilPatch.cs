@@ -6,11 +6,11 @@ using PlantGame.Plants;
 namespace PlantGame.Core
 {
     /// <summary>
-    /// A soil patch (every level uses it, not only the sandbox): accepts a seed with E, shows a sprout,
+    /// A soil patch (planting spot): accepts a seed with E, shows a sprout,
     /// grows the baked plant when watered. A bridge is turned to point along `growDirection` and nudged so its two ends sit
     /// about level with the start floor.
     /// </summary>
-    public class SandboxTarget : MonoBehaviour, IUsableTarget, IWaterable
+    public class SoilPatch : MonoBehaviour, IUsableTarget, IWaterable
     {
         public bool planted, watered;
         public int useCount;
@@ -135,6 +135,7 @@ namespace PlantGame.Core
             var bob = GetComponentInParent<PlantGame.World.FloatBob>();
             var host = bob != null ? bob.transform : transform.parent;
             if (host != null) go.transform.SetParent(host, true);
+            InteractionSensor.Forget();   // new colliders under the island: nothing remembered about this spot may be stale
             var p = go.GetComponent<PlantInstance>();
             if (p != null) { p.kind = kind; p.ShowSprout(); }
             return p;

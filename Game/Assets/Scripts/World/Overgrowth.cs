@@ -213,7 +213,7 @@ namespace PlantGame.World
             }
         }
         public static Color LeafColour(LevelTheme theme, int index) { var c = LitterColours(theme); return c[index % 3]; }
-        internal static Color H(string hex) { ColorUtility.TryParseHtmlString("#" + hex, out var c); return c; }
+        internal static Color H(string hex) => Palette.Hex(hex);
 
         /// <param name="free">True when a spot is clear of lanes and keep points (not of trees: litter belongs under them).</param>
         /// <param name="treeSpots">x, z, trunk clearance of trees and ruins already placed (litter gathers around them).</param>

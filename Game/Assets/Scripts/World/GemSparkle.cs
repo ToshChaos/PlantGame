@@ -7,7 +7,7 @@ namespace PlantGame.World
     {
         public Color glow = new Color(0.49f, 0.95f, 0.9f);
         public float baseLevel = 0.22f, flare = 1.4f;   // the shards are dark glass: a soft glow, a clear glint
-        Renderer[] _rs; MaterialPropertyBlock _mb; float _phase, _period;
+        Renderer[] _rs; MaterialPropertyBlock _mb; float _phase, _period; bool _resting;
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
         void Start()
         {
@@ -17,9 +17,17 @@ namespace PlantGame.World
         void Update()
         {
             if (_rs == null || _mb == null) Start();   // survives a script reload while playing
-            float t = Time.time + _phase * 3f;
-            float k = baseLevel + 0.25f * Mathf.Sin(t * 1.3f);
-            float f = Mathf.Repeat(t, _period); if (f < 0.35f) k += flare * Mathf.Sin(f / 0.35f * Mathf.PI);   // a quick glint
+            bool visible = false;
+            foreach (var r in _rs) if (r != null && r.isVisible) { visible = true; break; }
+            if (!visible && _resting) return;   // off screen: nothing to write
+            float k = baseLevel;
+            if (visible)
+            {
+                float t = Time.time + _phase * 3f;
+                k += 0.25f * Mathf.Sin(t * 1.3f);
+                float f = Mathf.Repeat(t, _period); if (f < 0.35f) k += flare * Mathf.Sin(f / 0.35f * Mathf.PI);   // a quick glint
+            }
+            _resting = !visible;   // the last write before resting is the plain glow, so a gem never comes back into view mid-glint
             _mb.SetColor(Emission, glow * k);
             foreach (var r in _rs) if (r != null) r.SetPropertyBlock(_mb);
         }

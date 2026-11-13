@@ -78,7 +78,7 @@ namespace PlantGame.Editor
             // Soil patch on the edge of the first island, facing the 7 m gap (+X): E plants, the bridge grows across to the far floor
             var target = Box("Sandbox_PlantTarget", new Vector3(3.9f, 0.15f, -2.2f), new Vector3(1.2f, 0.3f, 1.2f), terrain);
             SoilPatchMesh.Apply(target);
-            var st = target.AddComponent<SandboxTarget>();
+            var st = target.AddComponent<SoilPatch>();
             if (AssetDatabase.LoadAssetAtPath<GameObject>(BridgePrefabBuilder.PrefabPath(1)) == null) BridgePrefabBuilder.Build();
             var bridges = new System.Collections.Generic.List<GameObject>();
             for (int b = 1; b <= 6; b++) { var bp = AssetDatabase.LoadAssetAtPath<GameObject>(BridgePrefabBuilder.PrefabPath(b)); if (bp != null) bridges.Add(bp); }

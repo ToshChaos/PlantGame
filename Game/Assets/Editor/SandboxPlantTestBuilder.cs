@@ -21,9 +21,7 @@ namespace PlantGame.Editor
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             ProjectSetup.ApplyLightingPreset();
             ProjectSetup.AddSun();
-            var runGo = new GameObject("RunSession");
-            var run = runGo.AddComponent<RunSession>();
-            run.levelId = main ? GameBootstrap.Level1Id : "sandbox_plants";
+            new GameObject("RunSession").AddComponent<RunSession>();   // GameBootstrap gives it the RunConfig, the HUD starts it
             var gen = new GameObject("World").AddComponent<WorldGenerator>();
             if (!main)
             {

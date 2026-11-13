@@ -1018,7 +1018,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d1b13b717eab456989bf636ab84cf18, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.SandboxTarget
+  m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.SoilPatch
   planted: 0
   watered: 0
   useCount: 0

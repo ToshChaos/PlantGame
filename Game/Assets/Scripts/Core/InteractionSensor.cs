@@ -52,7 +52,8 @@ namespace PlantGame.Core
 
         void Update() { Sense(); }
 
-        void OnDisable() { SetFocus(default); }
+        void OnEnable() { Forget(); }   // a new player means a new world: nothing remembered from the last one
+        void OnDisable() { SetFocus(default); Forget(); }
 
         /// <summary>Re-evaluates the focus now. Public so tests can call it after teleporting the player.</summary>
         public void Sense()
@@ -140,15 +141,30 @@ namespace PlantGame.Core
             return !hit.collider.transform.IsChildOf(tg.component.transform);   // its own collider does not block it
         }
 
+        // TryResolve walks up the hierarchy three times, and the sensor, the markers and PlayerInteraction ask about the same
+        // colliders every frame: the answer is kept per collider until Forget() (a plant was added, a new player / world).
+        static readonly System.Collections.Generic.Dictionary<Collider, Target> Resolved = new System.Collections.Generic.Dictionary<Collider, Target>();
+
+        /// <summary>Drops the remembered TryResolve answers. Call it when a hierarchy changes under existing colliders (SoilPatch does when its plant appears).</summary>
+        public static void Forget() { Resolved.Clear(); }
+
         public static bool TryResolve(Collider c, out Target t)
         {
+            if (Resolved.TryGetValue(c, out t))
+            {
+                if ((object)t.component == null) return false;   // remembered: nothing to act on here
+                if (t.component != null) return true;
+                // the object was destroyed since: look again
+            }
+            else if (Resolved.Count >= 1024) Resolved.Clear();   // colliders of picked-up seeds and old plants pile up: start over
             t = default;
             t.interactable = c.GetComponentInParent<IInteractable>();
             t.usable = c.GetComponentInParent<IUsableTarget>();
             t.waterable = c.GetComponentInParent<IWaterable>();
             // The component nearest to the collider wins as the "object" (for highlight and identity).
             t.component = (t.interactable as Component) ?? (t.usable as Component) ?? (t.waterable as Component);
-            return t.component != null;
+            Resolved[c] = t;
+            return (object)t.component != null;
         }
 
         void SetFocus(Target t)

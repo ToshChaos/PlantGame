@@ -148,7 +148,7 @@ namespace PlantGame.UI
         System.Collections.IEnumerator GrowShowcase()
         {
             yield return new WaitForSecondsRealtime(1.5f);
-            foreach (var soil in FindObjectsByType<SandboxTarget>())
+            foreach (var soil in FindObjectsByType<SoilPatch>())
             {
                 var item = Kit.Item(soil.acceptedItemId);
                 if (item == null) continue;

@@ -62,8 +62,8 @@ namespace PlantGame.Core
             }
             AutoGlide();
             int n = OverlapNear();
-            var thirsty = NearbyWaterable();   // one lookup a frame, shared by auto water and the prompt
-            if (AutoWater(n, thirsty)) thirsty = NearbyWaterable();
+            var thirsty = NearbyWaterable(n);   // one lookup a frame, shared by auto water and the prompt
+            if (AutoWater(n, thirsty)) thirsty = NearbyWaterable(n);
             UpdatePrompt(n, thirsty);
         }
 
@@ -228,9 +228,9 @@ namespace PlantGame.Core
             }
             if (TryCapHop()) return;
             if (TryThaw()) return;   // E next to frozen water: a Heat Seed melts it
-            if ((item != null && item.kind == ItemKind.Seed) || usable is SandboxTarget { frozen: true })
+            if ((item != null && item.kind == ItemKind.Seed) || usable is SoilPatch { frozen: true })
                 {
-                if (usable is SandboxTarget { frozen: true }) GameEvents.RaiseHint("Frozen soil, needs heat");
+                if (usable is SoilPatch { frozen: true }) GameEvents.RaiseHint("Frozen soil, needs heat");
                 else if (usable == null) GameEvents.RaiseHint("Plants need a patch of soil: walk up to one and look at it, then press E");
                 // wrong seed for this soil: no text, the soil's ring already shows which seed it wants
             }
@@ -240,30 +240,40 @@ namespace PlantGame.Core
         /// <summary>The focused interactable is a refill point (lake / waterfall / collector): only F (Water) refills there.</summary>
         bool IsRefillTarget(IInteractable t) => t is WaterSource || t is WaterCollector;
 
-        readonly Collider[] _waterHits = new Collider[64];
+        readonly Collider[] _near = new Collider[64];
         static int _sproutLayers, _waterLayers;
         static int SproutLayers => _sproutLayers != 0 ? _sproutLayers : _sproutLayers = LayerMask.GetMask(Layers.InteractableName, Layers.PlantName);
         static int WaterLayers => _waterLayers != 0 ? _waterLayers : _waterLayers = LayerMask.GetMask(Layers.InteractableName, Layers.WaterName);
         static bool OnLayers(Collider c, int mask) => (mask & (1 << c.gameObject.layer)) != 0;
 
-        /// <summary>One overlap within Sensor.range of the chest fills _waterHits for the sprout, refill and ice lookups below (returns the hit count).</summary>
-        int OverlapNear() => Physics.OverlapSphereNonAlloc(Sensor.Chest, Sensor.range, _waterHits, Layers.InteractMask, QueryTriggerInteraction.Collide);
-
-        readonly Collider[] _sproutHits = new Collider[32];
         const float SoilHalf = 0.7f;   // a soil patch is 1.2 m wide: a seed planted at its edge must still count as in reach
 
-        /// <summary>The nearest sprout that still needs water (distance to its collider or to the edge of its soil patch, whichever is closer: planting is judged by the patch, watering by the sprout), or null.</summary>
-        IWaterable NearbyWaterable()
+        /// <summary>
+        /// One overlap around the chest fills _near for the sprout, refill and ice lookups below (returns the hit count). It is wider than
+        /// Sensor.range because a sprout counts by the edge of its soil patch; the refill and ice lookups keep to Sensor.range (InReach).
+        /// </summary>
+        int OverlapNear() => Physics.OverlapSphereNonAlloc(Sensor.Chest, Sensor.range + SoilHalf + 1.5f, _near, Layers.InteractMask, QueryTriggerInteraction.Collide);
+
+        /// <summary>The collider itself is within Sensor.range of the chest.</summary>
+        bool InReach(Collider c)
+        {
+            Vector3 chest = Sensor.Chest;
+            Vector3 p = c is MeshCollider { convex: false } ? c.bounds.ClosestPoint(chest) : c.ClosestPoint(chest);   // ClosestPoint needs a convex shape
+            return (p - chest).sqrMagnitude <= Sensor.range * Sensor.range;
+        }
+
+        /// <summary>The nearest sprout among the first n _near that still needs water (distance to its collider or to the edge of its soil patch, whichever is closer: planting is judged by the patch, watering by the sprout), or null.</summary>
+        IWaterable NearbyWaterable(int n)
         {
             var chest = Sensor.Chest;
-            int m = Physics.OverlapSphereNonAlloc(chest, Sensor.range + SoilHalf + 1.5f, _sproutHits, Layers.InteractMask, QueryTriggerInteraction.Collide);
             IWaterable best = null; float bestD = float.MaxValue;
-            for (int i = 0; i < m; i++)
+            for (int i = 0; i < n; i++)
             {
-                if (!OnLayers(_sproutHits[i], SproutLayers)) continue;
-                var w = _sproutHits[i].GetComponentInParent<IWaterable>();
+                var hit = _near[i];
+                if (!OnLayers(hit, SproutLayers) || !InteractionSensor.TryResolve(hit, out var t)) continue;
+                var w = t.waterable;
                 if (w == null || !w.NeedsWater) continue;
-                float d = (_sproutHits[i].ClosestPoint(chest) - chest).magnitude;
+                float d = (hit.ClosestPoint(chest) - chest).magnitude;
                 if (w is Component c) d = Mathf.Min(d, Mathf.Max(0f, (c.transform.position - chest).magnitude - SoilHalf));
                 if (d > Sensor.range) continue;
                 if (d < bestD) { bestD = d; best = w; }
@@ -276,7 +286,7 @@ namespace PlantGame.Core
             var refill = Sensor.Interactable;
             if (refill != null && IsRefillTarget(refill) && refill.CanInteract(gameObject)) { refill.Interact(gameObject); return; }   // F at water refills the can
             int n = OverlapNear();
-            var w = NearbyWaterable();   // F waters the nearest thirsty sprout around the player, no aiming needed
+            var w = NearbyWaterable(n);   // F waters the nearest thirsty sprout around the player, no aiming needed
             if (w == null)
             {
                 var bare = PlantGame.World.LeaflessTree.Nearest(Sensor.Chest);   // a leafless tree: F brings its leaves back, free of charge
@@ -292,7 +302,11 @@ namespace PlantGame.Core
         /// <summary>A frozen pond within reach (null when none).</summary>
         WaterSource FindFrozenSource(int n)
         {
-            for (int i = 0; i < n; i++) { if (!OnLayers(_waterHits[i], WaterLayers)) continue; var ws = _waterHits[i].GetComponentInParent<WaterSource>(); if (ws != null && ws.frozen && ws.FrozenNear(Sensor.Chest)) return ws; }
+            for (int i = 0; i < n; i++)
+            {
+                if (!OnLayers(_near[i], WaterLayers) || !InteractionSensor.TryResolve(_near[i], out var t)) continue;
+                if (t.interactable is WaterSource { frozen: true } ws && InReach(_near[i]) && ws.FrozenNear(Sensor.Chest)) return ws;
+            }
             return null;
         }
 
@@ -310,16 +324,14 @@ namespace PlantGame.Core
             return true;
         }
 
-        /// <summary>Open water or a Water Collector holding a charge among the first n _waterHits (null when none).</summary>
+        /// <summary>Open water or a Water Collector holding a charge within reach, among the first n _near (null when none).</summary>
         IInteractable FindRefillSource(int n)
         {
             for (int i = 0; i < n; i++)
             {
-                if (!OnLayers(_waterHits[i], WaterLayers)) continue;
-                var ws = _waterHits[i].GetComponentInParent<WaterSource>();
-                if (ws != null && ws.WaterNear(Sensor.Chest)) return ws;   // frozen water offers no refill hint
-                var c = _waterHits[i].GetComponentInParent<WaterCollector>();
-                if (c != null && c.Stored > 0) return c;
+                if (!OnLayers(_near[i], WaterLayers) || !InteractionSensor.TryResolve(_near[i], out var t)) continue;
+                if (t.interactable is WaterSource ws) { if (InReach(_near[i]) && ws.WaterNear(Sensor.Chest)) return ws; }   // frozen water offers no refill hint
+                else if (t.interactable is WaterCollector { Stored: > 0 } c && InReach(_near[i])) return c;
             }
             return null;
         }
@@ -333,14 +345,14 @@ namespace PlantGame.Core
             var target = Sensor.Interactable;
             CurrentPromptIsGoal = target is GoalFlag && target.CanInteract(gameObject);
             if (target != null && target.CanInteract(gameObject)) { p = target.Prompt; k = target.Action == InteractAction.Pickup ? "Pickup" : IsRefillTarget(target) ? "Water" : "Use"; }
-            else if (Sensor.Usable is SandboxTarget { frozen: true } && Inventory.SelectedItem != null && Inventory.SelectedItem.id == "heat_seed")
+            else if (Sensor.Usable is SoilPatch { frozen: true } && Inventory.SelectedItem != null && Inventory.SelectedItem.id == "heat_seed")
             { p = "Thaw the frozen soil"; k = "Use"; }
             else if (Sensor.Usable != null && Inventory.SelectedItem != null && Sensor.Usable.CanUseItem(Inventory.SelectedItem, gameObject))
             {
                 if (_plantItem != Inventory.SelectedItem) { _plantItem = Inventory.SelectedItem; _plantPrompt = "Plant " + _plantItem.displayName; }
                 p = _plantPrompt; k = "Use";
             }
-            else if (Sensor.Usable is SandboxTarget { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
+            else if (Sensor.Usable is SoilPatch { frozen: true }) { p = "Frozen soil, needs heat"; k = "Frozen"; }
             else if (thirsty != null) { p = "Water sprout"; k = "Water"; }
             else if (World.LeaflessTree.Nearest(Sensor.Chest) != null) { p = "Grow leaves"; k = "Water"; }
             else if (FindFrozenSource(n) != null)   // frozen pond: say so, and what melts it

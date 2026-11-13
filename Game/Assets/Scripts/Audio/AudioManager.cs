@@ -110,7 +110,7 @@ namespace PlantGame.Audio
             GameEvents.GameWon -= OnWon;
         }
 
-        // RunSession.Start may already have raised RunStarted (and picked the level tune) before this Start runs: never overwrite it with the menu tune
+        // The HUD's Start may already have started the run (RunStarted picks the level tune) before this Start runs: never overwrite it with the menu tune
         void Start() { if (_target == null) PlayMusic(OnTitle ? menuMusic : GameplayTrack()); ApplyVolumes(); }
         void OnDestroy() { if (Instance == this) Instance = null; }
 

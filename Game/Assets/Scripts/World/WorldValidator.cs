@@ -5,7 +5,7 @@ namespace PlantGame.World
 {
     /// <summary>
     /// Checks a generated chain (no side islands) without building anything: islands do not overlap, every gap has a seed source of its kind
-    /// within two islands before it, the start island has 2-3 sources, and a can that starts empty always finds water before a gap
+    /// within two islands before it, the start island has 2-3 sources (Level 1: its one vine tree is enough), and a can that starts empty always finds water before a gap
     /// (2 charges per refill, one per planted gap). Returns the problems; empty = beatable.
     /// </summary>
     public static class WorldValidator
@@ -32,7 +32,7 @@ namespace PlantGame.World
                 if (!seed) issues.Add($"no {l.seedItem} within two islands before gap {i}");
             }
             int start = 0; foreach (var s in plan.sources) if (s.island == 0) start++;
-            if (start < 2 || start > 3) issues.Add("start island has " + start + " seed sources");
+            if (start < plan.minStartSources || start > 3) issues.Add("start island has " + start + " seed sources");
             if (!plan.waterIslands.Contains(0) && !plan.collectorOnly) issues.Add("start island has no water");
             if (!plan.collectorOnly)
             {

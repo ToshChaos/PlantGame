@@ -8,8 +8,8 @@ namespace PlantGame.World
 {
     /// <summary>
     /// Runtime world builder: turns a RunConfig into islands, soils, seed sources, water, goal and the player. Deterministic: the same
-    /// RunConfig (seed, island count, kinds, water mode) always gives the same world (System.Random only). Level 1 is the hand-authored
-    /// puzzle (LevelPlanner.Level1), every other config goes through LevelPlanner.Generate and is re-rolled until WorldValidator accepts it.
+    /// RunConfig (seed, island count, kinds, water mode) always gives the same world (System.Random only). level_5 is the hand-authored
+    /// puzzle (LevelPlanner.Plan), every other config goes through LevelPlanner.Generate and is re-rolled until WorldValidator accepts it.
     /// Runs in Awake (before GameBootstrap) in Main; Sandbox scenes set useBootstrapConfig = false and fill `sandboxConfig`.
     /// </summary>
     [DefaultExecutionOrder(-100)]
@@ -37,7 +37,8 @@ namespace PlantGame.World
                 var p = LevelPlanner.Plan(c); rnd = new System.Random(p.layoutSeed); layout = LevelLayout.Compute(p, rnd); return p;
             }
             LevelPlan plan = null;
-            for (int attempt = 0; attempt < 100; attempt++)
+            int first = c.levelId == GameBootstrap.Level1Id ? LevelPlanner.Level1Attempt : 0;   // Level 1 keeps the world it shipped with
+            for (int attempt = first; attempt < first + 100; attempt++)
             {
                 plan = LevelPlanner.Generate(c, attempt);
                 rnd = new System.Random(plan.layoutSeed); layout = LevelLayout.Compute(plan, rnd);
@@ -305,7 +306,7 @@ namespace PlantGame.World
 
         static int _variantSeed, _bridgeSoils;
         /// <summary>Which baked bridge (Plant_Bridge_01..06) a bridge soil grows: hashed from the seed and the soil's order, so the same code gives the
-        /// same vines and the layout's random streams are untouched. Every variant is stretched and tilted to its gap (SandboxTarget.Spawn).</summary>
+        /// same vines and the layout's random streams are untouched. Every variant is stretched and tilted to its gap (SoilPatch.Spawn).</summary>
         static int BridgeVariant(int count) => count <= 0 ? -1 : Mathf.Min(count - 1, (int)(Scenery.Hash01(_variantSeed, 4100 + _bridgeSoils++) * count));
 
         const float BridgeSoilSink = 0.09f;   // the bridge's squircle bed sinks 6 cm deeper than the other beds so it sticks out less
@@ -317,7 +318,7 @@ namespace PlantGame.World
             soil.transform.rotation = Quaternion.LookRotation(dir);
             SoilPatchMesh.Apply(soil, L.kind);
             soil.transform.SetParent(I.go.transform, true);
-            var target = soil.AddComponent<SandboxTarget>();
+            var target = soil.AddComponent<SoilPatch>();
             target.kind = L.kind; target.acceptedItemId = L.seedItem; target.growDirection = dir;
             if (L.kind == PlantKind.Bridge) target.spawnOffset += Vector3.up * (BridgeSoilSink - 0.03f);   // the bed sits lower, the vine stays where it was
             target.bridgeReach = L.kind == PlantKind.Bridge ? reach : 0f; target.bridgeRise = rise;
@@ -441,7 +442,7 @@ namespace PlantGame.World
             if (ambience) root.AddComponent<Audio.SeedAmbience>();
             src.possibleSeeds = new[] { item };
             src.seedsToDrop = drop; src.maxAlive = maxAlive; src.regrowSeconds = 60f;
-            src.dropRadius = 3f; src.dropHeight = tree ? 2.4f : 0.9f; src.sandboxSeed = index + 1;
+            src.dropRadius = 3f; src.dropHeight = tree ? 2.4f : 0.9f; src.dropSeed = index + 1;
             return src;
         }
 
@@ -457,7 +458,7 @@ namespace PlantGame.World
             soil.transform.rotation = Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0);
             SoilPatchMesh.Apply(soil, PlantKind.Collector);
             soil.transform.SetParent(I.go.transform, true);
-            var target = soil.AddComponent<SandboxTarget>();
+            var target = soil.AddComponent<SoilPatch>();
             target.kind = PlantKind.Collector; target.acceptedItemId = "dew_seed"; target.growDirection = Vector3.up;
             target.plantPrefabs = Kit.Plants(PlantKind.Collector); target.variantIndex = 0;
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);

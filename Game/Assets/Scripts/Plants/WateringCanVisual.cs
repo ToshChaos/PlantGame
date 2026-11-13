@@ -56,7 +56,8 @@ namespace PlantGame.Plants
             bool show = _can.Charges > 0 || _pour != null;   // the last charge is spent before the pour starts: keep the can until it has tipped
             if (_root.activeSelf != show) _root.SetActive(show);
             bool filling = _can.IsRefilling;
-            if (_fill != null) _fill.gameObject.SetActive(_can.IsFull && !filling);
+            bool full = _can.IsFull && !filling;
+            if (_fill != null && _fill.gameObject.activeSelf != full) _fill.gameObject.SetActive(full);
             if (_anim != null) _anim.scoop = Mathf.MoveTowards(_anim.scoop, filling ? 1f : 0f, Time.unscaledDeltaTime * 3f);
             if (_pour == null && _tilt != null && _anim != null) _tilt.localRotation = Quaternion.Euler(25f * _anim.scoop, 0, 0);   // can mouth tipped toward the water
         }

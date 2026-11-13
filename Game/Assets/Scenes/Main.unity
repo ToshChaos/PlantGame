@@ -370,8 +370,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27c7f9ec6474461a9f79f5c5d633d20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PlantGame.Runtime::PlantGame.Core.RunSession
-  startOnAwake: 1
-  levelId: level_1
   Config:
     seed: 0
     islandCount: 0

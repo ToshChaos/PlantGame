@@ -5,7 +5,7 @@ namespace PlantGame.Inventory
     /// <summary>
     /// A seed source (a tree or a patch) that drops its seeds when the level starts and, with regrowSeconds, grows new ones.
     /// Drop(seed) is deterministic: System.Random(seed ^ salt) picks the seed types and the spots around the trunk.
-    /// It drops once in Start with sandboxSeed (the generator gives every source its own); a restart reloads the scene, so the seeds come back.
+    /// It drops once in Start with dropSeed (the generator gives every source its own); a restart reloads the scene, so the seeds come back.
     /// </summary>
     public class SeedTree : MonoBehaviour
     {
@@ -15,8 +15,8 @@ namespace PlantGame.Inventory
         public float dropRadius = 1.6f;
         public float dropHeight = 2.2f;
         public int salt = 0x5EED;
-        public bool dropOnStart = true;
-        public int sandboxSeed = 1;
+        [Tooltip("Seed of the first drop: the generator numbers the sources of a level, so each one drops its own pattern.")]
+        public int dropSeed = 1;
         [Tooltip("0 = drops once. Otherwise a new seed drops this often while fewer than maxAlive of its seeds lie around.")]
         public float regrowSeconds = 0f;
         public int maxAlive = 2;
@@ -27,7 +27,7 @@ namespace PlantGame.Inventory
         System.Random _rng;
         float _regrowTimer;
 
-        void Start() { if (dropOnStart) Drop(sandboxSeed); }
+        void Start() { Drop(dropSeed); }
 
         void Update()
         {

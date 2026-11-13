@@ -34,7 +34,7 @@ namespace PlantGame.Core
         void Awake()
         {
             var rs = FindAnyObjectByType<RunSession>();
-            if (rs != null) { rs.startOnAwake = false; rs.Config = Current; }
+            if (rs != null) rs.Config = Current;
         }
 
         void Start()

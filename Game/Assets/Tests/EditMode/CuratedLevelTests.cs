@@ -14,8 +14,8 @@ namespace PlantGame.Tests
                 .Select(g => AssetDatabase.LoadAssetAtPath<LevelDefinition>(AssetDatabase.GUIDToAssetPath(g)))
                 .Where(l => l != null).OrderBy(l => l.id).ToArray();
 
-        /// <summary>The hand-authored level (GameBootstrap.HandLevelId) and the 3-island tutorial (level_1) break the random-level rules the validator checks (it wants 2-3 seed sources on the start island), so those checks skip them.</summary>
-        static LevelDefinition[] Generated() => Levels().Where(l => l.id != GameBootstrap.HandLevelId && l.islandCount >= 4).ToArray();
+        /// <summary>The hand-authored level (GameBootstrap.HandLevelId) is not a chain, which is what the validator checks, so those checks skip it.</summary>
+        static LevelDefinition[] Generated() => Levels().Where(l => l.id != GameBootstrap.HandLevelId).ToArray();
 
         [Test]
         public void TenCuratedLevelsExistWithUniqueIds()
@@ -46,6 +46,14 @@ namespace PlantGame.Tests
                 var plan = WorldGenerator.MakePlan(c, out var lay, out _);
                 Assert.IsEmpty(WorldValidator.Validate(plan, lay), l.id);
             }
+        }
+
+        /// <summary>Level 1 is pinned to one re-roll (LevelPlanner.Level1Attempt): the tutorial must not move when the generator's retry logic changes.</summary>
+        [Test]
+        public void LevelOneKeepsItsWorld()
+        {
+            var l = Levels().First(x => x.id == GameBootstrap.Level1Id);
+            Assert.AreEqual("3i/2l/1DA56C96", WorldGenerationTests.Fingerprint(l.ToConfig()));
         }
 
         [Test]

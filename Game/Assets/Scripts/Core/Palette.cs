@@ -41,10 +41,12 @@ namespace PlantGame.Core
         public static readonly Color PlayerDark  = Hex("15161A");
         public static readonly Color Gold        = Hex("D9A441");
 
+        /// <summary>"RRGGBB" (with or without #) to a colour. A mistyped hex is reported and comes back magenta, never as a silent black.</summary>
         public static Color Hex(string hex)
         {
-            ColorUtility.TryParseHtmlString("#" + hex.TrimStart('#'), out var c);
-            return c;
+            if (ColorUtility.TryParseHtmlString("#" + hex.TrimStart('#'), out var c)) return c;
+            Debug.LogError("[PlantGame] Not a hex colour: \"" + hex + "\"");
+            return Color.magenta;
         }
     }
 }

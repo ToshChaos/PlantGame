@@ -30,6 +30,8 @@ namespace PlantGame.World
         public int hugeTreeIsland = -1;
         /// <summary>Links 0..mainLinks-1 form the required chain; later links lead to optional side islands (dead ends with a bonus).</summary>
         public int mainLinks = -1;
+        /// <summary>Fewest seed sources the start island may have (the validator's rule). Level 1 has only its vine tree.</summary>
+        public int minStartSources = 2;
         public int MainLinks => mainLinks >= 0 ? mainLinks : links.Count;
         public int GoalIsland(int isleCount) => goalIsland >= 0 ? goalIsland : isleCount - 1;
 
@@ -50,10 +52,16 @@ namespace PlantGame.World
 
     public static class LevelPlanner
     {
+        /// <summary>
+        /// Level 1 is built from re-roll 99 of its seed. The validator used to reject its single seed tree, so every load went through
+        /// all 100 re-rolls and kept the last one; that world is the level players know, so it stays pinned now that the validator accepts it.
+        /// </summary>
+        public const int Level1Attempt = 99;
+
         /// <summary>The hand-authored level (level_5) is a puzzle (7 islands, a side island, 6 gaps); everything else is generated.</summary>
         public static LevelPlan Plan(RunConfig c)
         {
-            if (c.levelId == GameBootstrap.HandLevelId) return Level1(c);
+            if (c.levelId == GameBootstrap.HandLevelId) return HandPlan(c);
             return Generate(c);
         }
 
@@ -61,7 +69,7 @@ namespace PlantGame.World
         /// Gaps in order: A->B bridge, B->S bridge (S is a side island), B->C ladder, C->D platform, D->E bridge, E->F ladder (goal on F).
         /// Seeds do not sit next to the gap they are for: A has the vine tree and the shelf patch, the beanstalk patch is only on S.
         /// </summary>
-        static LevelPlan Level1(RunConfig c)
+        static LevelPlan HandPlan(RunConfig c)
         {
             var p = new LevelPlan { layoutSeed = 20261, islandCount = 7, bigIsland = 3, hugeTreeIsland = 2, collectorOnly = WorldTheme.ResolveWater(c) == WaterMode.CollectorOnly };
             void L(int from, PlantKind k, float h) => p.links.Add(new LinkPlan { from = from, kind = k, heading = h, seedItem = SeedItems.For(k) });
@@ -143,6 +151,7 @@ namespace PlantGame.World
             // the start island has two or three trees / patches: pad with the kinds of the first gaps, then a decoy
             int onStart = p.sources.FindAll(s => s.island == 0).Count;
             int startWant = c.levelId == GameBootstrap.Level1Id ? 1 : 2;   // Level 1: just the vine tree on the first island (no bean patch)
+            p.minStartSources = startWant;
             for (int j = 0; onStart < startWant && j < p.links.Count + kinds.Count; j++)
             {
                 string item = j < p.links.Count ? p.links[j].seedItem : SeedItems.For(kinds[j - p.links.Count]);
