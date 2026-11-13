@@ -100,9 +100,9 @@ namespace PlantGame.Core
 
         /// <summary>
         /// Post-processing effects (glow, anti-aliasing, distance blur, vignette); the menus label it "Postprocessing". On by default on desktop,
-        /// off on phones and tablets. The Atmosphere reads it. The property keeps the name Bloom (and its PlayerPrefs key) so saved choices survive.
+        /// off on phones and tablets. The Atmosphere reads it. The PlayerPrefs key keeps the old name "plantgame.bloom" so saved choices survive.
         /// </summary>
-        public static bool Bloom
+        public static bool Postprocessing
         {
             get => Flag(ref _bloom, BloomKey, !Application.isMobilePlatform);
             set => Set(ref _bloom, BloomKey, value);

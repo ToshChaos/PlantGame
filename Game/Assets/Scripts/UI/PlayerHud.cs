@@ -417,7 +417,7 @@ namespace PlantGame.UI
             _autoWaterLabelP = Button("AutoWater", pr, V(new Vector2(-330, 130), new Vector2(-530, 30)), () => { GameSettings.AutoWater = !GameSettings.AutoWater; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // touch: the Camera slot (hidden there)
             _followLabelP = Button("Camera", pr, V(new Vector2(380, 300), new Vector2(-530, 30)), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptionLabels(); }, 400, 30);
             if (TouchInput.Active) _followLabelP.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
-            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptionLabels(); }, 400, 30);
+            _glowLabelP = Button("Postprocessing", pr, V(new Vector2(380, 215), new Vector2(10, 30)), () => { GameSettings.Postprocessing = !GameSettings.Postprocessing; RefreshOptionLabels(); }, 400, 30);
             _qualityLabelP = Button("Quality", pr, V(new Vector2(0, 215), new Vector2(10, -80)), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptionLabels(); }, two ? 400 : 300, 30);   // T63; touch: middle column under Postprocessing
             _fpsLabelP = Button("Fps", pr, V(new Vector2(380, 130), new Vector2(10, 250)), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptionLabels(); }, 400, 30);
             if (!TouchInput.Active)   // phones: only the system volume works
@@ -514,7 +514,7 @@ namespace PlantGame.UI
             if (_pauseTitle != null) _pauseTitle.text = GameSettings.Hints && !TouchInput.Active ? "Paused  <size=26><color=#BFD9EE>Esc to resume</color></size>" : "Paused";
             if (_fpsLabelP != null) _fpsLabelP.text = OnOff("FPS counter", GameSettings.Fps);
             if (_autoWaterLabelP != null) _autoWaterLabelP.text = OnOff("Auto water", GameSettings.AutoWater);
-            if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Bloom);
+            if (_glowLabelP != null) _glowLabelP.text = OnOff("Postprocessing", GameSettings.Postprocessing);
             if (_qualityLabelP != null) _qualityLabelP.text = "Quality: " + QualityTier.Names[GameSettings.Quality];
             if (_followLabelP != null) _followLabelP.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
             foreach (var t in new[] { _musicLabelP }) if (t != null) t.text = OnOff("Music", GameSettings.Music);

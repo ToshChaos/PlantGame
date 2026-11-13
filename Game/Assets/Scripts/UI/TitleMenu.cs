@@ -64,7 +64,7 @@ namespace PlantGame.UI
             if (_fps30Toggle != null) _fps30Toggle.text = "Battery saver: " + (GameSettings.Fps30 ? "On" : "Off");
             _autoWaterToggle.text = "Auto water: " + (GameSettings.AutoWater ? "On" : "Off");
             _followToggle.text = "Camera follows: " + (GameSettings.CameraFollow ? "On" : "Off");
-            _glowToggle.text = "Postprocessing: " + (GameSettings.Bloom ? "On" : "Off");
+            _glowToggle.text = "Postprocessing: " + (GameSettings.Postprocessing ? "On" : "Off");
             _qualityToggle.text = "Quality: " + QualityTier.Names[GameSettings.Quality];
         }
 
@@ -292,7 +292,7 @@ namespace PlantGame.UI
             _followToggle = Button(o, "Camera", new Vector2(330, 50), () => { GameSettings.CameraFollow = !GameSettings.CameraFollow; RefreshOptions(); }, 420, 34);
             if (tc) _followToggle.transform.parent.gameObject.SetActive(false);   // touch: the camera always follows
             _hintsToggle = Button(o, "Hints", new Vector2(-330, -60), () => { GameSettings.Hints = !GameSettings.Hints; RefreshOptions(); }, 420, 34);
-            _glowToggle = Button(o, "Postprocessing", new Vector2(330, tc ? 160 : -60), () => { GameSettings.Bloom = !GameSettings.Bloom; RefreshOptions(); }, 420, 34);
+            _glowToggle = Button(o, "Postprocessing", new Vector2(330, tc ? 160 : -60), () => { GameSettings.Postprocessing = !GameSettings.Postprocessing; RefreshOptions(); }, 420, 34);
             _fpsToggle = Button(o, "FPS", new Vector2(330, tc ? 50 : -170), () => { GameSettings.Fps = !GameSettings.Fps; RefreshOptions(); }, 420, 34);
             if (tc) _fps30Toggle = Button(o, "Fps30", new Vector2(330, -60), () => { GameSettings.Fps30 = !GameSettings.Fps30; RefreshOptions(); }, 420, 34);
             _qualityToggle = Button(o, "Quality", new Vector2(-330, -170), () => { GameSettings.Quality = (GameSettings.Quality + 1) % 3; RefreshOptions(); }, 420, 34);   // T63: Low / Medium / High

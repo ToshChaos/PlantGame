@@ -8,16 +8,13 @@ namespace PlantGame.Core
     /// Shareable, human-typable level code made of five lowercase words joined by dashes, e.g. "mossy-heron-gentle-brook-amber".
     /// 40 bits = 24-bit seed | islandCount 4b | kindsMask 4b | genVersion 4b | checksum 4b, one word (of 256) per byte.
     /// Case-insensitive; spaces, dashes and underscores all separate words. Seeds are 24 bits (RunConfig.seed must stay below 16,777,216
-    /// for a code to give the same world). Old "LEAF-XXXX-XXXX-XX" codes are still read. Water mode and theme are not stored (random levels
+    /// for a code to give the same world). Water mode and theme are not stored (random levels
     /// use ponds and streams; the theme comes from the seed).
     /// </summary>
     public static class SeedCode
     {
         public const int GeneratorVersion = 3;   // bump when world-gen output changes; old codes then warn
         public const int SeedBits = 24, SeedMask = (1 << SeedBits) - 1;
-        public const string LegacyPrefix = "LEAF";
-        const string LegacyAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-        const int LegacySymbols = 9;
 
         static readonly string[] Words =
         {
@@ -99,9 +96,7 @@ namespace PlantGame.Core
         {
             c = default; error = "";
             if (string.IsNullOrWhiteSpace(code)) { error = "Type or paste a seed code."; return false; }
-            var up = code.Trim().ToUpperInvariant();
             var parts = code.Trim().ToLowerInvariant().Split(new[] { '-', ' ', '_' }, System.StringSplitOptions.RemoveEmptyEntries);
-            if (up.StartsWith(LegacyPrefix) && (parts.Length != 5 || !Index.ContainsKey(parts[1]))) return TryDecodeLegacy(up, out c, out error);   // "leaf" is also a seed word, so only fall back to the old format when this is not five words
             if (parts.Length != 5) { error = parts.Length < 5 ? "A seed code has five words, joined by dashes." : "That code has too many words: it should be five."; return false; }
             var nib = new int[10];
             for (int w = 0; w < 5; w++)
@@ -123,26 +118,6 @@ namespace PlantGame.Core
             c = new RunConfig { seed = seed, islandCount = islands, allowedKinds = KindsFromMask(mask & 7), levelId = null, waterMode = WaterMode.Sources };
             if (version != GeneratorVersion) error = "This code is from another game version (" + version + "); the world may differ.";
             return true;
-        }
-
-        // ---------------------------------------------------------------- old LEAF-XXXX-XXXX-XX codes (32-bit seeds)
-        static bool TryDecodeLegacy(string upper, out RunConfig c, out string error)
-        {
-            c = default; error = "";
-            var sb = new StringBuilder();
-            foreach (char ch in upper.Replace("-", "").Replace(" ", "").Replace("_", "").Substring(LegacyPrefix.Length)) sb.Append(ch == 'O' ? '0' : ch == 'I' || ch == 'L' ? '1' : ch);
-            var s = sb.ToString();
-            if (s.Length != LegacySymbols + 1) { error = "That code is too " + (s.Length < LegacySymbols + 1 ? "short." : "long."); return false; }
-            ulong v = 0; int sum = 0;
-            for (int i = 0; i < LegacySymbols; i++)
-            {
-                int sym = LegacyAlphabet.IndexOf(s[i]);
-                if (sym < 0) { error = "Unexpected character '" + s[i] + "'."; return false; }
-                v = (v << 5) | (uint)sym; sum += sym * (i + 1);
-            }
-            int chk = LegacyAlphabet.IndexOf(s[LegacySymbols]);
-            if (chk < 0 || chk != sum % 32) { error = "Check symbol does not match: a character was mistyped."; return false; }
-            return Finish(unchecked((int)(uint)(v & 0xFFFFFFFF)), (int)((v >> 32) & 0xF), (int)((v >> 36) & 0xF), (int)((v >> 40) & 0xF), out c, out error);
         }
     }
 }

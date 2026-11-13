@@ -11,7 +11,7 @@ namespace PlantGame.Core
     /// </summary>
     public static class SaveService
     {
-        [Serializable] class Entry { public string key; public int mode; /* legacy: 0 = the plain run, 1 = the removed countdown mode (ignored) */ public float seconds; }
+        [Serializable] class Entry { public string key; public float seconds; }
         [Serializable] class Data { public int version = 1; public List<Entry> times = new List<Entry>(); public string lastSeedCode; }
 
         public static string PathOverride;   // tests
@@ -41,16 +41,16 @@ namespace PlantGame.Core
         public static bool TrySubmitTime(string key, float seconds)
         {
             var d = Load();
-            var e = d.times.Find(x => x.key == key && x.mode == 0);
+            var e = d.times.Find(x => x.key == key);
             if (e != null && e.seconds <= seconds) return false;
-            if (e == null) d.times.Add(new Entry { key = key, mode = 0, seconds = seconds }); else e.seconds = seconds;
+            if (e == null) d.times.Add(new Entry { key = key, seconds = seconds }); else e.seconds = seconds;
             Save(d);
             return true;
         }
 
         public static float? BestTime(string key)
         {
-            var e = Load().times.Find(x => x.key == key && x.mode == 0);
+            var e = Load().times.Find(x => x.key == key);
             return e?.seconds;
         }
 

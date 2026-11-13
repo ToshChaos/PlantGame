@@ -7,7 +7,7 @@ namespace PlantGame.World
 {
     /// <summary>
     /// Drop-in sky for any scene (Prefabs/Environment/Atmosphere.prefab). Applies the skybox, ambient gradient, fog and sun
-    /// direction, follows the camera with the cloud sea so it has no visible edge, and switches the post effects (bloom, distance blur, vignette, SMAA) with GameSettings.Bloom.
+    /// direction, follows the camera with the cloud sea so it has no visible edge, and switches the post effects (bloom, distance blur, vignette, SMAA) with GameSettings.Postprocessing.
     /// </summary>
     [DefaultExecutionOrder(-40)]
     public class Atmosphere : MonoBehaviour
@@ -60,7 +60,7 @@ namespace PlantGame.World
         void OnDisable() { GameSettings.Changed -= ApplySettings; }
         void ApplySettings()
         {
-            bool fx = GameSettings.Bloom;
+            bool fx = GameSettings.Postprocessing;
             if (_bloom != null) _bloom.active = fx;
             if (_blur != null) _blur.active = fx;
             if (_vignette != null) _vignette.active = fx;
@@ -74,7 +74,7 @@ namespace PlantGame.World
             if (_cam == null) return;
             _aaCam = _cam;
             var data = _cam.GetUniversalAdditionalCameraData();
-            data.antialiasing = GameSettings.Bloom ? AntialiasingMode.SubpixelMorphologicalAntiAliasing : AntialiasingMode.None;
+            data.antialiasing = GameSettings.Postprocessing ? AntialiasingMode.SubpixelMorphologicalAntiAliasing : AntialiasingMode.None;
             data.antialiasingQuality = AntialiasingQuality.High;
         }
 

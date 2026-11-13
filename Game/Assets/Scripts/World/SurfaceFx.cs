@@ -6,7 +6,7 @@ namespace PlantGame.World
             {
     /// <summary>
     /// Richer surfaces, on two independent switches.
-    /// "Postprocessing" (GameSettings.Bloom) = filtering and shaders:
+    /// "Postprocessing" (GameSettings.Postprocessing) = filtering and shaders:
     ///  - 16x anisotropic + trilinear on the island, rock and water textures (sharper at grazing angles, which is how the camera sees an island top),
     ///    and the global anisotropic switch turned on when the tier has it off;
     ///  - the grass blade sprites (<c>Overgrowth.SetBladeFilter</c>): trilinear, 16x anisotropic and coverage-preserving mips, so distant tufts keep their blades instead of thinning out;
@@ -60,7 +60,7 @@ namespace PlantGame.World
         /// <summary>Postprocessing switches filtering and shaders; the High quality tier switches the surface textures.</summary>
         void Apply()
         {
-            bool filter = GameSettings.Bloom, detail = GameSettings.Quality >= 2;
+            bool filter = GameSettings.Postprocessing, detail = GameSettings.Quality >= 2;
             if (filter != _filterOn) { if (filter) EngageFilter(); else RevertFilter(); }
             if (detail != _detailOn) { if (detail) EngageDetail(); else RevertDetail(); }
         }

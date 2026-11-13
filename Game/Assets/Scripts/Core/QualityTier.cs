@@ -48,7 +48,7 @@ namespace PlantGame.Core
             GameSettings.Quality = ram < 5000 || SystemInfo.processorCount < 6 ? Low : Medium;
 #endif
             GameSettings.Fps30 = true;   // even 12 GB flagships (Honor 90 Pro) throttle at 60 fps after a few minutes
-            GameSettings.Bloom = false;
+            GameSettings.Postprocessing = false;
             Debug.Log($"[PlantGame] First-run preset: {Names[GameSettings.Quality]}, {(GameSettings.Fps30 ? 30 : 60)} fps, postprocessing off ({ram} MB, {SystemInfo.processorCount} cores, {SystemInfo.graphicsDeviceType}, {SystemInfo.graphicsDeviceName}, {Screen.width} x {Screen.height}).");
         }
 
