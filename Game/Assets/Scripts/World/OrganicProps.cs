@@ -285,6 +285,10 @@ namespace PlantGame.World
         static int PosHash(Vector3 p) { unchecked { return (Mathf.RoundToInt(p.x * 13.7f) * 73856093) ^ (Mathf.RoundToInt(p.z * 11.3f) * 19349663) ^ (Mathf.RoundToInt(p.y * 7.1f) * 83492791); } }
         static int CellHash(Vector3 p) { unchecked { return (Mathf.FloorToInt(p.x / 2f) * 73856093) ^ (Mathf.FloorToInt(p.z / 2f) * 19349663); } }
 
+        /// <summary>Medium / Low in a running game: the bigger stones take 320 triangles instead of 1280 and the marble chips on the ground 80 instead of 320.
+        /// The editor builders always bake the full detail, whatever tier the editor is set to.</summary>
+        internal static bool Lean => Application.isPlaying && QualityTier.Lite;
+
         /// <summary>True for the imported models this class replaces.</summary>
         public static bool Replaces(string name) => name.StartsWith("flower_") || name == "grass" || name == "grass_large" || name.StartsWith("tree_palm") || IsRock(name);
         static bool IsRock(string n) => n.StartsWith("rock_") || n.StartsWith("stone_") || n.StartsWith("Rock_Medium");
@@ -326,7 +330,7 @@ namespace PlantGame.World
             {
                 // rounded stone: native sizes close to the models it replaces (Kenney small ~0.5 m, tall / large ~1 m, Quaternius medium ~1.4 m)
                 bool tall = name.Contains("tall"), large = name.Contains("large"), medium = name.StartsWith("Rock_Medium");
-                mf.sharedMesh = DebrisMeshes.Rock(h, medium || large ? 3 : 2);
+                mf.sharedMesh = DebrisMeshes.Rock(h, (medium || large) && !Lean ? 3 : 2);
                 mr.sharedMaterial = RockMat();
                 float s = medium ? 0.9f : large ? 0.7f : tall ? 0.5f : 0.35f;
                 go.transform.localScale = tall ? new Vector3(s * 0.8f, s * 1.7f, s * 0.8f) : new Vector3(s * (1f + (h >> 4) % 4 * 0.1f), s * 0.72f, s);

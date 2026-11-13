@@ -25,7 +25,7 @@ namespace PlantGame.World
                 if (!hasLeaf) continue;
                 if (!src.isReadable) return false;
                 var m = new Mesh { name = src.name + "_Bare", indexFormat = src.indexFormat };
-                m.vertices = src.vertices; m.normals = src.normals; m.tangents = src.tangents; m.uv = src.uv; m.colors = src.colors;
+                m.vertices = src.vertices; m.normals = src.normals; m.uv = src.uv;   // as Scenery.SimplifyTree: no tangents, no vertex colours
                 m.subMeshCount = src.subMeshCount;
                 for (int i = 0; i < src.subMeshCount; i++)
                 {

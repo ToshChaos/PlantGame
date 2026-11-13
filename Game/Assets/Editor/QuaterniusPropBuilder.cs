@@ -27,6 +27,7 @@ namespace PlantGame.Editor
                 var imp = (ModelImporter)AssetImporter.GetAtPath(p);
                 imp.globalScale = 1f; imp.useFileScale = true; imp.bakeAxisConversion = false; imp.isReadable = QualityTierBuilder.Batchable(p);   // T63: scatter props are static-batched at runtime
                 imp.meshCompression = ModelImporterMeshCompression.Off; imp.importCameras = false; imp.importLights = false;
+                imp.importTangents = ModelImporterTangents.None;   // no Quaternius material has a normal map: 16 bytes a vertex saved, twice on the read/write models
                 imp.importAnimation = false; imp.animationType = ModelImporterAnimationType.None; imp.addCollider = false;
                 imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
                 foreach (var r in imp.GetExternalObjectMap().Where(kv => kv.Key.type == typeof(Material)).Select(kv => kv.Key).ToArray()) imp.RemoveRemap(r);

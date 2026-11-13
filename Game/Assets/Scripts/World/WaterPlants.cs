@@ -11,7 +11,7 @@ namespace PlantGame.World
         static Color H(string hex) => Overgrowth.H(hex);
 
         /// <param name="discs">x, y(unused), z, radius of the pond lobes in world space.</param>
-        /// <summary>A round lily pad of radius `r` with a thin slit to the centre at angle `slit`: 24 segments, the rim curling up a touch, soft normals; both sides drawn.</summary>
+        /// <summary>A round lily pad of radius `r` with a thin slit to the centre at angle `slit`: 24 segments, the rim curling up a touch, soft normals; the material draws both sides.</summary>
         static void LilyPad(Overgrowth.Batch b, Vector3 c, float r, float slit)
         {
             const int N = 24; const float gap = 0.16f;   // radians either side of the slit
@@ -26,8 +26,8 @@ namespace PlantGame.World
             for (int s = 0; s < N; s++)
             {
                 int i0 = o + 1 + s * 2, i1 = i0 + 2;   // inner ring at i, rim at i + 1
-                b.t.AddRange(new[] { o, i1, i0, o, i0, i1 });
-                b.t.AddRange(new[] { i0, i1, i0 + 1, i0 + 1, i1, i1 + 1, i0, i0 + 1, i1, i0 + 1, i1 + 1, i1 });
+                b.t.AddRange(new[] { o, i1, i0 });   // one winding: Overgrowth.ColourMat is two-sided
+                b.t.AddRange(new[] { i0, i1, i0 + 1, i0 + 1, i1, i1 + 1 });
             }
         }
 
@@ -47,7 +47,7 @@ namespace PlantGame.World
                 for (int s = 0; s < S; s++)
                 {
                     int p0 = o + i * S + s, p1 = o + i * S + (s + 1) % S, p2 = p0 + S, p3 = p1 + S;
-                    h.t.AddRange(new[] { p0, p2, p1, p1, p2, p3, p0, p1, p2, p1, p3, p2 });   // both windings: the material draws one side
+                    h.t.AddRange(new[] { p0, p2, p1, p1, p2, p3 });   // one winding: the material is two-sided
                 }
         }
 

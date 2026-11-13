@@ -148,7 +148,7 @@ namespace PlantGame.World
             Scatter(Mathf.RoundToInt(Count(18) * (vegetation < 0.3f ? 0.5f : 1f)), 220, 0.25f, 0.92f, 1.3f, 0.9f, p => Flowers(root.transform, World(p), rnd), 0.7f);
 
             // ferns and tall grass fill the gaps (own picks so the trees and bushes above keep their layout)
-            if (Kit.Prop("Fern_1") != null || Kit.Prop("grass_large") != null)
+            if (Kit.Has("Fern_1") || Kit.Has("grass_large"))
                 Scatter(Count(12), 200, 0.2f, 0.94f, 1.0f, 0.8f, p => { var m = Model(root.transform, FirstAvailable(rnd, "Fern_1", "grass_large", "grass"), World(p), (float)rnd.NextDouble() * 360f, 0.5f + (float)rnd.NextDouble() * 0.7f, false); }, 0.5f);
 
             if (boulders > 0) Scatter(boulders + Count(2), 120, 0.3f, 0.9f, 2.6f, 1.8f, p => Slabs(root.transform, World(p), rnd), 1.8f);
@@ -253,7 +253,7 @@ namespace PlantGame.World
                 if (m != null) { m.transform.position = pos; Orient(m, o, 0.65f); }
             }
             // flowers on some islands
-            if (rnd.NextDouble() < 0.45 * Mathf.Max(0.4f, lush) + 0.1 && Kit.Prop("flower_redA") != null)
+            if (rnd.NextDouble() < 0.45 * Mathf.Max(0.4f, lush) + 0.1 && Kit.Has("flower_redA"))
             {
                 int nc = 1 + rnd.Next(3);
                 string[] cols = { "red", "purple", "yellow" };
@@ -452,7 +452,7 @@ namespace PlantGame.World
                     var p = new Vector2(rs.x + Mathf.Cos(a) * r, rs.z + Mathf.Sin(a) * r);
                     if (Vector2.Distance(p, c2) > edge(Mathf.Atan2(p.y - c2.y, p.x - c2.x)) * 0.93f || !free(p, 0.3f)) continue;
                     bool isBrick = rnd.NextDouble() < 0.3; float sz = 0.08f + (float)rnd.NextDouble() * 0.2f;
-                    var g = MeshPrim(isBrick ? "Brick" : "MarbleChip", DebrisMeshes.Tile(rnd.Next(8)), root.transform, new Vector3(p.x, Y(p) + sz * 0.15f, p.y),
+                    var g = MeshPrim(isBrick ? "Brick" : "MarbleChip", DebrisMeshes.Tile(rnd.Next(8), OrganicProps.Lean ? 1 : 2), root.transform, new Vector3(p.x, Y(p) + sz * 0.15f, p.y),
                                      isBrick ? new Vector3(sz * 2.2f, sz * 1.1f, sz * 1.2f) : new Vector3(sz * 1.5f, sz * 0.45f, sz * 1.1f), isBrick ? brick : marble, false);
                     g.transform.rotation = Quaternion.Euler((float)rnd.NextDouble() * 12f, (float)rnd.NextDouble() * 360f, (float)rnd.NextDouble() * 12f);
                     g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -495,7 +495,7 @@ namespace PlantGame.World
                 float a = (float)(rnd.NextDouble() * 6.283), r = edge(a) + 1.2f + (float)rnd.NextDouble() * 5f;
                 var pos = new Vector3(centre.x + Mathf.Cos(a) * r, centre.y + IslandTerrain.Shoulder - 5f + (float)rnd.NextDouble() * 7f, centre.z + Mathf.Sin(a) * r);
                 float sz = 0.15f + (float)rnd.NextDouble() * 0.35f; rnd.NextDouble();   // a spare draw, so the layout of everything after it stays the same
-                var g = MeshPrim("FloatChip", DebrisMeshes.Tile(rnd.Next(8)), root.transform, pos, new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), marble, false);
+                var g = MeshPrim("FloatChip", DebrisMeshes.Tile(rnd.Next(8), 2), root.transform, pos, new Vector3(sz * 1.6f, sz * 0.8f, sz * 1.2f), marble, false);
                 var b = g.AddComponent<FloatBob>(); b.amplitude = 0.25f + sz; b.period = 3f + (float)rnd.NextDouble() * 4f; b.wobble = 10f; b.spin = (rnd.NextDouble() < 0.5 ? -1f : 1f) * (10f + (float)rnd.NextDouble() * 30f);
                 g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
@@ -589,7 +589,7 @@ namespace PlantGame.World
 
         static string FirstAvailable(System.Random rnd, params string[] names)
         {
-            var ok = new List<string>(); foreach (var n in names) if (Kit.Prop(n) != null) ok.Add(n);
+            var ok = new List<string>(); foreach (var n in names) if (Kit.Has(n)) ok.Add(n);
             return ok.Count == 0 ? names[0] : ok[rnd.Next(ok.Count)];
         }
 
@@ -609,7 +609,7 @@ namespace PlantGame.World
                 if (!SimplifiedTrees.TryGetValue(src, out var m) || m == null)
                 {
                     m = new Mesh { name = src.name + "_Simplified", indexFormat = src.indexFormat };
-                    m.vertices = src.vertices; m.normals = src.normals; m.tangents = src.tangents; m.uv = src.uv; m.colors = src.colors;
+                    m.vertices = src.vertices; m.normals = src.normals; m.uv = src.uv;   // no tangents or vertex colours: URP Lit reads neither here (no normal map), and a copied colour array is 16 bytes a vertex
                     m.subMeshCount = src.subMeshCount;
                     var mats = mr.sharedMaterials;
                     for (int i = 0; i < src.subMeshCount; i++)
@@ -1019,7 +1019,7 @@ namespace PlantGame.World
             Material[] mats = { _pink, _purple, _white, _yellow, _purple };
             var m = mats[rnd.Next(mats.Length)];
             var go = new GameObject("Flowers"); go.transform.SetParent(parent, true); go.transform.position = pos;
-            if (Kit.Prop("flower_redA") != null)
+            if (Kit.Has("flower_redA"))
             {
                 // richer clumps: three colours, eight to eleven blooms of varied height and slight lean, a ring of grass and small buds round the base
                 string[] cols = { "red", "purple", "yellow" }; string col = cols[rnd.Next(cols.Length)], col2 = cols[rnd.Next(cols.Length)], col3 = cols[rnd.Next(cols.Length)];
@@ -1033,7 +1033,7 @@ namespace PlantGame.World
                     var f = Model(go.transform, "flower_" + c + "ABC"[rnd.Next(3)], pos + o, (float)rnd.NextDouble() * 360f, h, false);
                     if (f != null) f.transform.rotation = Quaternion.Euler(((float)rnd.NextDouble() - 0.5f) * 14f, f.transform.eulerAngles.y, ((float)rnd.NextDouble() - 0.5f) * 14f);
                 }
-                if (Kit.Prop("grass") != null || Kit.Prop("grass_large") != null)
+                if (Kit.Has("grass") || Kit.Has("grass_large"))
                     for (int i = 0; i < 3; i++)
                     {
                         float ang = i * 2.1f + (float)rnd.NextDouble(); var o = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * 0.6f;

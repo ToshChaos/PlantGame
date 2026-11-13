@@ -18,12 +18,12 @@ namespace PlantGame.World
             public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 normal)
             {
                 int i = v.Count; v.Add(a); v.Add(b); v.Add(c); v.Add(d); for (int k = 0; k < 4; k++) n.Add(normal);
-                t.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3, i + 2, i + 1, i, i + 3, i + 2, i });   // both sides
+                t.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });   // one winding: every material a batch is drawn with is two-sided (Cull Off)
             }
             public void Tri(Vector3 a, Vector3 b, Vector3 c, Vector3 normal)
             {
                 int i = v.Count; v.Add(a); v.Add(b); v.Add(c); for (int k = 0; k < 3; k++) n.Add(normal);
-                t.AddRange(new[] { i, i + 1, i + 2, i + 2, i + 1, i });
+                t.AddRange(new[] { i, i + 1, i + 2 });
             }
         }
 
@@ -189,6 +189,7 @@ namespace PlantGame.World
             string key = "stone" + ColorUtility.ToHtmlStringRGB(c);
             if (Mats.TryGetValue(key, out var m) && m != null) return m;
             m = new Material(baseMat) { name = "M_Stone_" + key, hideFlags = HideFlags.None }; m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);   // two-sided like ColourMat: batches carry one winding
             Mats[key] = m; return m;
         }
 

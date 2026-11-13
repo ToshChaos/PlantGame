@@ -6,6 +6,10 @@ Raw downloads live in the git-ignored `Source/ThirdParty-raw/<pack>/`; only the 
 `Scenery.cs` starts asking for it).
 
 ## What the game uses
+Since 2026-11-13 no Kenney model is in a build: `OrganicProps` builds the palms, flowers, grass and small rocks in code, the
+Quaternius bush stands in for the flat bushes and the ruins kit for the town pieces. The Kenney files and the three Quaternius
+`Rock_Medium` models are still in the repo but nothing references them (`asset-optimisation-scratchpad.md`).
+
 | Pack | Licence | In `Game/Assets` | Used for |
 |------|---------|------------------|----------|
 | Kenney Nature Kit 2.1 | CC0 | `Art/Models/Kenney/Nature` (26) | palms, bushes, flowers, small rocks and gems |
@@ -18,8 +22,9 @@ Raw downloads live in the git-ignored `Source/ThirdParty-raw/<pack>/`; only the 
 2. Run the pack's builder: ``PlantGame.Editor.KenneyPropBuilder.Build()` (menu entry removed)` (URP materials, leaf / bark re-tinted to the art bible),
    `18 Build Quaternius Props` (alpha-clipped, two-sided leaf and flower cards) or `19 Build Ruins Props` (one URP Lit
    material per atlas, normal maps).
-3. `PlantGame > Scenes > World Kit` so `Resources/WorldKit` lists the model; `Scenery.cs` places it by file name through
-   `Kit.Prop(name)` and falls back to procedural primitives when a model is missing.
+3. `PlantGame > Scenes > World Kit` so `Resources/WorldKit` lists the model (`WorldKitBuilder.Shipped` decides which folders
+   and names go in); `Scenery.cs` places it by file name through `Kit.Prop(name)` and falls back to procedural primitives when a
+   model is missing.
 
 ## Where the packs came from
 - Kenney Nature Kit and Fantasy Town Kit: https://kenney.nl (also on OpenGameArt).

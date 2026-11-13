@@ -16,7 +16,8 @@ namespace PlantGame.World
         public ItemDefinition[] items;
         public GameObject[] bridges, ladders, platforms, collectors;
         public GameObject player;
-        /// <summary>Imported scenery models (Kenney CC0 kits), looked up by file name via Kit.Prop.</summary>
+        /// <summary>Imported scenery models (Quaternius trees, bushes, ferns, the ruins kit), looked up by file name via Kit.Prop. Models that OrganicProps
+        /// builds in code (flowers, grass, palms, loose rocks) are not listed: see Kit.Has.</summary>
         public GameObject[] props;
         public LevelDefinition[] levels;
     }
@@ -60,6 +61,12 @@ namespace PlantGame.World
             }
             return _props.TryGetValue(name, out var r) ? r : null;
         }
+
+        /// <summary>
+        /// True when Scenery.Model can place `name`: a model in the kit, a prop OrganicProps builds in code, or one of the flat Kenney bushes (the
+        /// Quaternius bush stands in). The scenery lists still name the replaced models, so their random picks, and with them every layout, stay as they were.
+        /// </summary>
+        public static bool Has(string name) => OrganicProps.Replaces(name) || Prop(name.StartsWith("plant_bush") ? "Bush_Common" : name) != null;
 
         public static ItemDefinition Item(string id)
         {

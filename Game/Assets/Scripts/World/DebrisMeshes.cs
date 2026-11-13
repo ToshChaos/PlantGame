@@ -39,12 +39,14 @@ namespace PlantGame.World
         }
 
         /// <summary>A white marble chip / brick: a rounded box about 1.6 m across (superquadric), soft edges, a touch irregular.</summary>
-        public static Mesh Tile(int seed)
+        /// <param name="detail">Icosphere subdivisions: 3 = 1280 triangles (the big sky slabs), 2 = 320 (the chips round ruins and the ones floating past the rim, 7 to 50 cm long), 1 = 80 (ground chips on Medium / Low).</param>
+        public static Mesh Tile(int seed, int detail = 3)
         {
             seed &= 3;
-            if (Tiles.TryGetValue(seed, out var m) && m != null) return m;
+            int key = seed + detail * 4;
+            if (Tiles.TryGetValue(key, out var m) && m != null) return m;
             var rnd = new System.Random(seed * 919 + 17);
-            var v = new List<Vector3>(); var f = new List<int[]>(); Icosphere(v, f, 3);
+            var v = new List<Vector3>(); var f = new List<int[]>(); Icosphere(v, f, detail);
             float wob = 0.03f + (float)rnd.NextDouble() * 0.04f, ph = (float)rnd.NextDouble() * 6.283f;
             for (int i = 0; i < v.Count; i++)
             {
@@ -52,8 +54,8 @@ namespace PlantGame.World
                 var p = new Vector3(Mathf.Sign(n.x) * Mathf.Pow(Mathf.Abs(n.x), 0.3f), Mathf.Sign(n.y) * Mathf.Pow(Mathf.Abs(n.y), 0.3f), Mathf.Sign(n.z) * Mathf.Pow(Mathf.Abs(n.z), 0.3f));
                 v[i] = p * 0.8f * (1f + wob * Mathf.Sin(n.x * 3.1f + n.z * 2.3f + ph));
             }
-            m = Smooth("Tile" + seed, v, f);
-            Tiles[seed] = m; return m;
+            m = Smooth("Tile" + seed + (detail == 3 ? "" : "_d" + detail), v, f);
+            Tiles[key] = m; return m;
         }
 
         /// <summary>
