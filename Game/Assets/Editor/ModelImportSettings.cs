@@ -17,7 +17,7 @@ namespace PlantGame.Editor
         void OnPreprocessModel()
         {
             if (!assetPath.StartsWith(Root) || !assetPath.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)) return;
-            if (assetPath.StartsWith(Root + "Kenney/") || assetPath.StartsWith(Root + "Quaternius/") || assetPath.StartsWith(Root + "Ruins/")) return;  // third-party props: KenneyPropBuilder / QuaterniusPropBuilder (keep embedded materials)
+            if (assetPath.StartsWith(Root + "Quaternius/") || assetPath.StartsWith(Root + "Ruins/")) return;  // third-party props: QuaterniusPropBuilder / RuinsPropBuilder (keep embedded materials)
             if (!assetImporter.importSettingsMissing) return;   // already configured once
             Apply((ModelImporter)assetImporter);
         }

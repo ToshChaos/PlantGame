@@ -8,7 +8,7 @@ namespace PlantGame.Editor
 {
     /// <summary>
     /// Imports the Quaternius Stylized Nature MegaKit (Standard, CC0; see docs/asset-sources.md and ThirdParty/LICENSES.md):
-    /// trees, pines, bushes, ferns, flowers, rocks, mushrooms under Art/Models/Quaternius. The embedded textured materials are
+    /// trees, pines, bushes, ferns, flowers, mushrooms under Art/Models/Quaternius. The embedded textured materials are
     /// re-created as project URP Lit materials (Art/Materials/Quaternius); leaf / flower / fern cards get alpha clip + two-sided.
     /// Menu: PlantGame > 18 Build Quaternius Props, then PlantGame > 14 Build World Kit.
     /// </summary>

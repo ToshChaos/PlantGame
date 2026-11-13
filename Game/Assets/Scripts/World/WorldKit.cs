@@ -63,7 +63,7 @@ namespace PlantGame.World
         }
 
         /// <summary>
-        /// True when Scenery.Model can place `name`: a model in the kit, a prop OrganicProps builds in code, or one of the flat Kenney bushes (the
+        /// True when Scenery.Model can place `name`: a model in the kit, a prop OrganicProps builds in code, or one of the flat `plant_bush` names (the
         /// Quaternius bush stands in). The scenery lists still name the replaced models, so their random picks, and with them every layout, stay as they were.
         /// </summary>
         public static bool Has(string name) => OrganicProps.Replaces(name) || Prop(name.StartsWith("plant_bush") ? "Bush_Common" : name) != null;

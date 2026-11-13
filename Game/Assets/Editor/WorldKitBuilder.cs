@@ -37,8 +37,7 @@ namespace PlantGame.Editor
             var mats = new List<Material>();
             foreach (var g in AssetDatabase.FindAssets("t:Material", new[] { MaterialBuilder.Dir }))
             {
-                var mp = AssetDatabase.GUIDToAssetPath(g);
-                if (Shipped(mp)) mats.Add(AssetDatabase.LoadAssetAtPath<Material>(mp));
+                mats.Add(AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(g)));
             }
             kit.materials = mats.ToArray();
             var items = new List<ItemDefinition>();
@@ -49,8 +48,7 @@ namespace PlantGame.Editor
             var props = new List<GameObject>();
             foreach (var g in AssetDatabase.FindAssets("t:Model", new[] { QuaterniusPropBuilder.ModelDir, RuinsPropBuilder.ModelDir }))
             {
-                var pp = AssetDatabase.GUIDToAssetPath(g);
-                if (Shipped(pp)) props.Add(AssetDatabase.LoadAssetAtPath<GameObject>(pp));
+                props.Add(AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(g)));
             }
             kit.props = props.ToArray();
 
@@ -76,18 +74,6 @@ namespace PlantGame.Editor
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssets();
             Debug.Log($"[PlantGame] WorldKit built: {kit.materials.Length} materials, {kit.items.Length} items, plants {kit.bridges.Length}/{kit.ladders.Length}/{kit.platforms.Length}/{kit.collectors.Length}, {kit.levels.Length} levels, {kit.props.Length} props.");
-        }
-
-        /// <summary>
-        /// False for what no level places any more, so a player build leaves it out (anything the kit lists is loaded with it): every Kenney model
-        /// and material (OrganicProps builds the flowers, grass, palms and rocks in code, the Quaternius bush stands in for the flat bushes, the ruins
-        /// kit for the town pieces) and the Quaternius medium rocks with their material and 2048 px texture. Kit.Has still answers for those names.
-        /// </summary>
-        static bool Shipped(string path)
-        {
-            if (path.StartsWith(KenneyPropBuilder.ModelDir + "/") || path.StartsWith(KenneyPropBuilder.MatDir + "/")) return false;
-            string name = Path.GetFileNameWithoutExtension(path);
-            return name != "Q_Rocks" && !(path.StartsWith(QuaterniusPropBuilder.ModelDir + "/") && OrganicProps.Replaces(name));
         }
 
         /// <summary>Autumn recolours of the island top and foliage (Scenery.Mat swaps them in): clones of the green materials.</summary>

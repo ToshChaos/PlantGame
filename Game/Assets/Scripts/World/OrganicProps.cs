@@ -5,7 +5,7 @@ using PlantGame.Core;
 namespace PlantGame.World
 {
     /// <summary>
-    /// Smooth, organic stand-ins for the blocky imported Kenney nature props: palms, meadow flowers (lupine spikes, daisies, cups, stars) with
+    /// Smooth, organic props built in code (they replaced the blocky imported Kenney nature models, whose names the scenery lists still use): palms, meadow flowers (lupine spikes, daisies, cups, stars) with
     /// soft-glow petals like the butterflies, curved grass tufts and rounded stones, all with smooth normals. Scenery.Model asks here
     /// first, so every caller (island dressing, island sides, islets, sky debris) gets them without touching its random stream: the
     /// variation comes from a hash of the position. Meshes are cached and shared; the materials are saved with scenes the builders bake.

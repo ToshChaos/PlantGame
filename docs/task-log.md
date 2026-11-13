@@ -2,6 +2,12 @@
 
 Long per-task notes live here (keep the boards and task files short). Newest first.
 
+## Unused Kenney and rock assets deleted (2026-11-13)
+- Deleted what the optimisation pass below had left unreferenced: `Art/Models/Kenney` (32 models, the town atlas), `Art/Materials/Kenney` (11 materials), `Editor/KenneyPropBuilder.cs`, the Quaternius `Rock_Medium_1..3.fbx`, `Rocks_Diffuse.png` (2048 px) and `Q_Rocks.mat`: 105 files with their metas, 3.8 MB. A GUID search over `Assets`, `ProjectSettings` and `Packages` found no reference to any of them first.
+- Code that only served them is gone too: `PalmLook.Apply` / `Retarget` (the palm is `OrganicProps.Palm`; `PalmLook` keeps the bark and frond textures and materials), the `pillar-stone` / `wall-broken` fallbacks in `Scenery.Pillar` / `Slabs`, the Kenney and `Rock_` branches of `QualityTierBuilder.Batchable`, and `WorldKitBuilder.Shipped` (nothing left to filter). The scenery pick lists keep the old model names (`Kit.Has`), so no layout moves.
+- `LICENSES.md`, `docs/asset-sources.md` and the README credits no longer list Kenney (CC0, nothing of it is in the project); the raw packs stay in `Source/ThirdParty-raw/`.
+- Checked: compiles; World Kit rebuild leaves `Resources/WorldKit.asset` byte-identical (83 materials, 36 props); 51 / 51 EditMode tests; level 10 on High in play mode has the same renderers and triangles in every island and backdrop group as before (only the player's can parts and the falling leaves differ, both dynamic), no renderer without a material, both palms textured. Not checked: a player build, Medium / Low, other levels.
+
 ## Island and scatter assets: optimisation pass (2026-11-13)
 - Checked everything that is not a plant: the 73 imported models (Kenney, Quaternius, ruins, player) and 58 textures by their import settings, and a generated level by what it draws (level 10, 8 islands, High and Medium, every enabled renderer counted per island part, mesh and material). New tool for that: PlantGame > Test > Scene Census (`Editor/SceneCensus.cs`, writes `Game/Logs/census_<tier>_<level>.txt`).
 - Found and fixed:

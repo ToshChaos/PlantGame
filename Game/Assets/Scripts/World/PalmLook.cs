@@ -1,17 +1,15 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace PlantGame.World
 {
     /// <summary>
-    /// Textures for the imported Kenney palms (their own UVs only address a flat colour palette): a procedural ringed bark and a leaflet-striped frond texture,
-    /// plus new UVs (bark: ring bands up the trunk; fronds: radial from the crown, leaflet stripes along the blade). Meshes are copied once per source mesh.
+    /// Textures and materials for the palms OrganicProps.Palm builds: a procedural ringed bark and a leaflet-striped frond texture (the palm mesh
+    /// brings the UVs: ring bands up the trunk, leaflet stripes along the blade).
     /// </summary>
     public static class PalmLook
     {
         static Texture2D _bark, _frond;
         static Material _barkMat, _frondMat;
-        static readonly Dictionary<Mesh, Mesh> Cache = new Dictionary<Mesh, Mesh>();
 
         static float Hash(int x, int y, int period)
         {
@@ -82,51 +80,5 @@ namespace PlantGame.World
 
         internal static Material BarkMat => _barkMat != null ? _barkMat : _barkMat = MakeMat("M_PalmBark", BarkTexture(), Color.white, 0.1f);
         internal static Material FrondMat => _frondMat != null ? _frondMat : _frondMat = MakeMat("M_PalmFrond", FrondTexture(), Color.white, 0.25f);
-
-        /// <summary>Swaps the palm's bark and frond materials for the textured ones and rewrites the UVs. Models without readable meshes keep the flat colours.</summary>
-        public static void Apply(GameObject model)
-        {
-            foreach (var mf in model.GetComponentsInChildren<MeshFilter>())
-            {
-                var mr = mf.GetComponent<MeshRenderer>(); var src = mf.sharedMesh;
-                if (mr == null || src == null || !src.isReadable) continue;
-                var mats = mr.sharedMaterials; var kinds = new int[mats.Length];   // 1 = bark, 2 = frond
-                for (int i = 0; i < mats.Length; i++) kinds[i] = mats[i] == null ? 0 : mats[i].name.Contains("wood") ? 1 : mats[i].name.Contains("leaf") ? 2 : 0;
-                if (!Cache.TryGetValue(src, out var m) || m == null) Cache[src] = m = Retarget(src, kinds);
-                mf.sharedMesh = m;
-                for (int i = 0; i < mats.Length; i++) mats[i] = kinds[i] == 1 ? BarkMat : kinds[i] == 2 ? FrondMat : mats[i];
-                mr.sharedMaterials = mats;
-            }
-        }
-
-        static Mesh Retarget(Mesh src, int[] kinds)
-        {
-            var m = Object.Instantiate(src); m.name = src.name + "_Palm";
-            var verts = src.vertices; var uv = new Vector2[verts.Length];
-            // which submesh owns each vertex
-            var owner = new int[verts.Length];
-            for (int s = 0; s < src.subMeshCount; s++) foreach (int idx in src.GetIndices(s)) owner[idx] = s;
-            // crown centre = centre of the frond vertices; the angular seam sits in the emptiest direction so no blade straddles it
-            Vector2 c = Vector2.zero; int n = 0; var bins = new int[12];
-            for (int i = 0; i < verts.Length; i++) if (owner[i] < kinds.Length && kinds[owner[i]] == 2) { c += new Vector2(verts[i].x, verts[i].z); n++; }
-            if (n > 0) c /= n;
-            for (int i = 0; i < verts.Length; i++) if (owner[i] < kinds.Length && kinds[owner[i]] == 2)
-                { float a = Mathf.Atan2(verts[i].z - c.y, verts[i].x - c.x); bins[Mathf.Clamp(Mathf.FloorToInt((a + Mathf.PI) / (2 * Mathf.PI) * 12), 0, 11)]++; }
-            int best = 0; for (int b = 1; b < 12; b++) if (bins[b] < bins[best]) best = b;
-            float seam = -Mathf.PI + (best + 0.5f) * (2 * Mathf.PI / 12);
-            for (int i = 0; i < verts.Length; i++)
-            {
-                int kind = owner[i] < kinds.Length ? kinds[owner[i]] : 0;
-                var p = verts[i];
-                if (kind == 1) uv[i] = new Vector2((p.x + p.z) * 2.2f, p.y * 2.4f);     // bark: bands climb with height (model is about 1.4 tall)
-                else if (kind == 2)
-                {
-                    float a = Mathf.Repeat(Mathf.Atan2(p.z - c.y, p.x - c.x) - seam, 2 * Mathf.PI);
-                    uv[i] = new Vector2(new Vector2(p.x - c.x, p.z - c.y).magnitude * 5f, a / (2 * Mathf.PI) * 12f);
-                }
-                else uv[i] = Vector2.zero;
-            }
-            m.uv = uv; return m;
-        }
     }
 }

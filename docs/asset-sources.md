@@ -6,28 +6,26 @@ Raw downloads live in the git-ignored `Source/ThirdParty-raw/<pack>/`; only the 
 `Scenery.cs` starts asking for it).
 
 ## What the game uses
-Since 2026-11-13 no Kenney model is in a build: `OrganicProps` builds the palms, flowers, grass and small rocks in code, the
-Quaternius bush stands in for the flat bushes and the ruins kit for the town pieces. The Kenney files and the three Quaternius
-`Rock_Medium` models are still in the repo but nothing references them (`asset-optimisation-scratchpad.md`).
+The Kenney Nature Kit and Fantasy Town Kit (CC0, https://kenney.nl) were used until 2026-11-13 and are deleted from `Game/Assets`:
+`OrganicProps` builds the palms, flowers, grass and loose rocks in code, the Quaternius bush stands in for the flat bushes and the
+ruins kit for the town pieces. The three Quaternius `Rock_Medium` models and their texture went the same way. `Scenery.cs` still
+uses the old model names in its pick lists (`Kit.Has` answers for them); the raw packs are in `Source/ThirdParty-raw/`.
 
 | Pack | Licence | In `Game/Assets` | Used for |
 |------|---------|------------------|----------|
-| Kenney Nature Kit 2.1 | CC0 | `Art/Models/Kenney/Nature` (26) | palms, bushes, flowers, small rocks and gems |
-| Kenney Fantasy Town Kit 2.0 | CC0 | `Art/Models/Kenney/Town` (6) | ruin pillars, low walls, stairs, rubble |
-| Quaternius Stylized Nature MegaKit (Standard) | CC0 | `Art/Models/Quaternius/Nature` (22 + textures) | all broadleaf / pine / willow trees (recoloured for autumn), bushes, ferns, medium rocks |
+| Quaternius Stylized Nature MegaKit (Standard) | CC0 | `Art/Models/Quaternius/Nature` (19 + textures) | all broadleaf / pine / willow trees (recoloured for autumn), bushes, ferns, mushrooms |
 | FreeStylized Ruins Modular Kit 01 | royalty free, do not redistribute raw files | `Art/Models/Ruins` (17 + 3 atlases) | the gate goal's arch, ruin walls, rubble, sky debris |
 
 ## Re-importing (editor menus)
 1. Copy the FBX (and textures) from `Source/ThirdParty-raw/` into the pack's folder under `Game/Assets/Art/Models/`.
-2. Run the pack's builder: ``PlantGame.Editor.KenneyPropBuilder.Build()` (menu entry removed)` (URP materials, leaf / bark re-tinted to the art bible),
-   `18 Build Quaternius Props` (alpha-clipped, two-sided leaf and flower cards) or `19 Build Ruins Props` (one URP Lit
-   material per atlas, normal maps).
-3. `PlantGame > Scenes > World Kit` so `Resources/WorldKit` lists the model (`WorldKitBuilder.Shipped` decides which folders
-   and names go in); `Scenery.cs` places it by file name through `Kit.Prop(name)` and falls back to procedural primitives when a
-   model is missing.
+2. Run the pack's builder: `PlantGame.Editor.QuaterniusPropBuilder.Build()` (alpha-clipped, two-sided leaf and flower cards)
+   or `PlantGame.Editor.RuinsPropBuilder.Build()` (one URP Lit material per atlas, normal maps).
+3. `PlantGame > Scenes > World Kit` so `Resources/WorldKit` lists the model: it lists every model under `Art/Models/Quaternius`
+   and `Art/Models/Ruins` and every material under `Art/Materials`, and all of it is loaded at startup, so keep only what a level
+   places in those folders. `Scenery.cs` places a model by file name through `Kit.Prop(name)` and falls back to procedural
+   primitives when it is missing.
 
 ## Where the packs came from
-- Kenney Nature Kit and Fantasy Town Kit: https://kenney.nl (also on OpenGameArt).
 - Quaternius MegaKit: https://quaternius.itch.io/stylized-nature-megakit (free Standard zip; the paid Pro version is not used).
 - FreeStylized Ruins 01: https://freestylized.com/asset_pack/ruins_01/ (download through the linked Patreon post, needs a
   free login; the Blender, Unity and Unreal variants in the zip are not used).

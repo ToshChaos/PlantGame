@@ -502,7 +502,7 @@ namespace PlantGame.World
         }
 
         // tree species: 0 oak, 1 pine, 2 birch, 3 blossom, 4 willow, 5 cypress, 6 autumn
-        public const int TreeKinds = 8;   // 6 = coloured oak (green, red, yellow, orange, rarely purple), 7 = palm (Kenney CC0)
+        public const int TreeKinds = 8;   // 6 = coloured oak (green, red, yellow, orange, rarely purple), 7 = palm (OrganicProps)
 
         static int PickKind(float[] weights, System.Random rnd)
         {
@@ -512,7 +512,7 @@ namespace PlantGame.World
             return 0;
         }
 
-        // ------------------------------------------------------------------ imported models (Kenney CC0 kits)
+        // ------------------------------------------------------------------ imported models
         static Material _yellowCrystal;
         /// <summary>The glowing crystal material; snow levels use a golden-yellow copy (the cyan crystals read as green against the snow).</summary>
         static Material CrystalMat()
@@ -544,10 +544,10 @@ namespace PlantGame.World
         /// </summary>
         static GameObject Model(Transform parent, string name, Vector3 pos, float yaw, float height, bool collide)
         {
-            var go = OrganicProps.Create(name, pos, yaw, parent, Theme);   // the blocky Kenney flowers, grass and rocks: smooth stand-ins
+            var go = OrganicProps.Create(name, pos, yaw, parent, Theme);   // flowers, grass, palms and loose rocks are built in code
             if (go == null)
             {
-                bool flatBush = name.StartsWith("plant_bush") && Kit.Prop("Bush_Common") != null;   // Kenney's flat-leaf bushes: the leafy Quaternius bush, tinted
+                bool flatBush = name.StartsWith("plant_bush") && Kit.Prop("Bush_Common") != null;   // the flat-leaf bush names: the leafy Quaternius bush, tinted
                 var prefab = Kit.Prop(flatBush ? "Bush_Common" : name); if (prefab == null) return null;
                 go = Object.Instantiate(prefab, pos, Quaternion.Euler(0, yaw, 0), parent); go.name = name;
                 if (flatBush) { Recolour(go, BushTint(pos)); if (height <= 0f) go.transform.localScale *= 0.8f; }
@@ -638,7 +638,6 @@ namespace PlantGame.World
                 SimplifyTree(model);
                 if (kind == 7)
                 {
-                    if (!OrganicProps.Replaces(model.name)) PalmLook.Apply(model);   // the procedural palm brings its own UVs
                     var coco = Kit.Item("coconut");   // at most one fallen coconut at the foot of about one palm in three; it never regrows
                     if (coco != null && coco.worldPrefab != null && Coconuts && Mathf.Repeat(sv * 7.31f, 1f) < 0.34f)
                     {
@@ -1061,11 +1060,6 @@ namespace PlantGame.World
                                    : FirstAvailable(rnd, "AP4_A1_StoneWall1", "AP4_A2_StoneWall2");
                 if (Model(go.transform, pn, pos, (float)rnd.NextDouble() * 360f, 0f, true) != null) return;
             }
-            if (Kit.Prop("pillar-stone") != null)
-            {
-                var pm = Model(go.transform, "pillar-stone", pos, (float)rnd.NextDouble() * 360f, h, true);
-                if (pm != null) return;
-            }
             Prim("Base", PrimitiveType.Cube, go.transform, pos + Vector3.up * 0.15f, new Vector3(1.1f, 0.3f, 1.1f), _marble, true);
             var shaft = Prim("Shaft", PrimitiveType.Cube, go.transform, pos + Vector3.up * (0.3f + h * 0.5f), new Vector3(0.75f, h, 0.75f), _marble, true);
             if (broken) shaft.transform.rotation = go.transform.rotation * Quaternion.Euler(0, 0, (float)(rnd.NextDouble() - 0.5) * 8f);
@@ -1086,16 +1080,6 @@ namespace PlantGame.World
                 {
                     var o = new Vector3((float)(rnd.NextDouble() - 0.5) * 3.6f, 0f, (float)(rnd.NextDouble() - 0.5) * 3.6f);
                     Model(parent, bits[rnd.Next(bits.Length)], pos + o, (float)rnd.NextDouble() * 360f, 0f, true);
-                }
-                return;
-            }
-            if (Kit.Prop("wall-broken") != null)
-            {
-                string[] bits = { "wall-block-half", "wall-broken", "stairs-stone", "wall-half", "rock-small" };
-                for (int i = 0; i < 3; i++)
-                {
-                    var o = new Vector3((float)(rnd.NextDouble() - 0.5) * 3.2f, 0f, (float)(rnd.NextDouble() - 0.5) * 3.2f);
-                    Model(parent, bits[rnd.Next(bits.Length)], pos + o, (float)rnd.NextDouble() * 360f, 0.7f + (float)rnd.NextDouble() * 0.5f, true);
                 }
                 return;
             }

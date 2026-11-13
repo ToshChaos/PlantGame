@@ -82,17 +82,15 @@ Each item says what it would save and what to check before doing it.
 - The app icons (`T_AppIcon*`) are not referenced by any scene or material: they do not load at runtime.
 - Total for everything under `Art` on Android: about 45 MB in the editor's count, icons included. Texture memory is not the problem.
 
-## Unreferenced now, delete if nobody wants them back
+## Deleted on 2026-11-13 (second pass)
 
-Nothing in a scene, prefab or `Resources/WorldKit` references these any more, so they are not in a build, but they are still in the repo:
+The Kenney models, town atlas and materials (`Art/Models/Kenney`, `Art/Materials/Kenney`, `Editor/KenneyPropBuilder.cs`), the
+Quaternius `Rock_Medium_1..3.fbx` with `Rocks_Diffuse.png` and `Q_Rocks.mat`, and the code that only served them
+(`PalmLook.Apply` / `Retarget`, the `pillar-stone` / `wall-broken` fallbacks in `Scenery.Pillar` / `Slabs`, the Kenney branch of
+`QualityTierBuilder.Batchable`, `WorldKitBuilder.Shipped`). 105 files, 3.8 MB; none was in a build any more. The raw packs are
+still in `Source/ThirdParty-raw/`; `git show eb1d7b1:<path>` brings a file back.
 
-- `Art/Models/Kenney` (32 models, the town atlas), `Art/Materials/Kenney` (11 materials), `Editor/KenneyPropBuilder.cs`.
-- `Art/Models/Quaternius/Nature/Rock_Medium_1..3.fbx`, `Textures/Rocks_Diffuse.png`, `Art/Materials/Quaternius/Q_Rocks.mat`.
-- Code that only served them: `PalmLook.Apply` / `Retarget` (the bark and frond textures are still used by `OrganicProps.Palm`),
-  the `pillar-stone` / `wall-broken` fallbacks in `Scenery.Pillar` / `Slabs`, `QualityTierBuilder.Batchable`'s Kenney branch.
-- Update `ThirdParty/LICENSES.md` and `docs/asset-sources.md` when they go (the raw packs stay in `Source/ThirdParty-raw/`).
-
-The scenery code still names these models in its pick lists (`"flower_redA"`, `"Rock_Medium_1"`, `"plant_bush"`, ...). **Keep the
+The scenery code still names the deleted models in its pick lists (`"flower_redA"`, `"Rock_Medium_1"`, `"plant_bush"`, ...). **Keep the
 names**: `Kit.Has` answers true for them and the lists feed `rnd.Next`, so removing a name shifts every random draw after it and
 changes the dressing of every existing level.
 
@@ -107,5 +105,6 @@ changes the dressing of every existing level.
 - **`MainSceneBuilder.BuildAtmosphere` rewrites `Atmosphere_Generated.asset` even when it reports "prefab unchanged"**: the
   stored `M_Stone#n` materials pick up the matte settings of commit 465955c, which was never re-baked. Not committed here
   (unrelated to this pass); the next rebuild will show that diff.
-- Anything `WorldKit` lists is loaded with it at startup: check `WorldKitBuilder.Shipped` before adding a folder of models or materials.
+- Anything `WorldKit` lists is loaded with it at startup, and `WorldKitBuilder` lists every model under `Art/Models/Quaternius` and
+  `Art/Models/Ruins` and every material under `Art/Materials`: keep only what a level places in those folders.
 - Editor mesh memory numbers include a CPU copy of every mesh; use them to compare, not as device numbers. No device was measured.

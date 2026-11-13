@@ -11,7 +11,7 @@ namespace PlantGame.Editor
     /// - High keeps PlantGame_URP (desktop). Medium (PlantGame_URP_Medium) targets a 2022 phone at 1080 x 2340: render scale 0.75
     ///   (1755 x 810), no HDR, no MSAA, one 1024 shadow cascade out to 30 m, no additional lights, cookies, lens flares or LOD cross-fade.
     ///   Low (PlantGame_URP_Low) is the same at render scale 0.6 without shadows.
-    /// - Small scatter props (all Kenney models, Quaternius bushes, rocks, ferns, mushrooms) are imported read/write so the
+    /// - Small scatter props (Quaternius bushes, ferns, mushrooms) are imported read/write so the
     ///   WorldOptimizer can static-batch them at runtime; the big trees and ruins stay GPU-only.
     /// - Phone builds cap the big third-party textures (Quaternius, Ruins: 2048 maps) at 1024; desktop keeps 2048.
     /// </summary>
@@ -95,10 +95,9 @@ namespace PlantGame.Editor
         /// <summary>Scatter props that the runtime world pass static-batches (it needs CPU-readable meshes).</summary>
         public static bool Batchable(string path)
         {
-            if (path.StartsWith("Assets/Art/Models/Kenney/")) return true;
             if (!path.StartsWith("Assets/Art/Models/Quaternius/")) return false;
             var f = Path.GetFileName(path);
-            return f.StartsWith("Bush_") || f.StartsWith("Rock_") || f.StartsWith("Fern_") || f.StartsWith("Mushroom_");
+            return f.StartsWith("Bush_") || f.StartsWith("Fern_") || f.StartsWith("Mushroom_");
         }
 
         public const int PhoneMaxTexture = 1024;
@@ -129,7 +128,7 @@ namespace PlantGame.Editor
         static int MakeScatterReadable()
         {
             int n = 0;
-            foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { "Assets/Art/Models/Kenney", "Assets/Art/Models/Quaternius" }))
+            foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { "Assets/Art/Models/Quaternius" }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (!Batchable(path) || !(AssetImporter.GetAtPath(path) is ModelImporter imp) || imp.isReadable) continue;

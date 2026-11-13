@@ -92,6 +92,5 @@ Helpers: **Test > Game View: Phone 2340x1080** (reference phone), **Test > Touch
 
 ## Credits (third-party art)
 Full list with licences: `Game/Assets/ThirdParty/LICENSES.md`.
-- Kenney Nature Kit and Fantasy Town Kit (CC0), https://kenney.nl
 - Quaternius Stylized Nature MegaKit (CC0), https://quaternius.com
 - FreeStylized Ruins Modular Kit 01 (royalty free), https://freestylized.com
