@@ -378,12 +378,14 @@ namespace PlantGame.UI
             _prompt = Label("Prompt", root, "", TouchInput.Active ? 44 : 36, TextAnchor.MiddleCenter, new Vector2(0, TouchInput.Active ? 0 : 70), new Vector2(1000, 54), new Vector2(0.5f, 0.2f), false);
             Hint(_prompt);
             _objective = Label("Objective", root, "", 26, TextAnchor.UpperCenter, new Vector2(0, -135), new Vector2(1400, 80), new Vector2(0.5f, 1f));
+            Recolor(_objective, TitleMenu.Lime);   // goal line: same lime as the menu options, for contrast
             _fps = Label("Fps", root, "", 28, TextAnchor.UpperLeft, new Vector2(160, -38), new Vector2(240, 40), new Vector2(0f, 1f));   // top left (touch: the Pause button sits under it)
 
             // water charges, bottom left
             var water = touch ? Rect("Water", root, new Vector2(1f, 1f), new Vector2(300, 50), new Vector2(-150, -(SlotSize + 175f)), new Vector2(1f, 0.5f))   // touch: top right, a line below the selected item name and clear of it
                               : Rect("Water", root, new Vector2(0f, 0f), new Vector2(300, 50), new Vector2(40, 150), new Vector2(0f, 0.5f));
             _waterLabel = Label("WaterLabel", water, "Water", 24, TextAnchor.MiddleLeft, new Vector2(230, 22), new Vector2(460, 50), new Vector2(0f, 0.5f));
+            Recolor(_waterLabel, TitleMenu.Lime);   // same lime as the menu options, for contrast
             _waterWarn = Label("WaterWarn", root, "", 26, touch ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft, touch ? new Vector2(0, 110) : new Vector2(370, 86), touch ? new Vector2(900, 60) : new Vector2(660, 36), touch ? new Vector2(0.5f, 0f) : new Vector2(0f, 0f));   // below the water indicator, raised half its font size (13)
             Hint(_waterWarn);
             _waterWarn.text = "Refill water at source (pond, stream, plant)";
