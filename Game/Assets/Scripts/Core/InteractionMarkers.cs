@@ -157,8 +157,8 @@ namespace PlantGame.Core
                 var colour = focused ? rdy : near;
                 if (water && !slim && ready) thickRefill = true;
                 if (t.interactable is GoalFlag { kind: GoalKind.Gate } gate)
-                {   // the portal fills the middle of a gate: one circle on each side of it instead
-                    Vector3 side = gate.transform.right * 2.6f;
+                {   // the portal fills the middle of a gate: one circle in front of it and one behind it (centred) instead
+                    Vector3 side = gate.transform.forward * 0.6f;
                     for (int k = -1; k <= 1; k += 2)
                     {
                         Place(pos + side * k, scale, sprite, colour);
