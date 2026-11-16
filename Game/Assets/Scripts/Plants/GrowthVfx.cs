@@ -15,44 +15,23 @@ namespace PlantGame.Plants
         class Follow { public PlantInstance plant; public ParticleSystem ps; public Transform anchor, tip; }
 
         readonly List<Follow> _active = new List<Follow>();
-        static Material _sharedMat;   // DontSave: built once per session, so a scene reload never leaks a copy
         Material _mat;
         Transform _player;
 
-        void Awake()
-        {
-            if (_sharedMat == null)
-            {
-                _sharedMat = RuntimeMats.NewParticles("M_VfxDot", Color.white, additive: true);
-                var tex = MakeDot();
-                _sharedMat.mainTexture = tex;
-                if (_sharedMat.HasProperty("_BaseMap")) _sharedMat.SetTexture("_BaseMap", tex);
-            }
-            _mat = _sharedMat;
-        }
+        void Awake() { _mat = Motes.Mat; }
 
         void OnEnable()
         {
             PlantInstance.Sprouted += OnSprout; PlantInstance.GrowthStarted += OnGrowStart; PlantInstance.Grown += OnGrown;
             GameEvents.ItemPickedUp += OnPickup; GameEvents.GameWon += OnWin; GameEvents.Watered += OnWatered;
+            SeedTree.SeedRegrown += OnSeedRegrown;
         }
 
         void OnDisable()
         {
             PlantInstance.Sprouted -= OnSprout; PlantInstance.GrowthStarted -= OnGrowStart; PlantInstance.Grown -= OnGrown;
             GameEvents.ItemPickedUp -= OnPickup; GameEvents.GameWon -= OnWin; GameEvents.Watered -= OnWatered;
-        }
-
-        static Texture2D MakeDot()
-        {
-            const int S = 32; var t = new Texture2D(S, S, TextureFormat.RGBA32, false) { hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < S; y++) for (int x = 0; x < S; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(S / 2f, S / 2f)) / (S / 2f);
-                float a = Mathf.Clamp01(1f - d); a *= a;
-                t.SetPixel(x, y, new Color(1, 1, 1, a));
-            }
-            t.Apply(); return t;
+            SeedTree.SeedRegrown -= OnSeedRegrown;
         }
 
         Transform Player() { if (_player == null) { var pc = PlantGame.Player.PlayerController.Instance; if (pc != null) _player = pc.transform; } return _player; }
@@ -89,7 +68,8 @@ namespace PlantGame.Plants
             Destroy(ps.gameObject, life + 1.5f);
         }
 
-        static readonly Color Cyan = new Color(0.486f, 0.949f, 0.902f), White = new Color(0.957f, 0.973f, 0.965f), Green = new Color(0.365f, 0.706f, 0.42f);
+        static readonly Color Cyan = new Color(0.486f, 0.949f, 0.902f), White = new Color(0.957f, 0.973f, 0.965f), Green = new Color(0.365f, 0.706f, 0.42f), Gold = new Color(1f, 0.86f, 0.45f),
+            Firefly = new Color(1f, 0.8f, 0.25f), FireflyPale = new Color(1f, 0.95f, 0.65f);
 
         void OnSprout(PlantInstance p) { Burst("VFX_SeedPlant", p.transform.position + Vector3.up * 0.2f, Green, Cyan, 0.12f, 0.9f, 1.4f, 18, -0.1f, 0.4f); }
 
@@ -127,7 +107,38 @@ namespace PlantGame.Plants
             var pos = t != null ? t.position : p.transform.position + Vector3.up;
             Burst("VFX_Grown", pos, White, Cyan, 0.16f, 1.4f, 2.2f, 36, 0.1f, 0.5f);
             Burst("VFX_GrownBase", p.transform.position + Vector3.up * 0.3f, Cyan, Green, 0.1f, 1.0f, 1.2f, 16, -0.05f, 0.8f);
+            Fireflies(p);
         }
+
+        /// <summary>
+        /// A grown plant stays alive: a few slow fireflies drift round it for as long as it stands (High tier only). A bridge gets them along
+        /// its span, the other kinds inside their own bounds. The emitter is a child of the plant, so it rides the island and goes with it.
+        /// </summary>
+        void Fireflies(PlantInstance p)
+        {
+            if (QualityTier.Lite) return;
+            Vector3 centre, box; Quaternion rot = Quaternion.identity;
+            if (p.kind == PlantKind.Bridge && p.TryGetEnds(out var a, out var t) && (t - a).sqrMagnitude > 1f)
+            {
+                centre = (a + t) * 0.5f + Vector3.up * 0.9f; rot = Quaternion.LookRotation(t - a);
+                box = new Vector3(2.2f, 1.6f, (t - a).magnitude * 0.9f);
+            }
+            else
+            {
+                var rs = p.GetComponentsInChildren<MeshRenderer>(); if (rs.Length == 0) return;
+                var b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
+                centre = b.center; box = Vector3.Max(b.size * 0.85f, Vector3.one * 1.2f);
+            }
+            float volume = box.x * box.y * box.z;
+            var ps = Motes.Ambient("VFX_Fireflies", p.transform, centre, Vector3.one, Firefly, p.kind == PlantKind.Collector ? Cyan : FireflyPale, 0.2f, 4.5f, 0.12f, Mathf.Clamp(volume * 0.18f, 3f, 6f), 30);
+            // the box is given in world metres: undo the plant's own scale (a stretched bridge, the smaller collector) and turn it along the span
+            ps.transform.rotation = rot;
+            var ls = ps.transform.lossyScale;
+            var sh = ps.shape; sh.scale = new Vector3(box.x / Mathf.Max(0.01f, ls.x), box.y / Mathf.Max(0.01f, ls.y), box.z / Mathf.Max(0.01f, ls.z));
+        }
+
+        /// <summary>A seed source grew a new seed: a little puff in the seed's place so the eye catches it.</summary>
+        void OnSeedRegrown(Vector3 pos) { Burst("VFX_SeedRegrown", pos, Gold, White, 0.11f, 1.1f, 1.0f, 14, -0.08f, 0.35f); }
 
         void OnPickup(ItemDefinition i)
         {

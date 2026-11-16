@@ -74,15 +74,30 @@ namespace PlantGame.Plants
 
         static int IndexOf(Collider c) { var p = c.name.Split('_'); return p.Length > 2 && int.TryParse(p[2], out int i) ? i : 0; }
 
-        public void ShowSprout() { IsGrowing = false; IsGrown = false; _t = 0; SetGrowth(sproutGrowth); Sprouted?.Invoke(this); }
+        public void ShowSprout() { IsGrowing = false; IsGrown = false; _t = 0; _sprout = true; _baseScale = transform.localScale; SetGrowth(sproutGrowth); Sprouted?.Invoke(this); }
 
         /// <summary>Skip the sprout and growth: the plant stands fully grown (level-authored plants).</summary>
-        public void GrowInstantly() { IsGrowing = false; IsGrown = true; _t = 1f; SetGrowth(1f); }
+        public void GrowInstantly() { EndSprout(); IsGrowing = false; IsGrown = true; _t = 1f; SetGrowth(1f); }
 
-        public void StartGrowing() { if (!IsGrown && !IsGrowing) { IsGrowing = true; GrowthStarted?.Invoke(this); } }
+        public void StartGrowing() { if (!IsGrown && !IsGrowing) { EndSprout(); IsGrowing = true; GrowthStarted?.Invoke(this); } }
+
+        // a sprout waiting for water bounces twice every few seconds, so it reads as alive and asking
+        bool _sprout; Vector3 _baseScale; float _sproutPhase;
+        const float SproutEvery = 2.8f, SproutBounce = 0.16f;
+
+        void EndSprout() { if (_sprout) { _sprout = false; transform.localScale = _baseScale; } }
 
         void Update()
         {
+            if (_sprout && !IsGrowing && !IsGrown)
+            {
+                if (_renderers.Length > 0 && _renderers[0] != null && !_renderers[0].isVisible) return;
+                _sproutPhase = Mathf.Repeat(_sproutPhase + Time.deltaTime / SproutEvery, 1f);
+                float q = _sproutPhase / 0.3f;   // the two bounces take the first 30 % of the cycle, then it stands still
+                float bump = q < 1f ? Mathf.Abs(Mathf.Sin(q * Mathf.PI * 2f)) * (1f - q) : 0f;
+                transform.localScale = _baseScale * (1f + SproutBounce * bump);
+                return;
+            }
             if (!IsGrowing) return;
             _t += Time.deltaTime / Mathf.Max(0.01f, growSeconds);
             float k = Mathf.Clamp01(_t);

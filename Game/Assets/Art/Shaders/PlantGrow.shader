@@ -6,6 +6,8 @@
 //     so the growing tip scales in as a tapered point instead of a hard cut.
 //   * A thin glowing band marks the front while growing.
 //   * Two-tone gradient (_BaseColor -> _TipColor) driven by growth_t, soft toon lighting, rim light.
+//   * With part ids on (_PartColors): leaves and flowers sway a few centimetres (_Sway; decks, vines, caps and bowls never move,
+//     so the look stays on its colliders), and the glowing flower centres pulse (_GlowPulse).
 // Hand-written HLSL instead of Shader Graph so it is reviewable as text and diffs cleanly.
 // Per-instance growth: set _Growth with a MaterialPropertyBlock (see GrowSweep.cs) or on a material instance.
 Shader "PlantGame/PlantGrow"
@@ -36,6 +38,8 @@ Shader "PlantGame/PlantGrow"
         _TexStrength ("T67 texture strength", Range(0, 1)) = 0.85
         _TexScale ("T67 texture tiling (per metre)", Range(0.2, 6)) = 1.4
         [Toggle] _PartColors ("Use part id (vertex colour G) for the palette", Float) = 0
+        _Sway ("Leaf / flower sway (m, needs part ids)", Range(0, 0.1)) = 0.022
+        _GlowPulse ("Flower-centre glow pulse (needs part ids)", Range(0, 2)) = 0.7
     }
 
     SubShader
@@ -67,6 +71,8 @@ Shader "PlantGame/PlantGrow"
             float _DetailScale;
             float _TexStrength;
             float _TexScale;
+            float _Sway;
+            float _GlowPulse;
         CBUFFER_END
 
         TEXTURE2D(_BarkTex); SAMPLER(sampler_BarkTex);
@@ -116,13 +122,25 @@ Shader "PlantGame/PlantGrow"
             return lerp(1.0, d, saturate(_DetailStrength));
         }
 
+        // Leaves (part ~.67), yellow flowers (~.8) and blossoms (> .97) drift in a light breeze. The phase changes slowly across the
+        // plant, so one leaf moves nearly as a whole and neighbours follow a moment later. Shared by all three passes (depth and
+        // shadows must match the lit pass).
+        float3 SwayOS(float3 positionOS, float part)
+        {
+            float mask = (part > 0.5 && part < 0.88) || part > 0.97 ? 1.0 : 0.0;
+            float amount = _Sway * mask * step(0.5, _PartColors);
+            float ph = dot(positionOS, float3(1.7, 0.9, 1.3));
+            float t = _Time.y;
+            return float3(sin(t * 1.31 + ph), 0.6 * sin(t * 1.73 + ph * 1.3), cos(t * 1.07 + ph * 0.8)) * amount;
+        }
+
         // Tapered tip: inset along the normal near the growth front. t = 1 well behind the front, 0 at the front.
-        float3 GrowOffsetOS(float3 positionOS, float3 normalOS, float growthT)
+        float3 GrowOffsetOS(float3 positionOS, float3 normalOS, float growthT, float part)
         {
             float t = saturate((_Growth - growthT) / _TaperLength);
             // The taper fades out over the last 8% of growth so a finished plant keeps its full-width tip.
             float fade = 1.0 - smoothstep(0.92, 1.0, _Growth);
-            return positionOS - normalOS * (_TaperAmount * (1.0 - t) * fade);
+            return positionOS - normalOS * (_TaperAmount * (1.0 - t) * fade) + SwayOS(positionOS, part);
         }
 
         // Returns > 0 when the fragment must be discarded.
@@ -172,7 +190,7 @@ Shader "PlantGame/PlantGrow"
             {
                 Varyings OUT;
                 float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT);
+                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
                 VertexPositionInputs vp = GetVertexPositionInputs(posOS);
                 VertexNormalInputs vn = GetVertexNormalInputs(IN.normalOS);
                 OUT.positionCS = vp.positionCS;
@@ -222,6 +240,10 @@ Shader "PlantGame/PlantGrow"
                 float rim = pow(1.0 - saturate(dot(N, V)), _RimPower) * _RimStrength;
                 color += _RimColor.rgb * rim;
 
+                // The glowing flower centres (part .99 - .9975) pulse softly, each on its own beat.
+                if (_PartColors > 0.5 && IN.part > 0.99 && IN.part <= 0.9975)
+                    color += _RimColor.rgb * (_GlowPulse * (0.5 + 0.5 * sin(_Time.y * 2.1 + dot(IN.positionOS, float3(0.9, 0.7, 1.1)))));
+
                 // Glowing growth front (only while growing).
                 float inProgress = step(0.0001, _Growth) * step(_Growth, 0.9999);
                 float front = saturate(1.0 - (_Growth - IN.growthT) / max(_FrontGlowWidth, 0.0001));
@@ -260,7 +282,7 @@ Shader "PlantGame/PlantGrow"
             {
                 Varyings OUT;
                 float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT);
+                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
                 float3 positionWS = TransformObjectToWorld(posOS);
                 float3 normalWS = TransformObjectToWorldNormal(IN.normalOS);
             #if _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -307,7 +329,7 @@ Shader "PlantGame/PlantGrow"
             {
                 Varyings OUT;
                 float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT);
+                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
                 OUT.positionCS = TransformObjectToHClip(posOS);
                 OUT.growthT = growthT;
                 return OUT;

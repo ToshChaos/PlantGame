@@ -896,7 +896,8 @@ namespace PlantGame.World
                 if (water != null)
                 {
                     Prim("Pool" + i, PrimitiveType.Cylinder, parent, p + Vector3.down * 0.005f * sc[i], new Vector3(0.46f * sc[i], 0.012f, 0.46f * sc[i]), water, false);
-                    Prim("Dew" + i, PrimitiveType.Sphere, parent, p + new Vector3(0.06f * sc[i], 0.012f * sc[i], 0.03f * sc[i]), Vector3.one * 0.05f * sc[i], Kit.Mat("M_Crystal") ?? water, false);
+                    var dew = Prim("Dew" + i, PrimitiveType.Sphere, parent, p + new Vector3(0.06f * sc[i], 0.012f * sc[i], 0.03f * sc[i]), Vector3.one * 0.05f * sc[i], Kit.Mat("M_Crystal") ?? water, false);
+                    var glint = dew.AddComponent<GemSparkle>(); glint.baseLevel = 0.7f; glint.flare = 1.5f;   // the dewdrop catches the light now and then
                 }
             }
             var stone = Kit.Mat("M_Bark");
@@ -984,7 +985,7 @@ namespace PlantGame.World
             var bark = Kit.Mat("M_Bark"); var foliage = Mat("M_Foliage");
             var log = Prim("Log", PrimitiveType.Cylinder, parent, pos + new Vector3(0, 0.38f, 0), new Vector3(0.7f, 1.4f, 0.7f), bark, false);
             log.transform.rotation = Quaternion.Euler(0, (float)rnd.NextDouble() * 180f, 90f);
-            Prim("Moss", PrimitiveType.Sphere, parent, pos + new Vector3(0, 0.62f, 0), new Vector3(1.6f, 0.3f, 0.7f), PatchBase(foliage), false).transform.rotation = log.transform.rotation * Quaternion.Euler(0, 0, -90f) * Quaternion.Euler(0, 0, 90f);
+            Prim("Moss", PrimitiveType.Sphere, parent, pos + new Vector3(0, 0.62f, 0), new Vector3(1.6f, 0.3f, 0.7f), PatchBase(foliage), false).transform.rotation = log.transform.rotation * Quaternion.Euler(0, 0, -90f);   // long axis along the log (it used to stand upright through it)
             Prim("Base", PrimitiveType.Cylinder, parent, pos + Vector3.up * 0.05f, new Vector3(3.2f, 0.05f, 3.2f), PatchBase(foliage), false);
             float[] sc = { 2.6f, 2.0f, 1.6f, 1.4f, 1.2f, 1.0f, 0.9f };
             for (int i = 0; i < sc.Length; i++)

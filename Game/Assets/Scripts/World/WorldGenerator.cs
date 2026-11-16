@@ -438,6 +438,20 @@ namespace PlantGame.World
                     Piece("Fruit" + m, PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.8f, 0.55f, Mathf.Sin(a) * 0.8f), Vector3.one * 0.28f, fruitMat, false);
                 }
             }
+            // life: pollen in the seed's colour drifts over every source (it marks the place from across the island); on the High tier the
+            // fruit sways, the puffballs breathe and the pumpkin faces flicker (PatchLife: Medium / Low merge these pieces into one mesh)
+            if (fruitMat != null)
+            {
+                var tint = fruitMat.HasProperty("_BaseColor") ? fruitMat.GetColor("_BaseColor") : Color.white; tint.a = 1f;
+                bool tall = tree || item.id == "beanstalk_seed" || item.id == "parachute_leaf";
+                Motes.Ambient("Pollen", root.transform, pos + Vector3.up * (tall ? 2.0f : 0.9f), new Vector3(2.6f, tall ? 3.0f : 1.3f, 2.6f),
+                    tint, Color.Lerp(tint, Color.white, 0.5f), 0.2f, 4.2f, 0.16f, QualityTier.Lite ? 3f : 6f, 32);
+            }
+            if (!QualityTier.Lite && item.id != "parachute_leaf")
+            {
+                var life = root.AddComponent<PatchLife>();
+                if (item.id == "heat_seed") life.sway = 0f;   // its big leaves lie on the ground
+            }
             var src = root.AddComponent<SeedTree>();
             if (ambience) root.AddComponent<Audio.SeedAmbience>();
             src.possibleSeeds = new[] { item };

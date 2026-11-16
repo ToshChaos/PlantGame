@@ -21,6 +21,9 @@ namespace PlantGame.Inventory
         public float regrowSeconds = 0f;
         public int maxAlive = 2;
 
+        /// <summary>A regrown seed appeared at this world position (not raised for the seeds dropped when the level starts).</summary>
+        public static event System.Action<Vector3> SeedRegrown;
+
         public bool HasDropped { get; private set; }
         readonly System.Collections.Generic.List<GameObject> _dropped = new System.Collections.Generic.List<GameObject>();
 
@@ -37,19 +40,21 @@ namespace PlantGame.Inventory
             _regrowTimer += Time.deltaTime;
             if (_regrowTimer < regrowSeconds) return;
             _regrowTimer = 0f;
-            SpawnOne((float)_rng.NextDouble() * Mathf.PI * 2f);
+            var go = SpawnOne((float)_rng.NextDouble() * Mathf.PI * 2f);
+            if (go != null) SeedRegrown?.Invoke(go.transform.position);
         }
 
-        void SpawnOne(float angle)
+        GameObject SpawnOne(float angle)
         {
             var def = possibleSeeds[_rng.Next(possibleSeeds.Length)];
-            if (def == null || def.worldPrefab == null) return;
+            if (def == null || def.worldPrefab == null) return null;
             var pos = transform.position + new Vector3(Mathf.Cos(angle) * dropRadius * 0.4f, dropHeight, Mathf.Sin(angle) * dropRadius * 0.4f);
             var go = Instantiate(def.worldPrefab, pos, Quaternion.identity);
             var wi = go.GetComponent<WorldItem>(); if (wi != null) wi.item = def;
             var rb = go.GetComponent<Rigidbody>();
             if (rb != null) rb.AddForce(new Vector3(Mathf.Cos(angle), 0.2f, Mathf.Sin(angle)) * 2f, ForceMode.VelocityChange);
             _dropped.Add(go);
+            return go;
         }
 
         public void Drop(int worldSeed)
