@@ -21,6 +21,8 @@ namespace PlantGame.Plants
         PlantInstance _plant;
         float _progress;
         Vector3 _fullScale;
+        ParticleSystem _drips, _sparkle;   // dew falling into the bowl while it fills; a sparkle over the water while a charge waits
+        static readonly Color Dew = new Color(0.75f, 0.92f, 1f), DewBright = new Color(0.95f, 1f, 1f), Ready = new Color(0.49f, 0.95f, 0.9f);
 
         public int Stored { get; private set; }
         /// <summary>0..1 toward the next charge (1 = full).</summary>
@@ -69,8 +71,24 @@ namespace PlantGame.Plants
             ApplyFill();
         }
 
+        /// <summary>Drips while dew is gathering, sparkles while there is water to take. Built the first time either is needed.</summary>
+        void ApplyEffects(bool filling, bool ready)
+        {
+            if (reservoir == null || (!filling && !ready && _drips == null)) return;
+            if (_drips == null)
+            {
+                var bowl = reservoir.position;
+                _drips = Motes.Ambient("Drips", transform, bowl + Vector3.up * 0.75f, new Vector3(0.45f, 0.1f, 0.45f), Dew, DewBright, 0.07f, 0.9f, -0.75f, 2.5f, 6);
+                _sparkle = Motes.Ambient("ReadySparkle", transform, bowl + Vector3.up * 0.2f, new Vector3(0.6f, 0.15f, 0.6f), Ready, DewBright, 0.14f, 1.8f, 0.3f, 4f, 12);
+            }
+            var de = _drips.emission; if (de.enabled != filling) de.enabled = filling;
+            var se = _sparkle.emission; if (se.enabled != ready) se.enabled = ready;
+        }
+
         void ApplyFill()
         {
+            bool grown = _plant == null || _plant.IsGrown;
+            ApplyEffects(grown && !oneShot && Stored < capacity && WeatherState.DewFalls, grown && Stored > 0);
             if (reservoir == null) return;
             float f = _plant != null && !_plant.IsGrown ? 0f : Fill;
             reservoir.gameObject.SetActive(f > 0.01f);

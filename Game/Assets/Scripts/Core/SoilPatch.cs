@@ -31,6 +31,12 @@ namespace PlantGame.Core
         [Tooltip("Bridge: height of the tip above the anchor (the bridge slopes up or down; far lower ends are a short drop).")]
         public float bridgeRise;
 
+        [Tooltip("Motes in the wanted seed's colour over the empty bed (WorldGenerator.DressSoil). They stop once a seed is in, and while the bed is frozen.")]
+        public ParticleSystem hint;
+
+        // each vine bridge flowers in its own colour (picked from where its bed lies, so a level always shows the same ones)
+        static readonly Color[] BridgeFlowers = { new Color(0.949f, 0.784f, 0.294f), new Color(0.96f, 0.56f, 0.72f), new Color(0.74f, 0.62f, 0.97f), new Color(0.55f, 0.82f, 0.98f), new Color(1f, 0.62f, 0.38f) };
+
         [Tooltip("Snow levels: frozen soil takes no seed until a Heat Seed (E) thaws it.")] public bool frozen;
         PlantInstance _plant; Material _thawedMat, _iceMat;
 
@@ -41,6 +47,7 @@ namespace PlantGame.Core
             if (_iceMat == null) _iceMat = new Material(_thawedMat) { hideFlags = HideFlags.DontSave };
             var c = new Color(0.82f, 0.92f, 1f); _iceMat.SetColor("_BaseColor", c); _iceMat.SetColor("_Color", c);
             r.sharedMaterial = _iceMat;
+            if (hint != null) hint.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
 
         void OnDestroy() { if (_iceMat != null) Destroy(_iceMat); }   // DontSave: a scene unload would not free it
@@ -59,9 +66,11 @@ namespace PlantGame.Core
                 frozen = false; var tr = GetComponent<Renderer>(); if (tr != null && _thawedMat != null) tr.sharedMaterial = _thawedMat;
                 if (_iceMat != null) { Destroy(_iceMat); _iceMat = null; }
                 GameEvents.RaiseHint("The soil thaws: you can plant here now");
+                if (hint != null) hint.Play();
                 return;
             }
             planted = true; useCount++;
+            if (hint != null) hint.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             StartCoroutine(Vanish());
             if (plantPrefabs != null && plantPrefabs.Length > 0)
                 _plant = Spawn(plantPrefabs[(variantIndex >= 0 ? variantIndex : useCount - 1) % plantPrefabs.Length]);
@@ -79,6 +88,7 @@ namespace PlantGame.Core
         {
             if (planted || plantPrefabs == null || plantPrefabs.Length == 0) return;
             planted = true; watered = true; useCount++;
+            if (hint != null) hint.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             _plant = Spawn(plantPrefabs[0]);
             DisableCollider();
             if (_plant == null) return;   // the soil patch stays as the plant's base, like the planter on the next island
@@ -137,7 +147,11 @@ namespace PlantGame.Core
             if (host != null) go.transform.SetParent(host, true);
             InteractionSensor.Forget();   // new colliders under the island: nothing remembered about this spot may be stale
             var p = go.GetComponent<PlantInstance>();
-            if (p != null) { p.kind = kind; p.ShowSprout(); }
+            if (p != null)
+            {
+                p.kind = kind; p.ShowSprout();
+                if (kind == PlantKind.Bridge) p.SetFlowerColor(BridgeFlowers[Mathf.Abs(Mathf.RoundToInt(transform.position.x * 7.3f + transform.position.z * 13.1f)) % BridgeFlowers.Length]);
+            }
             return p;
         }
 

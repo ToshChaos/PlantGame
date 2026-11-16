@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PlantGame.Core;
 
 namespace PlantGame.Plants
 {
@@ -10,7 +11,7 @@ namespace PlantGame.Plants
     /// </summary>
     public class PlantInstance : MonoBehaviour
     {
-        static readonly int GrowthId = Shader.PropertyToID("_Growth");
+        static readonly int GrowthId = Shader.PropertyToID("_Growth"), FlowerColorId = Shader.PropertyToID("_FlowerColor"), SquashId = Shader.PropertyToID("_Squash");
 
         public float sproutGrowth = 0.08f;
         public float growSeconds = 6f;
@@ -27,8 +28,43 @@ namespace PlantGame.Plants
         static readonly List<PlantInstance> _all = new List<PlantInstance>();
         /// <summary>All active plants (touch: grown bridges get a circle at each end).</summary>
         public static IReadOnlyList<PlantInstance> All => _all;
-        void OnEnable() { _all.Add(this); }
-        void OnDisable() { _all.Remove(this); }
+        void OnEnable() { _all.Add(this); GameEvents.PlayerLanded += OnPlayerLanded; }
+        void OnDisable() { _all.Remove(this); GameEvents.PlayerLanded -= OnPlayerLanded; }
+
+        /// <summary>This plant's own flower colour (the shader's yellow-flower parts), kept in the property block next to the growth.</summary>
+        public void SetFlowerColor(Color c)
+        {
+            foreach (var r in _renderers) { if (r == null) continue; r.GetPropertyBlock(_mpb); _mpb.SetColor(FlowerColorId, c); r.SetPropertyBlock(_mpb); }
+        }
+
+        // a mushroom cap gives under the player's landing and springs back (the shader dips the cap round the point; colliders stay put)
+        const float SquashDepth = 0.1f, SquashSeconds = 0.9f;
+        Vector3 _squashAt; float _squashT = -1f;
+        static readonly List<Vector3> _capTops = new List<Vector3>(); static readonly List<float> _capRadii = new List<float>();
+
+        void OnPlayerLanded()
+        {
+            if (kind != PlantKind.Platform || !IsGrown) return;
+            var pc = PlantGame.Player.PlayerController.Instance; if (pc == null) return;
+            Vector3 p = pc.transform.position;
+            CapTops(_capTops, _capRadii);
+            for (int i = 0; i < _capTops.Count; i++)
+            {
+                var d = p - _capTops[i];
+                if (new Vector2(d.x, d.z).magnitude > _capRadii[i] + 0.4f || Mathf.Abs(d.y) > 0.8f) continue;
+                _squashAt = transform.InverseTransformPoint(new Vector3(p.x, _capTops[i].y, p.z)); _squashT = 0f;
+                return;
+            }
+        }
+
+        void Squash()
+        {
+            _squashT += Time.deltaTime / SquashSeconds;
+            float depth = _squashT >= 1f ? 0f : SquashDepth * 1.6f * Mathf.Exp(-4.5f * _squashT) * Mathf.Sin(_squashT * 11f);   // eases down (deepest after a tenth of a second), then a couple of rebounds
+            if (_squashT >= 1f) _squashT = -1f;
+            var v = new Vector4(_squashAt.x, _squashAt.y, _squashAt.z, depth);
+            foreach (var r in _renderers) { if (r == null) continue; r.GetPropertyBlock(_mpb); _mpb.SetVector(SquashId, v); r.SetPropertyBlock(_mpb); }
+        }
 
         Transform _anchor, _tip;
         /// <summary>Bridge ends (world space) once looked up: Anchor at the planting island, Tip at the far one.</summary>
@@ -98,6 +134,7 @@ namespace PlantGame.Plants
                 transform.localScale = _baseScale * (1f + SproutBounce * bump);
                 return;
             }
+            if (_squashT >= 0f) Squash();
             if (!IsGrowing) return;
             _t += Time.deltaTime / Mathf.Max(0.01f, growSeconds);
             float k = Mathf.Clamp01(_t);

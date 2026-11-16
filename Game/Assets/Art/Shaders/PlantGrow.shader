@@ -40,6 +40,7 @@ Shader "PlantGame/PlantGrow"
         [Toggle] _PartColors ("Use part id (vertex colour G) for the palette", Float) = 0
         _Sway ("Leaf / flower sway (m, needs part ids)", Range(0, 0.1)) = 0.022
         _GlowPulse ("Flower-centre glow pulse (needs part ids)", Range(0, 2)) = 0.7
+        [HideInInspector] _Squash ("Cap squash: object-space point (xyz), depth in m (w); set per plant by PlantInstance", Vector) = (0, 0, 0, 0)
     }
 
     SubShader
@@ -73,6 +74,7 @@ Shader "PlantGame/PlantGrow"
             float _TexScale;
             float _Sway;
             float _GlowPulse;
+            float4 _Squash;
         CBUFFER_END
 
         TEXTURE2D(_BarkTex); SAMPLER(sampler_BarkTex);
@@ -134,13 +136,22 @@ Shader "PlantGame/PlantGrow"
             return float3(sin(t * 1.31 + ph), 0.6 * sin(t * 1.73 + ph * 1.3), cos(t * 1.07 + ph * 0.8)) * amount;
         }
 
+        // A mushroom cap (part ~.92) and the white spots on it (part > .97) dip round the point the player landed on and spring back:
+        // PlantInstance animates the depth. Only the cap that was hit moves (the point's height picks it); its collider stays where it is.
+        float3 SquashOS(float3 positionOS, float part)
+        {
+            float cap = part > 0.88 ? 1.0 : 0.0;
+            float near = smoothstep(1.6, 0.0, distance(positionOS.xz, _Squash.xz)) * step(abs(positionOS.y - _Squash.y), 0.6);
+            return float3(0.0, -_Squash.w * cap * near * step(0.5, _PartColors), 0.0);
+        }
+
         // Tapered tip: inset along the normal near the growth front. t = 1 well behind the front, 0 at the front.
         float3 GrowOffsetOS(float3 positionOS, float3 normalOS, float growthT, float part)
         {
             float t = saturate((_Growth - growthT) / _TaperLength);
             // The taper fades out over the last 8% of growth so a finished plant keeps its full-width tip.
             float fade = 1.0 - smoothstep(0.92, 1.0, _Growth);
-            return positionOS - normalOS * (_TaperAmount * (1.0 - t) * fade) + SwayOS(positionOS, part);
+            return positionOS - normalOS * (_TaperAmount * (1.0 - t) * fade) + SwayOS(positionOS, part) + SquashOS(positionOS, part);
         }
 
         // Returns > 0 when the fragment must be discarded.

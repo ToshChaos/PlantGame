@@ -30,29 +30,70 @@ namespace PlantGame.Inventory
         System.Random _rng;
         float _regrowTimer;
 
+        // the next seed shows as a bud swelling on the source for the last seconds before it drops
+        const float BudSeconds = 12f, BudScale = 0.75f;
+        Transform _bud; MeshFilter _budMesh; MeshRenderer _budRenderer;
+        float _nextAngle; ItemDefinition _nextDef; bool _nextPicked;
+
         void Start() { Drop(dropSeed); }
 
         void Update()
         {
             if (regrowSeconds <= 0f || !HasDropped || _rng == null) return;
             _dropped.RemoveAll(g => g == null);   // picked up (or destroyed)
-            if (_dropped.Count >= maxAlive) { _regrowTimer = 0f; return; }
+            if (_dropped.Count >= maxAlive) { _regrowTimer = 0f; ShowBud(0f); return; }
             _regrowTimer += Time.deltaTime;
+            float left = regrowSeconds - _regrowTimer;
+            if (left <= BudSeconds && !_nextPicked)
+            {
+                // the same two draws, in the same order, that the drop itself used to make: where it falls, then which seed
+                _nextAngle = (float)_rng.NextDouble() * Mathf.PI * 2f; _nextDef = possibleSeeds[_rng.Next(possibleSeeds.Length)]; _nextPicked = true;
+            }
+            if (_nextPicked) ShowBud(1f - Mathf.Clamp01(left / BudSeconds));
             if (_regrowTimer < regrowSeconds) return;
-            _regrowTimer = 0f;
-            var go = SpawnOne((float)_rng.NextDouble() * Mathf.PI * 2f);
+            _regrowTimer = 0f; _nextPicked = false; ShowBud(0f);
+            var go = SpawnOne(_nextAngle, _nextDef, true);
             if (go != null) SeedRegrown?.Invoke(go.transform.position);
         }
 
-        GameObject SpawnOne(float angle)
+        /// <summary>Groves and poles carry the bud where the seed hangs; a low patch grows it on the ground and the seed hops out of it.</summary>
+        bool BudOnGround => dropHeight < 1.5f;
+        Vector3 BudPoint(float angle) => BudOnGround ? transform.position + new Vector3(Mathf.Cos(angle) * dropRadius * 0.4f, 0.25f, Mathf.Sin(angle) * dropRadius * 0.4f) : DropPoint(angle);
+
+        Vector3 DropPoint(float angle) => transform.position + new Vector3(Mathf.Cos(angle) * dropRadius * 0.4f, dropHeight, Mathf.Sin(angle) * dropRadius * 0.4f);
+
+        /// <summary>The bud: the coming seed's own mesh at the spot it will drop from, growing from nothing to most of its size (0 hides it).</summary>
+        void ShowBud(float k)
         {
-            var def = possibleSeeds[_rng.Next(possibleSeeds.Length)];
+            if (k <= 0f || _nextDef == null || _nextDef.worldPrefab == null) { if (_bud != null && _bud.gameObject.activeSelf) _bud.gameObject.SetActive(false); return; }
+            if (_bud == null)
+            {
+                var go = new GameObject("Bud"); go.transform.SetParent(transform, false); _bud = go.transform;
+                _budMesh = go.AddComponent<MeshFilter>(); _budRenderer = go.AddComponent<MeshRenderer>();
+                go.SetActive(false);   // switched on below, where it gets the coming seed's mesh and its place
+            }
+            if (!_bud.gameObject.activeSelf)
+            {
+                var mf = _nextDef.worldPrefab.GetComponentInChildren<MeshFilter>(); var mr = _nextDef.worldPrefab.GetComponentInChildren<MeshRenderer>();
+                if (mf == null || mr == null) return;
+                _budMesh.sharedMesh = mf.sharedMesh; _budRenderer.sharedMaterial = mr.sharedMaterial;
+                _bud.position = BudPoint(_nextAngle); _bud.rotation = Quaternion.Euler(0f, _nextAngle * Mathf.Rad2Deg, 0f);
+                _bud.gameObject.SetActive(true);
+            }
+            float s = k * k * (3f - 2f * k);
+            _bud.localScale = Vector3.one * (BudScale * s * (1f + 0.06f * Mathf.Sin(Time.time * 5f)));   // it quivers a little as it swells
+        }
+
+        GameObject SpawnOne(float angle, ItemDefinition def = null, bool fromBud = false)
+        {
+            if (def == null) def = possibleSeeds[_rng.Next(possibleSeeds.Length)];
             if (def == null || def.worldPrefab == null) return null;
-            var pos = transform.position + new Vector3(Mathf.Cos(angle) * dropRadius * 0.4f, dropHeight, Mathf.Sin(angle) * dropRadius * 0.4f);
+            bool hop = fromBud && BudOnGround;
+            var pos = hop ? BudPoint(angle) + Vector3.up * 0.15f : DropPoint(angle);
             var go = Instantiate(def.worldPrefab, pos, Quaternion.identity);
             var wi = go.GetComponent<WorldItem>(); if (wi != null) wi.item = def;
             var rb = go.GetComponent<Rigidbody>();
-            if (rb != null) rb.AddForce(new Vector3(Mathf.Cos(angle), 0.2f, Mathf.Sin(angle)) * 2f, ForceMode.VelocityChange);
+            if (rb != null) rb.AddForce(new Vector3(Mathf.Cos(angle), hop ? 1.6f : 0.2f, Mathf.Sin(angle)) * 2f, ForceMode.VelocityChange);
             _dropped.Add(go);
             return go;
         }
@@ -71,7 +112,7 @@ namespace PlantGame.Inventory
         public void Clear()
         {
             foreach (var g in _dropped) if (g != null) Destroy(g);
-            _dropped.Clear(); HasDropped = false;
+            _dropped.Clear(); HasDropped = false; _regrowTimer = 0f; _nextPicked = false; ShowBud(0f);
         }
     }
 }

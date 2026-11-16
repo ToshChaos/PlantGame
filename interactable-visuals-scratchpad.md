@@ -2,6 +2,7 @@
 
 Working notes for the next session that works on the look of the things the player picks up, plants and grows. Started 2026-11-16.
 The first pass added motion and glow in code only: no Blender rebake, no prefab or scene rebuild, no layout or collider change.
+A second pass the same day took six ideas off the list below (soil beds, pickup, regrow bud, collector, flower colours, cap squash): see "Second pass".
 
 ## State of the first pass
 
@@ -71,31 +72,61 @@ dot at 0.1 m) were close to invisible against the sky; 0.2 m with a core reads f
 - Motes in the seed's own colour are quiet on a like-coloured background (green bamboo pollen in front of the grove, white puffball
   pollen against cloud). They show against the ground and the sky.
 
+## Second pass (2026-11-16, same rules: code only)
+
+| Thing | What was added | Where | Numbers to tune |
+|---|---|---|---|
+| Soil bed | A ring of 8-10 half-buried stones (left open where a bridge grows out) | `WorldGenerator.DressSoil` | ring 0.88-1.0 m, stone scale 0.15-0.25 (`DebrisMeshes.Rock`, detail 1: 80 triangles) |
+| Soil bed | Motes in the wanted seed's colour while the bed is empty (off while frozen, gone once planted) | `DressSoil`, `SoilPatch.hint` | rate 2.4 / s (1.2 on Medium / Low), size 0.13 m |
+| Soil bed | An earth-coloured dust puff when a seed goes in | `GrowthVfx.OnSprout` (`VFX_SoilDust`) | 12 dots, size 0.34 m |
+| Seed pickup | The look arcs to the player's chest and shrinks, 0.22 s | `Inventory/PickupFly.cs`, `WorldItem.Interact` | `Seconds`, `Arc` 0.35 m |
+| Seed source | The next seed swells as a bud for the last 12 s before it drops; on a low patch the bud grows on the ground and the seed hops out of it | `SeedTree.ShowBud`, `SpawnOne(fromBud)` | `BudSeconds`, `BudScale` 0.75 |
+| Water Collector | Drips fall into the bowl while it fills; a sparkle sits on the water while a charge waits | `WaterCollector.ApplyEffects` | drips 2.5 / s, sparkle 4 / s |
+| Bridge | Each bridge flowers in one of five colours, picked from where its bed lies | `SoilPatch.BridgeFlowers`, `PlantInstance.SetFlowerColor` | the palette |
+| Mushroom cap | The cap (and its spots) dips under the player's landing and springs back | `PlantInstance.OnPlayerLanded` / `Squash`, `_Squash` in `PlantGrow.shader` | `SquashDepth` 0.1 m, `SquashSeconds` 0.9 |
+
+Checked in play mode (High): level 5 and level 3. Stones and motes on bridge, ladder and collector beds; a pickup in flight
+(slow motion: position and scale part-way); buds at their spots on bean, bamboo, puffball and succulent sources, then the regrown
+seeds lying there; the ready collector sparkling and the filling one dripping; bridges in orange and yellow; a cap with a forced
+0.1 m dip, spots following. Console clean, EditMode tests 51 / 51.
+
+Not looked at: the squash, the fly and the bud hop at speed (the squash spring was only triggered and sampled with an earlier, faster
+curve); the dust puff; a frozen bed's motes switching off and on (level 7); Medium / Low; the title screen; a player build.
+
+Things to know:
+- The regrow draws (where the seed falls, which seed) now happen 12 s before the drop, in the same order as before.
+- `PickupFly` needs the `Visual` child `ItemBob` makes; a pickup without it just vanishes as before.
+- `_Squash` and `_FlowerColor` ride in the same property block as `_Growth`: `PlantInstance` reads the block before it writes.
+- The cap's collider does not move, so at the deepest point the player stands 0.1 m above the dipped surface for a moment.
+- The bed's stones are plain children of the island (no script), so Medium / Low merge them into the island's static mesh.
+
+## Seen while testing, not fixed
+
+- **A seed can leave the island and is then lost for good.** On one of three loads of level 5 the parachute leaf was found 180 m below its
+  island, still falling; on the others it rested 2 m from its source and crept a centimetre a minute across the tilted ground.
+  `SeedTree` only regrows while fewer than `maxAlive` of its seeds exist, and a falling seed still exists, so that source never
+  makes another. A fix would be small (`SeedTree.Update`: destroy a dropped seed that is far below the source), but it is gameplay,
+  not looks: ask first.
+
 ## Ideas not done
 
-- **Soil patches** (the planting spots) were left alone: a ring of small stones or a faint glow in the wanted seed's colour, a
-  dust puff when the bed sinks (`SoilPatch.Vanish`).
-- **Pickup**: the seed vanishes in one frame. A short fly-to-hand (scale down along an arc to the player, 0.2 s) would read better
-  than the burst alone. `WorldItem.Interact` destroys the object at once, so it needs a detached copy of the `Visual` child.
-- **Seed regrowth**: a bud that swells on the source for the last seconds before a seed drops (`SeedTree._regrowTimer` is private).
-- **Water Collector**: droplets falling into the bowl while it fills, a glint on the water when a charge is ready
-  (`GameEvents.CollectorReady` carries no position: add one or let `WaterCollector` own the effect).
-- **Mushroom caps**: a squash and spring when the player lands on one (per-cap transform does not exist: the bake is one mesh, so
-  this needs a shader offset driven by a per-plant "hit" position, or separate cap objects from Blender).
 - **Bridge**: flowers that open as the growth front passes (needs a per-flower growth offset in the bake), fruit or lanterns
   hanging under the deck.
 - **Beanstalk**: slow whole-stalk sway that grows with height (the climb volume and `Land` would have to follow, or the sway must
   stop while the player climbs).
+- **Mushroom caps**: the player could sink with the cap (move the cap's collider with the spring, or offset the player model).
 - **Prefab instead of runtime split**: `ItemBuilder` could build the pickups with the `Visual` child (and `ItemBob.visual`
   serialized) so `ItemBob.BuildVisual` only wires things up. Needs PlantGame > Assets > Items and a look at every user of
-  `worldPrefab.GetComponentInChildren<MeshFilter>()` (`WorldGenerator.SeedSource`, `PlayerHud`).
-- **Blender side** (A3): more silhouette variety per seed (`SeedMeshes` is code, the plants are bakes), a second bloom colour per
-  bridge variant through `_FlowerColor` on a per-plant property block (no rebake needed).
+  `worldPrefab.GetComponentInChildren<MeshFilter>()` (`WorldGenerator.SeedSource`, `SeedTree.ShowBud`, `PlayerHud`).
+- **Soil beds**: the stones are one ring for every kind; they could follow the bed's own outline (squircle, circle, hexagon, flower).
+- **Blender side** (A3): more silhouette variety per seed (`SeedMeshes` is code, the plants are bakes); a per-flower growth offset
+  and a "distance from stem" attribute in vertex colour B would unlock opening flowers and a sway that keeps leaf roots still.
 
 ## Unity access (2026-11-16)
 
 This session's tool list had no `mcp__unity-mcp__*` tools (the server is in the desktop app's own config, and the editor showed
-"claude-ai" connected, but the Code session did not get the tools). What worked: a small stdio MCP client talking to the relay
+"claude-ai" connected, but the Code session did not get the tools). A later session the same day had them (`mcp__unity-mcp__Unity_RunCommand`,
+`Unity_GetConsoleLogs`): prefer those when they are listed. What worked without them: a small stdio MCP client talking to the relay
 (`~/.unity/relay/relay_mac_arm64.app/Contents/MacOS/relay_mac_arm64 --mcp`), calling `Unity_RunCommand` and
 `Unity_GetConsoleLogs`. The editor lists that client separately (it showed up as `cli`, process `python3`) under
 Project Settings > AI > Unity MCP, and answers "Connection revoked" until the user allows that entry there: ask, do not work round it.

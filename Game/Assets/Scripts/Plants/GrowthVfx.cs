@@ -36,7 +36,7 @@ namespace PlantGame.Plants
 
         Transform Player() { if (_player == null) { var pc = PlantGame.Player.PlayerController.Instance; if (pc != null) _player = pc.transform; } return _player; }
 
-        ParticleSystem Make(string name, Vector3 pos, Color a, Color b, float size, float life, float speed, int burst, float rate, float gravity, float shapeRadius, bool loop)
+        ParticleSystem Make(string name, Vector3 pos, Color a, Color b, float size, float life, float speed, int burst, float rate, float gravity, float shapeRadius, bool loop, bool soft = false)
         {
             var go = new GameObject(name); go.transform.SetParent(transform, false); go.transform.position = pos;
             var ps = go.AddComponent<ParticleSystem>();
@@ -57,21 +57,26 @@ namespace PlantGame.Plants
                       new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.15f), new GradientAlphaKey(0, 1) });
             col.color = g;
             var sz = ps.sizeOverLifetime; sz.enabled = true; sz.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0, 1, 1, 0.2f));
-            var r = go.GetComponent<ParticleSystemRenderer>(); r.sharedMaterial = _mat; r.renderMode = ParticleSystemRenderMode.Billboard;
+            var r = go.GetComponent<ParticleSystemRenderer>(); r.sharedMaterial = soft ? Motes.Soft : _mat; r.renderMode = ParticleSystemRenderMode.Billboard;
             return ps;
         }
 
-        void Burst(string name, Vector3 pos, Color a, Color b, float size, float life, float speed, int count, float gravity = 0f, float radius = 0.3f)
+        void Burst(string name, Vector3 pos, Color a, Color b, float size, float life, float speed, int count, float gravity = 0f, float radius = 0.3f, bool soft = false)
         {
-            var ps = Make(name, pos, a, b, size, life, speed, count, 0f, gravity, radius, false);
+            var ps = Make(name, pos, a, b, size, life, speed, count, 0f, gravity, radius, false, soft);
             ps.Play();
             Destroy(ps.gameObject, life + 1.5f);
         }
 
         static readonly Color Cyan = new Color(0.486f, 0.949f, 0.902f), White = new Color(0.957f, 0.973f, 0.965f), Green = new Color(0.365f, 0.706f, 0.42f), Gold = new Color(1f, 0.86f, 0.45f),
+            Soil = new Color(0.45f, 0.33f, 0.22f, 0.7f), SoilPale = new Color(0.66f, 0.55f, 0.42f, 0.55f),
             Firefly = new Color(1f, 0.8f, 0.25f), FireflyPale = new Color(1f, 0.95f, 0.65f);
 
-        void OnSprout(PlantInstance p) { Burst("VFX_SeedPlant", p.transform.position + Vector3.up * 0.2f, Green, Cyan, 0.12f, 0.9f, 1.4f, 18, -0.1f, 0.4f); }
+        void OnSprout(PlantInstance p)
+        {
+            Burst("VFX_SeedPlant", p.transform.position + Vector3.up * 0.2f, Green, Cyan, 0.12f, 0.9f, 1.4f, 18, -0.1f, 0.4f);
+            Burst("VFX_SoilDust", p.transform.position + Vector3.up * 0.1f, Soil, SoilPale, 0.34f, 1.0f, 1.1f, 12, 0.25f, 0.5f, soft: true);   // earth kicked up as the bed takes the seed
+        }
 
         void OnWatered() { var pl = Player(); if (pl != null) Burst("VFX_Water", pl.position + pl.forward * 1f + Vector3.up * 1.1f, Cyan, White, 0.07f, 0.6f, 1.2f, 10, 0.5f, 0.15f); }
 

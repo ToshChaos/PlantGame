@@ -25,6 +25,7 @@ namespace PlantGame.Inventory
             var inv = actor != null ? actor.GetComponent<Inventory>() : null;
             if (item == null || inv == null || !inv.TryAdd(item)) return;
             GameEvents.RaiseItemPickedUp(item);
+            PickupFly.Launch(transform.Find("Visual"), actor.transform);   // the look outlives the pickup for a moment and flies to the hand
             gameObject.SetActive(false);   // gone for the sensor / markers this very frame (Destroy only happens at frame end)
             Destroy(gameObject);
         }

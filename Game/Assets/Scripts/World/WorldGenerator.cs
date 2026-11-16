@@ -327,9 +327,41 @@ namespace PlantGame.World
                 : L.kind == PlantKind.Bridge ? BridgeVariant(target.plantPrefabs.Length) : -1;
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);
             if (interactable >= 0) soil.layer = interactable;
+            DressSoil(I.go.transform, target, pos, L.kind == PlantKind.Bridge ? dir : Vector3.zero, true);
             if (Scenery.Theme == LevelTheme.Snow) target.Freeze();   // frozen soil needs a Heat Seed before any seed goes in
             I.keep.Add(new Vector4(soil.transform.position.x, soil.transform.position.z, 4f, 6f));
             I.go.GetComponent<IslandTerrain>().carves.Add(new Vector4(pos.x, pos.z, 1.7f, 0f));   // the ground under the soil is flat
+        }
+
+        /// <summary>
+        /// Dresses a planting spot so it reads as a made bed and can be found from across the island: a ring of half-buried stones round it
+        /// (left open where a bridge will grow out) and, while it is empty, a few motes in the colour of the seed it wants. Looks only: its own
+        /// hash of the position picks the stones, so the layout's random streams and seed codes are untouched.
+        /// </summary>
+        static void DressSoil(Transform island, SoilPatch target, Vector3 ground, Vector3 open, bool hint)
+        {
+            int h = Mathf.RoundToInt(ground.x * 31f + ground.z * 57f);
+            var mat = OrganicProps.RockMat();
+            int n = 8 + (int)(Scenery.Hash01(h, 1) * 3f); float a0 = Scenery.Hash01(h, 2) * 6.2832f;
+            for (int i = 0; i < n && mat != null; i++)
+            {
+                float a = a0 + i * 6.2832f / n + (Scenery.Hash01(h, 10 + i) - 0.5f) * 0.3f;
+                var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                if (open != Vector3.zero && Vector3.Dot(d, open.normalized) > 0.72f) continue;   // the vine leaves this way
+                float s = 0.15f + Scenery.Hash01(h, 50 + i) * 0.1f;   // the stone mesh is about 1.6 m across at scale 1
+                var g = new GameObject("SoilStone"); g.transform.SetParent(island, true);
+                g.transform.position = ground + d * (0.88f + Scenery.Hash01(h, 30 + i) * 0.12f) + Vector3.up * (s * 0.12f);
+                g.transform.rotation = Quaternion.Euler(0f, Scenery.Hash01(h, 70 + i) * 360f, 0f);
+                g.transform.localScale = new Vector3(s, s * 0.7f, s);
+                g.AddComponent<MeshFilter>().sharedMesh = DebrisMeshes.Rock((int)(Scenery.Hash01(h, 90 + i) * 8f), 1);
+                g.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            }
+            var item = hint ? Kit.Item(target.acceptedItemId) : null;
+            var r = item != null && item.worldPrefab != null ? item.worldPrefab.GetComponentInChildren<Renderer>() : null;
+            if (r == null || r.sharedMaterial == null) return;
+            var tint = r.sharedMaterial.HasProperty("_BaseColor") ? r.sharedMaterial.GetColor("_BaseColor") : Color.white; tint.a = 1f;
+            target.hint = Motes.Ambient("SoilHint", target.transform, ground + Vector3.up * 0.3f, new Vector3(0.6f, 0.3f, 0.6f),
+                tint, Color.Lerp(tint, Color.white, 0.5f), 0.13f, 1.8f, 0.4f, QualityTier.Lite ? 1.2f : 2.4f, 8);
         }
 
         void SpawnPlayer(Transform spawn)
@@ -478,6 +510,7 @@ namespace PlantGame.World
             int interactable = LayerMask.NameToLayer(Layers.InteractableName);
             if (interactable >= 0) soil.layer = interactable;
             var item = Kit.Item("dew_seed");
+            DressSoil(I.go.transform, target, pos, Vector3.zero, !singleUse);
             if (singleUse) { target.PlantSingleUse(refills); return; }   // in the rain the first collector keeps filling
             if (item != null && item.worldPrefab != null) SeedSource(I.go.transform, Spot(I, rnd, 0.3f, 0.75f, 4f, spawnPos, SeedFromSpawn), item, false, 9, 1, 1);
         }
