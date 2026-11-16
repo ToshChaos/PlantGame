@@ -11,6 +11,21 @@ namespace PlantGame.Inventory
     {
         public ItemDefinition item;
 
+        /// <summary>A pickup fell off the islands and is gone (its source, if it has one, grows another: SeedTree).</summary>
+        public static event System.Action<ItemDefinition> Lost;
+
+        /// <summary>Below this height a pickup has left the level: the player's own kill plane (30 m under the lowest island).</summary>
+        static float LostBelow => PlantGame.Player.PlayerController.Instance != null ? PlantGame.Player.PlayerController.Instance.killPlaneY : -200f;
+
+        /// <summary>Dropped, rolled or bounced off the side: the pickup disappears instead of falling for ever.</summary>
+        void Update()
+        {
+            if (transform.position.y >= LostBelow) return;
+            Lost?.Invoke(item);
+            gameObject.SetActive(false);
+            Destroy(gameObject);
+        }
+
         public InteractAction Action => InteractAction.Pickup;
         public string Prompt => "Pick up " + (item != null ? item.displayName : name) + (item != null && item.id == "parachute_leaf" ? " - try gliding" : "");   // the HUD only shows prompts with Hints on
 

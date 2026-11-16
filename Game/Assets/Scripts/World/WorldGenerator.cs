@@ -177,7 +177,7 @@ namespace PlantGame.World
                     if (heart != null && heart.worldPrefab != null)
                     {
                         var src = SeedSource(I.go.transform, Spot(I, rnd, 0.2f, 0.5f, 5f), heart, false, 90, 1, 1);
-                        src.regrowSeconds = 0f;   // exactly one heart seed
+                        src.regrowSeconds = 0f;   // exactly one heart seed (the source grows another only if it is lost off the islands)
                     }
                 }
                 // alternative planting spots for the gaps that leave this island: the preferred soil above stays the intended one, bigger islands offer more
@@ -487,7 +487,7 @@ namespace PlantGame.World
             var src = root.AddComponent<SeedTree>();
             if (ambience) root.AddComponent<Audio.SeedAmbience>();
             src.possibleSeeds = new[] { item };
-            src.seedsToDrop = drop; src.maxAlive = maxAlive; src.regrowSeconds = 60f;
+            src.seedsToDrop = drop; src.maxAlive = maxAlive; src.regrowSeconds = SeedTree.DefaultRegrowSeconds;
             src.dropRadius = 3f; src.dropHeight = tree ? 2.4f : 0.9f; src.dropSeed = index + 1;
             return src;
         }

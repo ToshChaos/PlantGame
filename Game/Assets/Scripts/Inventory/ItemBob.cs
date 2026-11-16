@@ -32,6 +32,9 @@ namespace PlantGame.Inventory
             _speed = Random.Range(MinDegreesPerSecond, Mathf.Max(MinDegreesPerSecond, degreesPerSecond)) * (Random.value < 0.5f ? -1f : 1f);
             _phase = Random.value * 6.2832f;
             _rb = GetComponent<Rigidbody>();
+            // the solid sphere is small (4 cm on the parachute leaf) and a dropped seed lands at about 4 m/s: with discrete collision it can
+            // step right through the island's mesh and fall for ever. Swept collision stops that (islands are kinematic bodies, hence Dynamic).
+            if (_rb != null && !_rb.isKinematic) _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             BuildVisual();
         }
 

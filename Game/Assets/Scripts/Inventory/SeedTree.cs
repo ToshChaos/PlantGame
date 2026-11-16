@@ -17,7 +17,10 @@ namespace PlantGame.Inventory
         public int salt = 0x5EED;
         [Tooltip("Seed of the first drop: the generator numbers the sources of a level, so each one drops its own pattern.")]
         public int dropSeed = 1;
-        [Tooltip("0 = drops once. Otherwise a new seed drops this often while fewer than maxAlive of its seeds lie around.")]
+        /// <summary>The usual time a source takes to grow another seed.</summary>
+        public const float DefaultRegrowSeconds = 60f;
+
+        [Tooltip("0 = drops once (and again only when its seed is lost off the islands). Otherwise a new seed drops this often while fewer than maxAlive of its seeds lie around.")]
         public float regrowSeconds = 0f;
         public int maxAlive = 2;
 
@@ -30,6 +33,23 @@ namespace PlantGame.Inventory
         System.Random _rng;
         float _regrowTimer;
 
+        /// <summary>A source that drops once (the Heart Seed) owes this many more: one for each of its seeds lost off the islands.</summary>
+        int _owed;
+
+        void OnEnable() { WorldItem.Lost += OnLost; }
+        void OnDisable() { WorldItem.Lost -= OnLost; }
+
+        /// <summary>
+        /// A pickup fell off the islands and disappeared. A regrowing source needs nothing: its own lost seed no longer lies around, and a
+        /// seed the player carried off was replaced when it was picked up. A source that drops once would never give another, so it grows
+        /// one back at the usual rate.
+        /// </summary>
+        void OnLost(ItemDefinition lost)
+        {
+            if (regrowSeconds > 0f || !HasDropped || possibleSeeds == null || System.Array.IndexOf(possibleSeeds, lost) < 0) return;
+            _owed++;
+        }
+
         // the next seed shows as a bud swelling on the source for the last seconds before it drops
         const float BudSeconds = 12f, BudScale = 0.75f;
         Transform _bud; MeshFilter _budMesh; MeshRenderer _budRenderer;
@@ -39,19 +59,21 @@ namespace PlantGame.Inventory
 
         void Update()
         {
-            if (regrowSeconds <= 0f || !HasDropped || _rng == null) return;
-            _dropped.RemoveAll(g => g == null);   // picked up (or destroyed)
+            float every = regrowSeconds > 0f ? regrowSeconds : _owed > 0 ? DefaultRegrowSeconds : 0f;
+            if (every <= 0f || !HasDropped || _rng == null) return;
+            _dropped.RemoveAll(g => g == null);   // picked up, or lost off the islands (WorldItem destroys those)
             if (_dropped.Count >= maxAlive) { _regrowTimer = 0f; ShowBud(0f); return; }
             _regrowTimer += Time.deltaTime;
-            float left = regrowSeconds - _regrowTimer;
+            float left = every - _regrowTimer;
             if (left <= BudSeconds && !_nextPicked)
             {
                 // the same two draws, in the same order, that the drop itself used to make: where it falls, then which seed
                 _nextAngle = (float)_rng.NextDouble() * Mathf.PI * 2f; _nextDef = possibleSeeds[_rng.Next(possibleSeeds.Length)]; _nextPicked = true;
             }
             if (_nextPicked) ShowBud(1f - Mathf.Clamp01(left / BudSeconds));
-            if (_regrowTimer < regrowSeconds) return;
+            if (_regrowTimer < every) return;
             _regrowTimer = 0f; _nextPicked = false; ShowBud(0f);
+            if (_owed > 0) _owed--;
             var go = SpawnOne(_nextAngle, _nextDef, true);
             if (go != null) SeedRegrown?.Invoke(go.transform.position);
         }
@@ -112,7 +134,7 @@ namespace PlantGame.Inventory
         public void Clear()
         {
             foreach (var g in _dropped) if (g != null) Destroy(g);
-            _dropped.Clear(); HasDropped = false; _regrowTimer = 0f; _nextPicked = false; ShowBud(0f);
+            _dropped.Clear(); HasDropped = false; _regrowTimer = 0f; _nextPicked = false; _owed = 0; ShowBud(0f);
         }
     }
 }

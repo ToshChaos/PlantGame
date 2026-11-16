@@ -353,3 +353,10 @@ Long per-task notes live here (keep the boards and task files short). Newest fir
 - Checked in play mode on level 5 and level 3 (captures `docs/shots/n_*`): beds with stones and motes, a pickup part-way through its flight, buds on four source kinds and the regrown seeds after them, both collector states, orange and yellow bridges, a cap dipped 0.1 m with its spots. Console clean, EditMode 51 / 51.
 - **Not checked:** the squash spring, the fly and the bud hop at speed; the dust puff; frozen beds (level 7); Medium / Low; title screen; a player build.
 - Seen, not fixed: a seed that leaves its island falls for ever and blocks its source from regrowing (parachute leaf on level 5, one load out of three today). Details in `interactable-visuals-scratchpad.md`.
+
+## Pickups that fall off the islands (2026-11-16)
+- `WorldItem.Update`: a pickup below the player's kill plane disappears and raises `WorldItem.Lost`. A regrowing source refills as before (its lost seed no longer lies around); a source that drops once (the Heart Seed) owes one seed per loss and grows it back after `SeedTree.DefaultRegrowSeconds` (60 s).
+- `ItemBob.Awake` sets pickups to `ContinuousDynamic` collision: the parachute leaf's 4 cm sphere was seen to fall straight through its island on about half the loads of level 5.
+- Checked in play mode (level 6): a Heart Seed, a source's own vine seed and a loose copy placed just above the kill plane were all gone 7 s later. Level 5 with an earlier version of the fix: three bean seeds pushed down were removed and the source regrew one.
+- **Not checked:** the Heart Seed growing back after 60 s (the test scene reloaded while time ran at 12x, cause not looked into), whether swept collision ends the fall-through (no repeated-drop test was run), EditMode tests after this change, Medium / Low, a player build.
+

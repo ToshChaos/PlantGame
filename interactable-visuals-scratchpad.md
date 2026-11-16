@@ -100,13 +100,12 @@ Things to know:
 - The cap's collider does not move, so at the deepest point the player stands 0.1 m above the dipped surface for a moment.
 - The bed's stones are plain children of the island (no script), so Medium / Low merge them into the island's static mesh.
 
-## Seen while testing, not fixed
+## Lost pickups (fixed the same day, partly checked)
 
-- **A seed can leave the island and is then lost for good.** On one of three loads of level 5 the parachute leaf was found 180 m below its
-  island, still falling; on the others it rested 2 m from its source and crept a centimetre a minute across the tilted ground.
-  `SeedTree` only regrows while fewer than `maxAlive` of its seeds exist, and a falling seed still exists, so that source never
-  makes another. A fix would be small (`SeedTree.Update`: destroy a dropped seed that is far below the source), but it is gameplay,
-  not looks: ask first.
+A pickup that falls below the player's kill plane disappears (`WorldItem.Update`, `WorldItem.Lost`); one-off sources grow a lost seed
+back after 60 s (`SeedTree._owed`); pickups use swept collision (`ItemBob.Awake`) because the parachute leaf fell through its island
+on about half the loads of level 5. Still to check: the Heart Seed coming back, and a repeated-drop test of the leaf
+(`SeedTree.Drop(dropSeed)` on the leaf source a dozen times, a few seconds apart). See `docs/task-log.md`.
 
 ## Ideas not done
 
@@ -121,17 +120,3 @@ Things to know:
 - **Soil beds**: the stones are one ring for every kind; they could follow the bed's own outline (squircle, circle, hexagon, flower).
 - **Blender side** (A3): more silhouette variety per seed (`SeedMeshes` is code, the plants are bakes); a per-flower growth offset
   and a "distance from stem" attribute in vertex colour B would unlock opening flowers and a sway that keeps leaf roots still.
-
-## Unity access (2026-11-16)
-
-This session's tool list had no `mcp__unity-mcp__*` tools (the server is in the desktop app's own config, and the editor showed
-"claude-ai" connected, but the Code session did not get the tools). A later session the same day had them (`mcp__unity-mcp__Unity_RunCommand`,
-`Unity_GetConsoleLogs`): prefer those when they are listed. What worked without them: a small stdio MCP client talking to the relay
-(`~/.unity/relay/relay_mac_arm64.app/Contents/MacOS/relay_mac_arm64 --mcp`), calling `Unity_RunCommand` and
-`Unity_GetConsoleLogs`. The editor lists that client separately (it showed up as `cli`, process `python3`) under
-Project Settings > AI > Unity MCP, and answers "Connection revoked" until the user allows that entry there: ask, do not work round it.
-The approvals are kept in `Game/Library/AI.MCP/connections-v2.asset` (readable, which tells you the entry's name and status).
-The Unity CLI (`unity status`) finds no editor: `com.unity.pipeline` is not in `Packages/manifest.json`.
-
-Without any connection: the open editor recompiles when it notices file changes, and `Game/Logs/Editor.log` plus
-`Game/Logs/shadercompiler-*.log` show the result. After a script edit the relay answers "Unity not detected" for about 20 s.
