@@ -31,9 +31,13 @@ namespace PlantGame.Plants
         void OnEnable() { _all.Add(this); GameEvents.PlayerLanded += OnPlayerLanded; }
         void OnDisable() { _all.Remove(this); GameEvents.PlayerLanded -= OnPlayerLanded; }
 
+        /// <summary>The colour SetFlowerColor gave (alpha 0 until then); bridge pods glow in it.</summary>
+        public Color FlowerColor { get; private set; }
+
         /// <summary>This plant's own flower colour (the shader's yellow-flower parts), kept in the property block next to the growth.</summary>
         public void SetFlowerColor(Color c)
         {
+            FlowerColor = c;
             foreach (var r in _renderers) { if (r == null) continue; r.GetPropertyBlock(_mpb); _mpb.SetColor(FlowerColorId, c); r.SetPropertyBlock(_mpb); }
         }
 
@@ -125,9 +129,9 @@ namespace PlantGame.Plants
         public void ShowSprout() { IsGrowing = false; IsGrown = false; _t = 0; _sprout = true; _baseScale = transform.localScale; SetGrowth(sproutGrowth); Sprouted?.Invoke(this); }
 
         /// <summary>Skip the sprout and growth: the plant stands fully grown (level-authored plants).</summary>
-        public void GrowInstantly() { EndSprout(); IsGrowing = false; IsGrown = true; _t = 1f; SetGrowth(1f); }
+        public void GrowInstantly() { EndSprout(); IsGrowing = false; IsGrown = true; _t = 1f; SetGrowth(1f); if (kind == PlantKind.Bridge) BridgePods.Hang(this, true); }
 
-        public void StartGrowing() { if (!IsGrown && !IsGrowing) { EndSprout(); IsGrowing = true; GrowthStarted?.Invoke(this); } }
+        public void StartGrowing() { if (!IsGrown && !IsGrowing) { EndSprout(); IsGrowing = true; GrowthStarted?.Invoke(this); if (kind == PlantKind.Bridge) BridgePods.Hang(this, false); } }
 
         // a sprout waiting for water bounces twice every few seconds, so it reads as alive and asking
         bool _sprout; Vector3 _baseScale; float _sproutPhase;
