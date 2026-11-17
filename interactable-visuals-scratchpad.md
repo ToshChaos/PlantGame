@@ -1,8 +1,6 @@
 ## Ideas not done
 
 - **Bridge**: flowers that open as the growth front passes (needs a per-flower growth offset in the bake).
-- **Beanstalk**: slow whole-stalk sway that grows with height (the climb volume and `Land` would have to follow, or the sway must
-  stop while the player climbs).
 - **Prefab instead of runtime split**: `ItemBuilder` could build the pickups with the `Visual` child (and `ItemBob.visual`
   serialized) so `ItemBob.BuildVisual` only wires things up. Needs PlantGame > Assets > Items and a look at every user of
   `worldPrefab.GetComponentInChildren<MeshFilter>()` (`WorldGenerator.SeedSource`, `SeedTree.ShowBud`, `PlayerHud`).

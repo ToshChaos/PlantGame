@@ -82,6 +82,35 @@ namespace PlantGame.Plants
             pc.SinkModel(depth * t * t * (3f - 2f * t) * transform.lossyScale.y);
         }
 
+        // a grown beanstalk sways slowly from its base, more the higher up (the shader bends the mesh by _Bend). Its colliders, climb volume
+        // and Land stay put, so the bend eases out while the player climbs this stalk and back in once they are off it.
+        static readonly int BendId = Shader.PropertyToID("_Bend");
+        const float BendTip = 0.3f, BendWindy = 1.6f, BendOut = 0.6f, BendIn = 2.5f;   // metres at the tip; seconds to straighten / to come back
+        float _bendWeight, _bendHeight = -1f, _bendPhase;
+
+        void Bend()
+        {
+            if (_bendHeight < 0f)
+            {
+                _bendHeight = 0f;
+                if (_renderers.Length > 0 && _renderers[0] != null && TryGetEnds(out _, out var tip)) _bendHeight = _renderers[0].transform.InverseTransformPoint(tip).y;
+                _bendPhase = PlantGame.World.Scenery.Hash01(Mathf.RoundToInt(transform.position.x * 3.7f + transform.position.z * 9.1f), 7) * 6.283f;
+            }
+            if (_bendHeight <= 0.5f) return;
+            var pc = PlantGame.Player.PlayerController.Instance;
+            bool climbing = false;
+            if (pc != null && pc.IsClimbing) foreach (var cv in _climbVolumes) climbing |= cv != null && cv.Contains(pc.transform.position);
+            float target = climbing ? 0f : 1f;
+            _bendWeight = Mathf.MoveTowards(_bendWeight, target, Time.deltaTime / (target < _bendWeight ? BendOut : BendIn));
+            // set every frame, seen or not (a level has one or two stalks): a stalk coming into view must not show last frame's bend
+
+            float w = Mathf.SmoothStep(0f, 1f, _bendWeight) * BendTip * (GameBootstrap.Current.wind ? BendWindy : 1f), t = Time.time;
+            float x = Mathf.Sin(t * 6.283f / 4.6f + _bendPhase) + 0.3f * Mathf.Sin(t * 6.283f / 2.3f + _bendPhase * 1.7f);   // a slow lean with a faster ripple
+            float z = 0.6f * Mathf.Sin(t * 6.283f / 6.1f + _bendPhase * 0.6f);
+            var v = new Vector4(x * w, z * w, _bendHeight, 0f);
+            foreach (var r in _renderers) { if (r == null) continue; r.GetPropertyBlock(_mpb); _mpb.SetVector(BendId, v); r.SetPropertyBlock(_mpb); }
+        }
+
         Transform _anchor, _tip;
         /// <summary>Bridge ends (world space) once looked up: Anchor at the planting island, Tip at the far one.</summary>
         public bool TryGetEnds(out Vector3 anchor, out Vector3 tip)
@@ -151,6 +180,7 @@ namespace PlantGame.Plants
                 return;
             }
             if (_squashT >= 0f) Squash();
+            if (IsGrown && kind == PlantKind.Ladder) Bend();
             if (!IsGrowing) return;
             _t += Time.deltaTime / Mathf.Max(0.01f, growSeconds);
             float k = Mathf.Clamp01(_t);
