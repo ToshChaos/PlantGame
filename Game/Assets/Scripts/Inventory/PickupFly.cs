@@ -3,7 +3,7 @@ using UnityEngine;
 namespace PlantGame.Inventory
 {
     /// <summary>
-    /// The last moment of a pickup: its look (the `Visual` child ItemBob made) leaves the pickup, arcs to the player's chest in a
+    /// The last moment of a pickup: its look (the prefab's `Visual` child, `ItemBob.visual`) leaves the pickup, arcs to the player's chest in a
     /// fifth of a second while it shrinks, and is gone. The pickup itself is already in the inventory and destroyed.
     /// </summary>
     public class PickupFly : MonoBehaviour

@@ -7,13 +7,14 @@ namespace PlantGame.Inventory
     /// Life for a pickup. Once it has come to rest it lifts a hand's width off the ground, bobs, leans a little and spins; its glow
     /// breathes, and on the High tier a few motes in its own colour rise from it. Each one picks its own direction (clockwise or not),
     /// a speed between 0.2 and `degreesPerSecond` deg/s and its own rhythm, so a patch of seeds never moves in unison.
-    /// The prefab is one object (mesh, colliders, Rigidbody): Awake moves the mesh onto a `Visual` child, so only the look floats
-    /// while the colliders and the body stay on the ground where the sensor and the markers expect them.
+    /// The prefab (ItemBuilder) keeps the colliders, the Rigidbody and WorldItem on its root and the mesh on a `Visual` child (`visual`),
+    /// so only the look floats while the colliders and the body stay on the ground where the sensor and the markers expect them.
     /// </summary>
     public class ItemBob : MonoBehaviour
     {
         /// <summary>Upper bound of the random spin speed (the old fixed speed).</summary>
         public float degreesPerSecond = 60f;
+        [Tooltip("The child that carries the mesh and floats (ItemBuilder sets it). Without one the root just spins.")] public Transform visual;
         public const float MinDegreesPerSecond = 0.2f;
         [Tooltip("Gap between the ground and the lowest point of the resting pickup, metres.")] public float hoverGap = 0.1f;
         [Tooltip("The bob rises this far above the hover height and comes back, metres.")] public float bobHeight = 0.08f;
@@ -38,16 +39,12 @@ namespace PlantGame.Inventory
             BuildVisual();
         }
 
-        /// <summary>Moves the look onto a child so it can float; without a mesh on the root the root itself just spins as it always did.</summary>
+        /// <summary>Wires up the prefab's floating look (`visual`); without one the root itself just spins.</summary>
         void BuildVisual()
         {
-            var mf = GetComponent<MeshFilter>(); var mr = GetComponent<MeshRenderer>();
-            if (mf == null || mr == null || mf.sharedMesh == null) { _visual = transform; _renderer = GetComponentInChildren<Renderer>(); return; }
-            var v = new GameObject("Visual"); v.layer = gameObject.layer; v.transform.SetParent(transform, false);
-            v.AddComponent<MeshFilter>().sharedMesh = mf.sharedMesh;
-            var r = v.AddComponent<MeshRenderer>(); r.sharedMaterial = mr.sharedMaterial; r.shadowCastingMode = mr.shadowCastingMode; r.receiveShadows = mr.receiveShadows;
-            mr.enabled = false;
-            _visual = v.transform; _renderer = r;
+            var mf = visual != null ? visual.GetComponent<MeshFilter>() : null; var r = visual != null ? visual.GetComponent<MeshRenderer>() : null;
+            if (mf == null || r == null || mf.sharedMesh == null) { _visual = transform; _renderer = GetComponentInChildren<Renderer>(); return; }
+            _visual = visual; _renderer = r;
 
             // how far to lift: the solid sphere rests on the ground, so the ground is at its lowest point
             float ground = 0f;

@@ -9,7 +9,7 @@ namespace PlantGame.Editor
 {
     /// <summary>
     /// Builds the ItemDefinition assets (ScriptableObjects/Items) and world prefabs (Prefabs/Items):
-    /// a shaped, softly glowing pickup mesh (SeedMeshes) with a trigger collider on layer Interactable and a WorldItem.
+    /// a shaped, softly glowing pickup mesh (SeedMeshes) on a `Visual` child, with a trigger collider on layer Interactable and a WorldItem.
     /// Menu: PlantGame > 6 Build Items. Idempotent (assets updated in place so references survive).
     /// </summary>
     public static class ItemBuilder
@@ -104,14 +104,12 @@ namespace PlantGame.Editor
             mesh.vertices = verts; mesh.RecalculateBounds(); EditorUtility.SetDirty(mesh);
 
             var go = new GameObject(name);
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = LeafMaterial();
             var solid = go.AddComponent<SphereCollider>(); solid.radius = 0.04f; solid.center = new Vector3(0, 0.045f, 0);   // small and low: the flat blade rests on the ground instead of sinking in
             var pick = go.AddComponent<SphereCollider>(); pick.isTrigger = true; pick.radius = 0.7f;                         // generous pick area
             int layer = LayerMask.NameToLayer(Layers.InteractableName);
             if (layer >= 0) go.layer = layer; else Debug.LogWarning("[PlantGame] Layer 'Interactable' missing; run PlantGame > 1 Setup Project.");
             go.AddComponent<WorldItem>().item = item;
-            go.AddComponent<ItemBob>();
+            AddVisual(go, mesh, LeafMaterial());
             var rb = go.AddComponent<Rigidbody>();
             rb.isKinematic = false; rb.useGravity = true; rb.linearDamping = 1.5f; rb.constraints = RigidbodyConstraints.FreezeRotation;
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
@@ -132,19 +130,29 @@ namespace PlantGame.Editor
             EditorUtility.SetDirty(mesh);
 
             var go = new GameObject(name);
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, item.id);
             var solid = go.AddComponent<SphereCollider>(); solid.radius = SeedMeshes.RestRadius(item.id);
             var pick = go.AddComponent<SphereCollider>(); pick.isTrigger = true; pick.radius = 0.7f;
             int layer = LayerMask.NameToLayer(Layers.InteractableName);
             if (layer >= 0) go.layer = layer; else Debug.LogWarning("[PlantGame] Layer 'Interactable' missing; run PlantGame > 1 Setup Project.");
             go.AddComponent<WorldItem>().item = item;
-            go.AddComponent<ItemBob>();
+            AddVisual(go, mesh, SeedMaterial("M_" + name.Replace("WorldItem_", "Seed"), color, item.id));
             var rb = go.AddComponent<Rigidbody>();
             rb.isKinematic = false; rb.useGravity = true; rb.linearDamping = 1.5f; rb.constraints = RigidbodyConstraints.FreezeRotation;
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
             Object.DestroyImmediate(go);
             return prefab;
+        }
+
+        /// <summary>
+        /// The look goes on a `Visual` child that ItemBob floats, bobs and spins; the colliders, the Rigidbody and WorldItem stay on the root,
+        /// on the ground, where the sensor and the markers expect them.
+        /// </summary>
+        static void AddVisual(GameObject go, Mesh mesh, Material mat)
+        {
+            var v = new GameObject("Visual"); v.layer = go.layer; v.transform.SetParent(go.transform, false);
+            v.AddComponent<MeshFilter>().sharedMesh = mesh;
+            v.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            go.AddComponent<ItemBob>().visual = v.transform;
         }
 
         static GameObject BuildPrefab(string name, ItemDefinition item, Color color)
