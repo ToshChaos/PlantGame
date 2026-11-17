@@ -51,7 +51,7 @@ the seed field of **Generate level** and the same world is built: same islands, 
 - 8-bit music per level, ambience that matches its source, surface footsteps, synthesized SFX.
 
 ## Getting started
-1. Open `Game/` in Unity Hub with **Unity 6000.6.5f1** (URP).
+1. Open `Game/` in Unity Hub with **Unity 6000.6.9f1** (URP).
 2. Open `Assets/Scenes/Title.unity` and press Play. `Sandbox.unity` is a movement course with one of every item.
 
 Every generated asset is committed. After changing a builder, rerun its **PlantGame** menu entry: **Rebuild Core Assets**

@@ -16,7 +16,7 @@ Style: fantasy, **white / green / blue**, soft, glowing, stylized.
 **Controls:** WASD or the arrow keys move (**W / S and Up / Down also climb up / down** on ladders) · Mouse look · Space jump (while climbing it jumps off the vine) · **Q** pick up the item you look at, or drop the selected item · **Tab** cycle inventory slot · **E** use (plant the selected seed on a soil patch) · **F** water a sprout, or refill the can at a lake, waterfall or collector · Esc pause · R restart run (hold). Optional alias: 1–4 select a slot (no mouse-wheel selection). Key hints (Q / E / F / Tab) are off by default (Auto water is on); the pause menu toggles them (`GameSettings.Hints`). Inventory: **4 slots**, no stacking. The **watering can** is separate from the 4 slots: **2 charges**, never dropped, refilled with F at a lake, waterfall or Water Collector.
 
 ## 2. Tech stack and environment (modelled on the sibling project *ClockWork*; T00 confirms versions)
-- **Unity 6000.6.5f1**, Universal 3D / URP, new Input System, Cinemachine (built-in in 6.6, pin is redundant), TextMeshPro. C#.
+- **Unity 6000.6.9f1**, Universal 3D / URP, new Input System, Cinemachine (built-in in 6.6, pin is redundant), TextMeshPro. C#.
   The Unity project is **`Game/`**. Repo root holds docs, tasks and Blender sources.
 - **Blender 5.2.2 LTS** (confirmed via MCP, Python 3.13) on the user's Mac (metric, scale 1, FBX + glTF exporters on), Geometry Nodes. Sources live
   **outside Unity** in `Source/Blender/`. Never put `.blend` into `Game/Assets/`.

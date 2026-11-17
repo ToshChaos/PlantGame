@@ -1,6 +1,6 @@
 # Blender -> Unity pipeline (T02)
 
-Blender **5.2.2 LTS**, Unity 6000.6.5f1. Sources stay in `Source/Blender/`; never put `.blend` in `Game/Assets/`.
+Blender **5.2.2 LTS**, Unity 6000.6.9f1. Sources stay in `Source/Blender/`; never put `.blend` in `Game/Assets/`.
 
 ## Export in 3 commands (Blender, via MCP `execute_blender_code`)
 ```python
