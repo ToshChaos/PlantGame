@@ -64,6 +64,18 @@ namespace PlantGame.Plants
             if (_squashT >= 1f) _squashT = -1f;
             var v = new Vector4(_squashAt.x, _squashAt.y, _squashAt.z, depth);
             foreach (var r in _renderers) { if (r == null) continue; r.GetPropertyBlock(_mpb); _mpb.SetVector(SquashId, v); r.SetPropertyBlock(_mpb); }
+            SinkPlayer(depth);
+        }
+
+        // the player standing on the dipping cap goes down (and up) with it: the shader's own falloff, sampled under the player's feet
+        void SinkPlayer(float depth)
+        {
+            var pc = PlantGame.Player.PlayerController.Instance;
+            if (pc == null || depth == 0f || pc.IsClimbing) return;
+            Vector3 p = transform.InverseTransformPoint(pc.transform.position);
+            if (Mathf.Abs(p.y - _squashAt.y) > 0.3f) return;   // feet on the cap (not the grounded state: it drops while time is stopped, so a pause would pop the model up)
+            float t = Mathf.Clamp01(1f - new Vector2(p.x - _squashAt.x, p.z - _squashAt.z).magnitude / 1.6f);   // smoothstep(1.6, 0, d) in PlantGrow.shader
+            pc.SinkModel(depth * t * t * (3f - 2f * t) * transform.lossyScale.y);
         }
 
         Transform _anchor, _tip;

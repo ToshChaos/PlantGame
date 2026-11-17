@@ -152,6 +152,19 @@ namespace PlantGame.Player
             _startPos = transform.position;
             _startYaw = transform.eulerAngles.y;
             _yaw = _startYaw;
+            if (model != null) _modelBase = model.localPosition;
+        }
+
+        // A mushroom cap that dips under the player lowers the model with it (PlantInstance reports the dip every frame while it
+        // springs; the collider and the camera stay put). The deepest report of the frame wins, LateUpdate applies it once.
+        float _sink, _sinkShown; Vector3 _modelBase;
+        public void SinkModel(float metres) { if (Mathf.Abs(metres) > Mathf.Abs(_sink)) _sink = metres; }
+
+        void LateUpdate()
+        {
+            if (model == null || (_sink == 0f && _sinkShown == 0f)) return;
+            _sinkShown = _sink; _sink = 0f;
+            model.localPosition = _modelBase + Vector3.down * _sinkShown;
         }
 
         void Start()

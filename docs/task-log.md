@@ -361,3 +361,9 @@ Long per-task notes live here (keep the boards and task files short). Newest fir
 - Follow-up check (2026-11-17, level 6 and level 5): the Heart Seed knocked below the kill plane was gone 5 s later and lay again at its source by t 87 s (lost at t 6, regrow 60 s; checked at 3x time). Twelve rounds of `SeedTree.Drop` on every regrowing source of level 5, 4 s apart (108 drops, the parachute leaf 12 of them): every seed came to rest within 3 m of its source's height, none missing. Console clean, EditMode 51 / 51.
 - **Not checked:** the 12x-time scene reload seen in the first test (it did not happen at 3x; cause not looked into), Medium / Low, a player build. The drop test has no "before" run with discrete collision, so it shows the leaf stays put now, not how often it fell through before.
 
+
+## Player sinks with the mushroom cap (2026-11-17)
+- While a cap springs under a landing, `PlantInstance.SinkPlayer` samples the shader's dip (`_Squash`, same 1.6 m smoothstep) under the player's feet and hands it to `PlayerController.SinkModel`; the controller lowers its `model` child by that much in `LateUpdate` (deepest report of the frame wins) and puts it back when no cap reports. The collider and the camera stay put.
+- It goes by the feet being within 0.3 m of the cap top, not by the grounded state: with time stopped (pause) the character controller reads Airborne, which would pop the model back up.
+- Checked in play mode on level 5 at 1 % time: the model went down 8.5 cm (shader dip at that moment 0.085) and 4.2 cm later (shader 0.042), boots in the dipped cap in a side capture (`docs/shots/sink_side_b.png`); with time stopped it stayed dipped; lifting the player 1 m mid-spring put it back to 0 at once; 0 after the spring. Console clean, EditMode 51 / 51.
+- **Not checked:** a real landing watched at speed, a player build.
