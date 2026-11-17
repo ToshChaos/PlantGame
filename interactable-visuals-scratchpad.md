@@ -104,8 +104,8 @@ Things to know:
 
 A pickup that falls below the player's kill plane disappears (`WorldItem.Update`, `WorldItem.Lost`); one-off sources grow a lost seed
 back after 60 s (`SeedTree._owed`); pickups use swept collision (`ItemBob.Awake`) because the parachute leaf fell through its island
-on about half the loads of level 5. Still to check: the Heart Seed coming back, and a repeated-drop test of the leaf
-(`SeedTree.Drop(dropSeed)` on the leaf source a dozen times, a few seconds apart). See `docs/task-log.md`.
+on about a third of the loads of level 5. Checked 2026-11-17: the Heart Seed comes back at its source after 60 s, and 108 repeated
+drops on level 5 (12 of them the leaf) all came to rest on their island. See `docs/task-log.md`.
 
 ## Ideas not done
 
