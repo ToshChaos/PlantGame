@@ -40,6 +40,9 @@ Then `sync_to_unity.py` and the four `PlantGame > Plants > ... Prefabs` menus. R
 - **Shading:** `shade_by_angle` (smooth, sharp above 80 degrees). A tube needs five or more sides to shade round.
 - **Beanstalk:** the steps are on Blender -Y (the side the player climbs, Unity -Z); foliage goes to the flanks and stays out of the climb column.
 - **Collector:** the `Reservoir` must stay inside the basin's outer wall at every fill; `WaterCollector.ApplyFill` widens it as it rises.
+- **Vertex colour `growth_t`:** R growth, G part id, B sway weight, A flower opening (contract 5.3). A part that should bend in the breeze stores `swayw` with its root at the origin before it is instanced (`store_sway` in `plants_bridge.py`); anything without `swayw` stays still. Leave A at 1 unless the part is a flower with its centre in the UV maps.
+- **Bridge silhouettes:** `STYLES` gives each variant a leaf shape (`blade`, `broad`, `willow`, `clover`) and a flower shape (`FLOWERS`: `classic`, `daisy`, `cup`, `star`); `bake_variant` rebuilds the node group for its style, so a new style is a new entry in those tables. White and yellow flowers share their points on a rail, so each reads as one two-tone flower.
+- **Mesh space:** Unity's mesh space is Blender (x, z, y) for the plants (measured from the bounds); data stored for the shader must use that order.
 
 ## Naming
 - Meshes and collections `Type_Name_Variant`, e.g. `Plant_Bridge_03`, `Kit_Terrain_Flat_01`. Plant variants: `Plant_<Bridge|Ladder|Platform|Collector>_<01..06>`; one collection per variant, same name as its main mesh.

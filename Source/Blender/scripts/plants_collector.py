@@ -10,7 +10,7 @@ Deviation from the task text: built with bmesh from per-seed parameters instead 
 variants are still fully procedural and deterministic per seed). Each variant: a curved stem, a double-walled bowl, 5-8 curled
 petals around the rim, 4-6 broad base leaves and cyan dew dots on the rim.
 growth_t (point colour): R = z / height (base -> rim/petal tips), G = part id for the shader palette (.67 stem and leaves, .92 bowl,
-.8 dew dots, 1.0 petals), B = random tint. Reservoir is a separate mesh (a cone frustum from WaterMin up to WaterMax, pivot at its base: 0.45 R
+.8 dew dots, 1.0 petals), B = sway weight (only the base leaves sway, bending from the stem foot), A = 1 (no flowers). Reservoir is a separate mesh (a cone frustum from WaterMin up to WaterMax, pivot at its base: 0.45 R
 wide at the bottom, 0.9 R at the top) that Unity scales with the fill level: taller, and wider as well (`WaterCollector.ApplyFill`), because the
 basin is narrow at the bottom. At every fill the water stays inside the basin's outer wall and its edge is hidden in the wall. INTERACT_NN is a trigger box around the bowl. Pivot at Anchor (the soil).
 """
@@ -47,10 +47,10 @@ def variant_params(n):
 
 class _Mesh:
     def __init__(self):
-        self.v, self.f, self.part = [], [], []
+        self.v, self.f, self.part, self.sw = [], [], [], []
 
-    def add(self, co, part):
-        self.v.append(tuple(co)); self.part.append(part)
+    def add(self, co, part, sw=0.0):
+        self.v.append(tuple(co)); self.part.append(part); self.sw.append(sw)
         return len(self.v) - 1
 
     def ring(self, centre, r, z, part, seg=SEG, ox=0.0, oy=0.0, rib=0.0):
@@ -142,9 +142,9 @@ def _build(p):
             w = W * math.sin(min(1.0, t * 1.1 + 0.08) * math.pi) + 0.01
             ripple = 0.025 * math.sin(t * 17.0 + k)                      # T67: wavy margin
             c, sn = math.cos(ang), math.sin(ang)
-            left.append(m.add((c * out - sn * w, sn * out + c * w, z - 0.12 * w + ripple), 0.67))
-            mid.append(m.add((c * out, sn * out, z + 0.05), 0.67))
-            right.append(m.add((c * out + sn * w, sn * out - c * w, z - 0.12 * w - ripple), 0.67))
+            left.append(m.add((c * out - sn * w, sn * out + c * w, z - 0.12 * w + ripple), 0.67, t))   # sway weight: 0 at the stem foot, 1 at the tip
+            mid.append(m.add((c * out, sn * out, z + 0.05), 0.67, t))
+            right.append(m.add((c * out + sn * w, sn * out - c * w, z - 0.12 * w - ripple), 0.67, t))
         for s_ in range(cols - 1):
             for a_, b_ in ((left, mid), (mid, right)):
                 m.f.append((a_[s_], b_[s_], b_[s_ + 1], a_[s_ + 1]))
@@ -197,10 +197,8 @@ def bake_variant(n, offset_x=0.0):
     me.from_pydata(m.v, [], m.f)
     me.update()
     ca = me.color_attributes.new('growth_t', 'FLOAT_COLOR', 'POINT')
-    rnd = random.Random(p['Seed'] + 1)
-    tint = rnd.random()
-    for i, (co, part) in enumerate(zip(m.v, m.part)):
-        ca.data[i].color = (max(0.0, min(1.0, co[2] / top)), part, tint, 1.0)
+    for i, (co, part, sw) in enumerate(zip(m.v, m.part, m.sw)):
+        ca.data[i].color = (max(0.0, min(1.0, co[2] / top)), part, sw, 1.0)
     me.materials.append(make_material())
     nstem = 13 * SEG
     for poly in me.polygons:   # T67: smooth the stem and the bowl (two-sided leaves / petals share verts, so they stay flat)

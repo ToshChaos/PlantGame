@@ -38,10 +38,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BloomWindow: 0.15
     - _DetailScale: 1.8
     - _DetailStrength: 1
     - _FrontGlowStrength: 1.5
     - _FrontGlowWidth: 0.02
+    - _GlowPulse: 0.7
     - _GradientEnd: 1
     - _GradientStart: 0.35
     - _Growth: 1
@@ -49,16 +51,19 @@ Material:
     - _RimPower: 3
     - _RimStrength: 0.6
     - _ShadeSoftness: 0.15
+    - _Sway: 0.022
     - _TaperAmount: 0.15
     - _TaperLength: 0.08
     - _TexScale: 1.4
     - _TexStrength: 0.85
     m_Colors:
     - _BaseColor: {r: 0.3647059, g: 0.7058824, b: 0.41960785, a: 1}
+    - _Bend: {r: 0, g: 0, b: 0, a: 0}
     - _CapColor: {r: 0.8392157, g: 0.27058825, b: 0.23921569, a: 1}
     - _FlowerColor: {r: 0.54509807, g: 0.30980393, b: 0.8392157, a: 1}
     - _RimColor: {r: 0.4862745, g: 0.9490196, b: 0.9019608, a: 1}
     - _ShadeColor: {r: 0.18431373, g: 0.49019608, b: 0.30980393, a: 1}
+    - _Squash: {r: 0, g: 0, b: 0, a: 0}
     - _TipColor: {r: 0.95686275, g: 0.972549, b: 0.9647059, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

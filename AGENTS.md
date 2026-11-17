@@ -153,7 +153,10 @@ T14 must keep plant-required gaps above the jump reach (or the jump is retuned).
 ### 5.3 Plant prefab contract (Blender export -> Unity)
 Each exported mesh variant `Plant_<Kind>_<NN>` (NN = 01..06, = Blender seed) must contain:
 - Vertex colour attribute **`growth_t`** (stored in vertex colour R, 0 at the base -> 1 at the tip). The shared grow
-  shader (`M_PlantGrow`, T01/T11) reveals/scales geometry where `growth_t <= _Growth`.
+  shader (`M_PlantGrow`, T01/T11) reveals/scales geometry where `growth_t <= _Growth`. G = part id (palette), B = sway weight
+  (0 where a leaf or petal meets its stalk -> 1 at its tip; 0 on decks, steps, vines, caps, stalks and bowls), A = flower opening
+  (1 = not a flower; below 1 = the growth_t of the flower's centre). Flowers carry their centre in two UV maps (`UVMap` = Blender x, z;
+  `UVPivotY` = Blender y, 0), read by the shader as object space (uv0.x, uv0.y, uv1.x). Only the bridges have flowers (v4.12).
 - Empties exported alongside: `Anchor` (base, at soil), `Tip` (end at full growth), optional `Land` (where the
   player steps off).
 - Collision proxies: child objects `COL_<NN>_<idx>` (simple boxes/capsules, ordered base->tip). Unity converts these
@@ -305,6 +308,7 @@ inventory, music + SFX + sky, a win condition, a working build.
 **Stretch:** parachute leaf (T32, user request: plant leaf, one-time glide), retrieve plant (Use on grown plant -> seed back), glow-shard collectibles, day/night, gamepad, water mechanic.
 
 ## 9. Change log of contracts
+- v4.12 (2026-11-17): plant vertex colour B is the sway weight (was a random tint Unity never read) and A the flower opening (was 1); bridge flowers store their centre in two UV maps (contract 5.3). `PlantGrow.shader` sways leaves and petals by B (no part mask any more: rungs, pod seams, dew dots and mushroom stalks no longer sway), shows a flower whole as a closed bud once the growth front reaches its centre and opens it over `_BloomWindow` (0.15 of growth). The six bridge variants have their own leaf and flower shapes (`plants_bridge.STYLES`; colliders, reaches and `Anchor` / `Tip` / `Land` unchanged). All 24 plant variants rebaked. `interactable-visuals-scratchpad.md` is done and removed.
 - v4.11 (2026-11-17): while the player climbs or glides, `WateringCanVisual` eases the can (`Hold_Can`, still a child of `Joint_ArmR`) onto the back, spout up over the right shoulder, and back into the hand afterwards; it runs after `PlayerAnimator` (`DefaultExecutionOrder(100)`) and overrides `Hold_Can`'s local pose every frame.
 - v4.10 (2026-11-17): the pickup prefabs (`ItemBuilder`, PlantGame > Assets > Items) carry the mesh on a `Visual` child, referenced by `ItemBob.visual`; the root keeps the colliders, the Rigidbody and `WorldItem` and has no renderer (v4.5 split it at runtime). Read a pickup's mesh or material with `GetComponentInChildren`, on the prefab as on a live pickup; `WorldItem.Interact` hands `ItemBob.visual` to `PickupFly`.
 - v4.9 (2026-11-17): `PlantGrow.shader` has `_Bend` (x, z: tip offset in object space, z: stalk height; the offset grows with the square of the height). `PlantInstance` sets it on grown beanstalks every frame (0.3 m at the tip, 1.6x on wind levels) and eases it to zero while the player climbs that stalk; colliders, the climb volume and `Land` never move. It shares the property block with `_Growth` / `_Squash` / `_FlowerColor`.

@@ -10,7 +10,8 @@ The plant grows along Blender +Z (= Unity +Y) as a mushroom patch: N convex caps
 pad k at height (k+1)/N * Rise, angle start + k*Twist (+ wobble), radius Reach * (0.25 + 0.75 k/(N-1)). There is no central stem: every cap has
 its own stalk, added at bake time (`add_stalks`), which rises from the planting spot and leans out to its cap. White spots sit on every cap;
 variants with two caps get a small decorative mushroom (padi -1, no collider). The sprout is two puffballs at the planting spot.
-growth_t: R = 0.085 + 0.915 * z / Rise (the sprout owns R <= 0.075), G = part id (1 stalks + white spots, .92 caps = red in the shader), B = random tint.
+growth_t: R = 0.085 + 0.915 * z / Rise (the sprout owns R <= 0.075), G = part id (1 stalks + white spots, .92 caps = red in the shader), B = sway weight
+(0 everywhere: caps, spots and stalks never sway; they only squash), A = 1 (no flowers).
 Extra float attribute `padi` (pad index, pads only) is used by the bake to build COL_ boxes and by the jump check; FBX does not export it.
 Reuses the node helpers and preview material of plants_bridge.py.
 """
@@ -181,8 +182,7 @@ def build_group():
     pz = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
     tt = b.m('ADD', 0.085, b.m('MULTIPLY', b.m('DIVIDE', pz, rise, clamp=True), 0.915))   # T67: the sprout (two small puffballs, baked in bake_variant) owns growth_t R <= 0.075
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
-    tint = b.en(b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT'))
-    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': tint}, mode='RGB')
+    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': 0.0, 'Alpha': 1.0}, mode='RGB')   # B = sway weight: nothing sways
     st = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': real, 'Name': 'growth_t', 'Value': col},
                 data_type='FLOAT_COLOR', domain='POINT')
     mat = b.make('GeometryNodeSetMaterial', {'Geometry': st, 'Material': make_material()})
@@ -291,7 +291,7 @@ def cut_hole(me, radius=HOLE_R):
 
 def add_stalks(me, pads, rise):
     """Bake-time stalks: every walkable cap gets a tube that starts at the planting spot (origin), hugs the ground, then rises to the cap's underside,
-    so the stalks pass under the lower caps. Plus a swollen root bulb at the origin. growth_t R = z / rise, G = 1.0 (stalk part), B = tint."""
+    so the stalks pass under the lower caps. Plus a swollen root bulb at the origin. growth_t R = z / rise, G = 1.0 (stalk part), B = 0 (no sway)."""
     bm = bmesh.new()
     bm.from_mesh(me)
     col = bm.verts.layers.float_color['growth_t']
@@ -300,7 +300,7 @@ def add_stalks(me, pads, rise):
 
     def add_vert(co):
         v = bm.verts.new(co)
-        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, co[2] / rise)), 1.0, 0.5, 1.0)
+        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, co[2] / rise)), 1.0, 0.0, 1.0)
         if padl is not None:
             v[padl] = -1.0
         return v
@@ -334,7 +334,7 @@ def add_stalks(me, pads, rise):
     bulb = bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=10, radius=0.5)
     bmesh.ops.scale(bm, vec=(1.3, 1.3, 0.8), verts=bulb['verts'])
     for v in bulb['verts']:
-        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, v.co.z / rise)), 1.0, 0.5, 1.0)
+        v[col] = (0.085 + 0.915 * max(0.0, min(1.0, v.co.z / rise)), 1.0, 0.0, 1.0)
         if padl is not None:
             v[padl] = -1.0
     # the sprout: two small puffball mushrooms at the planting spot (one white and round, one taller, oval and red). Visible at growth 0.08
@@ -343,14 +343,14 @@ def add_stalks(me, pads, rise):
         bmesh.ops.scale(bm, vec=radii, verts=res['verts'])
         bmesh.ops.translate(bm, vec=centre, verts=res['verts'])
         for v in res['verts']:
-            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.5, 1.0)
+            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.0, 1.0)
             if padl is not None:
                 v[padl] = -1.0
     def post(centre, radius, height, part):
         res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=radius * 1.3, radius2=radius, depth=height)
         bmesh.ops.translate(bm, vec=(centre[0], centre[1], height * 0.5), verts=res['verts'])
         for v in res['verts']:
-            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.5, 1.0)
+            v[col] = (min(0.075, max(0.0, v.co.z / 1.1 * 0.075)), part, 0.0, 1.0)
             if padl is not None:
                 v[padl] = -1.0
     post((-0.45, -0.1), 0.07, 0.28, 1.0)                          # user request: the white sprout mushroom is smaller

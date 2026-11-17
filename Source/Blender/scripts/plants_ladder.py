@@ -7,7 +7,8 @@ In Blender (via MCP execute_blender_code):
 
 The ladder grows along Blender +Z (= Unity +Y). The player climbs on the Blender -Y side (Unity -Z: the start-island side, contract v2.6),
 so the steps are there; leaves, pods and tendrils grow out to the two flanks and keep that column clear. Blender +Y faces the target island. T51: no top platform; the stalk ends at z = Height right beside the target island's rim and `Land` is 1.9 m in front of the stalk top.
-growth_t: R = z / (Height + VINE_EXT) (0..1; the stalk tapers into a thin vine above Height), G = part id (0 stalk, .34 vines + bean pods, .67 rungs/leaves, ~.8 beans (yellow in the shader)), B = random tint.
+growth_t: R = z / (Height + VINE_EXT) (0..1; the stalk tapers into a thin vine above Height), G = part id (0 stalk, .34 vines + bean pods, .67 rungs/leaves, ~.8 beans (yellow in the shader)),
+B = sway weight (leaves bend from the stalk, pods swing from their stem; stalk, steps and tendrils stay still), A = 1 (no flowers).
 Reuses the node helpers and preview material of plants_bridge.py.
 """
 import math
@@ -24,6 +25,7 @@ make_material = _ns['make_material']
 _empty = _ns['_empty']
 two_sided = _ns['two_sided']
 shade_by_angle = _ns['shade_by_angle']
+store_sway = _ns['store_sway']
 MAT = _ns['MAT']
 
 GROUP = 'GN_Plant_Ladder'
@@ -152,7 +154,7 @@ def build_group():
     lx = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['X']
     droop = b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.35), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.6))   # drooping tip, cupped sides
     lf = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, droop)})
-    lf = two_sided(b, tree, lf)   # the climber looks at the leaves from below
+    lf = two_sided(b, tree, store_sway(b, lf, 1.12))   # the climber looks at the leaves from below; the tip sways, the root stays on the stalk
     leaf_geo = xform(lf, b.xyz(0, b.m('MULTIPLY', rad, -1.6), 0))
     for cnt, geo, pid, smin, smax, sd in ((lcount, leaf_geo, 0.67, 0.7, 1.3, 11),):
         pts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': cnt}, mode='COUNT')
@@ -196,7 +198,7 @@ def build_group():
                 bean = xform(bean, b.xyz(0, 0.085, zz))
                 bean = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': bean, 'Name': 'part', 'Value': 0.8}, data_type='FLOAT', domain='POINT')
                 tree.links.new(bean.outputs[0], pj.inputs[0])
-        return xform(b.make('GeometryNodeRealizeInstances', {'Geometry': pj}), b.xyz(0, b.m('MULTIPLY', rad, -1.2), 0))
+        return xform(store_sway(b, b.make('GeometryNodeRealizeInstances', {'Geometry': pj}), 0.6), b.xyz(0, b.m('MULTIPLY', rad, -1.2), 0))   # swings from its stem
 
     ppts = b.make('GeometryNodeCurveToPoints', {'Curve': base, 'Count': pcount}, mode='COUNT')
     psz = b.en(b.make('FunctionNodeRandomValue', {'Min': 1.3, 'Max': 1.9, 'Seed': b.m('ADD', seed, 59)}, data_type='FLOAT'))
@@ -219,8 +221,8 @@ def build_group():
     pz2 = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Z']
     tt = b.m('DIVIDE', pz2, b.m('ADD', height, VINE_EXT), clamp=True)
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
-    tint = b.en(b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT'))
-    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': tint}, mode='RGB')
+    swayw = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'swayw'}).outputs['Attribute']
+    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': swayw, 'Alpha': 1.0}, mode='RGB')
     st = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': real, 'Name': 'growth_t', 'Value': col},
                 data_type='FLOAT_COLOR', domain='POINT')
     mat = b.make('GeometryNodeSetMaterial', {'Geometry': st, 'Material': make_material()})

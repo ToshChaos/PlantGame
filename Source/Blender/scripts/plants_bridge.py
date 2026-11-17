@@ -7,8 +7,11 @@ In Blender (via MCP execute_blender_code):
 
 The bridge grows along Blender +Y (straight in Y, arc in Z, lateral wobble in X), starts at the origin (Anchor).
 growth_t (vertex colour attribute): R = growth 0..1 (= y / Length, monotonic), G = part id (0 deck, .34 vines,
-.67 leaves, 1 blossoms), B = random tint. Palette lookup by G happens in the shader (M_PlantGrow); the Blender preview
-material M_Bridge_Preview mirrors it.
+.67 leaves, 1 blossoms), B = sway weight (0 at a leaf's or flower's root -> 1 at its tip; 0 on everything that must not move),
+A = flower opening (the growth_t of the flower's centre, < 1; 1 = not a flower). Flowers also carry their centre in two UV maps
+(`UVMap` = Blender x, z; `UVPivotY` = Blender y, 0), so the shader can open each one round its own centre (Unity object space x, y, z).
+Palette lookup by G happens in the shader (M_PlantGrow); the Blender preview material M_Bridge_Preview mirrors it.
+Each variant has its own leaf and flower shape (`STYLES`), so the six bridges differ in silhouette, not only in size.
 """
 import math
 import random
@@ -20,6 +23,17 @@ SPROUT_LEN = 2.7        # user request: the sprout is about 3x the first version
 GROUP = 'GN_Plant_Bridge'
 MAT = 'M_Bridge_Preview'
 SEGMENTS = 24
+FLOWER_OPEN_MAX = 0.99   # vertex colour A of a flower never reaches 1 (1 = not a flower)
+
+# per-variant silhouette: leaf shape and flower shape (see leaf_shape / flower_spec)
+STYLES = {
+    1: dict(leaf='blade', flower='classic'),
+    2: dict(leaf='clover', flower='daisy'),
+    3: dict(leaf='broad', flower='cup'),
+    4: dict(leaf='willow', flower='star'),
+    5: dict(leaf='broad', flower='daisy'),
+    6: dict(leaf='clover', flower='star'),
+}
 
 
 # ---------------------------------------------------------------- node helpers
@@ -105,6 +119,51 @@ def two_sided(b, tree, geo):
     return both
 
 
+def store_sway(b, geo, reach):
+    """Sway weight `swayw` on a part modelled with its root at the origin: 0 at the root, 1 at `reach` metres and beyond. The shader scales
+    the breeze offset by it (vertex colour B), so a leaf bends from its stalk instead of drifting off it as a whole."""
+    d = b.vm('LENGTH', b.make('GeometryNodeInputPosition').outputs[0])
+    w = b.m('DIVIDE', d, reach, clamp=True)
+    return b.make('GeometryNodeStoreNamedAttribute', {'Geometry': geo, 'Name': 'swayw', 'Value': w}, data_type='FLOAT', domain='POINT')
+
+
+def leaf_shape(b, tree, shape):
+    """A leaf card with its root at the origin, pointing along +Y, cupped across and drooping toward the tip, two-sided, with `swayw`.
+    blade: the pointed T67 blade; broad: a round leaf; willow: long and narrow; clover: three round leaflets fanned from one root."""
+    def blade(res, sx, sy, ty, droop, cup, rot=0.0):
+        lf = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': res, 'Radius': 0.3})}, mode='N-gons')
+        lf = b.make('GeometryNodeSubdivideMesh', {'Mesh': lf, 'Level': 1})
+        lf = b.make('GeometryNodeTransform', {'Geometry': lf, 'Scale': b.xyz(sx, sy, 1.0), 'Translation': b.xyz(0, ty, 0)})
+        p = b.make('GeometryNodeInputPosition')
+        ly = b.make('ShaderNodeSeparateXYZ', {'Vector': p}).outputs['Y']
+        lx = b.make('ShaderNodeSeparateXYZ', {'Vector': p}).outputs['X']
+        lf = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -droop), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), cup)))})
+        if rot:
+            lf = b.make('GeometryNodeTransform', {'Geometry': lf, 'Rotation': b.xyz(0, 0, rot)})
+        return lf
+    if shape == 'clover':
+        geo = b.make('GeometryNodeJoinGeometry')
+        for rot in (-0.95, 0.0, 0.95):
+            tree.links.new(b.out(blade(8, 0.72, 0.9, 0.29, 0.35, 1.3, rot)), geo.inputs[0])
+        reach = 0.56
+    elif shape == 'broad':
+        geo, reach = blade(10, 1.3, 1.25, 0.38, 0.22, 1.0), 0.76
+    elif shape == 'willow':
+        geo, reach = blade(10, 0.36, 2.7, 0.8, 0.22, 2.5), 1.6
+    else:   # 'blade'
+        geo, reach = blade(10, 0.8, 1.7, 0.5, 0.3, 1.4), 1.0
+    return two_sided(b, tree, store_sway(b, geo, reach))
+
+
+# Flower rings: (count, radius, tilt, depth, base radius, phase) for the outer and the inner petals, and the centre bead (radius, depth).
+FLOWERS = {
+    'classic': ((7, 0.045, 0.55, 0.2, 0.05, 0.0), (5, 0.03, 0.95, 0.13, 0.04, math.pi / 5), (0.04, 0.07)),
+    'daisy': ((10, 0.05, 0.3, 0.18, 0.05, 0.0), (6, 0.02, 1.2, 0.08, 0.035, math.pi / 6), (0.055, 0.06)),
+    'cup': ((6, 0.035, 1.0, 0.2, 0.065, 0.0), (4, 0.02, 1.25, 0.15, 0.05, math.pi / 4), (0.035, 0.07)),
+    'star': ((5, 0.05, 0.42, 0.27, 0.07, 0.0), (5, 0.025, 0.8, 0.1, 0.035, math.pi / 5), (0.045, 0.07)),
+}
+
+
 def shade_by_angle(me, deg=80.0):
     """Smooth shading, with a sharp edge wherever two faces meet at more than `deg`: tubes of five or more sides, pods, caps and leaf blades
     read as round, while slats, petals and cap rims stay crisp. Smooth normals also let the shader taper the growing tip without tearing
@@ -175,7 +234,8 @@ def make_material():
     return m
 
 
-def build_group():
+def build_group(style=None):
+    style = style or STYLES[1]
     old = bpy.data.node_groups.get(GROUP)
     if old:
         bpy.data.node_groups.remove(old)
@@ -272,19 +332,13 @@ def build_group():
     # ---- leaves and blossoms scattered on the handrails
     leaf_n = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', length, b.m('MULTIPLY', leafd, 1.3))), 0.0)
     flw_n = b.m('MAXIMUM', b.m('ROUND', b.m('MULTIPLY', length, b.m('MULTIPLY', leafd, 0.3))), 2.0)
-    # T67: pointed blade with drooping tip and cupped sides (was a 4-gon diamond)
-    lf = b.make('GeometryNodeFillCurve', {'Curve': b.make('GeometryNodeCurvePrimitiveCircle', {'Resolution': 10, 'Radius': 0.3})}, mode='N-gons')
-    lf = b.make('GeometryNodeSubdivideMesh', {'Mesh': lf, 'Level': 1})
-    lf = b.make('GeometryNodeTransform', {'Geometry': lf, 'Scale': b.xyz(0.8, 1.7, 1.0), 'Translation': b.xyz(0, 0.5, 0)})
-    _lp = b.make('GeometryNodeInputPosition')
-    ly = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['Y']
-    lx = b.make('ShaderNodeSeparateXYZ', {'Vector': _lp}).outputs['X']
-    leaf_geo = b.make('GeometryNodeSetPosition', {'Geometry': lf, 'Offset': b.xyz(0, 0, b.m('ADD', b.m('MULTIPLY', b.m('MULTIPLY', ly, ly), -0.3), b.m('MULTIPLY', b.m('MULTIPLY', lx, lx), 1.4)))})
-    leaf_geo = two_sided(b, tree, leaf_geo)
+    leaf_geo = leaf_shape(b, tree, style['leaf'])   # T67 blade, or this variant's own leaf shape
+    o_spec, i_spec, c_spec = FLOWERS[style['flower']]
+
     def flower(outer_part, inner_part, centre_part):
-        # T40: two rings of flattened, cupped petals (7 outer, 5 inner turned half a step) round a glowing bead; `part` is stored per vertex
+        # T40: two rings of flattened, cupped petals (inner ring turned half a step) round a glowing bead; `part` is stored per vertex
         # so the outer petals, inner petals and centre can differ (shader PlantGrow: .995 glow centre, .985 white petals, .975 mist-blue petals; 1.0 stays plain white)
-        def ring(count, radius, tilt, depth, rb, part, phase):
+        def ring(count, radius, tilt, depth, rb, phase, part):
             fi = b.make('GeometryNodeInputIndex').outputs[0]
             ang = b.m('ADD', b.m('MULTIPLY', fi, 2 * math.pi / count), phase)
             fpts = b.make('GeometryNodeMeshToPoints', {'Mesh': b.make('GeometryNodeMeshLine', {'Count': count})}, mode='VERTICES')
@@ -293,16 +347,16 @@ def build_group():
             pet = b.make('GeometryNodeInstanceOnPoints', {'Points': fpos, 'Instance': petal, 'Rotation': b.xyz(0, math.pi / 2 - tilt, ang), 'Scale': b.xyz(1.0, 0.45, 1.0)})
             pet = b.make('GeometryNodeRealizeInstances', {'Geometry': pet})
             return b.make('GeometryNodeStoreNamedAttribute', {'Geometry': pet, 'Name': 'part', 'Value': part}, data_type='FLOAT', domain='POINT')
-        outer = ring(7, 0.045, 0.55, 0.2, 0.05, outer_part, 0.0)
-        inner = ring(5, 0.03, 0.95, 0.13, 0.04, inner_part, math.pi / 5)
-        cen = b.make('GeometryNodeMeshCone', {'Vertices': 4, 'Radius Top': 0.0, 'Radius Bottom': 0.04, 'Depth': 0.07})
+        outer = ring(*o_spec, outer_part)
+        inner = ring(*i_spec, inner_part)
+        cen = b.make('GeometryNodeMeshCone', {'Vertices': 4, 'Radius Top': 0.0, 'Radius Bottom': c_spec[0], 'Depth': c_spec[1]})
         cen = b.make('GeometryNodeTransform', {'Geometry': cen, 'Translation': (0, 0, 0.03)})
         cen = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': cen, 'Name': 'part', 'Value': centre_part}, data_type='FLOAT', domain='POINT')
         fj = b.make('GeometryNodeJoinGeometry')
         tree.links.new(outer.outputs[0], fj.inputs[0])
         tree.links.new(inner.outputs[0], fj.inputs[0])
         tree.links.new(cen.outputs[0], fj.inputs[0])
-        return fj
+        return store_sway(b, fj, 0.26)   # petal tips flutter, the centre stays on its stem
     flower_white = flower(0.985, 0.975, 0.995)    # white petals, mist-blue inner petals, glowing centre
     flower_yellow = flower(0.8, 0.82, 0.995)   # yellow petals, glowing centre
     inst = []
@@ -329,6 +383,10 @@ def build_group():
             if pid is not None:
                 tree.links.new(sel, ip.inputs['Selection'])
                 ip = store_part(ip, pid, 'INSTANCE')
+            else:   # flowers: remember the centre, so the shader opens each one round it once the growth front has passed (A, UV maps)
+                ip = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': ip, 'Name': 'fl', 'Value': 1.0}, data_type='FLOAT', domain='INSTANCE')
+                ip = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': ip, 'Name': 'fpiv', 'Value': b.make('GeometryNodeInputPosition').outputs[0]},
+                            data_type='FLOAT_VECTOR', domain='INSTANCE')
             parts.append(ip.outputs[0])
 
     # ---- user request: the sprout (growth 0.08) reads as two small vines heading in the bridge direction. They sit in the first 0.9 m
@@ -355,18 +413,27 @@ def build_group():
     for p in parts:
         tree.links.new(p, join.inputs[0])
     real = b.make('GeometryNodeRealizeInstances', {'Geometry': join})
-    # ---- growth_t vertex colour: R = y / Length, G = part, B = tint
+    # ---- growth_t vertex colour: R = y / Length, G = part, B = sway weight, A = flower opening (1 = not a flower)
     py = b.make('ShaderNodeSeparateXYZ', {'Vector': b.make('GeometryNodeInputPosition')}).outputs['Y']
     tt0 = b.m('DIVIDE', py, length, clamp=True)
     tts = b.m('MULTIPLY', b.m('DIVIDE', py, SPROUT_LEN, clamp=True), 0.075)   # sprout vines: R spans 0..0.075 over their own length
     spr = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'spr'}).outputs['Attribute']
     tt = b.m('ADD', b.m('MULTIPLY', b.m('ADD', 0.085, b.m('MULTIPLY', tt0, 0.915)), b.m('SUBTRACT', 1.0, spr)), b.m('MULTIPLY', tts, spr))   # sprout vines have their own R range, the bridge starts after them
     part = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'part'}).outputs['Attribute']
-    tint = b.make('FunctionNodeRandomValue', {'Min': 0.0, 'Max': 1.0, 'Seed': seed}, data_type='FLOAT')
-    tint = b.en(tint)
-    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': tint}, mode='RGB')
+    swayw = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'swayw'}).outputs['Attribute']
+    fl = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT', inputs={'Name': 'fl'}).outputs['Attribute']
+    fpiv = b.make('GeometryNodeInputNamedAttribute', data_type='FLOAT_VECTOR', inputs={'Name': 'fpiv'}).outputs['Attribute']
+    fsep = b.make('ShaderNodeSeparateXYZ', {'Vector': fpiv})
+    fopen = b.m('MINIMUM', b.m('ADD', 0.085, b.m('MULTIPLY', b.m('DIVIDE', fsep.outputs['Y'], length, clamp=True), 0.915)), FLOWER_OPEN_MAX)
+    alpha = b.m('ADD', b.m('MULTIPLY', fopen, fl), b.m('SUBTRACT', 1.0, fl))
+    col = b.make('FunctionNodeCombineColor', {'Red': tt, 'Green': part, 'Blue': swayw, 'Alpha': alpha}, mode='RGB')
     st = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': real, 'Name': 'growth_t', 'Value': col},
                 data_type='FLOAT_COLOR', domain='POINT')
+    # flower centres as two UV maps (FBX carries UVs, not custom attributes): Unity object space = Blender (x, z, y)
+    st = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': st, 'Name': 'UVMap', 'Value': b.xyz(fsep.outputs['X'], fsep.outputs['Z'], 0)},
+                data_type='FLOAT2', domain='CORNER')
+    st = b.make('GeometryNodeStoreNamedAttribute', {'Geometry': st, 'Name': 'UVPivotY', 'Value': b.xyz(fsep.outputs['Y'], 0, 0)},
+                data_type='FLOAT2', domain='CORNER')
     mat = b.make('GeometryNodeSetMaterial', {'Geometry': st, 'Material': make_material()})
     tree.links.new(mat.outputs[0], go.inputs[0])
     return tree
@@ -408,6 +475,7 @@ def bake_variant(n, offset_x=0.0):
     nn = '%02d' % n
     _clear(name)
     p = variant_params(n)
+    build_group(STYLES[(n - 1) % len(STYLES) + 1])   # the group is rebuilt per variant: leaf and flower shapes are baked into it
     tmp = _modifier_obj('tmp_' + name, p)
     dg = bpy.context.evaluated_depsgraph_get()
     ev = tmp.evaluated_get(dg)
@@ -467,6 +535,7 @@ def bake_variant(n, offset_x=0.0):
         co.hide_render = True  # wire display still renders solid
     main['kind'] = 'Bridge'
     main['params'] = str({k: round(v, 3) for k, v in p.items()})
+    main['style'] = str(STYLES[(n - 1) % len(STYLES) + 1])
     return main
 
 
@@ -481,8 +550,6 @@ def _empty(name, loc, parent, coll):
 
 
 def build_all(count=6, save=True):
-    exec_ns = globals()
-    build_group()
     for o in list(bpy.data.objects):
         if o.name in ('Cube',):
             bpy.data.objects.remove(o, do_unlink=True)
@@ -491,6 +558,7 @@ def build_all(count=6, save=True):
     old = bpy.data.objects.get('GN_Bridge_Source')
     if old:
         bpy.data.objects.remove(old, do_unlink=True)
+    build_group(STYLES[1])
     src = _modifier_obj('GN_Bridge_Source', variant_params(1))
     src.location = (-6, 0, 0)
     if save:

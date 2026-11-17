@@ -1,13 +1,16 @@
 // T01: shared plant-growth shader (URP). Used by material M_PlantGrow.
 //
-// Contract (AGENTS.md 5.3): vertex colour R = growth_t (0 at the base -> 1 at the tip).
+// Contract (AGENTS.md 5.3): vertex colour R = growth_t (0 at the base -> 1 at the tip), G = part id, B = sway weight (0 at a leaf's or
+// petal's root -> 1 at its tip, 0 on everything that must stay on its colliders), A = flower opening (1 = not a flower; below 1 = the
+// growth_t of the flower's centre, which UV0.xy + UV1.x hold in object space: bridges only).
 //   * Geometry with growth_t >  _Growth is clipped away (hidden).
 //   * Within _TaperLength of the growth front the surface is pulled inward along its normals,
 //     so the growing tip scales in as a tapered point instead of a hard cut.
 //   * A thin glowing band marks the front while growing.
 //   * Two-tone gradient (_BaseColor -> _TipColor) driven by growth_t, soft toon lighting, rim light.
-//   * With part ids on (_PartColors): leaves and flowers sway a few centimetres (_Sway; decks, vines, caps and bowls never move,
-//     so the look stays on its colliders), and the glowing flower centres pulse (_GlowPulse).
+//   * With part ids on (_PartColors): leaves and petals sway a few centimetres at the tip, scaled by the sway weight (_Sway; decks, vines,
+//     steps, caps and bowls have weight 0, so the look stays on its colliders), and the glowing flower centres pulse (_GlowPulse).
+//   * Flowers appear whole as a closed bud when the growth front reaches their centre and spring open over _BloomWindow of growth.
 // Hand-written HLSL instead of Shader Graph so it is reviewable as text and diffs cleanly.
 // Per-instance growth: set _Growth with a MaterialPropertyBlock (see GrowSweep.cs) or on a material instance.
 Shader "PlantGame/PlantGrow"
@@ -40,6 +43,7 @@ Shader "PlantGame/PlantGrow"
         [Toggle] _PartColors ("Use part id (vertex colour G) for the palette", Float) = 0
         _Sway ("Leaf / flower sway (m, needs part ids)", Range(0, 0.1)) = 0.022
         _GlowPulse ("Flower-centre glow pulse (needs part ids)", Range(0, 2)) = 0.7
+        _BloomWindow ("Flower opening (growth after the front reaches a flower)", Range(0.01, 0.3)) = 0.15
         [HideInInspector] _Bend ("Stalk bend: tip offset x, z (object space, m), stalk height (z); set per plant by PlantInstance", Vector) = (0, 0, 0, 0)
         [HideInInspector] _Squash ("Cap squash: object-space point (xyz), depth in m (w); set per plant by PlantInstance", Vector) = (0, 0, 0, 0)
     }
@@ -75,6 +79,7 @@ Shader "PlantGame/PlantGrow"
             float _TexScale;
             float _Sway;
             float _GlowPulse;
+            float _BloomWindow;
             float4 _Squash;
             float4 _Bend;
         CBUFFER_END
@@ -126,13 +131,12 @@ Shader "PlantGame/PlantGrow"
             return lerp(1.0, d, saturate(_DetailStrength));
         }
 
-        // Leaves (part ~.67), yellow flowers (~.8) and blossoms (> .97) drift in a light breeze. The phase changes slowly across the
-        // plant, so one leaf moves nearly as a whole and neighbours follow a moment later. Shared by all three passes (depth and
-        // shadows must match the lit pass).
-        float3 SwayOS(float3 positionOS, float part)
+        // Leaves and petals drift in a light breeze, bending from their root: the bake's sway weight (vertex colour B) is 0 where a leaf
+        // meets its stalk and 1 at its tip, and 0 on decks, steps, vines, caps and bowls. The phase changes slowly across the plant, so
+        // neighbours follow a moment later. Shared by all three passes (depth and shadows must match the lit pass).
+        float3 SwayOS(float3 positionOS, float weight)
         {
-            float mask = (part > 0.5 && part < 0.88) || part > 0.97 ? 1.0 : 0.0;
-            float amount = _Sway * mask * step(0.5, _PartColors);
+            float amount = _Sway * 1.8 * weight * step(0.5, _PartColors);
             float ph = dot(positionOS, float3(1.7, 0.9, 1.3));
             float t = _Time.y;
             return float3(sin(t * 1.31 + ph), 0.6 * sin(t * 1.73 + ph * 1.3), cos(t * 1.07 + ph * 0.8)) * amount;
@@ -156,13 +160,44 @@ Shader "PlantGame/PlantGrow"
             return float3(_Bend.x, 0.0, _Bend.y) * (h * h);
         }
 
-        // Tapered tip: inset along the normal near the growth front. t = 1 well behind the front, 0 at the front.
-        float3 GrowOffsetOS(float3 positionOS, float3 normalOS, float growthT, float part)
+        // How far a flower has opened (0 bud, 1 open): it starts when the growth front reaches its centre (a = vertex colour A). A flower
+        // near the tip gets a shorter window, so every flower is fully open at growth 1.
+        float FlowerOpen(float a)
         {
+            float w = max(min(_BloomWindow, 1.0 - a), 0.004);
+            return saturate((_Growth - a) / w);
+        }
+
+        // A flower opening round its centre c (object space, Y up): closed, the petals are pulled in to the stem, folded upward and wrapped
+        // round each other; they unfurl and spring slightly past open before they settle. Open (o = 1) leaves the vertex where it is.
+        float3 BloomOS(float3 p, float3 c, float o)
+        {
+            const float k = 1.4;                                  // overshoot
+            float u = o - 1.0;
+            float e = 1.0 + (k + 1.0) * u * u * u + k * u * u;    // ease out back: 0 -> 1
+            float3 d = p - c;
+            float r = length(d.xz);
+            float tw = (1.0 - e) * 1.1;
+            float sn = sin(tw), cs = cos(tw);
+            float2 xz = float2(d.x * cs - d.z * sn, d.x * sn + d.z * cs) * lerp(0.3, 1.0, e);
+            float y = d.y * lerp(0.6, 1.0, e) + (1.0 - e) * r * 0.85;
+            return c + float3(xz.x, y, xz.y) * lerp(0.5, 1.0, e);
+        }
+
+        // Everything the vertex stage does to a plant vertex, shared by the three passes. A flower (A < 1) is revealed by its centre's
+        // growth_t, so it appears whole as a bud, and skips the taper.
+        void PlantVertex(float3 positionOS, float3 normalOS, float4 col, float2 uv0, float2 uv1, out float3 posOS, out float growthT)
+        {
+            float flower = col.a < 0.995 ? 1.0 : 0.0;
+            growthT = flower > 0.5 ? col.a : col.r;
+            float3 p = positionOS;
+            if (flower > 0.5) p = BloomOS(p, float3(uv0.x, uv0.y, uv1.x), FlowerOpen(col.a));
+            // Tapered tip: inset along the normal near the growth front (t = 1 well behind the front, 0 at the front). The taper fades
+            // out over the last 8% of growth so a finished plant keeps its full-width tip.
             float t = saturate((_Growth - growthT) / _TaperLength);
-            // The taper fades out over the last 8% of growth so a finished plant keeps its full-width tip.
             float fade = 1.0 - smoothstep(0.92, 1.0, _Growth);
-            return positionOS - normalOS * (_TaperAmount * (1.0 - t) * fade) + SwayOS(positionOS, part) + SquashOS(positionOS, part) + BendOS(positionOS);
+            p -= normalOS * (_TaperAmount * (1.0 - t) * fade * (1.0 - flower));
+            posOS = p + SwayOS(positionOS, col.b) + SquashOS(positionOS, col.g) + BendOS(positionOS);
         }
 
         // Returns > 0 when the fragment must be discarded.
@@ -195,6 +230,8 @@ Shader "PlantGame/PlantGrow"
                 float4 positionOS : POSITION;
                 float3 normalOS   : NORMAL;
                 float4 color      : COLOR;
+                float2 uv0        : TEXCOORD0;   // flower centre x, y (object space)
+                float2 uv1        : TEXCOORD1;   // flower centre z
             };
 
             struct Varyings
@@ -211,8 +248,8 @@ Shader "PlantGame/PlantGrow"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
-                float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
+                float growthT; float3 posOS;
+                PlantVertex(IN.positionOS.xyz, IN.normalOS, IN.color, IN.uv0, IN.uv1, posOS, growthT);
                 VertexPositionInputs vp = GetVertexPositionInputs(posOS);
                 VertexNormalInputs vn = GetVertexNormalInputs(IN.normalOS);
                 OUT.positionCS = vp.positionCS;
@@ -297,14 +334,14 @@ Shader "PlantGame/PlantGrow"
             float3 _LightDirection;
             float3 _LightPosition;
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; float2 uv0 : TEXCOORD0; float2 uv1 : TEXCOORD1; };
             struct Varyings { float4 positionCS : SV_POSITION; float growthT : TEXCOORD0; };
 
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
-                float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
+                float growthT; float3 posOS;
+                PlantVertex(IN.positionOS.xyz, IN.normalOS, IN.color, IN.uv0, IN.uv1, posOS, growthT);
                 float3 positionWS = TransformObjectToWorld(posOS);
                 float3 normalWS = TransformObjectToWorldNormal(IN.normalOS);
             #if _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -344,14 +381,14 @@ Shader "PlantGame/PlantGrow"
             #pragma vertex vert
             #pragma fragment frag
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; float2 uv0 : TEXCOORD0; float2 uv1 : TEXCOORD1; };
             struct Varyings { float4 positionCS : SV_POSITION; float growthT : TEXCOORD0; };
 
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
-                float growthT = IN.color.r;
-                float3 posOS = GrowOffsetOS(IN.positionOS.xyz, IN.normalOS, growthT, IN.color.g);
+                float growthT; float3 posOS;
+                PlantVertex(IN.positionOS.xyz, IN.normalOS, IN.color, IN.uv0, IN.uv1, posOS, growthT);
                 OUT.positionCS = TransformObjectToHClip(posOS);
                 OUT.growthT = growthT;
                 return OUT;
